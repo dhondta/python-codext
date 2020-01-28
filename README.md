@@ -1,10 +1,10 @@
 [![PyPi](https://img.shields.io/pypi/v/codext.svg)](https://pypi.python.org/pypi/codext/)
-[![Read The Docs](https://readthedocs.org/projects/codext/badge/?version=latest)](https://codext.readthedocs.io/en/latest/?badge=latest)
-[![Build Status](https://travis-ci.org/dhondta/codext.svg?branch=master)](https://travis-ci.org/dhondta/codext)
-[![Coverage Status](https://coveralls.io/repos/github/dhondta/codext/badge.svg?branch=master)](https://coveralls.io/github/dhondta/codext?branch=master)
+[![Read The Docs](https://readthedocs.org/projects/python-codext/badge/?version=latest)](https://python-codext.readthedocs.io/en/latest/?badge=latest)
+[![Build Status](https://travis-ci.org/dhondta/python-codext.svg?branch=master)](https://travis-ci.org/dhondta/python-codext)
+[![Coverage Status](https://coveralls.io/repos/github/dhondta/python-codext/badge.svg?branch=master)](https://coveralls.io/github/dhondta/python-codext?branch=master)
 [![Python Versions](https://img.shields.io/pypi/pyversions/codext.svg)](https://pypi.python.org/pypi/codext/)
-[![Requirements Status](https://requires.io/github/dhondta/codext/requirements.svg?branch=master)](https://requires.io/github/dhondta/codext/requirements/?branch=master)
-[![Known Vulnerabilities](https://snyk.io/test/github/dhondta/codext/badge.svg?targetFile=requirements.txt)](https://snyk.io/test/github/dhondta/codext?targetFile=requirements.txt)
+[![Requirements Status](https://requires.io/github/dhondta/python-codext/requirements.svg?branch=master)](https://requires.io/github/dhondta/python-codext/requirements/?branch=master)
+[![Known Vulnerabilities](https://snyk.io/test/github/dhondta/python-codext/badge.svg?targetFile=requirements.txt)](https://snyk.io/test/github/dhondta/python-codext?targetFile=requirements.txt)
 [![License](https://img.shields.io/pypi/l/codext.svg)](https://pypi.python.org/pypi/codext/)
 
 # Codecs Extension
