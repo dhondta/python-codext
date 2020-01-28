@@ -1,0 +1,18 @@
+[run]
+source = asciistuff
+omit =
+    asciistuff/__info__.py
+    tests/*
+
+[report]
+exclude_lines =
+    pragma: no cover
+    if.*?__name__.*?==.*?.__main__.:
+    def main\(\)\:
+    except ImportError:
+    except NameError:
+    raise NotImplementedError
+    if not PY3
+    if PY3
+    def encode\(self, input, final\=False\)\:
+    def decode\(self, input, final\=False\)\:

@@ -1,0 +1,17 @@
+site_name: "Codext - Extension of native codecs"
+repo_url: https://github.com/dhondta/python-codext
+site_author: dhondta
+docs_dir: docs
+pages:
+  - Introduction: index.md
+  - Features: features.md
+  - Encodings: encodings.md
+extra:
+  mailto: alexandre.dhondt@gmail.com
+theme: readthedocs
+use_directory_urls: false
+markdown_extensions:
+  - toc:
+      permalink: true
+  - admonition
+  - pymdownx.details
