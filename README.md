@@ -14,11 +14,8 @@ This library extends the native `codecs` library and provides some new encodings
 **Codec** | **Conversions** | **Comment**
 :---: | :---: | ---
 `ascii85` | Ascii85 <-> text | Python 3 only
-`base16` | Base16 <-> text | 
-`base32` | Base32 <-> text | 
-`base64` | Base64 <-> text | 
-`base85` | Base85 <-> text | Python 3 only
-`base100` | Base100 <-> text | Python 3 only
+`barbie-N` | Barbie <-> text | aka Barbie Typewriter (N belongs to [1, 4])
+`baseXX` | BaseXX <-> text | see [base encodings](base.md)
 `dna-N` | DNA-N <-> text | implements the 8 rules of DNA sequences (N belongs to [1,8])
 `leetspeak` | leetspeak <-> text | based on minimalistic elite speaking rules
 `markdown` | markdown --> HTML | unidirectional
@@ -36,13 +33,18 @@ This library is available on [PyPi](https://pypi.python.org/pypi/codext/) and ca
 pip install codext
 ```
 
-or
-
-```sh
-pip3 install codext
-```
-
 ## Usage
+
+Example with Base58:
+
+```python
+>>> codext.encode("this is a test", "base58-bitcoin")
+'jo91waLQA1NNeBmZKUF'
+>>> codext.encode("this is a test", "base58-ripple")
+'jo9rA2LQwr44eBmZK7E'
+>>> codext.encode("this is a test", "base58-url")
+'JN91Wzkpa1nnDbLyjtf'
+```
 
 Example with Base100 (emoji's):
 
