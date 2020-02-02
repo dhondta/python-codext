@@ -1,14 +1,24 @@
 # -*- coding: UTF-8 -*-
 import _codecs
 import codecs
+import os
 import re
 import sys
-import types
 from functools import wraps
 from six import binary_type, string_types, text_type
+from types import FunctionType
+try:  # Python3
+    from inspect import getfullargspec
+except ImportError:
+    from inspect import getargspec as getfullargspec
+try:
+    from importlib import reload
+except ImportError:
+    pass
 
 
-__all__ = ["add", "b", "codecs", "ensure_str", "re", "PY3"]
+__all__ = ["add", "b", "clear", "codecs", "ensure_str", "re", "register",
+           "remove", "reset", "s2i", "PY3"]
 PY3 = sys.version[0] == "3"
 
 
@@ -16,25 +26,32 @@ isb = lambda s: isinstance(s, binary_type)
 iss = lambda s: isinstance(s, string_types)
 fix = lambda x, ref: b(x) if isb(ref) else ensure_str(x) if iss(ref) else x
 
+s2i = lambda s: int(codecs.encode(s, "base16"), 16)
 
-def add(ename, encode=None, decode=None, pattern=None, text=True):
+
+def add(ename, encode=None, decode=None, pattern=None, text=True,
+        add_to_codecs=False):
     """
     This adds a new codec to the codecs module setting its encode and/or decode
      functions, eventually dynamically naming the encoding with a pattern and
      with file handling (if text is True).
     
-    :param ename:   encoding name
-    :param encode:  encoding function or None
-    :param decode:  decoding function or None
-    :param pattern: pattern for dynamically naming the encoding
-    :param text:    specify whether the codec is a text encoding
+    :param ename:           encoding name
+    :param encode:          encoding function or None
+    :param decode:          decoding function or None
+    :param pattern:         pattern for dynamically naming the encoding
+    :param text:            specify whether the codec is a text encoding
+    :param add_to_codecs:   also add the search function to the native registry
+                            NB: this will make the codec available in the
+                                 built-in open(...) but will make it impossible
+                                 to remove the codec later
     """
-    if encode and not isinstance(encode, types.FunctionType):
-        raise ValueError("Bad encode function")
-    if decode and not isinstance(decode, types.FunctionType):
-        raise ValueError("Bad decode function")
+    if encode and not isinstance(encode, FunctionType):
+        raise ValueError("Bad 'encode' function")
+    if decode and not isinstance(decode, FunctionType):
+        raise ValueError("Bad 'decode' function")
     if not encode and not decode:
-        raise ValueError("At least one function must be defined")
+        raise ValueError("At least one en/decoding function must be defined")
     # search function for the new encoding
     def getregentry(encoding):
         if encoding != ename and not (pattern and re.match(pattern, encoding)):
@@ -79,8 +96,13 @@ def add(ename, encode=None, decode=None, pattern=None, text=True):
             except AttributeError:
                 return  # this occurs when m is None, meaning no match
             except IndexError:
-                pass    # this occurs while m is not None, but possibly no
-                        #  capture group that gives at least 1 group index
+                # this occurs while m is not None, but possibly no capture group
+                #  that gives at least 1 group index ; in this case, if
+                #  fenc/fdec is a decorated function, execute it with no arg
+                if fenc and len(getfullargspec(fenc).args) == 1:
+                    fenc = fenc()
+                if fdec and len(getfullargspec(fdec).args) == 1:
+                    fdec = fdec()
         if fenc:
             fenc = fix_inout_formats(fenc)
         if fdec:
@@ -107,21 +129,59 @@ def add(ename, encode=None, decode=None, pattern=None, text=True):
             streamreader=streamreader,
             _is_text_encoding=text,
         )
-    codecs.register(getregentry)
-codecs.add = add
+    getregentry.__name__ = re.sub(r"[\s\-]", "_", ename)
+    register(getregentry, add_to_codecs)
 
 
+def clear():
+    """
+    Clear codext's local registry of search functions.
+    """
+    global __codecs_registry
+    __codecs_registry = []
+codecs.clear = clear
+
+
+def remove(encoding):
+    """
+    Remove all search functions matching the input encoding name from codext's
+     local registry.
+    
+    :param encoding: encoding name
+    """
+    tbr = []
+    for search in __codecs_registry:
+        if search(encoding) is not None:
+            tbr.append(search)
+    for search in tbr:
+        __codecs_registry.remove(search)
+codecs.remove = remove
+
+
+def reset():
+    """
+    Reset codext's local registry of search functions.
+    """
+    clear()
+    for f in os.listdir(os.path.dirname(__file__)):
+        if not f.endswith(".py") or f.startswith("_"):
+            continue
+        reload(__import__(f[:-3], globals(), locals(), [], 1))
+codecs.reset = reset
+
+
+# conversion functions
 def b(s):
     """
     Non-crashing bytes conversion function.
     """
     if PY3:
         try:
-            return s.encode("latin-1")
+            return s.encode("utf-8")
         except:
             pass
         try:
-            return s.encode("utf-8")
+            return s.encode("latin-1")
         except:
             pass
     return s
@@ -159,18 +219,22 @@ def fix_inout_formats(f):
 
 
 # codecs module hooks
-orig_lookup                = _codecs.lookup
-orig_register              = _codecs.register
-_ts_codecs_registry        = []
-_ts_codecs_registry_hashes = []
+orig_lookup   = _codecs.lookup
+orig_register = _codecs.register
+
+
+def __add(ename, encode=None, decode=None, pattern=None, text=True,
+        add_to_codecs=True):
+    add(ename, encode, decode, pattern, text, add_to_codecs)
+__add.__doc__ = add.__doc__
+codecs.add = __add
 
 
 def __decode(obj, encoding='utf-8', errors='strict'):
     """
     Custom decode function relying on the hooked lookup function.
     """
-    codecinfo = __lookup(encoding)
-    return codecinfo.decode(obj, errors)[0]
+    return __lookup(encoding).decode(obj, errors)[0]
 codecs.decode = __decode
 
 
@@ -178,8 +242,7 @@ def __encode(obj, encoding='utf-8', errors='strict'):
     """
     Custom encode function relying on the hooked lookup function.
     """
-    codecinfo = __lookup(encoding)
-    return codecinfo.encode(obj, errors)[0]
+    return __lookup(encoding).encode(obj, errors)[0]
 codecs.encode = __encode
 
 
@@ -188,7 +251,7 @@ def __lookup(encoding):
     Hooked lookup function for searching first for codecs in the local registry
      of this module.
     """
-    for search in _ts_codecs_registry:
+    for search in __codecs_registry:
         codecinfo = search(encoding)
         if codecinfo is not None:
             return codecinfo
@@ -196,14 +259,35 @@ def __lookup(encoding):
 codecs.lookup = __lookup
 
 
-def __register(search_function):
+def register(search_function, add_to_codecs=False):
+    """
+    Register function for registering new codecs in the local registry of this
+     module and, if required, in the native codecs registry (for use with the
+     built-in 'open' function).
+    
+    :param search_function: search function for the codecs registry
+    :param add_to_codecs:   also add the search function to the native registry
+                            NB: this will make the codec available in the
+                                 built-in open(...) but will make it impossible
+                                 to remove the codec later
+    """
+    if search_function not in __codecs_registry:
+        __codecs_registry.append(search_function)
+    if add_to_codecs:
+        orig_register(search_function)
+
+
+def __register(search_function, add_to_codecs=True):
     """
     Hooked register function for registering new codecs in the local registry
-     of this module.
+     of this module and in the native codecs registry (for use with the built-in
+     'open' function).
+    
+    :param search_function: search function for the codecs registry
+    :param add_to_codecs:   also add the search function to the native registry
+                            NB: this will make the codec available in the
+                                 built-in open(...) but will make it impossible
+                                 to remove the codec later
     """
-    h = hash(search_function)
-    if h not in _ts_codecs_registry_hashes:
-        _ts_codecs_registry_hashes.append(h)
-        _ts_codecs_registry.append(search_function)
-    orig_register(search_function)
+    register(search_function, add_to_codecs)
 codecs.register = __register

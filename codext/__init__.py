@@ -2,25 +2,21 @@
 """Module for enhancing codecs preimport.
 
 """
-import os
+from .__common__ import *
+from .__info__ import __author__, __copyright__, __license__, __version__
 
-from .__common__ import add, codecs
 
-
-__all__ = ["add", "decode", "encode", "lookup",  "open", "register"]
+__all__ = ["add", "clear", "decode", "encode", "lookup",  "open", "register",
+           "remove", "reset"]
 
 
 decode   = codecs.decode
 encode   = codecs.encode
 lookup   = codecs.lookup
 open     = codecs.open
-register = codecs.register
 
 
-for f in os.listdir(os.path.dirname(__file__)):
-    if not f.endswith(".py") or f == "__init__.py":
-        continue
-    __import__(f[:-3], globals(), locals(), [], 1)
+reset()
 
 
 def main():
