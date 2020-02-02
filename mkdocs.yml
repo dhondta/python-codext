@@ -5,7 +5,8 @@ docs_dir: docs
 pages:
   - Introduction: index.md
   - Features: features.md
-  - Encodings: encodings.md
+  - 'Base encodings': base.md
+  - 'Other encodings': encodings.md
 extra:
   mailto: alexandre.dhondt@gmail.com
 theme: readthedocs

@@ -27,59 +27,6 @@ This encoding relies on the `base64` library and is only supported in Python 3.
 
 -----
 
-### Base
-
-This namely adds the classical BaseXX encodings like 16 (hexadecimal) and 32.
-
-**Codec** | **Conversions** | **Aliases** | **Comment**
-:---: | :---: | --- | ---
-`base16` | Base16 <-> text | `BASE16`, `base-16`, `base_16` | 
-`base32` | Base32 <-> text | `BASE32`, `base-32`, `base_32` | 
-`base64` | Base64 <-> text | `BASE64`, `base-64`, `base_64` | 
-`base85` | Base85 <-> text | `BASE85`, `base-85`, `base_85` | Python 3 only
-`base100` | Base100 <-> text | `BASE100`, `base-100`, `base_100`, `emoji` | Python 3 only
-
-```python
->>> codecs.encode("this is a test", "base16")
-'7468697320697320612074657374'
->>> codecs.decode("7468697320697320612074657374", "base16")
-'this is a test'
-```
-
-```python
->>> codecs.encode("this is a test", "base32")
-'ORUGS4ZANFZSAYJAORSXG5A='
->>> codecs.decode("ORUGS4ZANFZSAYJAORSXG5A=", "base32")
-'this is a test'
-```
-
-Note that for `base64`, it overwrites the native `base64_codec` to also support en/decoding from str.
-
-```python
->>> codecs.encode("this is a test", "base64")
-'dGhpcyBpcyBhIHRlc3Q='
->>> codecs.decode("dGhpcyBpcyBhIHRlc3Q=", "base64")
-'this is a test'
-```
-
-With Python 3, `base85` and `base100` (emoji's) are also supported.
-
-```python
->>> codecs.encode("this is a test", "base85")
-'bZBXFAZc?TVIXv6b94'
->>> codecs.decode("bZBXFAZc?TVIXv6b94", "base85")
-'this is a test'
-```
-
-```python
->>> codecs.encode("this is a test", "base100")
-'👫👟👠👪🐗👠👪🐗👘🐗👫👜👪👫'
->>> codecs.decode("👫👟👠👪🐗👠👪🐗👘🐗👫👜👪👫", "base100")
-'this is a test'
-```
-
------
-
 ### DNA
 
 This implements the 8 methods of ATGC nucleotides following the rule of complementary pairing, according the literature about coding and computing of DNA sequences.
