@@ -20,12 +20,6 @@ class TestCodecMarkdown(TestCase):
                       isinstance(codecs.encode(b(MD), "markdown"), binary_type))
         self.assertEqual(codecs.encode(MD, "markdown"), HTM)
         self.assertRaises(NotImplementedError, codecs.decode, MD, "markdown")
-        if PY3:
-            with open(TFILE, 'w', encoding="markdown") as f:
-                f.write(MD)
-            with open(TFILE) as f:
-                s = f.read()
-            self.assertEqual(HTM, s)
         with codecs.open(TFILE, 'w', encoding="markdown") as f:
             f.write(b(MD))
         with codecs.open(TFILE) as f:

@@ -30,12 +30,6 @@ class TestCodecMorse(TestCase):
         self.assertRaises(ValueError, codecs.decode, "#", "morse", "BAD_ERRORS")
         self.assertTrue(not PY3 or
                         isinstance(codecs.encode(b(STR), "morse"), binary_type))
-        if PY3:
-            with open(TFILE, 'w', encoding="morse") as f:
-                f.write(STR)
-            with open(TFILE, encoding="morse") as f:
-                s = f.read().strip()
-            self.assertEqual(STR, s)
         with codecs.open(TFILE, 'w', encoding="morse") as f:
             f.write(b(STR))
         with codecs.open(TFILE, encoding="morse") as f:

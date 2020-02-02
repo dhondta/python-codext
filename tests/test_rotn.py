@@ -34,15 +34,6 @@ class TestCodecsRotN(TestCase):
             self.assertEqual(codecs.decode(s, "rot1"), old)
         self.assertTrue(not PY3 or
                         isinstance(codecs.encode(b(STR), "rot1"), binary_type))
-        if PY3:
-            with open(TFILE, 'w', encoding="rot-3") as f:
-                f.write(STR)
-            with open(TFILE) as f:
-                r = f.read().strip()
-            self.assertEqual(RT3, r)
-            with open(TFILE, encoding="rot-3") as f:
-                s = f.read().strip()
-            self.assertEqual(STR, s)
         with codecs.open(TFILE, 'w', encoding="rot-3") as f:
             f.write(b(STR))
         with open(TFILE) as f:

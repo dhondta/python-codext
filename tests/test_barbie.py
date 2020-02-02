@@ -14,8 +14,8 @@ class TestCodecBarbie(TestCase):
         BRB = ["hstf tf i hafh", "sfhp hp t sips", "fpsu su h ftuf",
                "pufq fq s phqp"]
         self.assertRaises(LookupError, codecs.encode, STR, "barbie")
-        for i in range(1, 5):
-            self.assertEqual(codecs.encode(STR, "barbie{}".format(i)), BRB[i-1])
+        for i in range(4):
+            self.assertEqual(codecs.encode(STR, "barbie{}".format(i+1)), BRB[i])
         self.assertEqual(codecs.encode(b(STR), "barbie_1"), b(BRB[0]))
         self.assertEqual(codecs.encode(b(STR), "barbie-2"), b(BRB[1]))
         self.assertRaises(ValueError, codecs.encode, "\r", "barbie-2")

@@ -21,12 +21,6 @@ class TestCodecLeetspeak(TestCase):
         self.assertEqual(codecs.encode(STR, "leetspeak").upper(), LTS)
         self.assertTrue(not PY3 or
                         isinstance(codecs.encode(b(LTS), "leet"), binary_type))
-        if PY3:
-            with open(TFILE, 'w', encoding="leet") as f:
-                f.write(STR)
-            with open(TFILE, encoding="leet") as f:
-                s = f.read().strip()
-            self.assertEqual(STR.upper(), s.upper())
         with codecs.open(TFILE, 'w', encoding="leet") as f:
             f.write(b(STR))
         with codecs.open(TFILE, encoding="leet") as f:
