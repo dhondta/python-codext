@@ -15,7 +15,7 @@ This library extends the native `codecs` library and provides some new encodings
 :---: | :---: | ---
 `ascii85` | Ascii85 <-> text | Python 3 only
 `barbie-N` | Barbie <-> text | aka Barbie Typewriter (N belongs to [1, 4])
-`baseXX` | BaseXX <-> text | see [base encodings](base.md)
+`baseXX` | BaseXX <-> text | see [base encodings](https://python-codext.readthedocs.io/en/latest/base.html)
 `dna-N` | DNA-N <-> text | implements the 8 rules of DNA sequences (N belongs to [1,8])
 `leetspeak` | leetspeak <-> text | based on minimalistic elite speaking rules
 `markdown` | markdown --> HTML | unidirectional
