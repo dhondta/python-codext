@@ -11,7 +11,7 @@ This codec:
 """
 import base64
 
-from .__common__ import *
+from codext.__common__ import *
 
 
 if PY3:

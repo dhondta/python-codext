@@ -4,8 +4,8 @@
 """
 from math import ceil, log
 
-from .__common__ import *
-from ._base import base, _get_charset, BaseError
+from _base import base, _get_charset, BaseError
+from codext.__common__ import *
 
 
 # base en/decoding functions for N a power of 2

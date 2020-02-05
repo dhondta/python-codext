@@ -1,5 +1,5 @@
 # -*- coding: UTF-8 -*-
-"""Module for enhancing codecs preimport.
+"""Codecs extension module.
 
 """
 from .__common__ import *

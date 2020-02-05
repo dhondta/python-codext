@@ -5,13 +5,14 @@ import os
 import re
 import sys
 from functools import wraps
+from importlib import import_module
 from six import binary_type, string_types, text_type
 from types import FunctionType
 try:  # Python3
     from inspect import getfullargspec
 except ImportError:
     from inspect import getargspec as getfullargspec
-try:
+try: # Python3
     from importlib import reload
 except ImportError:
     pass
@@ -163,10 +164,17 @@ def reset():
     Reset codext's local registry of search functions.
     """
     clear()
-    for f in os.listdir(os.path.dirname(__file__)):
-        if not f.endswith(".py") or f.startswith("_"):
+    tmp = os.getcwd()
+    wd = os.path.dirname(__file__)
+    for root, _, files in os.walk(wd):
+        if root.split(os.sep)[-1].startswith("_"):
             continue
-        reload(__import__(f[:-3], globals(), locals(), [], 1))
+        for f in files:
+            if not f.endswith(".py") or f.startswith("_"):
+                continue
+            os.chdir(root)
+            reload(import_module(f[:-3]))
+            os.chdir(tmp)
 codecs.reset = reset
 
 

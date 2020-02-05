@@ -7,7 +7,7 @@ This codec:
 - decodes file content to str (read)
 - encodes file content from str to bytes (write)
 """
-from .__common__ import *
+from codext.__common__ import *
 
 
 def _xorn(text, n=1):

@@ -6,7 +6,7 @@
 from unittest import TestCase
 
 from codext.__common__ import *
-from codext.base import base
+from codext.base.baseN import base
 
 
 class TestCodecsBase(TestCase):

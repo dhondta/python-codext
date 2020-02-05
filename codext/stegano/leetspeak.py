@@ -12,7 +12,7 @@ try:                 # Python 2
 except ImportError:  # Python 3
     maketrans = str.maketrans
 
-from .__common__ import *
+from codext.__common__ import *
 
 
 alph      = "abeiostABEIOSTZ", "483105748310572"
