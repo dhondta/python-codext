@@ -27,6 +27,23 @@ This encoding relies on the `base64` library and is only supported in Python 3.
 
 -----
 
+### Braille
+
+It supports letters, digits and some special characters.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`braille` | braille <-> text | none | Python 3 only
+
+```python
+>>> codext.encode("this is a test", "braille")
+'⠞⠓⠊⠎⠀⠊⠎⠀⠁⠀⠞⠑⠎⠞'
+>>> codext.decode("⠞⠓⠊⠎⠀⠊⠎⠀⠁⠀⠞⠑⠎⠞", "braille")
+'this is a test'
+```
+
+-----
+
 ### DNA
 
 This implements the 8 methods of ATGC nucleotides following the rule of complementary pairing, according the literature about coding and computing of DNA sequences.
