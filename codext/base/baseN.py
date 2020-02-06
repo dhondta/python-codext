@@ -9,9 +9,9 @@ These codecs:
 """
 from string import ascii_lowercase as lower, ascii_uppercase as upper, digits
 
-from _base import base
-from _base2n import base2n
-from codext.__common__ import *
+from ..__common__ import *
+from ._base import base
+from ._base2n import base2n
 
 
 B2 = {r'': "01", r'[-_]inv(erted)?': "10"}

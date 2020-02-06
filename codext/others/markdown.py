@@ -8,7 +8,7 @@ This codec:
 """
 from markdown2 import markdown
 
-from codext.__common__ import *
+from ..__common__ import *
 
 
 def markdown_encode(mdtext, errors="strict"):

@@ -12,7 +12,7 @@ This codec:
 
 Reference: http://www.cryptomuseum.com/crypto/mehano/barbie/
 """
-from codext.__common__ import *
+from ..__common__ import *
 
 
 REPLACE_CHAR = "?"

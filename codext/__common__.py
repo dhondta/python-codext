@@ -20,7 +20,9 @@ except ImportError:
 
 __all__ = ["add", "b", "clear", "codecs", "ensure_str", "re", "register",
            "remove", "reset", "s2i", "PY3"]
+CODECS_REGISTRY = None
 PY3 = sys.version[0] == "3"
+__codecs_registry = []
 
 
 isb = lambda s: isinstance(s, binary_type)
@@ -163,18 +165,16 @@ def reset():
     """
     Reset codext's local registry of search functions.
     """
+    global CODECS_REGISTRY, __codecs_registry
     clear()
-    tmp = os.getcwd()
-    wd = os.path.dirname(__file__)
-    for root, _, files in os.walk(wd):
-        if root.split(os.sep)[-1].startswith("_"):
-            continue
-        for f in files:
-            if not f.endswith(".py") or f.startswith("_"):
-                continue
-            os.chdir(root)
-            reload(import_module(f[:-3]))
-            os.chdir(tmp)
+    for pkg in ["base", "crypto", "languages", "others", "stegano"]:
+        reload(import_module("codext." + pkg))
+    # backup codext's registry
+    if CODECS_REGISTRY is None:
+        CODECS_REGISTRY = __codecs_registry[:]
+    # restore codext's registry
+    else:
+        __codecs_registry = CODECS_REGISTRY[:]
 codecs.reset = reset
 
 

@@ -7,7 +7,7 @@ This codec:
 - decodes file content to str (read)
 - encodes file content from str to bytes (write)
 """
-from codext.__common__ import *
+from ..__common__ import *
 
 
 ENCMAP = {

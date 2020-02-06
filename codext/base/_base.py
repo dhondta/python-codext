@@ -7,7 +7,7 @@ from six import integer_types, string_types
 from string import printable
 from types import FunctionType
 
-from codext.__common__ import *
+from ..__common__ import *
 
 
 # generic base en/decoding functions

@@ -13,7 +13,7 @@ try:                 # Python 2
 except ImportError:  # Python 3
     maketrans = str.maketrans
 
-from codext.__common__ import *
+from ..__common__ import *
 
 
 def _rotn(text, n=13):
