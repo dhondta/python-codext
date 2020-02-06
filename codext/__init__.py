@@ -2,6 +2,8 @@
 """Codecs extension module.
 
 """
+from six import b, ensure_str
+
 from .__common__ import *
 from .__info__ import __author__, __copyright__, __license__, __version__
 
@@ -43,19 +45,19 @@ def main():
     parser.add_argument("-o", "--output-file", dest="outfile")
     args = parser.parse_args()
     # handle input file or stdin
-    if os.path.isfile(args.infile):
-        with open(args.infile) as f:
+    if args.infile:
+        with open(args.infile, 'rb') as f:
             c = f.read()
     else:
-        c = ""
+        c = b("")
         for line in __stdin_pipe():
-            c += codecs.encode(line, errors=args.errors)
+            c += line
     # encode or decode
-    c = getattr(codext, ["encode", "decode"][args.decode])\
+    c = getattr(codecs, ["encode", "decode"][args.decode])\
         (c, args.encoding, args.errors)
     # hanbdle output file or stdout
-    if args.outfile is None:
-        print(c)
-    else:
-        with open(args.outfile, 'w') as f:
+    if args.outfile:
+        with open(args.outfile, 'wb') as f:
             f.write(c)
+    else:
+        print(ensure_str(c))

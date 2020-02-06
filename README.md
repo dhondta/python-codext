@@ -16,6 +16,7 @@ This library extends the native `codecs` library and provides some new encodings
 `ascii85` | Ascii85 <-> text | Python 3 only
 `barbie-N` | Barbie <-> text | aka Barbie Typewriter (N belongs to [1, 4])
 `baseXX` | BaseXX <-> text | see [base encodings](https://python-codext.readthedocs.io/en/latest/base.html)
+`braille` | braille <-> text | Python 3 only
 `dna-N` | DNA-N <-> text | implements the 8 rules of DNA sequences (N belongs to [1,8])
 `leetspeak` | leetspeak <-> text | based on minimalistic elite speaking rules
 `markdown` | markdown --> HTML | unidirectional
@@ -30,10 +31,36 @@ This library extends the native `codecs` library and provides some new encodings
 This library is available on [PyPi](https://pypi.python.org/pypi/codext/) and can be simply installed using Pip:
 
 ```sh
-pip install codext
+$ pip install codext
 ```
 
-## Usage
+or
+
+```sh
+$ pip3 install codext
+```
+
+**Note**: Some more encodings are available when installing in Python 3.
+
+## Usage (from terminal)
+
+```sh
+$ codext dna-1 -i test.txt
+GTGAGCGGGTATGTGA
+$ echo -en "test" | codext morse
+- . ... -
+```
+
+Python 3 (includes Ascii85, Base85, Base100 and braille):
+
+```sh
+$ echo -en "test" | codext braille
+⠞⠑⠎⠞
+$ echo -en "test" | codext base100
+👫👜👪👫
+```
+
+## Usage (within Python)
 
 Example with Base58:
 
