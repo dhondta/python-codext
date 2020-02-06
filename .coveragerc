@@ -1,7 +1,8 @@
 [run]
-source = asciistuff
+source = codext
 omit =
-    asciistuff/__info__.py
+    codext/__info__.py
+    codext/**/__init__.py
     tests/*
 
 [report]
