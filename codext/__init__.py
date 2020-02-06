@@ -2,7 +2,7 @@
 """Codecs extension module.
 
 """
-from six import b, ensure_str
+from six import b, binary_type, text_type
 
 from .__common__ import *
 from .__info__ import __author__, __copyright__, __license__, __version__
@@ -60,4 +60,9 @@ def main():
         with open(args.outfile, 'wb') as f:
             f.write(c)
     else:
-        print(ensure_str(c))
+        if PY3:
+            try:
+                c = c.decode("utf-8")
+            except:
+                c = c.decode("latin-1")
+        print(c)
