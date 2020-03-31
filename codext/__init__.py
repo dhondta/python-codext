@@ -43,6 +43,8 @@ def main():
                         help="ignore|replace|strict")
     parser.add_argument("-i", "--input-file", dest="infile")
     parser.add_argument("-o", "--output-file", dest="outfile")
+    parser.add_argument("-s", "--strip-newlines", action="store_true",
+                        dest="strip")
     args = parser.parse_args()
     # handle input file or stdin
     if args.infile:
@@ -53,6 +55,8 @@ def main():
         for line in __stdin_pipe():
             c += line
     # encode or decode
+    if args.strip:
+        c = re.sub("\r?\n", "", c)
     c = getattr(codecs, ["encode", "decode"][args.decode])\
         (c, args.encoding, args.errors)
     # hanbdle output file or stdout
