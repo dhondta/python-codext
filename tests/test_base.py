@@ -112,6 +112,14 @@ class TestCodecsBase(TestCase):
         self.assertEqual(codecs.decode(B16, "base16", "ignore"), STR)
         self.assertEqual(codecs.decode(B16, "base16", "replace"), STR + "\x00")
         self.assertRaises(ValueError, codecs.decode, B16, "base16", "BAD")
+        STR2 = "=:;"
+        B16_1 = "3d3a3b"
+        B16_2 = "3D3A3B"
+        B16_3 = "3D3a3B"  # mixed case: should fail
+        self.assertEqual(codecs.encode(STR2, "hex"), B16_2)
+        self.assertEqual(codecs.decode(B16_1, "hex"), STR2)
+        self.assertEqual(codecs.decode(B16_2, "hex"), STR2)
+        self.assertRaises(ValueError, codecs.decode, B16_3, "hex")
     
     def test_codec_base32(self):
         B32 = "ORUGS4ZANFZSAYJAORSXG5A="
