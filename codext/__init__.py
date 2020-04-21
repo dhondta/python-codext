@@ -2,15 +2,15 @@
 """Codecs extension module.
 
 """
+from __future__ import print_function
 from six import b, binary_type, text_type
 
 from .__common__ import *
-from .__info__ import __author__, __copyright__, __license__, __version__
+from .__info__ import __author__, __copyright__, __email__, __license__, __source__, __version__
 
 
 __all__ = ["add", "clear", "decode", "encode", "lookup",  "open", "register",
            "remove", "reset"]
-
 
 decode   = codecs.decode
 encode   = codecs.encode
@@ -35,16 +35,26 @@ def __stdin_pipe():
 
 def main():
     import argparse, os
-    parser = argparse.ArgumentParser()
+    descr = "Codecs Extension (CodExt) {}\n\nAuthor   : {} ({})\nCopyright: {}\nLicense  : {}\nSource   : {}\n" \
+            "\nThis tool allows to encode/decode input strings/files with an extended set of codecs.\n\n" \
+            .format(__version__, __author__, __email__, __copyright__, __license__, __source__)
+    examples = "usage examples:\n- " + "\n- ".join([
+        "codext -d base32 -i file.b32",
+        "codext morse < to_be_encoded.txt",
+        "echo \"test\" | codext base100",
+        "echo -en \"test\" | codext braille -o test.braille",
+        "codext base64 < to_be_encoded.txt > text.b64",
+        "echo -en \"test\" | codext base64 | codext base32",
+        "echo -en \"mrdvm6teie6t2cq=\" | codext upper | codext -d base32 | codext -d base64",
+    ])
+    parser = argparse.ArgumentParser(description=descr, epilog=examples, formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument("encoding")
-    parser.add_argument("-d", "--decode", action="store_true")
-    parser.add_argument("-e", "--errors", default="strict",
-                        choices=["ignore", "replace", "strict"],
-                        help="ignore|replace|strict")
-    parser.add_argument("-i", "--input-file", dest="infile")
-    parser.add_argument("-o", "--output-file", dest="outfile")
-    parser.add_argument("-s", "--strip-newlines", action="store_true",
-                        dest="strip")
+    parser.add_argument("-d", "--decode", action="store_true", help="set decode mode")
+    parser.add_argument("-e", "--errors", default="strict", choices=["ignore", "replace", "strict"],
+                        help="error handling")
+    parser.add_argument("-i", "--input-file", dest="infile", help="input file (if none, take stdin as input)")
+    parser.add_argument("-o", "--output-file", dest="outfile", help="output file (if none, display result to stdout)")
+    parser.add_argument("-s", "--strip-newlines", action="store_true", dest="strip", help="strip newlines from input")
     args = parser.parse_args()
     # handle input file or stdin
     if args.infile:
@@ -56,9 +66,8 @@ def main():
             c += line
     # encode or decode
     if args.strip:
-        c = re.sub("\r?\n", "", c)
-    c = getattr(codecs, ["encode", "decode"][args.decode])\
-        (c, args.encoding, args.errors)
+        c = re.sub(r"\r?\n", "", c)
+    c = getattr(codecs, ["encode", "decode"][args.decode])(c, args.encoding, args.errors)
     # hanbdle output file or stdout
     if args.outfile:
         with open(args.outfile, 'wb') as f:
@@ -69,4 +78,4 @@ def main():
                 c = c.decode("utf-8")
             except:
                 c = c.decode("latin-1")
-        print(c)
+        print(c, end="")
