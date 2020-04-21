@@ -113,6 +113,7 @@ def base_decode(input, charset, errors="strict", exc=BaseEncodeError):
     :param exc:     exception to be raised in case of error
     """
     i, n = 0, len(charset)
+    input = re.sub(r"\s", "", input)
     for k, c in enumerate(input):
         try:
             i = i * n + charset.index(c)

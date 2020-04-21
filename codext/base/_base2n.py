@@ -75,6 +75,14 @@ def base2n_decode(string, charset, errors="strict", exc=Base2NDecodeError):
     :param exc:     exception to be raised in case of error
     """
     bs, r, n = "", "", len(charset)
+    # particular case: for hex, ensure the right case in the charset ; not that this way, if mixed cases are used, it
+    #                   will trigger an error (this is the expected behavior)
+    if n == 16:
+        if any(c in string for c in "abcdef"):
+            charset = charset.lower()
+        elif any(c in string for c in "ABCDEF"):
+            charset = charset.upper()
+    string = re.sub(r"\s", "", string)
     # find the number of bits for the given character set and the number of
     #  padding characters
     nb_in = int(log(n, 2))
