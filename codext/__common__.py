@@ -208,7 +208,7 @@ def add_map(ename, encmap, repl_char="?", sep="", ignore_case=False, no_error=Fa
                 case = ["upper", "lower"][any(c in "".join(smapdict.keys()) for c in "abcdefghijklmnopqrstuvwxyz")]
             # use the first mapped group from the mapping dictionary to determine token length ; this is useful e.g. for
             #  tokenizing a binary string when the text is to be converted as binary
-            tlen = len(list(smapdict.keys())[0])
+            tlen = len(list(set(smapdict.keys()) - {""})[0])
             if decode:
                 tmp = {}
                 # this has a meaning for encoding maps that could have clashes in encoded chars (e.g. Bacon's cipher ;
