@@ -9,8 +9,7 @@ from .__common__ import *
 from .__info__ import __author__, __copyright__, __email__, __license__, __source__, __version__
 
 
-__all__ = ["add", "clear", "decode", "encode", "lookup",  "open", "register",
-           "remove", "reset"]
+__all__ = ["add", "add_map", "clear", "decode", "encode", "lookup",  "open", "register", "remove", "reset"]
 
 decode   = codecs.decode
 encode   = codecs.encode
@@ -50,7 +49,7 @@ def main():
     parser = argparse.ArgumentParser(description=descr, epilog=examples, formatter_class=argparse.RawTextHelpFormatter)
     parser.add_argument("encoding")
     parser.add_argument("-d", "--decode", action="store_true", help="set decode mode")
-    parser.add_argument("-e", "--errors", default="strict", choices=["ignore", "replace", "strict"],
+    parser.add_argument("-e", "--errors", default="strict", choices=["ignore", "leave", "replace", "strict"],
                         help="error handling")
     parser.add_argument("-i", "--input-file", dest="infile", help="input file (if none, take stdin as input)")
     parser.add_argument("-o", "--output-file", dest="outfile", help="output file (if none, display result to stdout)")
