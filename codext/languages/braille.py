@@ -25,4 +25,4 @@ ENCMAP = {
 
 
 if PY3:
-    add_map("braille", ENCMAP)
+    add_map("braille", ENCMAP, ignore_case=True)

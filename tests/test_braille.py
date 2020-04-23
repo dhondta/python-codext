@@ -14,6 +14,7 @@ if PY3:
             STR = "this is a test"
             BRA = "⠞⠓⠊⠎⠀⠊⠎⠀⠁⠀⠞⠑⠎⠞"
             self.assertEqual(codecs.encode(STR, "braille"), BRA)
+            self.assertEqual(codecs.encode(STR, "braille"), codecs.encode(STR.upper(), "braille"))
             self.assertEqual(codecs.encode(b(STR), "braille"), b(BRA))
             self.assertEqual(codecs.decode(BRA, "braille"), STR)
             self.assertEqual(codecs.decode(b(BRA), "braille"), b(STR))
