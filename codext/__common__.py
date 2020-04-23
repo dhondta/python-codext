@@ -213,7 +213,7 @@ def add_map(ename, encmap, repl_char="?", sep="", ignore_case=False, no_error=Fa
                 tmp = {}
                 # this has a meaning for encoding maps that could have clashes in encoded chars (e.g. Bacon's cipher ;
                 #  I => abaaa but also J => abaaa, with the following, we keep I instead of letting J overwrite it)
-                for k, v in smapdict.items():
+                for k, v in sorted(smapdict.items()):
                     if v not in tmp.keys():
                         tmp[v] = k
                 smapdict = tmp
