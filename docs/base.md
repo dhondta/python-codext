@@ -1,3 +1,7 @@
+`codext` defines a far broader set of Base-encodings than in the original library.
+
+-----
+
 ### Classical base 2^N encodings
 
 This namely adds the classical BaseXX encodings like 16 (hexadecimal) and 32 (RFC 3548), which are not available in the native codecs.

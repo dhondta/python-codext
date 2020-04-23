@@ -33,7 +33,7 @@ It support only letters.
 
 **Codec** | **Conversions** | **Aliases** | **Comment**
 :---: | :---: | --- | ---
-`bacon` | bacon <-> text | `bacon-cipher`, `baconian_cipher`, `bacon-01` | Dynamic tokens mapping ; we can define a mapping of encoding's tokens (original tokens: `ab`)
+`bacon` | Bacon <-> text | `bacon-cipher`, `baconian_cipher`, `bacon-01` | Dynamic tokens mapping ; we can define a mapping of encoding's tokens (original tokens: `ab`)
 
 ```python
 >>> codext.encode("this is a test", "bacon")
@@ -52,7 +52,7 @@ It supports letters, digits and some special characters.
 
 **Codec** | **Conversions** | **Aliases** | **Comment**
 :---: | :---: | --- | ---
-`braille` | braille <-> text | none | Python 3 only
+`braille` | Braille <-> text | none | Python 3 only
 
 ```python
 >>> codext.encode("this is a test", "braille")
@@ -96,7 +96,7 @@ CACTCGGTCGGCCATATGTTCGGCCATATGTTCGTCTGTTCACTCGCCCATACACT
 
 **Codec** | **Conversions** | **Aliases** | **Comment**
 :---: | :---: | --- | ---
-`leetspeak` | leetspeak <-> text | `leet`, `1337`, `leetspeak` | based on minimalistic elite speaking rules
+`leetspeak` | LeetSpeak <-> text | `leet`, `1337`, `leetspeak` | based on minimalistic elite speaking rules
 
 ```python
 >>> codext.encode("this is a test", "leetspeak")
@@ -117,7 +117,7 @@ This is only for "encoding" (converting) Markdown to HTML.
 
 **Codec** | **Conversions** | **Aliases** | **Comment**
 :---: | :---: | --- | ---
-`markdown` | markdown --> HTML | `markdown`, `Markdown`, `md` | unidirectional !
+`markdown` | Markdown --> HTML | `markdown`, `Markdown`, `md` | unidirectional !
 
 ```python
 >>> codext.encode("# Test\nparagraph", "markdown")
@@ -132,7 +132,7 @@ It supports of course letters and digits, but also a few special characters: `.,
 
 **Codec** | **Conversions** | **Aliases** | **Comment**
 :---: | :---: | --- | ---
-`morse` | morse <-> text | none | uses whitespace as a separator, dynamic tokens mapping ; we can define a mapping of encoding's tokens (original tokens: `/-.`)
+`morse` | Morse <-> text | none | uses whitespace as a separator, dynamic tokens mapping ; we can define a mapping of encoding's tokens (original tokens: `/-.`)
 
 ```python
 >>> codext.encode("this is a test", "morse")

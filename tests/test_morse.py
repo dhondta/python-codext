@@ -19,6 +19,7 @@ class TestCodecMorse(TestCase):
         TFILE = "test-codec-morse.txt"
         self.assertTrue(isinstance(codecs.encode(STR, "morse"), string_types))
         self.assertEqual(codecs.encode(STR, "morse"), MRS)
+        self.assertEqual(codecs.encode(STR, "morse"), codecs.encode(STR.upper(), "morse"))
         self.assertRaises(ValueError, codecs.encode, STRB, "morse")
         self.assertIsNotNone(codecs.encode(STRB, "morse", "replace"))
         self.assertIsNotNone(codecs.encode(STRB, "morse", "ignore"))

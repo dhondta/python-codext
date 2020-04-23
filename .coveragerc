@@ -10,6 +10,7 @@ exclude_lines =
     pragma: no cover
     if.*?__name__.*?==.*?.__main__.:
     def main\(\)\:
+    def __stdin_pipe\(\)\:
     except ImportError:
     except NameError:
     raise NotImplementedError
