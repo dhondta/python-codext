@@ -11,8 +11,7 @@ from codext.__common__ import *
 class TestCodecBarbie(TestCase):
     def test_codec_barbie(self):
         STR = "this is a test"
-        BRB = ["hstf tf i hafh", "sfhp hp t sips", "fpsu su h ftuf",
-               "pufq fq s phqp"]
+        BRB = ["hstf tf i hafh", "sfhp hp t sips", "fpsu su h ftuf", "pufq fq s phqp"]
         self.assertRaises(LookupError, codecs.encode, STR, "barbie")
         for i in range(4):
             self.assertEqual(codecs.encode(STR, "barbie{}".format(i+1)), BRB[i])

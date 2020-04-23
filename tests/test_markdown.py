@@ -16,8 +16,7 @@ class TestCodecMarkdown(TestCase):
         MD  = "# Test title\n\nTest paragraph"
         TFILE = "test-codec-markdown.html"
         self.assertTrue(isinstance(codecs.encode(MD, "markdown"), string_types))
-        self.assertTrue(not PY3 or
-                      isinstance(codecs.encode(b(MD), "markdown"), binary_type))
+        self.assertTrue(not PY3 or isinstance(codecs.encode(b(MD), "markdown"), binary_type))
         self.assertEqual(codecs.encode(MD, "markdown"), HTM)
         self.assertRaises(NotImplementedError, codecs.decode, MD, "markdown")
         with codecs.open(TFILE, 'w', encoding="markdown") as f:

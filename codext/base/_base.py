@@ -38,13 +38,10 @@ def _generate_charset(n):
 
 def _get_charset(charset, p=""):
     """
-    Charaters set selection function. It allows to define charsets in many
-     different ways.
+    Characters set selection function. It allows to define charsets in many different ways.
     
-    :param charset: charset object, can be a string (the charset itself), a
-                     function (that chooses the right charset depending on the
-                     input parameter) or a dictionary (either by exact key or by
-                     pattern matching)
+    :param charset: charset object, can be a string (the charset itself), a function (that chooses the right charset
+                     depending on the input parameter) or a dictionary (either by exact key or by pattern matching)
     :param p:       the parameter for choosing the charset
     """
     # case 1: charset is a function, so return its result
@@ -53,12 +50,11 @@ def _get_charset(charset, p=""):
     # case 2: charset is a string, so return it
     elif isinstance(charset, string_types):
         return charset
-    # case 3: charset is a dict with keys '' and 'inv', typically for a charset
-    #          using lowercase and uppercase characters that can be inverted
+    # case 3: charset is a dict with keys '' and 'inv', typically for a charset using lowercase and uppercase characters
+    #          that can be inverted
     elif isinstance(charset, dict) and list(charset.keys()) == ["", "inv"]:
         return charset["inv" if re.match(r"[-_]inv(erted)?$", p) else ""]
-    # case 4: charset is a dict, but not with the specific keys '' and 'inv', so
-    #          consider it as pattern-charset pairs
+    # case 4: charset is a dict, but not with the specific keys '' and 'inv', so consider it as pattern-charset pairs
     elif isinstance(charset, dict):
         # try to handle [p]arameter as a simple key
         try:
@@ -74,8 +70,7 @@ def _get_charset(charset, p=""):
                 continue
             if re.match(pattern, p):
                 return cset
-        # special case: the given [p]arameter can be the charset itself if
-        #                it has the right length
+        # special case: the given [p]arameter can be the charset itself if it has the right length
         p = re.sub(r"^[-_]+", "", p)
         if len(p) == n:
             return p
@@ -119,8 +114,7 @@ def base_decode(input, charset, errors="strict", exc=BaseEncodeError):
             i = i * n + charset.index(c)
         except ValueError:
             if errors == "strict":
-                raise exc("'base' codec can't decode character '{}' in position"
-                          " {}".format(c, k))
+                raise exc("'base' codec can't decode character '{}' in position {}".format(c, k))
             elif errors in ["ignore", "replace"]:
                 continue
             else:
@@ -128,14 +122,13 @@ def base_decode(input, charset, errors="strict", exc=BaseEncodeError):
     return base_encode(i, [chr(j) for j in range(256)], errors, exc)
 
 
-def base(charset, pattern=None, pow2=False,
-         encode_template=base_encode, decode_template=base_decode):
+def base(charset, pattern=None, pow2=False, encode_template=base_encode, decode_template=base_decode):
     """
     Base-N codec factory.
     
     :param charset: charset selection function
-    :param pattern: matching pattern for the codec name (first capturing group
-                     is used as the parameter for selecting the charset)
+    :param pattern: matching pattern for the codec name (first capturing group is used as the parameter for selecting
+                     the charset)
     :param pow2:    whether the base codec's N is a power of 2
     """
     is_n = isinstance(charset, int)

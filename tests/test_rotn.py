@@ -32,8 +32,7 @@ class TestCodecsRotN(TestCase):
             old = s
             s = codecs.encode(s, "rot1")
             self.assertEqual(codecs.decode(s, "rot1"), old)
-        self.assertTrue(not PY3 or
-                        isinstance(codecs.encode(b(STR), "rot1"), binary_type))
+        self.assertTrue(not PY3 or isinstance(codecs.encode(b(STR), "rot1"), binary_type))
         with codecs.open(TFILE, 'w', encoding="rot-3") as f:
             f.write(b(STR))
         with open(TFILE) as f:

@@ -8,10 +8,6 @@ This codec:
 - encodes file content from str to bytes (write)
 """
 from string import ascii_lowercase as LC, ascii_uppercase as UC
-try:                 # Python 2
-    from string import maketrans
-except ImportError:  # Python 3
-    maketrans = str.maketrans
 
 from ..__common__ import *
 
@@ -36,6 +32,5 @@ def rot_decode(i):
     return decode
 
 
-# note: the integer behind "rot" is captured for sending to the parametrizable
-#        encode and decode functions "rotn_**code"
+# note: the integer behind "rot" is captured for sending to the parametrizable encode and decode functions "rotn_**code"
 add("rotN", rot_encode, rot_decode, r"(?i)rot[-_]?([1-9]|1[0-9]|2[0-5])$")

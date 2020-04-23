@@ -26,8 +26,8 @@ def base2n(charset, pattern=None):
     Base-N codec factory for N a power of 2.
     
     :param charset: charset selection function
-    :param pattern: matching pattern for the codec name (first capturing group
-                     is used as the parameter for selecting the charset)
+    :param pattern: matching pattern for the codec name (first capturing group is used as the parameter for selecting
+                     the charset)
     """
     base(charset, pattern, True, base2n_encode, base2n_decode)
 
@@ -83,12 +83,10 @@ def base2n_decode(string, charset, errors="strict", exc=Base2NDecodeError):
         elif any(c in string for c in "ABCDEF"):
             charset = charset.upper()
     string = re.sub(r"\s", "", string)
-    # find the number of bits for the given character set and the number of
-    #  padding characters
+    # find the number of bits for the given character set and the number of padding characters
     nb_in = int(log(n, 2))
     n_pad = len(string) - len(string.rstrip("="))
-    # iterate over the characters, mapping them to the character set and
-    #  converting the resulting bits to 8-bits characters
+    # iterate over the characters, mapping them to the character set and converting the resulting bits to 8-bits chars
     for i, c in enumerate(string):
         if c == "=":
             bs += "0" * nb_in
@@ -97,20 +95,17 @@ def base2n_decode(string, charset, errors="strict", exc=Base2NDecodeError):
                 bs += ("{:0>%d}" % nb_in).format(bin(charset.index(c))[2:])
             except ValueError:
                 if errors == "strict":
-                    raise exc("'base' codec can't decode character '{}' in "
-                              "position {}".format(c, i))
+                    raise exc("'base' codec can't decode character '{}' in position {}".format(c, i))
                 elif errors == "replace":
                     bs += "0" * nb_in
                 elif errors == "ignore":
                     continue
                 else:
-                    raise ValueError("Unsupported error handling {}"
-                                     .format(errors))
+                    raise ValueError("Unsupported error handling {}".format(errors))
         if len(bs) > 8:
             r += chr(int(bs[:8], 2))
             bs = bs[8:]
-    # if the number of bits is not multiple of 8 bits, it could mean a bad
-    #  padding
+    # if the number of bits is not multiple of 8 bits, it could mean a bad padding
     if len(bs) != 8:
         if errors == "strict":
             raise Base2NDecodeError("Incorrect padding")

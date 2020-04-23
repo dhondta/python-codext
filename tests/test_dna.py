@@ -28,7 +28,7 @@ class TestCodecDNA(TestCase):
             self.assertEqual(codecs.decode(DNA[i], enc), STR)
             self.assertEqual(codecs.decode(b(DNA[i]), enc), b(STR))
             self.assertRaises(ValueError, codecs.decode, "ABC", enc)
-        self.assertEqual(codecs.decode("ABC", "dna-2", errors="replace"),
-                         "[00??01]")
+        self.assertEqual(codecs.decode("ABC", "dna-2", errors="replace"), "[00??01]")
         self.assertEqual(codecs.decode("ABC", "dna-1", errors="ignore"), "\x02")
         self.assertRaises(ValueError, codecs.decode, "B", "dna-8", errors="BAD")
+        self.assertRaises(LookupError, codecs.decode, "B", "dna-123")

@@ -21,7 +21,6 @@ def xor_byte_encode(i):
     return encode
 
 
-# note: the integer behind "xor" is captured for sending to the parametrizable
-#        encode and decode functions "xor_byte_**code"
-add("xorN", xor_byte_encode, xor_byte_encode,
-    r"(?i)xor[-_]?([1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])$")
+# note: the integer (belongs to ]0,256[) behind "xor" is captured for sending to the parametrizable encode and decode
+#        functions "xor_byte_**code"
+add("xorN", xor_byte_encode, xor_byte_encode, r"(?i)xor[-_]?([1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])$")

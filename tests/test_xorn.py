@@ -33,8 +33,7 @@ class TestCodecsXORN(TestCase):
             old = s
             s = codecs.encode(s, "xor1")
             self.assertEqual(codecs.decode(s, "xor1"), old)
-        self.assertTrue(not PY3 or
-                        isinstance(codecs.encode(b(STR), "xor1"), binary_type))
+        self.assertTrue(not PY3 or isinstance(codecs.encode(b(STR), "xor1"), binary_type))
         with codecs.open(TFILE, 'w', encoding="xor-3") as f:
             f.write(b(STR))
         with open(TFILE) as f:

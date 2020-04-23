@@ -133,8 +133,7 @@ class TestCodecsBase(TestCase):
         self.assertEqual(codecs.decode(B32, "z_base_32"), STR)
         self.assertEqual(codecs.decode(b(B32), "zbase32"), b(STR))
         self.assertRaises(ValueError, codecs.decode, B32.rstrip("="), "zbase32")
-        self.assertRaises(ValueError, codecs.decode, B32.rstrip("="), "zbase32",
-                          "BAD")
+        self.assertRaises(ValueError, codecs.decode, B32.rstrip("="), "zbase32", "BAD")
     
     def test_codec_base36(self):
         B36 = "4WMHTK6UZL044O91NKCEB8"
@@ -205,9 +204,8 @@ class TestCodecsBase(TestCase):
     
     def test_codec_base100(self):
         if PY3:
-            B100 = "\U0001f46b\U0001f45f\U0001f460\U0001f46a\U0001f417" \
-                   "\U0001f460\U0001f46a\U0001f417\U0001f458\U0001f417" \
-                   "\U0001f46b\U0001f45c\U0001f46a\U0001f46b"
+            B100 = "\U0001f46b\U0001f45f\U0001f460\U0001f46a\U0001f417\U0001f460\U0001f46a\U0001f417\U0001f458" \
+                   "\U0001f417\U0001f46b\U0001f45c\U0001f46a\U0001f46b"
             self.assertEqual(codecs.encode(STR, "base100"), B100)
             self.assertEqual(codecs.encode(b(STR), "base100"), b(B100))
             self.assertEqual(codecs.decode(B100, "base100"), STR)

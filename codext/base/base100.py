@@ -1,8 +1,7 @@
 # -*- coding: UTF-8 -*-
 """Base100 Codec - base100 content encoding.
 
-Note: only works in Python3 ; strongly inspired from
-       https://github.com/MasterGroosha/pybase100
+Note: only works in Python3 ; strongly inspired from https://github.com/MasterGroosha/pybase100
 
 This codec:
 - en/decodes strings from str to str
@@ -33,10 +32,8 @@ if PY3:
     
     def base100_decode(input, errors='strict'):
         input = b(input)
-        print(input)
         if len(input) % 4 != 0:
-            raise Base100DecodeError("Bad input (length should be multiple of"
-                                     " 4)")
+            raise Base100DecodeError("Bad input (length should be multiple of 4)")
         r = [None] * (len(input) // 4)
         for i, c in enumerate(input):
             if i % 4 == 2:
@@ -46,5 +43,4 @@ if PY3:
         return bytes(r), len(input)
     
     
-    add("base100", base100_encode, base100_decode,
-        r"(?i)^(?:base[-_]?100|emoji)$")
+    add("base100", base100_encode, base100_decode, r"(?i)^(?:base[-_]?100|emoji)$")

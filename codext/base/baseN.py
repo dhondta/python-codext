@@ -35,13 +35,12 @@ base2n(B16, r"(?i)^(?:base[-_]?16|hex)(|[-_]inv(?:erted)?)$")
 
 
 B32 = {
-    r'': upper + "234567",
-    r'[-_]inv(erted)?$': "234567" + upper,
+    r'':                               upper + "234567",
+    r'[-_]inv(erted)?$':               "234567" + upper,
     r'(?:[-_]ext(?:ended)?)?[-_]hex$': digits + upper[:22],
-    r'[-_]geohash': digits + "bcdefghjkmnpqrstuvwxyz",
+    r'[-_]geohash':                    digits + "bcdefghjkmnpqrstuvwxyz",
 }
-base2n(B32, r"(?i)^base[-_]?32(|[-_]inv(?:erted)?|"
-          r"(?:[-_]ext(?:ended)?)?[-_]hex|[-_]geohash)$")
+base2n(B32, r"(?i)^base[-_]?32(|[-_]inv(?:erted)?|(?:[-_]ext(?:ended)?)?[-_]hex|[-_]geohash)$")
 ZB32 = {'': "ybndrfg8ejkmcpqxot1uwisza345h769"}
 base2n(ZB32, r"(?i)^z[-_]?base[-_]?32$")
 
@@ -51,15 +50,11 @@ base(B36, r"(?i)^base[-_]?36(|[-_]inv(?:erted)?)$")
 
 
 B58 = {
-    r'(|[-_](bc|bitcoin))$': "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopq"
-                             "rstuvwxyz",
-    r'[-_](rp|ripple)$': "rpshnaf39wBUDNEGHJKLM4PQRST7VWXYZ2bcdeCg65jkm8oFqi1tu"
-                         "vAxyz",
-    r'[-_](fl|flickr|short[-]?url|url)$': "123456789abcdefghijkmnopqrstuvwxyzAB"
-                                          "CDEFGHJKLMNPQRSTUVWXYZ"
+    r'(|[-_](bc|bitcoin))$':              "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz",
+    r'[-_](rp|ripple)$':                  "rpshnaf39wBUDNEGHJKLM4PQRST7VWXYZ2bcdeCg65jkm8oFqi1tuvAxyz",
+    r'[-_](fl|flickr|short[-]?url|url)$': "123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ",
 }
-base(B58, r"(?i)^base[-_]?58(|[-_](bc|bitcoin|rp|ripple|fl|flickr|"
-          r"short[-]?url|url))$")
+base(B58, r"(?i)^base[-_]?58(|[-_](bc|bitcoin|rp|ripple|fl|flickr|short[-]?url|url))$")
 
 
 B62 = {'': digits + upper + lower, 'inv': digits + lower + upper}
@@ -67,8 +62,8 @@ base(B62, r"(?i)^base[-_]?62(|[-_]inv(?:erted)?)$")
 
 
 B64 = {
-    r'': upper + lower + digits + "+/",
-    r'[-_]inv(erted)?$': lower + upper + digits + "+/",
+    r'':                       upper + lower + digits + "+/",
+    r'[-_]inv(erted)?$':       lower + upper + digits + "+/",
     r'[-_](file|url)(safe)?$': upper + lower + digits + "-_",
 }
 base2n(B64, r"(?i)^base[-_]?64(|[-_]inv(?:erted)?|[-_](?:file|url)(?:safe)?)$")
@@ -76,16 +71,15 @@ base2n(B64, r"(?i)^base[-_]?64(|[-_]inv(?:erted)?|[-_](?:file|url)(?:safe)?)$")
 
 #FIXME
 #B85 = {
-#    r'': "!\"#$%&'()*+,-./" + digits + ":;<=>?@" + upper + "[\\]^_`" + \
-#         lower[:21],
+#    r'':               "!\"#$%&'()*+,-./" + digits + ":;<=>?@" + upper + "[\\]^_`" + lower[:21],
 #    r'[-_]z(eromq)?$': digits + upper + lower + ".-:+=^!/*?&<>()[]{}@%$#",
-#    r'[-_]rfc1924$': digits + upper + lower + "!#$%&()*+-;<=>?@^_`{|}~",
+#    r'[-_]rfc1924$':   digits + upper + lower + "!#$%&()*+-;<=>?@^_`{|}~",
 #}
 #base(B85, r"(?i)^(?:ascii|base)[-_]?85(|[-_](?:z(?:eromq)?|rfc1924))$")
 
 
 B91 = {
-    '': upper + lower + digits + "!#$%&()*+,./:;<=>?@[]^_`{|}~\"",
+    '':    upper + lower + digits + "!#$%&()*+,./:;<=>?@[]^_`{|}~\"",
     'inv': lower + upper + digits + "!#$%&()*+,./:;<=>?@[]^_`{|}~\"",
 }
 base(B91, r"(?i)^base[-_]?91(|[-_]inv(?:erted)?)$")
