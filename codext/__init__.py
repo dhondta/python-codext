@@ -45,9 +45,11 @@ def main():
         "codext base64 < to_be_encoded.txt > text.b64",
         "echo -en \"test\" | codext base64 | codext base32",
         "echo -en \"mrdvm6teie6t2cq=\" | codext upper | codext -d base32 | codext -d base64",
+        "echo -en \"test\" | codext upper reverse base32 | codext -d base32 reverse lower",
+        "echo -en \"test\" | codext upper reverse base32 base64 morse",
     ])
     parser = argparse.ArgumentParser(description=descr, epilog=examples, formatter_class=argparse.RawTextHelpFormatter)
-    parser.add_argument("encoding")
+    parser.add_argument("encoding", nargs="+", help="list of encodings to apply")
     parser.add_argument("-d", "--decode", action="store_true", help="set decode mode")
     parser.add_argument("-e", "--errors", default="strict", choices=["ignore", "leave", "replace", "strict"],
                         help="error handling")
@@ -63,11 +65,12 @@ def main():
         c = b("")
         for line in __stdin_pipe():
             c += line
-    # encode or decode
     if args.strip:
         c = re.sub(r"\r?\n", "", c)
-    c = getattr(codecs, ["encode", "decode"][args.decode])(c, args.encoding, args.errors)
-    # hanbdle output file or stdout
+    # encode or decode
+    for encoding in args.encoding:
+        c = getattr(codecs, ["encode", "decode"][args.decode])(c, encoding, args.errors)
+    # handle output file or stdout
     if args.outfile:
         with open(args.outfile, 'wb') as f:
             f.write(c)

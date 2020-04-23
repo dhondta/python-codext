@@ -15,11 +15,18 @@ These "encodings" are simple string transformations, mostly using `str`'s method
 `title` | text --> titled text |  | 
 `uppercase` | text --> uppercase text | `upper` | 
 
-Of course, these "encodings" have no interest while using them in Python as the `str` methods can be called. It can be useful while using `codext` from the terminal.
+Of course, these "encodings" have no interest while using them in Python as the `str` methods can be called. It can be useful while using `codext` from the terminal (see [*CLI tool*](cli.md)).
 
-Example:
+A simple example:
 
 ```sh
 $ echo -en "test string" | codext reverse | codext upper | codext hex
+474E495254532054534554
+```
+
+Or using encodings chaining:
+
+```sh
+$ echo -en "test string" | codext reverse upper hex
 474E495254532054534554
 ```

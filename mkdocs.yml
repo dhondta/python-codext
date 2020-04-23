@@ -8,6 +8,7 @@ pages:
   - 'Base encodings': base.md
   - 'Other encodings': encodings.md
   - 'String manipulations': manipulations.md
+  - 'CLI tool': cli.md
 extra:
   mailto: alexandre.dhondt@gmail.com
 theme: readthedocs
