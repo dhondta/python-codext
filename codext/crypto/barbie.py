@@ -1,8 +1,8 @@
 # -*- coding: UTF-8 -*-
 """Barbie typewriter Codec - barbie content encoding.
 
-While Barbie typewriter is more a cipher, its very limited key size of 2 bits
- makes it easy to turn into four variants of the same encoding.
+While Barbie typewriter is more a cipher, its very limited key size of 2 bits makes it easy to turn into four variants
+ of the same encoding.
 
 This codec:
 - en/decodes strings from str to str
@@ -15,7 +15,6 @@ Reference: http://www.cryptomuseum.com/crypto/mehano/barbie/
 from ..__common__ import *
 
 
-REPLACE_CHAR = "?"
 STD = [
     "abcdefghijklmnopqrstuvABCDEFGHIJKLMNOPQRSTUVWXYZ0123456 \n\t",
     "icolapxstvybjeruknfhqg>FAUTCYOLVJDZINQKSEHG<.1PB5234067 \n\t",
@@ -30,70 +29,15 @@ SPEC = [
     "+ b ; ¢ - ¨ § £ ( m v / W j @ # ? M B € & . % ! ^ \" * , 2 ) E : \' = _",
     "% c ¢ + ¨ § £ € * j g ^ . v ? @ / Z F = \" N : & ! m # W 3 ( T , _ \' )",
 ]
+ENCMAP = []
+for i in range(4):
+    encmap = {}
+    for j, c in enumerate(STD[0]):
+        encmap[c] = STD[i+1][j]
+    spec = SPEC[i+1].split()
+    for j, c in enumerate(SPEC[0].split()):
+        encmap[c] = spec[j]
+    ENCMAP.append(encmap)
 
 
-class BarbieError(ValueError):
-    pass
-
-
-class BarbieDecodeError(BarbieError):
-    pass
-
-
-class BarbieEncodeError(BarbieError):
-    pass
-
-
-def barbie_encode(code):
-    def encode(text, errors="strict"):
-        std0, stdn = [c for c in STD[0]], [c for c in STD[code]]
-        spec0, specn = SPEC[0].split(), SPEC[code].split()
-        mapping = {d: e for d, e in zip(std0 + spec0, stdn + specn)}
-        r = ""
-        for i, c in enumerate(ensure_str(text)):
-            try:
-                r += mapping[c]
-            except KeyError:
-                if errors == "strict":
-                    raise BarbieEncodeError("'barbie' codec can't encode"
-                                            " character '{}' in position {}"
-                                            .format(c, i))
-                elif errors == "replace":
-                    r += REPLACE_CHAR
-                elif errors == "ignore":
-                    continue
-                else:
-                    raise ValueError("Unsupported error handling {}"
-                                     .format(errors))
-        return r, len(text)
-    return encode
-
-
-def barbie_decode(code):
-    def decode(text, errors="strict"):
-        std0, stdn = [c for c in STD[0]], [c for c in STD[code]]
-        spec0, specn = SPEC[0].split(), SPEC[code].split()
-        mapping = {e: d for d, e in zip(std0 + spec0, stdn + specn)}
-        r = ""
-        for i, c in enumerate(ensure_str(text)):
-            try:
-                r += mapping[c]
-            except KeyError:
-                if errors == "strict":
-                    raise BarbieDecodeError("'barbie' codec can't decode"
-                                            " character '{}' in position {}"
-                                            .format(c, i))
-                elif errors == "replace":
-                    r += REPLACE_CHAR
-                elif errors == "ignore":
-                    continue
-                else:
-                    raise ValueError("Unsupported error handling {}"
-                                     .format(errors))
-        return r, len(text)
-    return decode
-
-
-# note: the integer behind "barbie" is captured for sending to the
-#        parametrizable encode and decode functions "barbie_**code"
-add("barbie", barbie_encode, barbie_decode, r"barbie[-_]?([1-4])$")
+add_map("barbie", ENCMAP, pattern=r"^barbie[-_]?([1-4])$")

@@ -22,17 +22,20 @@ class TestCodecMorse(TestCase):
         self.assertRaises(ValueError, codecs.encode, STRB, "morse")
         self.assertIsNotNone(codecs.encode(STRB, "morse", "replace"))
         self.assertIsNotNone(codecs.encode(STRB, "morse", "ignore"))
+        self.assertEqual(codecs.encode(STRB, "morse", "leave"), MRS + " #")
         self.assertRaises(ValueError, codecs.decode, MRSB, "morse")
         self.assertIsNotNone(codecs.decode(MRSB, "morse", "replace"))
         self.assertIsNotNone(codecs.decode(MRSB, "morse", "ignore"))
         self.assertIsNotNone(codecs.encode(STR, "morse", "BAD_ERRORS"))
         self.assertRaises(ValueError, codecs.encode, "#", "morse", "BAD_ERRORS")
         self.assertRaises(ValueError, codecs.decode, "#", "morse", "BAD_ERRORS")
-        self.assertTrue(not PY3 or
-                        isinstance(codecs.encode(b(STR), "morse"), binary_type))
+        self.assertTrue(not PY3 or isinstance(codecs.encode(b(STR), "morse"), binary_type))
         with codecs.open(TFILE, 'w', encoding="morse") as f:
             f.write(b(STR))
         with codecs.open(TFILE, encoding="morse") as f:
             s = f.read().strip()
         self.assertEqual(STR, ensure_str(s))
         os.remove(TFILE)
+        self.assertRaises(LookupError, codecs.encode, STR, "morse-AAB")
+        self.assertEqual(codecs.encode(STR, "morse/-."), MRS)
+        self.assertEqual(codecs.encode(STR, "morse-/AB"), "A BBBB BB BBB / BB BBB / BA / A B BBB A")

@@ -19,7 +19,10 @@ class TestCodecNokia(TestCase):
         self.assertEqual(codecs.decode(NOK, "nokia3310"), STR)
         self.assertEqual(codecs.decode(b(NOK), "nokia3310"), b(STR))
         self.assertRaises(ValueError, codecs.decode, "ABCD", "nokia3310")
+        self.assertEqual(codecs.decode("2", "nokia3310"), "a")
         self.assertEqual(codecs.decode("A", "nokia3310", errors="replace"), "?")
-        self.assertEqual(codecs.decode("A", "nokia3310", errors="ignore"), "")
-        self.assertRaises(ValueError, codecs.decode, "B", "nokia3310",
-                          errors="BAD")
+        self.assertEqual(codecs.encode("=", "nokia3310", errors="replace"), "?")
+        self.assertEqual(codecs.encode("/", "nokia3310", errors="ignore"), "")
+        self.assertRaises(ValueError, codecs.decode, "A", "nokia3310", errors="BAD")
+        self.assertEqual(codecs.decode("A-B-222-3-4-5", "nokia3310", "replace"), "??cdgj")
+        self.assertEqual(codecs.decode("A-B-222-3-4-5", "nokia3310", "leave"), "abcdgj")

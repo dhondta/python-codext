@@ -7,27 +7,10 @@ This codec:
 - decodes file content to str (read)
 - encodes file content from str to bytes (write)
 """
-try:                 # Python 2
-    from string import maketrans
-except ImportError:  # Python 3
-    maketrans = str.maketrans
-
 from ..__common__ import *
 
 
-alph      = "abeiostABEIOSTZ", "483105748310572"
-to_leet   = maketrans(*alph)
-from_leet = maketrans(*alph[::-1])
+ENCMAP = {k: v for k, v in zip("abeiostABEIOSTZ", "483105748310572")}
 
 
-def leet_encode(text, errors="strict"):
-    r = text.translate(to_leet)
-    return r, len(r)
-
-
-def leet_decode(text, errors="strict"):
-    r = text.translate(from_leet)
-    return r, len(r)
-
-
-add("leet", leet_encode, leet_decode, r"(?:leet|1337|leetspeak)$")
+add_map("leet", ENCMAP, pattern=r"(?:leet|1337|leetspeak)$", no_error=True)
