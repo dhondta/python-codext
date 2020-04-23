@@ -13,9 +13,9 @@ This encoding relies on the `base64` library and is only supported in Python 3.
 `ascii85` | Ascii85 <-> text | none | Python 3 only
 
 ```python
->>> codecs.encode("this is a test", "ascii85")
+>>> codext.encode("this is a test", "ascii85")
 "FD,B0+DGm>@3BZ'F*%"
->>> codecs.decode("FD,B0+DGm>@3BZ'F*%", "ascii85")
+>>> codext.decode("FD,B0+DGm>@3BZ'F*%", "ascii85")
 'this is a test'
 >>> with open("ascii85.txt", 'w', encoding="ascii85") as f:
 	f.write("this is a test")
@@ -23,6 +23,25 @@ This encoding relies on the `base64` library and is only supported in Python 3.
 >>> with open("ascii85.txt", encoding="ascii85") as f:
 	f.read()
 'this is a test'
+```
+
+-----
+
+### Baconian Cipher
+
+It support only letters.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`bacon` | bacon <-> text | `bacon-cipher`, `baconian_cipher`, `bacon-01` | Dynamic tokens mapping ; we can define a mapping of encoding's tokens (original tokens: `ab`)
+
+```python
+>>> codext.encode("this is a test", "bacon")
+'baaba aabbb abaaa baaab  abaaa baaab  aaaaa  baaba aabaa baaab baaba'
+>>> codext.encode("this is a test", "bacon_01")
+'10010 00111 01000 10001  01000 10001  00000  10010 00100 10001 10010'
+>>> codext.decode("-..-. ..--- .-... -...-  .-... -...-  .....  -..-. ..-.. -...- -..-.", "bacon_.-")
+'THIS IS A TEST'
 ```
 
 -----
@@ -37,6 +56,8 @@ It supports letters, digits and some special characters.
 
 ```python
 >>> codext.encode("this is a test", "braille")
+'⠞⠓⠊⠎⠀⠊⠎⠀⠁⠀⠞⠑⠎⠞'
+>>> codext.encode("THIS IS A TEST", "braille")
 '⠞⠓⠊⠎⠀⠊⠎⠀⠁⠀⠞⠑⠎⠞'
 >>> codext.decode("⠞⠓⠊⠎⠀⠊⠎⠀⠁⠀⠞⠑⠎⠞", "braille")
 'this is a test'
@@ -99,7 +120,7 @@ This is only for "encoding" (converting) Markdown to HTML.
 `markdown` | markdown --> HTML | `markdown`, `Markdown`, `md` | unidirectional !
 
 ```python
->>> codecs.encode("# Test\nparagraph", "markdown")
+>>> codext.encode("# Test\nparagraph", "markdown")
 '<h1>Test</h1>\n\n<p>paragraph</p>\n'
 ```
 
@@ -111,17 +132,21 @@ It supports of course letters and digits, but also a few special characters: `.,
 
 **Codec** | **Conversions** | **Aliases** | **Comment**
 :---: | :---: | --- | ---
-`morse` | morse <-> text | none | uses whitespace as a separator
+`morse` | morse <-> text | none | uses whitespace as a separator, dynamic tokens mapping ; we can define a mapping of encoding's tokens (original tokens: `/-.`)
 
 ```python
->>> codecs.encode("this is a test", "morse")
+>>> codext.encode("this is a test", "morse")
 '- .... .. ... / .. ... / .- / - . ... -'
->>> codecs.decode("- .... .. ... / .. ... / .- / - . ... -", "morse")
+>>> codext.encode("this is a test", "morse/-.")
+'- .... .. ... / .. ... / .- / - . ... -'
+>>> codext.encode("this is a test", "morse_ABC")
+'B CCCC CC CCC A CC CCC A CB A B C CCC B'
+>>> codext.decode("- .... .. ... / .. ... / .- / - . ... -", "morse")
 'this is a test'
->>> with open("morse.txt", 'w', encoding="morse") as f:
+>>> with codext.open("morse.txt", 'w', encoding="morse") as f:
 	f.write("this is a test")
 14
->>> with open("morse.txt",encoding="morse") as f:
+>>> with codext.open("morse.txt", encoding="morse") as f:
 	f.read()
 'this is a test'
 ```
@@ -140,6 +165,8 @@ At this time, only Nokia 3310 keystrokes is supported.
 >>> codext.encode("this is a test", "nokia3310")
 '8-44-444-7777-0-444-7777-0-2-0-8-33-7777-8'
 >>> codext.decode("8_44_444_7777_0_444_7777_0_2_0_8_33_7777_8", "nokia3310")
+'this is a test'
+>>> codext.decode("8_44_444_7777_0-444-7777_0-2_0_8_33-7777-8", "nokia3310")
 'this is a test'
 ```
 

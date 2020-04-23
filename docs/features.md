@@ -86,6 +86,77 @@ In this second example, we can see that:
 
 -----
 
+## Add a custom map encoding
+
+New codecs using encoding maps can be added easily using the new function `add_map`.
+
+```python
+>>> import codext
+>>> help(codext.add)
+Help on function add_map in module codext.__common__:
+
+add_map(ename, encmap, repl_char='?', sep='', ignore_case=False, no_error=False, binary=False, **kwargs)
+    This adds a new mapping codec (that is, declarable with a simple character mapping dictionary) to the codecs module
+     dynamically setting its encode and/or decode functions, eventually dynamically naming the encoding with a pattern
+     and with file handling (if text is True).
+    
+    :param ename:         encoding name
+    :param encmap:        characters encoding map ; can be a dictionary of encoding maps (for use with the first capture
+                           group of the regex pattern)
+    :param repl_char:     replacement char (used when errors handling is set to "replace")
+    :param sep:           string of possible character separators (hence, only single-char separators are considered) ;
+                           - while encoding, the first separator is used
+                           - while decoding, separators can be mixed in the input text
+    :param ignore_case:   ignore text case
+    :param no_error:      this encoding triggers no error (hence, always in "leave" errors handling)
+    :param binary:        encoding applies to the binary string of the input text
+    :param pattern:       pattern for dynamically naming the encoding
+    :param text:          specify whether the codec is a text encoding
+    :param add_to_codecs: also add the search function to the native registry
+                           NB: this will make the codec available in the built-in open(...) but will make it impossible
+                                to remove the codec later
+
+```
+
+This relies on the [`add`](#add-a-custom-encoding) function and simplifies creating new encodings when they can be described as a mapping dictionary.
+
+Here is a simple example of how to add a map codec:
+
+```python
+import codext
+
+ENCMAP = {'a': "A", 'b': "B", 'c': "C"}
+
+codext.add_map("mycodec", ENCMAP)
+```
+
+In this first example, we can see that:
+
+- The `decode`/`encode` functions do not have to be declared anymore.
+- `ENCMAP` is the mapping between characters, it is also used to compute the decoding function.
+
+Another example for a more complex and dynamic codec:
+
+```python
+import codext
+
+ENCMAP = [
+    {'00': "A", '01': "B", '10': "C", '11': "D"},
+    {'00': "D", '01': "C", '10': "B", '11': "A"},
+]
+
+codext.add("mydyncodec", ENCMAP, "#", ignore_case=True, binary=True, pattern=r"mydyn-(\d+)$")
+```
+
+In this second example, we can see that:
+
+- `ENCMAP` is now a list of mappings. The capture group in the pattern is used to select the right encoding map. Consequently, using encoding "`mydyn-8`" will fail with a `LookupError` as the only possibility are "`mydyn-1`" and "`mydyn-2`". Note that the index begins at 1 in the encoding name.
+- Instead of using the default character "`?`" for replacements, we use "`#`".
+- The case is ignored ; decoding either "`abcd`" or "`ABCD`" will succeed.
+- The binary mode is enabled, meaning that the input text is converted to a binary string for encoding, while it is converted from binary to text when decoding.
+
+-----
+
 ## Remove a custom encoding
 
 New codecs can be removed easily using the new function `remove`, which will only remove every codec matching the given encoding name in the proxy codecs registry and NOT in the native one.

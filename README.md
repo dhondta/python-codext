@@ -14,6 +14,7 @@ This library extends the native `codecs` library and provides some new encodings
 **Codec** | **Conversions** | **Comment**
 :---: | :---: | ---
 `ascii85` | Ascii85 <-> text | Python 3 only
+`bacon` | Bacon <-> text | aka Baconian Cipher
 `barbie-N` | Barbie <-> text | aka Barbie Typewriter (N belongs to [1, 4])
 `baseXX` | BaseXX <-> text | see [base encodings](https://python-codext.readthedocs.io/en/latest/base.html)
 `braille` | braille <-> text | Python 3 only
