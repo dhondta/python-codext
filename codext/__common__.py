@@ -178,17 +178,40 @@ def add_map(ename, encmap, repl_char="?", sep="", ignore_case=False, no_error=Fa
                 smapdict = {k: v for k, v in mapdict[0].items()}
             else:
                 raise ValueError("Bad mapping dictionary or list of mapping dictionaries")
-            if param:
-                # case 1: list or dictionary of parameter-dependent encodings
-                if isinstance(param, int):
+            if param is not None:
+                p = param
+                # case 1: param is empty string
+                if p == "":
                     if isinstance(mapdict, list):
-                        param -= 1
-                    if isinstance(mapdict, list) and 0 <= param < len(mapdict) or \
-                       isinstance(mapdict, dict) and param in mapdict.keys():
-                        smapdict = mapdict[param]
+                        smapdict = {k: v for k, v in mapdict[0].items()}
+                    elif isinstance(mapdict, dict):
+                        if '' in mapdict.keys() and isinstance(mapdict[''], dict):
+                            smapdict = {k: v for k, v in mapdict[''].items()}
+                        else:
+                            smapdict = {k: v for k, v in mapdict.items()}
+                    # no 'else' handling a LookupError here ; this case is covered by the first if/elif/else block
+                # case 2: list or dictionary or dictionary of numbered encodings
+                elif isinstance(p, int):
+                    if isinstance(mapdict, list):
+                        p -= 1
+                    if isinstance(mapdict, list) and 0 <= p < len(mapdict) or \
+                       isinstance(mapdict, dict) and p in mapdict.keys():
+                        smapdict = {k: v for k, v in mapdict[p].items()}
                     else:
-                        raise LookupError("Bad parameter for encoding '{}': {}".format(ename, param))
-                # case 2: encodinc characters translation
+                        raise LookupError("Bad parameter for encoding '{}': '{}'".format(ename, p))
+                # case 3: dictionary of regex-selected encoding mappings
+                elif isinstance(mapdict, dict) and isinstance(list(mapdict.values())[0], dict):
+                    tmp = None
+                    for r, d in mapdict.items():
+                        if r == '':   # this is already handled in case 1 ; anyway, an empty regex always match, hence
+                            continue  #  it must be excluded
+                        if re.match(r, p):
+                            tmp = d
+                            break
+                    if tmp is None:
+                        raise LookupError("Bad parameter for encoding '{}': '{}'".format(ename, p))
+                    smapdict = tmp
+                # case 4: encodinc characters translation
                 else:
                     # collect base tokens in order of appearance in the mapping dictionary
                     base_tokens = ""
@@ -196,14 +219,14 @@ def add_map(ename, encmap, repl_char="?", sep="", ignore_case=False, no_error=Fa
                         for t in c:
                             if t not in base_tokens:
                                 base_tokens += t
-                    if param[0] in "-_" and len(param[1:]) == len(set(param[1:])) == len(base_tokens):
-                        param = param[1:]
-                    if len(param) == len(set(param)) == len(base_tokens):
-                        t = maketrans(base_tokens, param)
+                    if len(p) > 0 and p[0] in "-_" and len(p[1:]) == len(set(p[1:])) == len(base_tokens):
+                        p = p[1:]
+                    if len(p) == len(set(p)) == len(base_tokens):
+                        t = maketrans(base_tokens, p)
                         for k, v in smapdict.items():
                             smapdict[k] = v.translate(t)
                     else:
-                        raise LookupError("Bad parameter for encoding '{}': {}".format(ename, param))
+                        raise LookupError("Bad parameter for encoding '{}': '{}'".format(ename, p))
             if ignore_case:
                 case = ["upper", "lower"][any(c in "".join(smapdict.keys()) for c in "abcdefghijklmnopqrstuvwxyz")]
             # use the first mapped group from the mapping dictionary to determine token length ; this is useful e.g. for

@@ -213,3 +213,24 @@ This is a dynamic encoding, that is, it can be called with an integer to define 
 >>> codext.encode("~bcy*cy*k*~oy~", "xor-10")
 'this is a test'
 ```
+
+-----
+
+### Whitespaces
+
+This simple encoding replaces zeros and ones of the binary version of the input text with spaces and tabs. It is supported either with its original mapping or with the inverted mapping.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`whitespace` | Whitespaces <-> text | `whitespaces?-inv(erted)?` | The default encoding uses tabs for zeros and spaces for ones
+
+```python
+>>> codext.encode("test", "whitespace")
+'\t   \t \t\t\t  \t\t \t \t   \t\t  \t   \t \t\t'
+>>> codext.encode("test", "whitespaces")
+'\t   \t \t\t\t  \t\t \t \t   \t\t  \t   \t \t\t'
+>>> codext.encode("test", "whitespaces-inv")
+' \t\t\t \t   \t\t  \t \t \t\t\t  \t\t \t\t\t \t  '
+>>> codext.decode(" \t\t\t \t   \t\t  \t \t \t\t\t  \t\t \t\t\t \t  ", "whitespaces_inverted")
+'test'
+```

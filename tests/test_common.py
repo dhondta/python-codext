@@ -39,6 +39,9 @@ class TestCommon(TestCase):
         self.assertEqual(codext.encode("def", "dummy2-2"), "DEF")
         self.assertEqual(codext.encode("ghi", "dummy2-3"), "GHI")
         self.assertRaises(LookupError, codext.encode, "test", "dummy2-4")
+        ENCMAP = {'': {'a': "A", 'b': "B"}, r'bad': {'a': "B", 'b': "A"}}
+        self.assertIsNone(codext.add_map("dummy3", ENCMAP, pattern=r"^dummy3([-_]inverted)?$"))
+        self.assertRaises(LookupError, codext.encode, "test", "dummy3_inverted")
     
     def test_remove_codec(self):
         self.assertIsNone(codext.add("dummy", dummy_encode, dummy_decode))
