@@ -193,6 +193,25 @@ This is a dynamic encoding, that is, it can be called with an integer to define 
 
 -----
 
+### URL
+
+This handles URL encoding, regardless of the case when decoding and with no error.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`url` | URL <-> text | `url`, `urlencode` | 
+
+```python
+>>> codecs.encode("?=this/is-a_test/../", "url")
+'%3F%3Dthis%2Fis-a_test%2F%2E%2E%2F'
+>>> codext.decode("%3F%3Dthis%2Fis-a_test%2F%2E%2E%2F", "urlencode")
+'?=this/is-a_test/../'
+>>> codext.decode("%3f%3dthis%2fis-a_test%2f%2e%2e%2f", "urlencode")
+'?=this/is-a_test/../'
+```
+
+-----
+
 ### XOR with 1 byte
 
 This is a dynamic encoding, that is, it can be called with an integer to define the ordinal of the byte to XOR with the input text.

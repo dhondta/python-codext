@@ -24,6 +24,7 @@ This library extends the native `codecs` library and provides some new encodings
 `morse` | morse <-> text | uses whitespace as a separator
 `nokia3310` | Nokia 3310 keystrokes <-> text | uses "`-`" as a separator for encoding, "`-`" or "`_`" or whitespace for decoding
 `rot-N` | ROT(N) <-> text | aka Caesar cipher (N belongs to [1,25])
+`url` | URL <-> text | aka URL encoding
 `xor-N` | XOR(N) <-> text | XOR with a single byte (N belongs to [1,255])
 `whitespace` | Whitespaces <-> text | replaces bits with whitespaces and tabs
 
