@@ -42,6 +42,7 @@ class TestCommon(TestCase):
         ENCMAP = {'': {'a': "A", 'b': "B"}, r'bad': {'a': "B", 'b': "A"}}
         self.assertIsNone(codext.add_map("dummy3", ENCMAP, pattern=r"^dummy3([-_]inverted)?$"))
         self.assertRaises(LookupError, codext.encode, "test", "dummy3_inverted")
+        self.assertRaises(ValueError, codext.add_map, "dummy2", ENCMAP, ignore_case="BAD")
     
     def test_remove_codec(self):
         self.assertIsNone(codext.add("dummy", dummy_encode, dummy_decode))

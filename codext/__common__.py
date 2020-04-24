@@ -137,7 +137,7 @@ def add(ename, encode=None, decode=None, pattern=None, text=True, add_to_codecs=
     register(getregentry, add_to_codecs)
 
 
-def add_map(ename, encmap, repl_char="?", sep="", ignore_case=False, no_error=False, binary=False, **kwargs):
+def add_map(ename, encmap, repl_char="?", sep="", ignore_case=None, no_error=False, binary=False, **kwargs):
     """
     This adds a new mapping codec (that is, declarable with a simple character mapping dictionary) to the codecs module
      dynamically setting its encode and/or decode functions, eventually dynamically naming the encoding with a pattern
@@ -150,7 +150,7 @@ def add_map(ename, encmap, repl_char="?", sep="", ignore_case=False, no_error=Fa
     :param sep:           string of possible character separators (hence, only single-char separators are considered) ;
                            - while encoding, the first separator is used
                            - while decoding, separators can be mixed in the input text
-    :param ignore_case:   ignore text case
+    :param ignore_case:   ignore text case while encoding and/or decoding
     :param no_error:      this encoding triggers no error (hence, always in "leave" errors handling)
     :param binary:        encoding applies to the binary string of the input text
     :param pattern:       pattern for dynamically naming the encoding
@@ -159,6 +159,8 @@ def add_map(ename, encmap, repl_char="?", sep="", ignore_case=False, no_error=Fa
                            NB: this will make the codec available in the built-in open(...) but will make it impossible
                                 to remove the codec later
     """
+    if ignore_case not in [None, "encode", "decode", "both"]:
+        raise ValueError("Bad ignore_case parameter while creating encoding map")
     def __generic_code(mapdict, exc, decode=False):
         def _wrapper(param):
             """
@@ -227,11 +229,9 @@ def add_map(ename, encmap, repl_char="?", sep="", ignore_case=False, no_error=Fa
                             smapdict[k] = v.translate(t)
                     else:
                         raise LookupError("Bad parameter for encoding '{}': '{}'".format(ename, p))
-            if ignore_case:
-                case = ["upper", "lower"][any(c in "".join(smapdict.keys()) for c in "abcdefghijklmnopqrstuvwxyz")]
-            # use the first mapped group from the mapping dictionary to determine token length ; this is useful e.g. for
-            #  tokenizing a binary string when the text is to be converted as binary
-            tlen = len(list(set(smapdict.keys()) - {""})[0])
+            if ignore_case is not None:
+                case_d = ["upper", "lower"][any(c in "".join(smapdict.values()) for c in "abcdefghijklmnopqrstuvwxyz")]
+                case_e = ["upper", "lower"][any(c in "".join(smapdict.keys()) for c in "abcdefghijklmnopqrstuvwxyz")]
             if decode:
                 tmp = {}
                 # this has a meaning for encoding maps that could have clashes in encoded chars (e.g. Bacon's cipher ;
@@ -243,34 +243,80 @@ def add_map(ename, encmap, repl_char="?", sep="", ignore_case=False, no_error=Fa
             # this allows to avoid an error with Python2 in the "for i, c in enumerate(parts)" loop
             if '' not in smapdict.keys():
                 smapdict[''] = ""
+            # determine token and result lengths
+            tmaxlen = max(map(len, smapdict.keys()))
+            tminlen = max(1, min(map(len, set(smapdict.keys()) - {''})))
+            rminlen = max(1, min(map(len, set(smapdict.values()) - {''})))
             
+            # generic encoding/decoding function for map encodings
             def code(text, errors="strict"):
-                if ignore_case:
-                    text = getattr(text, case)()
+                icase = ignore_case == "both" or \
+                        decode and ignore_case == "decode" or \
+                        not decode and ignore_case == "encode"
+                if icase:
+                    case = case_d if decode else case_e
                 if no_error:
                     errors = "leave"
                 text = ensure_str(text)
                 if binary and not decode:
                     text = "".join("{:0>8}".format(bin(ord(c))[2:]) for c in text)
-                    text = [text[i:i+tlen] for i in range(0, len(text), tlen)]
-                parts = re.split("[" + sep + "]", text) if decode and len(sep) > 0 else text
                 r = ""
                 lsep = "" if decode else sep if len(sep) <= 1 else sep[0]
-                for i, c in enumerate(parts):
+                
+                # get the value from the mapping dictionary, trying the token with its inverted case if relevant
+                def __get_value(token, position, case_changed=False):
                     try:
-                        r += smapdict[c] + lsep
+                        return smapdict[token] + lsep
                     except KeyError:
-                        if errors == "strict":
-                            raise exc("'{}' codec can't {}code character '{}' in position {}"
-                                      .format(ename, ["en", "de"][decode], c, i))
-                        elif errors == "leave":
-                            r += c + lsep
-                        elif errors == "replace":
-                            r += repl_char * [1, tlen][decode] + lsep
-                        elif errors == "ignore":
-                            continue
+                        if icase and not case_changed:
+                            token_inv_case = getattr(token, case)()
+                            r = __get_value(token_inv_case, position, True)
+                            if r == token_inv_case + lsep and errors == "leave":
+                                return token + lsep
+                            return r
+                        return __handle_error(token, position)
+                
+                def __handle_error(token, position):
+                    if errors == "strict":
+                        raise exc("'{}' codec can't {}code character '{}' in position {}"
+                                  .format(ename, ["en", "de"][decode], token, position))
+                    elif errors == "leave":
+                        return token + lsep
+                    elif errors == "replace":
+                        return repl_char * rminlen + lsep
+                    elif errors == "ignore":
+                        return ""
+                    else:
+                        raise ValueError("Unsupported error handling '{}'".format(errors))
+                
+                # if a separator is defined, rely on it by splitting the input text
+                if decode and len(sep) > 0:
+                    for i, c in enumerate(re.split("[" + sep + "]", text)):
+                        r += __get_value(c, i)
+                # otherwise, move through the text using a cursor for tokenizing it ; this allows defining more complex
+                #  encodings with variable token lengths
+                else:
+                    cursor, bad = 0, ""
+                    while cursor < len(text):
+                        token = text[cursor:cursor+1]
+                        for l in range(tminlen, tmaxlen + 1):
+                            token = text[cursor:cursor+l]
+                            if token in smapdict.keys() or icase and getattr(token, case)() in smapdict.keys():
+                                # do not forget to handle bad chars already collected at this point
+                                if len(bad) > 0:
+                                    r += __get_value(bad, cursor - len(bad))
+                                    bad = ""
+                                r += __get_value(token, cursor)
+                                cursor += l
+                                break
                         else:
-                            raise ValueError("Unsupported error handling '{}'".format(errors))
+                            # collect bad chars and only move the cursor one char to the right
+                            bad += text[cursor]
+                            cursor += 1
+                            # if the number of bad chars is the minimum token length, consume it and start a new buffer
+                            if len(bad) == tminlen:
+                                r += __handle_error(bad, cursor - len(bad))
+                                bad = ""
                 if binary and decode:
                     tmp, r = "", r.replace(lsep, "")
                     for i in range(0, len(r), 8):

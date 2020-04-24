@@ -20,4 +20,4 @@ ENCMAP = {
 }
 
 
-add_map("bacon", ENCMAP, sep=" ", ignore_case=True, pattern=r"bacon(?:(?:ian)?[-_]cipher)?([\-_].{2})?$")
+add_map("bacon", ENCMAP, sep=" ", ignore_case="encode", pattern=r"bacon(?:(?:ian)?[-_]cipher)?([\-_].{2})?$")

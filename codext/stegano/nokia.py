@@ -17,4 +17,4 @@ ENCMAP = {
 }
 
 
-add_map("nokia", ENCMAP, "?", "-_", ignore_case=True, pattern=r"^nokia[-_]?3310$")
+add_map("nokia", ENCMAP, "?", "-_", ignore_case="encode", pattern=r"^nokia[-_]?3310$")

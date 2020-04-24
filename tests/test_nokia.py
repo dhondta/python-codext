@@ -25,4 +25,4 @@ class TestCodecNokia(TestCase):
         self.assertEqual(codecs.encode("/", "nokia3310", errors="ignore"), "")
         self.assertRaises(ValueError, codecs.decode, "A", "nokia3310", errors="BAD")
         self.assertEqual(codecs.decode("A-B-222-3-4-5", "nokia3310", "replace"), "??cdgj")
-        self.assertEqual(codecs.decode("A-B-222-3-4-5", "nokia3310", "leave"), "abcdgj")
+        self.assertEqual(codecs.decode("A-B-222-3-4-5", "nokia3310", "leave"), "ABcdgj")
