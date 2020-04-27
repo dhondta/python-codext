@@ -12,11 +12,17 @@ Reference: https://crypto.interactive-maths.com/atbash-cipher.html
 from ..__common__ import *
 
 
-ENCMAP = {
-    'a': "Z", 'b': "Y", 'c': "X", 'd': "W", 'e': "V", 'f': "U", 'g': "T", 'h': "S", 'i': "R", 'j': "Q", 'k': "P",
-    'l': "O", 'm': "N", 'n': "M", 'o': "L", 'p': "K", 'q': "J", 'r': "I", 's': "H", 't': "G", 'u': "F", 'v': "E",
-    'w': "D", 'x': "C", 'y': "B", 'z': "A", ' ': " ",
-}
+def encmap_factory(mask=None):
+    mask = mask or "lus"
+    alphabet = ""
+    for m in mask:
+        try:
+            for c in MASKS[m]:
+                if c not in alphabet:
+                    alphabet += c
+        except KeyError:
+            raise LookupError("Bad parameter for encoding 'atbash': '{}'".format(mask))
+    return {k: v for k, v in zip(alphabet, alphabet[::-1])}
 
 
-add_map("atbash", ENCMAP, ignore_case="both", pattern=r"atbash(?:[-_]cipher)?$")
+add_map("atbash", encmap_factory, pattern=r"atbash(?:[-_]cipher)?(?:[-_]([" + r"".join(MASKS.keys()) + r"]+))?$")

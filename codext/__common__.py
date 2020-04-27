@@ -8,6 +8,7 @@ from functools import wraps
 from importlib import import_module
 from inspect import currentframe
 from six import binary_type, string_types, text_type
+from string import *
 from types import FunctionType
 try:  # Python3
     from inspect import getfullargspec
@@ -24,8 +25,19 @@ except ImportError:  # Python 3
 
 
 __all__ = ["add", "add_map", "b", "clear", "codecs", "ensure_str", "maketrans", "re", "register", "remove", "reset",
-           "s2i", "PY3"]
+           "s2i", "MASKS", "PY3"]
 CODECS_REGISTRY = None
+MASKS = {
+    'a': printable,
+    'b': "".join(chr(i) for i in range(256)),
+    'd': digits,
+    'h': digits + "abcdef",
+    'H': digits + "ABCDEF",
+    'l': ascii_lowercase,
+    'p': punctuation,
+    's': " ",
+    'u': ascii_uppercase,
+}
 PY3 = sys.version[0] == "3"
 __codecs_registry = []
 
@@ -145,7 +157,7 @@ def add_map(ename, encmap, repl_char="?", sep="", ignore_case=None, no_error=Fal
     
     :param ename:         encoding name
     :param encmap:        characters encoding map ; can be a dictionary of encoding maps (for use with the first capture
-                           group of the regex pattern)
+                           group of the regex pattern) or a function building the encoding map
     :param repl_char:     replacement char (used when errors handling is set to "replace")
     :param sep:           string of possible character separators (hence, only single-char separators are considered) ;
                            - while encoding, the first separator is used
@@ -161,7 +173,7 @@ def add_map(ename, encmap, repl_char="?", sep="", ignore_case=None, no_error=Fal
     """
     if ignore_case not in [None, "encode", "decode", "both"]:
         raise ValueError("Bad ignore_case parameter while creating encoding map")
-    def __generic_code(mapdict, exc, decode=False):
+    def __generic_code(exc, decode=False):
         def _wrapper(param):
             """
             The parameter for wrapping comes from the encoding regex pattern ; e.g.
@@ -174,6 +186,11 @@ def add_map(ename, encmap, repl_char="?", sep="", ignore_case=None, no_error=Fal
                 param MUST be an int, otherwise for the first case it could clash with a character of the encoding map)
             2. otherwise handle it as a new encoding character map "ABC" translates to ".-/" for morse
             """
+            if isinstance(encmap, FunctionType):
+                mapdict = encmap(param)
+                param = None
+            else:
+                mapdict = encmap
             if isinstance(mapdict, dict):
                 smapdict = {k: v for k, v in mapdict.items()}
             elif isinstance(mapdict, list) and isinstance(mapdict[0], dict):
@@ -342,7 +359,7 @@ def add_map(ename, encmap, repl_char="?", sep="", ignore_case=None, no_error=Fal
     encexc = "{}EncodeError".format(name)
     exec("class {}(ValueError): pass".format(encexc), glob)
     # now use the generic add() function
-    add(ename, __generic_code(encmap, glob[encexc]), __generic_code(encmap, glob[decexc], True), **kwargs)
+    add(ename, __generic_code(glob[encexc]), __generic_code(glob[decexc], True), **kwargs)
 codecs.add_map = add_map
 
 

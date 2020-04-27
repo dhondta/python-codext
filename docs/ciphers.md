@@ -4,16 +4,32 @@
 
 ### Atbash Cipher
 
-It implements the monoalphabetic substitution cipher used for the Hebrew alphabet.
+It implements the monoalphabetic substitution cipher used for the Hebrew alphabet. By default, it considers the lowercase and uppercase letters and the whitespace for the alphabet. It can also use a mask to extend it.
 
 **Codec** | **Conversions** | **Aliases** | **Comment**
 :---: | :---: | --- | ---
-`atbash` | Atbash <-> text | `atbash`, `atbash_cipher`
+`atbash` | Atbash <-> text | `atbash` (uses default mask "`lu`"), `atbash_cipher-lds`, ...
+
+!!! note "Available masks"
+    
+    `a`: printable characters
+    `b`: all 8-bits chars
+    `d`: digits
+    `h`: lowercase hexadecimal
+    `H`: uppercase hexadecimal
+    `l`: lowercase letters
+    `p`: punctuation characters
+    `s`: whitespace
+    `u`: uppercase letters
+    
+    When combining masks, only one occurrence of each character is taken in the final alphabet.
 
 ```python
 >>> codext.encode("this is a test", "atbash")
-'GSRH RH Z GVHG'
->>> codext.decode('GSRH RH Z GVHG', "atbash")
+'HTSIaSIa aHWIH'
+>>> codext.encode("this is a test", "atbash-lups")
+'.^]/a]/a a.{/.'
+>>> codext.decode(".^]/a]/a a.{/.", "atbash_cipher_lups")
 'this is a test'
 ```
 
