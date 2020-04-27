@@ -32,5 +32,4 @@ def rot_decode(i):
     return decode
 
 
-# note: the integer behind "rot" is captured for sending to the parametrizable encode and decode functions "rotn_**code"
 add("rotN", rot_encode, rot_decode, r"(?i)rot[-_]?([1-9]|1[0-9]|2[0-5])$")
