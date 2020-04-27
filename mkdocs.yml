@@ -6,6 +6,7 @@ pages:
   - Introduction: index.md
   - Features: features.md
   - 'Base encodings': base.md
+  - 'Crypto ciphers': ciphers.md
   - 'Other encodings': encodings.md
   - 'String manipulations': manipulations.md
   - 'CLI tool': cli.md
