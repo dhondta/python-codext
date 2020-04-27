@@ -24,8 +24,8 @@ except ImportError:  # Python 3
     maketrans = str.maketrans
 
 
-__all__ = ["add", "add_map", "b", "clear", "codecs", "ensure_str", "maketrans", "re", "register", "remove", "reset",
-           "s2i", "MASKS", "PY3"]
+__all__ = ["add", "add_map", "b", "clear", "codecs", "ensure_str", "get_alphabet_from_mask", "maketrans", "re",
+           "register", "remove", "reset", "s2i", "MASKS", "PY3"]
 CODECS_REGISTRY = None
 MASKS = {
     'a': printable,
@@ -292,7 +292,7 @@ def add_map(ename, encmap, repl_char="?", sep="", ignore_case=None, no_error=Fal
                                 return token + lsep
                             return r
                         return __handle_error(token, position)
-                
+                                
                 def __handle_error(token, position):
                     if errors == "strict":
                         raise exc("'{}' codec can't {}code character '{}' in position {}"
@@ -451,6 +451,19 @@ def fix_inout_formats(f):
         return (fix(r[0], args[0]), ) + r[1:] if isinstance(r, (tuple, list)) \
                else fix(r, args[0])
     return _wrapper
+
+
+# alphabet generation function from a given mask
+def get_alphabet_from_mask(mask):
+    """
+    This function generates an alphabet from the given mask.
+    """
+    alphabet = ""
+    for m in mask:
+        for c in MASKS.get(m, m):
+            if c not in alphabet:
+                alphabet += c
+    return alphabet
 
 
 # codecs module hooks

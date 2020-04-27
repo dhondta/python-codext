@@ -1,16 +1,8 @@
 `codext` also implements several simple cryptographic ciphers that are comparable to encodings for each value of their keys as these are too weak.
 
------
-
-### Atbash Cipher
-
-It implements the monoalphabetic substitution cipher used for the Hebrew alphabet. By default, it considers the lowercase and uppercase letters and the whitespace for the alphabet. It can also use a mask to extend it.
-
-**Codec** | **Conversions** | **Aliases** | **Comment**
-:---: | :---: | --- | ---
-`atbash` | Atbash <-> text | `atbash` (uses default mask "`lu`"), `atbash_cipher-lds`, ...
-
 !!! note "Available masks"
+    
+    Some cipher codecs use character masks to generate their alphabets.
     
     `a`: printable characters
     `b`: all 8-bits chars
@@ -23,6 +15,45 @@ It implements the monoalphabetic substitution cipher used for the Hebrew alphabe
     `u`: uppercase letters
     
     When combining masks, only one occurrence of each character is taken in the final alphabet.
+
+-----
+
+### Affine Cipher
+
+This codec implements the Affine monoalphabetic substitution cipher. It is parametrizable with a mask for generating the alphabet and the parameters `a` and `b`. By default, it uses mask "`lus`" and parameters `a=1` and `b=2` but it can be set as in the examples hereafter.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`affine` | Affine <-> text | `affine` (uses default mask "`lus`" with `a=1` and `b=2`), `affine_cipher-luds-5,8`, `affine- .,?!ud-23,6`, ...
+
+```python
+>>> codext.encode("this is a test", "affine")
+'vjkubkubcbvguv'
+>>> codext.decode("vjkubkubcbvguv", "affine")
+'this is a test'
+>>> codext.encode("this is a test", "affine-luds-5,8")
+'ORWJdWJdidOCJO'
+>>> codext.decode("ORWJdWJdidOCJO", "affine-luds-5,8")
+'this is a test'
+>>> codext.encode("THIS IS A TEST", "affine- .,?!ud-5,8")
+'AW1 D1 D2DAH A'
+>>> codext.decode("AW1 D1 D2DAH A", "affine- .,?!ud-5,8")
+'THIS IS A TEST'
+```
+
+!!! warning "Parameters `a` and `b`"
+    
+    Not all values are suitable for `a` and `b`. If a generated encoding map has mapping collisions, an exception is raised telling that `a` and `b` are bad.
+
+-----
+
+### Atbash Cipher
+
+It implements the monoalphabetic substitution cipher used for the Hebrew alphabet. By default, it considers the lowercase and uppercase letters and the whitespace for the alphabet. It can also use a mask to extend it.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`atbash` | Atbash <-> text | `atbash` (uses default mask "`lu`"), `atbash_cipher-lds`, ...
 
 ```python
 >>> codext.encode("this is a test", "atbash")

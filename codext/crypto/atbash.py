@@ -14,15 +14,11 @@ from ..__common__ import *
 
 def encmap_factory(mask=None):
     mask = mask or "lus"
-    alphabet = ""
-    for m in mask:
-        try:
-            for c in MASKS[m]:
-                if c not in alphabet:
-                    alphabet += c
-        except KeyError:
-            raise LookupError("Bad parameter for encoding 'atbash': '{}'".format(mask))
+    try:
+        alphabet = get_alphabet_from_mask(mask)
+    except KeyError:
+        raise LookupError("Bad parameter for encoding 'atbash': '{}'".format(mask))
     return {k: v for k, v in zip(alphabet, alphabet[::-1])}
 
 
-add_map("atbash", encmap_factory, pattern=r"atbash(?:[-_]cipher)?(?:[-_]([" + r"".join(MASKS.keys()) + r"]+))?$")
+add_map("atbash", encmap_factory, pattern=r"atbash(?:[-_]cipher)?(?:[-_](.+))?$")
