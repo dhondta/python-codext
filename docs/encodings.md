@@ -172,6 +172,23 @@ At this time, only Nokia 3310 keystrokes is supported.
 
 -----
 
+### Radio Alphabet
+
+This is also known as the [NATO phonetic alphabet](https://en.wikipedia.org/wiki/NATO_phonetic_alphabet).
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`radio` | Radio <-> text | `military_alphabet`, `nato-phonetic-alphabet`, `radio-alphabet` | 
+
+```python
+>>> codext.encode("foobar", "nato_phonetic_alphabet")
+'Foxtrot Oscar Oscar Bravo Alpha Romeo'
+>>> codext.decode("Foxtrot Oscar Oscar Bravo Alpha Romeo", "radio-alphabet")
+'FOOBAR'
+```
+
+-----
+
 ### ROT N
 
 This is a dynamic encoding, that is, it can be called with an integer to define the ROT offset. Encoding will apply a positive offset, decoding will apply a negative one.
