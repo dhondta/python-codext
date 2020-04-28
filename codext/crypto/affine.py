@@ -13,16 +13,10 @@ from ..__common__ import *
 
 
 def encmap_factory(mask=None):
-    mask = mask or "lus-1,2"
-    try:
-        mask, key = mask.split("-")
-        a, b = map(int, key.split(","))
-    except ValueError:
-        raise LookupError("Bad parameter for encoding 'affine': '{}'".format(mask))
-    try:
-        alphabet = get_alphabet_from_mask(mask)
-    except KeyError:
-        raise LookupError("Bad parameter for encoding 'affine': '{}'".format(mask))
+    mask = mask or "?l?u?s-1,2"
+    mask, key = mask.split("-")
+    a, b = map(int, key.split(","))
+    alphabet = get_alphabet_from_mask(mask)
     encmap = {c: alphabet[(a * alphabet.index(c) + b) % len(alphabet)] for c in alphabet}
     if len(set(encmap.keys())) != len(set(encmap.values())):
         raise LookupError("Bad parameter for encoding 'affine': {}, {}".format(a, b))

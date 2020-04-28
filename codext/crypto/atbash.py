@@ -13,11 +13,7 @@ from ..__common__ import *
 
 
 def encmap_factory(mask=None):
-    mask = mask or "lus"
-    try:
-        alphabet = get_alphabet_from_mask(mask)
-    except KeyError:
-        raise LookupError("Bad parameter for encoding 'atbash': '{}'".format(mask))
+    alphabet = get_alphabet_from_mask(mask or "?l?u?s")
     return {k: v for k, v in zip(alphabet, alphabet[::-1])}
 
 

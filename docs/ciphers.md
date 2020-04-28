@@ -2,7 +2,7 @@
 
 !!! note "Available masks"
     
-    Some cipher codecs use character masks to generate their alphabets.
+    Some cipher codecs use character masks to generate their alphabets. Groups of characters are indicated using a headin "`?`".
     
     `a`: printable characters
     `b`: all 8-bits chars
@@ -15,6 +15,11 @@
     `u`: uppercase letters
     
     When combining masks, only one occurrence of each character is taken in the final alphabet.
+    
+    So, for instance, the following masks yield the following alphabets:
+    
+    - `?l?u?d?s`: "`abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 `"
+    - `?s.,?!?u?d`: "` .,?!ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789`"
 
 -----
 
@@ -24,20 +29,20 @@ This codec implements the Affine monoalphabetic substitution cipher. It is param
 
 **Codec** | **Conversions** | **Aliases** | **Comment**
 :---: | :---: | --- | ---
-`affine` | Affine <-> text | `affine` (uses default mask "`lus`" with `a=1` and `b=2`), `affine_cipher-luds-5,8`, `affine- .,?!ud-23,6`, ...
+`affine` | Affine <-> text | `affine` (uses default mask "`?l?u?s`" with `a=1` and `b=2`), `affine_cipher-?l?u?d?s-5,8`, `affine- .,?!?u?d-23,6`, ...
 
 ```python
 >>> codext.encode("this is a test", "affine")
 'vjkubkubcbvguv'
 >>> codext.decode("vjkubkubcbvguv", "affine")
 'this is a test'
->>> codext.encode("this is a test", "affine-luds-5,8")
+>>> codext.encode("this is a test", "affine-?l?u?d?s-5,8")
 'ORWJdWJdidOCJO'
->>> codext.decode("ORWJdWJdidOCJO", "affine-luds-5,8")
+>>> codext.decode("ORWJdWJdidOCJO", "affine-?l?u?d?s-5,8")
 'this is a test'
->>> codext.encode("THIS IS A TEST", "affine- .,?!ud-5,8")
+>>> codext.encode("THIS IS A TEST", "affine-?s.,?!?u?d-5,8")
 'AW1 D1 D2DAH A'
->>> codext.decode("AW1 D1 D2DAH A", "affine- .,?!ud-5,8")
+>>> codext.decode("AW1 D1 D2DAH A", "affine-?s.,?!?u?d-5,8")
 'THIS IS A TEST'
 ```
 
@@ -53,14 +58,14 @@ It implements the monoalphabetic substitution cipher used for the Hebrew alphabe
 
 **Codec** | **Conversions** | **Aliases** | **Comment**
 :---: | :---: | --- | ---
-`atbash` | Atbash <-> text | `atbash` (uses default mask "`lu`"), `atbash_cipher-lds`, ...
+`atbash` | Atbash <-> text | `atbash` (uses default mask "`lus`"), `atbash_cipher-?l?d?s`, ...
 
 ```python
 >>> codext.encode("this is a test", "atbash")
 'HTSIaSIa aHWIH'
->>> codext.encode("this is a test", "atbash-lups")
+>>> codext.encode("this is a test", "atbash-?l?u?p?s")
 '.^]/a]/a a.{/.'
->>> codext.decode(".^]/a]/a a.{/.", "atbash_cipher_lups")
+>>> codext.decode(".^]/a]/a a.{/.", "atbash_cipher_?l?u?p?s")
 'this is a test'
 ```
 

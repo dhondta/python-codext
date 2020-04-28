@@ -249,6 +249,9 @@ def add_map(ename, encmap, repl_char="?", sep="", ignore_case=None, no_error=Fal
             if ignore_case is not None:
                 case_d = ["upper", "lower"][any(c in "".join(smapdict.values()) for c in "abcdefghijklmnopqrstuvwxyz")]
                 case_e = ["upper", "lower"][any(c in "".join(smapdict.keys()) for c in "abcdefghijklmnopqrstuvwxyz")]
+                i = ignore_case
+                smapdict = {getattr(k, case_e)() if i in ["both", "encode"] else k: \
+                            getattr(v, case_d)() if i in ["both", "decode"] else v for k, v in smapdict.items()}
             if decode:
                 tmp = {}
                 # this has a meaning for encoding maps that could have clashes in encoded chars (e.g. Bacon's cipher ;
@@ -456,13 +459,20 @@ def fix_inout_formats(f):
 # alphabet generation function from a given mask
 def get_alphabet_from_mask(mask):
     """
-    This function generates an alphabet from the given mask.
+    This function generates an alphabet from the given mask. The style used is similar to Hashcat ; group keys are
+     marked with a heading "?".
     """
-    alphabet = ""
-    for m in mask:
-        for c in MASKS.get(m, m):
-            if c not in alphabet:
-                alphabet += c
+    i, alphabet = 0, ""
+    while i < len(mask):
+        c = mask[i]
+        if c == "?" and i < len(mask) - 1 and mask[i+1] in MASKS.keys():
+            for c in MASKS[mask[i+1]]:
+                if c not in alphabet:
+                    alphabet += c
+            i += 1
+        elif c not in alphabet:
+            alphabet += c
+        i += 1
     return alphabet
 
 
