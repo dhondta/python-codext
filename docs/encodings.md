@@ -153,6 +153,23 @@ At this time, only Nokia 3310 keystrokes is supported.
 
 -----
 
+### Ordinals
+
+This simple codec converts characters into their ordinals.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`ordinals` | Ordinals <-> text | `ordinal` | 
+
+```python
+>>> codext.encode("this is a test", "ordinal")
+'116 104 105 115 32 105 115 32 97 32 116 101 115 116'
+>>> codext.decode("116 104 105 115 32 105 115 32 97 32 116 101 115 116", "ordinals")
+'this is a test'
+```
+
+-----
+
 ### Radio Alphabet
 
 This is also known as the [NATO phonetic alphabet](https://en.wikipedia.org/wiki/NATO_phonetic_alphabet).
