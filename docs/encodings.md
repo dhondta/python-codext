@@ -187,6 +187,23 @@ This is also known as the [NATO phonetic alphabet](https://en.wikipedia.org/wiki
 
 -----
 
+### Resistor Color Codes
+
+This uses the [electronic color code](https://en.wikipedia.org/wiki/Electronic_color_code#Resistor_color-coding) to encode digits, displaying colors in the terminal with ANSI color codes.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`resistor` | Resistor <-> text | `resistors-color`, `resistor_color_code` | visually, it only works in a terminal supporting ANSI color codes
+
+```python
+>>> codext.encode("1234", "resistor")
+'\x1b[48;5;130m \x1b[0;00m\x1b[48;5;1m \x1b[0;00m\x1b[48;5;214m \x1b[0;00m\x1b[48;5;11m \x1b[0;00m'
+>>> codext.decode("\x1b[48;5;130m \x1b[0;00m\x1b[48;5;1m \x1b[0;00m\x1b[48;5;214m \x1b[0;00m\x1b[48;5;11m \x1b[0;00m", "resistors_color")
+'1234'
+```
+
+-----
+
 ### URL
 
 This handles URL encoding, regardless of the case when decoding and with no error.

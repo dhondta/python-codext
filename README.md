@@ -27,6 +27,7 @@ This library extends the native `codecs` library and provides some new encodings
 `nokia3310` | Nokia 3310 keystrokes <-> text | uses "`-`" as a separator for encoding, "`-`" or "`_`" or whitespace for decoding
 `ordinals` | Ordinals <-> text | dummy character ordinals conversion
 `radio` | Radio <-> text | aka NATO or radio phonetic alphabet
+`resistor` | Resistor <-> text | aka resistor color codes
 `rot-N` | ROT(N) <-> text | aka Caesar cipher (N belongs to [1,25])
 `url` | URL <-> text | aka URL encoding
 `xor-N` | XOR(N) <-> text | XOR with a single byte (N belongs to [1,255])
