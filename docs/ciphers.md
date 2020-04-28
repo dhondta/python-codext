@@ -29,7 +29,7 @@ This codec implements the Affine monoalphabetic substitution cipher. It is param
 
 **Codec** | **Conversions** | **Aliases** | **Comment**
 :---: | :---: | --- | ---
-`affine` | Affine <-> text | `affine` (uses default mask "`?l?u?s`" with `a=1` and `b=2`), `affine_cipher-?l?u?d?s-5,8`, `affine- .,?!?u?d-23,6`, ...
+`affine` | Affine <-> text | `affine`, `affine_cipher-?l?u?d?s-5,8`, `affine-?s.,?!?u?d-23,6`, ... | Mask-generated alphabet ; uses default mask "`?l?u?s`" with `a=1` and `b=2`
 
 ```python
 >>> codext.encode("this is a test", "affine")
@@ -58,7 +58,7 @@ It implements the monoalphabetic substitution cipher used for the Hebrew alphabe
 
 **Codec** | **Conversions** | **Aliases** | **Comment**
 :---: | :---: | --- | ---
-`atbash` | Atbash <-> text | `atbash` (uses default mask "`lus`"), `atbash_cipher-?l?d?s`, ...
+`atbash` | Atbash <-> text | `atbash`, `atbash_cipher-?l?d?s`, ... | Mask-generated alphabet ; uses default mask "`?l?u?s`"
 
 ```python
 >>> codext.encode("this is a test", "atbash")
