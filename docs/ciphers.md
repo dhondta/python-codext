@@ -130,6 +130,27 @@ This is a dynamic encoding, that is, it can be called with an integer to define 
 
 -----
 
+### Shift
+
+This is a dynamic encoding, that is, it can be called with an integer to define the shift offset. Encoding will apply a positive offset, decoding will apply a negative one.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`shiftN` | shift(1) <-> text | `shift1`, `shift-1`, `shift_1` | 
+`shiftN` | shift(X) <-> text | ... | 
+`shiftN` | shift(255) <-> text | `shift255`, `shift-255`, `shift_255` | 
+
+```python
+>>> codext.encode("this is a test", "shift-3")
+'wklv#lv#d#whvw'
+>>> codext.decode("wklv#lv#d#whvw", "shift10")
+'mabl\x19bl\x19Z\x19m^lm'
+>>> codext.encode("mabl\x19bl\x19Z\x19m^lm", "ordshift_7")
+'this is a test'
+```
+
+-----
+
 ### XOR with 1 byte
 
 This is a dynamic encoding, that is, it can be called with an integer to define the ordinal of the byte to XOR with the input text.

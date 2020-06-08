@@ -29,6 +29,7 @@ This library extends the native `codecs` library and provides some new encodings
 `radio` | Radio <-> text | aka NATO or radio phonetic alphabet
 `resistor` | Resistor <-> text | aka resistor color codes
 `rot-N` | ROT(N) <-> text | aka Caesar cipher (N belongs to [1,25])
+`shift` | shift(N) <-> text | shift ordinals with N (belongs to [1,255])
 `url` | URL <-> text | aka URL encoding
 `xor-N` | XOR(N) <-> text | XOR with a single byte (N belongs to [1,255])
 `whitespace` | Whitespaces <-> text | replaces bits with whitespaces and tabs
