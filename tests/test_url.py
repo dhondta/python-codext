@@ -17,3 +17,8 @@ if PY3:
             self.assertEqual(codecs.encode(b(STR), "urlencode"), b(URL))
             self.assertEqual(codecs.decode(URL, "urlencode"), STR)
             self.assertEqual(codecs.decode(b(URL), "url"), b(STR))
+            STR = "test/test.txt"
+            URL = "test/test%2etxt"
+            self.assertEqual(codecs.decode(URL, "url"), STR)
+            URL = "test%2ftest.txt"
+            self.assertEqual(codecs.decode(URL, "url"), STR)

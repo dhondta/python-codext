@@ -230,7 +230,7 @@ def add_map(ename, encmap, repl_char="?", sep="", ignore_case=None, no_error=Fal
                     if tmp is None:
                         raise LookupError("Bad parameter for encoding '{}': '{}'".format(ename, p))
                     smapdict = tmp
-                # case 4: encodinc characters translation
+                # case 4: encoding characters translation
                 else:
                     # collect base tokens in order of appearance in the mapping dictionary
                     base_tokens = ""
@@ -290,10 +290,7 @@ def add_map(ename, encmap, repl_char="?", sep="", ignore_case=None, no_error=Fal
                     except KeyError:
                         if icase and not case_changed:
                             token_inv_case = getattr(token, case)()
-                            r = __get_value(token_inv_case, position, True)
-                            if r == token_inv_case + lsep and errors == "leave":
-                                return token + lsep
-                            return r
+                            return __get_value(token_inv_case, position, True)
                         return __handle_error(token, position)
                                 
                 def __handle_error(token, position):
@@ -322,10 +319,6 @@ def add_map(ename, encmap, repl_char="?", sep="", ignore_case=None, no_error=Fal
                         for l in range(tminlen, tmaxlen + 1):
                             token = text[cursor:cursor+l]
                             if token in smapdict.keys() or icase and getattr(token, case)() in smapdict.keys():
-                                # do not forget to handle bad chars already collected at this point
-                                if len(bad) > 0:
-                                    r += __get_value(bad, cursor - len(bad))
-                                    bad = ""
                                 r += __get_value(token, cursor)
                                 cursor += l
                                 break
@@ -334,7 +327,7 @@ def add_map(ename, encmap, repl_char="?", sep="", ignore_case=None, no_error=Fal
                             bad += text[cursor]
                             cursor += 1
                             # if the number of bad chars is the minimum token length, consume it and start a new buffer
-                            if len(bad) == tminlen:
+                            if len(bad) == tminlen or errors == "leave":
                                 r += __handle_error(bad, cursor - len(bad))
                                 bad = ""
                 if binary and decode:
