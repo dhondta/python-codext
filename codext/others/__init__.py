@@ -2,5 +2,6 @@
 from .dna import *
 from .dummy import *
 from .markdown import *
-from .ordinals import *
+from .octal import *
+from .ordinal import *
 from .url import *
