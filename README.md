@@ -25,8 +25,8 @@ This library extends the native `codecs` library and provides some new encodings
 `markdown` | markdown --> HTML | unidirectional
 `morse` | morse <-> text | uses whitespace as a separator
 `nokia3310` | Nokia 3310 keystrokes <-> text | uses "`-`" as a separator for encoding, "`-`" or "`_`" or whitespace for decoding
-`octal` | Octal <-> text | dummy octal conversion
-`ordinal` | Ordinal <-> text | dummy character ordinals conversion
+`octal` | Octal <-> text | dummy octal conversion (converts to 3-digits groups)
+`ordinal` | Ordinal <-> text | dummy character ordinals conversion (converts to 3-digits groups)
 `radio` | Radio <-> text | aka NATO or radio phonetic alphabet
 `resistor` | Resistor <-> text | aka resistor color codes
 `rot-N` | ROT(N) <-> text | aka Caesar cipher (N belongs to [1,25])
@@ -34,6 +34,14 @@ This library extends the native `codecs` library and provides some new encodings
 `url` | URL <-> text | aka URL encoding
 `xor-N` | XOR(N) <-> text | XOR with a single byte (N belongs to [1,255])
 `whitespace` | Whitespaces <-> text | replaces bits with whitespaces and tabs
+
+A few variants are also implemented.
+
+**Codec** | **Conversions** | **Comment**
+:---: | :---: | ---
+`octal-spaced` | Octal (whitespace-separated) <-> text | dummy octal conversion
+`ordinal-spaced` | Ordinal (whitespace-separated) <-> text | dummy character ordinals conversion
+`whitespace_after_before` | Whitespaces[letter]whitespaces <-> text | encodes characters as new characters with whitespaces before and after according to an equation described in the codec name (e.g. "`whitespace+2*after-3*before`")
 
 
 ## Setup
@@ -123,3 +131,32 @@ Example with morse:
 	f.read()
 'this is a test'
 ```
+
+Example with whitespaces before and after:
+
+```python
+>>> codext.decode("""
+      =            
+              X         
+   :            
+      x         
+  n  
+    r 
+        y   
+      Y            
+              y        
+     p    
+         a       
+ `          
+            n            
+          |    
+  a          
+o    
+       h        
+          `            
+          g               
+           o 
+   z      """, "whitespace-after+before")
+'CSC{not_so_invisible}'
+```
+

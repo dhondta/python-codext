@@ -7,6 +7,10 @@ This codec:
 - decodes file content to str (read)
 - encodes file content from str to bytes (write)
 """
+import random
+import re
+from string import printable
+
 from ..__common__ import *
 
 
@@ -14,3 +18,40 @@ ENCMAP = {r'': {'0': "\t", '1': " "}, r'[-_]inv(erted)?': {'0': " ", '1': "\t"}}
 
 
 add_map("whitespace", ENCMAP, binary=True, pattern=r"^whitespace(?:s)?([-_]inv(?:erted)?)?$")
+
+
+def wsba_encode(p):
+    eq = "ord(c)" + p
+    def encode(text, errors="strict"):
+        r = []
+        for c in text:
+            enc = "\x00"
+            offset = random.randint(-10,10)
+            while enc not in printable[:-6]:
+                after = random.randint(0, 20)
+                before = random.randint(0, 20)
+                enc = chr(eval(eq) % 256)
+            r.append(" " * before + enc + " " * after)
+        s = "\n".join(r)
+        return s, len(s)
+    return encode
+
+
+def wsba_decode(p):
+    eq = "ord(c)" + "".join({'-':"+",'+':"-"}.get(c, c) for c in p)
+    def decode(text, errors="strict"):
+        s = ""
+        for line in text.split("\n"):
+            if len(line.strip()) == 0:
+                continue
+            after = len(line) - len(line.rstrip(" "))
+            before = len(line) - len(line.lstrip(" "))
+            c = line[before]
+            s += chr(eval(eq))
+        return s, len(s)
+    return decode
+
+
+op = r"[+-](?:\d+(?:\.\d+)?[*/])?"
+add("whitespace_after_before", wsba_encode, wsba_decode,
+    pattern=r"(?i)whitespace("+op+r"before"+op+r"after|"+op+r"after"+op+r"before)$")

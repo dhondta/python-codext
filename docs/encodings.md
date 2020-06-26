@@ -263,6 +263,7 @@ This simple encoding replaces zeros and ones of the binary version of the input 
 **Codec** | **Conversions** | **Aliases** | **Comment**
 :---: | :---: | --- | ---
 `whitespace` | Whitespaces <-> text | `whitespaces?-inv(erted)?` | The default encoding uses tabs for zeros and spaces for ones
+`whitespace_after_before` | Whitespaces[letter]whitespaces <-> text | | This codec encodes characters as new characters with whitespaces before and after according to an equation described in the codec name (e.g. "`whitespace+2*after-3*before`")
 
 ```python
 >>> codext.encode("test", "whitespace")
@@ -272,5 +273,12 @@ This simple encoding replaces zeros and ones of the binary version of the input 
 >>> codext.encode("test", "whitespaces-inv")
 ' \t\t\t \t   \t\t  \t \t \t\t\t  \t\t \t\t\t \t  '
 >>> codext.decode(" \t\t\t \t   \t\t  \t \t \t\t\t  \t\t \t\t\t \t  ", "whitespaces_inverted")
+'test'
+```
+
+```python
+>>> codext.encode("test", "whitespace+after-before")
+'             m      \n        l               \n   u     \n            m     '
+>>> codext.decode("             m      \n        l               \n   u     \n            m     ", "whitespace+after-before")
 'test'
 ```
