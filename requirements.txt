@@ -1,2 +1,2 @@
-markdown2
+markdown2>=2.3.9
 six
