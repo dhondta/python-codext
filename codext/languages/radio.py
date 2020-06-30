@@ -20,3 +20,4 @@ ENCMAP = {
 
 add_map("radio", ENCMAP, sep=" ", ignore_case="both",
         pattern=r"^(?:military|nato|radio)(?:[-_]phonetic)?[-_]alphabet?$")
+

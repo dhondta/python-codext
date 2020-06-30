@@ -13,3 +13,4 @@ __source__    = "https://github.com/dhondta/python-codext"
 
 with open(os.path.join(os.path.dirname(__file__), "VERSION.txt")) as f:
     __version__ = f.read().strip()
+

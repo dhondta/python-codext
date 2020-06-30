@@ -18,3 +18,4 @@ ENCMAP2 = {chr(i): oct2(i).zfill(3) for i in range(256)}
 
 add_map("octal-spaced", ENCMAP1, sep=" ", pattern=r"^octals?[-_]spaced$")
 add_map("octal", ENCMAP2, pattern=r"^octals?$")
+

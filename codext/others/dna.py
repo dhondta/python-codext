@@ -25,3 +25,4 @@ for i in range(8):
 
 
 add_map("dna", ENCMAP, binary=True, pattern=r"dna[-_]?([1-8])$")
+

@@ -18,3 +18,4 @@ def encmap_factory(mask=None):
 
 
 add_map("atbash", encmap_factory, pattern=r"atbash(?:[-_]cipher)?(?:[-_](.+))?$")
+

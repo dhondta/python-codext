@@ -14,3 +14,4 @@ ENCMAP = {k: v for k, v in zip("abeiostABEIOSTZ", "483105748310572")}
 
 
 add_map("leet", ENCMAP, pattern=r"(?:leet|1337|leetspeak)$", no_error=True)
+

@@ -15,3 +15,4 @@ ENCMAP[' '] = "/"
 
 
 add_map("resistor", ENCMAP, pattern=r"^resistors?(?:[-_]color(?:[-_]code)?)?$")
+

@@ -21,3 +21,4 @@ ENCMAP = {
 
 
 add_map("bacon", ENCMAP, sep=" ", ignore_case="encode", pattern=r"bacon(?:(?:ian)?[-_]cipher)?([\-_].{2})?$")
+

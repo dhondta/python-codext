@@ -44,3 +44,4 @@ if PY3:
     
     
     add("base100", base100_encode, base100_decode, r"(?i)^(?:base[-_]?100|emoji)$")
+

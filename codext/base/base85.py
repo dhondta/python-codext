@@ -22,3 +22,4 @@ if PY3:
         return base64.b85decode(b(input)), len(input)
 
     add("base85", base85_encode, base85_decode, r"(?i)^base[-_]?85$")
+

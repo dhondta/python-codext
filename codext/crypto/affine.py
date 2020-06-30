@@ -26,3 +26,4 @@ def encmap_factory(mask=None):
 
 
 add_map("affine", encmap_factory, pattern=r"affine(?:[-_]cipher)?(?:[-_](.+?\-\d+\,\d+))?$")
+

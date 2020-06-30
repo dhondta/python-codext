@@ -88,3 +88,4 @@ base(B91, r"(?i)^base[-_]?91(|[-_]inv(?:erted)?)$")
 # generic base encodings
 for i in range(2, 256):
     base(i, r"(?i)^base[-_]?%d[-_]generic$" % i)
+

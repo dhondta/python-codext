@@ -28,3 +28,4 @@ ENCMAP = {
 
 
 add_map("morse", ENCMAP, "#", " ", ignore_case="encode", pattern=r"^morse([-_]?.{3})?$")
+

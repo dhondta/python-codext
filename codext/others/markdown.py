@@ -18,3 +18,4 @@ def markdown_encode(mdtext, errors="strict"):
 # note: the group is NOT captured so that the pattern is only used to match the name of the codec and not to dynamically
 #        bind to a parametrizable encode function
 add("markdown", markdown_encode, pattern=r"^(?:markdown|Markdown|md)$")
+

@@ -19,3 +19,4 @@ for i in range(256):
 
 
 add_map("url", ENCMAP, ignore_case="decode", no_error=True, pattern=r"^url(?:encode)?$")
+

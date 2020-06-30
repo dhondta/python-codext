@@ -41,3 +41,4 @@ for i in range(4):
 
 
 add_map("barbie", ENCMAP, pattern=r"^barbie[-_]?([1-4])$")
+

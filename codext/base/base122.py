@@ -19,3 +19,4 @@ def base122_decode(input, errors="strict"):
 
 
 add("base122", base122_encode, base122_decode, r"(?i)^base[-_]?122$")
+

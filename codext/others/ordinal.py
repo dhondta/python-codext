@@ -16,3 +16,4 @@ ENCMAP2 = {chr(i): str(i).zfill(3) for i in range(256)}
 
 add_map("ordinal-spaced", ENCMAP1, sep=" ", pattern=r"^ordinals?[-_]spaced$")
 add_map("ordinal", ENCMAP2, pattern=r"^ordinals?$")
+

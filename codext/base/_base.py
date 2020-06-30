@@ -152,3 +152,4 @@ def base(charset, pattern=None, pow2=False, encode_template=base_encode, decode_
     if pattern is None:
         pattern = "base{}".format(n)
     add("base{}".format(n), encode, decode, pattern)
+

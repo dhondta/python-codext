@@ -81,3 +81,4 @@ def main():
             except:
                 c = c.decode("latin-1")
         print(c, end="")
+

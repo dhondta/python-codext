@@ -116,3 +116,4 @@ def base2n_decode(string, charset, errors="strict", exc=Base2NDecodeError):
     r += chr(int(bs, 2))
     np = int(ceil(n_pad * nb_in / 8.0))
     return r[:-np] if np > 0 else r
+

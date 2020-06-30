@@ -33,3 +33,4 @@ def rot_decode(i):
 
 
 add("rotN", rot_encode, rot_decode, r"(?i)rot[-_]?([1-9]|1[0-9]|2[0-5])$")
+
