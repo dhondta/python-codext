@@ -134,25 +134,6 @@ It supports of course letters and digits, but also a few special characters: `.,
 
 -----
 
-### Nokia
-
-At this time, only Nokia 3310 keystrokes is supported.
-
-**Codec** | **Conversions** | **Aliases** | **Comment**
-:---: | :---: | --- | ---
-`nokia3310` | Nokia 3310 keystrokes <-> text | `nokia-3310`, `nokia_3310` | uses "`-`" as a separator for encoding, "`-`" or "`_`" or whitespace for decoding
-
-```python
->>> codext.encode("this is a test", "nokia3310")
-'8-44-444-7777-0-444-7777-0-2-0-8-33-7777-8'
->>> codext.decode("8_44_444_7777_0_444_7777_0_2_0_8_33_7777_8", "nokia3310")
-'this is a test'
->>> codext.decode("8_44_444_7777_0-444-7777_0-2_0_8_33-7777-8", "nokia3310")
-'this is a test'
-```
-
------
-
 ### Octal
 
 This simple codec converts characters into their octal values.
@@ -233,6 +214,25 @@ This uses the [electronic color code](https://en.wikipedia.org/wiki/Electronic_c
 '\x1b[48;5;130m \x1b[0;00m\x1b[48;5;1m \x1b[0;00m\x1b[48;5;214m \x1b[0;00m\x1b[48;5;11m \x1b[0;00m'
 >>> codext.decode("\x1b[48;5;130m \x1b[0;00m\x1b[48;5;1m \x1b[0;00m\x1b[48;5;214m \x1b[0;00m\x1b[48;5;11m \x1b[0;00m", "resistors_color")
 '1234'
+```
+
+-----
+
+### SMS (T9)
+
+This codec.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`sms` | Phone keystrokes <-> text | `nokia`, `nokia_3310`, `t9` | uses "`-`" as a separator for encoding, "`-`" or "`_`" or whitespace for decoding
+
+```python
+>>> codext.encode("this is a test", "sms")
+'8-44-444-7777-0-444-7777-0-2-0-8-33-7777-8'
+>>> codext.decode("8_44_444_7777_0_444_7777_0_2_0_8_33_7777_8", "nokia")
+'this is a test'
+>>> codext.decode("8_44_444_7777_0-444-7777_0-2_0_8_33-7777-8", "t9")
+'this is a test'
 ```
 
 -----
