@@ -24,8 +24,8 @@ except ImportError:  # Python 3
     maketrans = str.maketrans
 
 
-__all__ = ["add", "add_map", "b", "clear", "codecs", "ensure_str", "get_alphabet_from_mask", "maketrans", "re",
-           "register", "remove", "reset", "s2i", "MASKS", "PY3"]
+__all__ = ["add", "add_map", "b", "clear", "codecs", "ensure_str", "get_alphabet_from_mask", "handle_error",
+           "maketrans", "re", "register", "remove", "reset", "s2i", "MASKS", "PY3"]
 CODECS_REGISTRY = None
 MASKS = {
     'a': printable,
@@ -291,20 +291,7 @@ def add_map(ename, encmap, repl_char="?", sep="", ignore_case=None, no_error=Fal
                         if icase and not case_changed:
                             token_inv_case = getattr(token, case)()
                             return __get_value(token_inv_case, position, True)
-                        return __handle_error(token, position)
-                                
-                def __handle_error(token, position):
-                    if errors == "strict":
-                        raise exc("'{}' codec can't {}code character '{}' in position {}"
-                                  .format(ename, ["en", "de"][decode], token, position))
-                    elif errors == "leave":
-                        return token + lsep
-                    elif errors == "replace":
-                        return repl_char * rminlen + lsep
-                    elif errors == "ignore":
-                        return ""
-                    else:
-                        raise ValueError("Unsupported error handling '{}'".format(errors))
+                        return handle_error(ename, errors, exc, lsep, repl_char, rminlen, decode)(token, position)
                 
                 # if a separator is defined, rely on it by splitting the input text
                 if decode and len(sep) > 0:
@@ -328,7 +315,8 @@ def add_map(ename, encmap, repl_char="?", sep="", ignore_case=None, no_error=Fal
                             cursor += 1
                             # if the number of bad chars is the minimum token length, consume it and start a new buffer
                             if len(bad) == tminlen or errors == "leave":
-                                r += __handle_error(bad, cursor - len(bad))
+                                posn = cursor - len(bad)
+                                r += handle_error(ename, errors, exc, lsep, repl_char, rminlen, decode)(bad, posn)
                                 bad = ""
                 if binary and decode:
                     tmp, r = "", r.replace(lsep, "")
@@ -469,6 +457,23 @@ def get_alphabet_from_mask(mask):
     return alphabet
 
 
+# generic error handling function
+def handle_error(ename, errors, exc=ValueError, sep="", repl_char="?", repl_minlen=1, decode=False):
+    def _handle_error(token, position):
+        if errors == "strict":
+            raise exc("'{}' codec can't {}code character '{}' in position {}"
+                      .format(ename, ["en", "de"][decode], token, position))
+        elif errors == "leave":
+            return token + sep
+        elif errors == "replace":
+            return repl_char * repl_minlen + sep
+        elif errors == "ignore":
+            return ""
+        else:
+            raise ValueError("Unsupported error handling '{}'".format(errors))
+    return _handle_error
+
+
 # codecs module hooks
 orig_lookup   = _codecs.lookup
 orig_register = _codecs.register
@@ -541,3 +546,4 @@ def __register(search_function, add_to_codecs=True):
     """
     register(search_function, add_to_codecs)
 codecs.register = __register
+
