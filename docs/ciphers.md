@@ -29,7 +29,7 @@ This codec implements the Affine monoalphabetic substitution cipher. It is param
 
 **Codec** | **Conversions** | **Aliases** | **Comment**
 :---: | :---: | --- | ---
-`affine` | Affine <-> text | `affine`, `affine_cipher-?l?u?d?s-5,8`, `affine-?s.,?!?u?d-23,6`, ... | Mask-generated alphabet ; uses default mask "`?l?u?s`" with `a=1` and `b=2`
+`affine` | text <-> affine ciphertext | `affine`, `affine_cipher-?l?u?d?s-5,8`, `affine-?s.,?!?u?d-23,6`, ... | Mask-generated alphabet ; uses default mask "`?l?u?s`" with `a=1` and `b=2`
 
 ```python
 >>> codext.encode("this is a test", "affine")
@@ -58,7 +58,7 @@ It implements the monoalphabetic substitution cipher used for the Hebrew alphabe
 
 **Codec** | **Conversions** | **Aliases** | **Comment**
 :---: | :---: | --- | ---
-`atbash` | Atbash <-> text | `atbash`, `atbash_cipher-?l?d?s`, ... | Mask-generated alphabet ; uses default mask "`?l?u?s`"
+`atbash` | text <-> Atbash ciphertext | `atbash`, `atbash_cipher-?l?d?s`, ... | Mask-generated alphabet ; uses default mask "`?l?u?s`"
 
 ```python
 >>> codext.encode("this is a test", "atbash")
@@ -77,7 +77,7 @@ It support only letters.
 
 **Codec** | **Conversions** | **Aliases** | **Comment**
 :---: | :---: | --- | ---
-`bacon` | Bacon <-> text | `bacon-cipher`, `baconian_cipher`, `bacon-01`, `bacon-10` | Dynamic tokens mapping ; we can define a mapping of encoding's tokens (original tokens: `ab`)
+`bacon` | text <-> Bacon ciphertext | `bacon-cipher`, `baconian_cipher`, `bacon-01`, `bacon-10` | Dynamic tokens mapping ; we can define a mapping of encoding's tokens (original tokens: `ab`)
 
 ```python
 >>> codext.encode("this is a test", "bacon")
@@ -96,7 +96,7 @@ It implements the cipher for its 4 different keys.
 
 **Codec** | **Conversions** | **Aliases** | **Comment**
 :---: | :---: | --- | ---
-`barbie` | Barbie <-> text | `barbie-1`, `barbie-2`, `barbie-3`, `barbie-4`
+`barbie` | text <-> Barbie ciphertext | `barbie-1`, `barbie-2`, `barbie-3`, `barbie-4`
 
 ```python
 >>> codext.encode("this is a test", "barbie-1")
@@ -115,9 +115,9 @@ This is a dynamic encoding, that is, it can be called with an integer to define 
 
 **Codec** | **Conversions** | **Aliases** | **Comment**
 :---: | :---: | --- | ---
-`rotN` | ROT(1) <-> text | `rot1`, `rot-1`, `rot_1` | 
-`rotN` | ROT(X) <-> text | ... | 
-`rotN` | ROT(25) <-> text | `rot25`, `rot-25`, `rot_25` | 
+`rotN` | text <-> rot(1) ciphertext | `rot1`, `rot-1`, `rot_1` | 
+`rotN` | text <-> rot(X) ciphertext | ... | 
+`rotN` | text <-> rot(25) ciphertext | `rot25`, `rot-25`, `rot_25` | 
 
 ```python
 >>> codext.encode("this is a test", "rot-15")
@@ -136,9 +136,9 @@ This is a dynamic encoding, that is, it can be called with an integer to define 
 
 **Codec** | **Conversions** | **Aliases** | **Comment**
 :---: | :---: | --- | ---
-`shiftN` | shift(1) <-> text | `shift1`, `shift-1`, `shift_1` | 
-`shiftN` | shift(X) <-> text | ... | 
-`shiftN` | shift(255) <-> text | `shift255`, `shift-255`, `shift_255` | 
+`shiftN` | text <-> shift(1) ciphertext | `shift1`, `shift-1`, `shift_1` | 
+`shiftN` | text <-> shift(X) ciphertext | ... | 
+`shiftN` | text <-> shift(255) ciphertext | `shift255`, `shift-255`, `shift_255` | 
 
 ```python
 >>> codext.encode("this is a test", "shift-3")
@@ -157,9 +157,9 @@ This is a dynamic encoding, that is, it can be called with an integer to define 
 
 **Codec** | **Conversions** | **Aliases** | **Comment**
 :---: | :---: | --- | ---
-`xorN` | XOR(1) <-> text | `XOR1`, `xor1`, `xor-1`, `xor_1` | 
-`xorN` | XOR(X) <-> text | ... | 
-`xorN` | XOR(255) <-> text | `XOR255`, `xor255`, `xor-255`, `xor_255` | 
+`xorN` | text <-> XOR(1) ciphertext | `XOR1`, `xor1`, `xor-1`, `xor_1` | 
+`xorN` | text <-> XOR(X) ciphertext | ... | 
+`xorN` | text <-> XOR(255) ciphertext | `XOR255`, `xor255`, `xor-255`, `xor_255` | 
 
 ```python
 >>> codext.encode("this is a test", "xor-10")
@@ -171,3 +171,4 @@ This is a dynamic encoding, that is, it can be called with an integer to define 
 >>> codext.encode("~bcy*cy*k*~oy~", "xor-10")
 'this is a test'
 ```
+

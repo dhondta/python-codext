@@ -10,13 +10,13 @@ Common base encodings with N a power of 2:
 
 **Codec** | **Conversions** | **Aliases** | **Comment**
 :---: | :---: | --- | ---
-`base2` | Base2 <-> text | `(base[-_]?2|bin)-inv(erted)?` | 
-`base4` | Base4 <-> text | `base[-_]?4-inv(erted)` | charset: `1234`
-`base8` | Base8 <-> text | `base[-_]?8-inv(erted)` | charset: `abcdefgh`
-`base16` | Base16 <-> text | `base[-_]?16-inv(erted)` | 
-`base32` | Base32 <-> text | `base[-_]?32-inv(erted)` | 
-`zbase32` | ZBase32 <-> text | `z[-_]?base[-_]?32` | human-oriented Base32
-`base64` | Base64 <-> text | `base[-_]?64-inv(erted)` | 
+`base2` | text <-> Base2 encoded text | `(base[-_]?2|bin)-inv(erted)?` | 
+`base4` | text <-> Base4 encoded text | `base[-_]?4-inv(erted)` | charset: `1234`
+`base8` | text <-> Base8 encoded text | `base[-_]?8-inv(erted)` | charset: `abcdefgh`
+`base16` | text <-> Base16 encoded text | `base[-_]?16-inv(erted)` | 
+`base32` | text <-> Base32 encoded text | `base[-_]?32-inv(erted)` | 
+`zbase32` | text <-> ZBase32 encoded text | `z[-_]?base[-_]?32` | human-oriented Base32
+`base64` | text <-> Base64 encoded text | `base[-_]?64-inv(erted)` | 
 
 !!! note "Aliases"
     
@@ -60,10 +60,10 @@ Note that for `base64`, it overwrites the native `base64_codec` to also support 
 
 **Codec** | **Conversions** | **Aliases** | **Comment**
 :---: | :---: | --- | ---
-`base3` | Base3 <-> text | `base[-_]?36(|[-_]inv(erted)?)` | 
-`base36` | Base36 <-> text | `base[-_]?36(|[-_]inv(erted)?)` | 
-`base58` | Base58 <-> text | `base[-_]?58(|[-_](bc|bitcoin|rp|ripple|fl|flickr|short[-]?url|url))` | supports Bitcoin, Ripple and short URL
-`base62` | Base62 <-> text | `base[-_]?62(|[-_]inv(erted)?)` | 
+`base3` | text <-> Base3 encoded text | `base[-_]?36(|[-_]inv(erted)?)` | 
+`base36` | text <-> Base36 encoded text | `base[-_]?36(|[-_]inv(erted)?)` | 
+`base58` | text <-> Base58 encoded text | `base[-_]?58(|[-_](bc|bitcoin|rp|ripple|fl|flickr|short[-]?url|url))` | supports Bitcoin, Ripple and short URL
+`base62` | text <-> Base62 encoded text | `base[-_]?62(|[-_]inv(erted)?)` | 
 
 ```python
 >>> codext.encode("test", "base3")
@@ -109,8 +109,8 @@ Note that for `base64`, it overwrites the native `base64_codec` to also support 
 
 **Codec** | **Conversions** | **Aliases** | **Comment**
 :---: | :---: | --- | ---
-`base85` | Base85 <-> text | `base[-_]?85` | Python 3 only (relies on `base64` module)
-`base100` | Base100 <-> text | `base[-_]?100|emoji` | Python 3 only
+`base85` | text <-> Base85 encoded text | `base[-_]?85` | Python 3 only (relies on `base64` module)
+`base100` | text <-> Base100 encoded text | `base[-_]?100|emoji` | Python 3 only
 
 With Python 3, `base85` and `base100` (emoji's) are also supported.
 
@@ -127,3 +127,4 @@ With Python 3, `base85` and `base100` (emoji's) are also supported.
 >>> codecs.decode("👫👟👠👪🐗👠👪🐗👘🐗👫👜👪👫", "base100")
 'this is a test'
 ```
+
