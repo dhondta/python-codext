@@ -458,11 +458,11 @@ def get_alphabet_from_mask(mask):
 
 
 # generic error handling function
-def handle_error(ename, errors, exc=ValueError, sep="", repl_char="?", repl_minlen=1, decode=False):
+def handle_error(ename, errors, exc=ValueError, sep="", repl_char="?", repl_minlen=1, decode=False, item="position"):
     def _handle_error(token, position):
         if errors == "strict":
-            raise exc("'{}' codec can't {}code character '{}' in position {}"
-                      .format(ename, ["en", "de"][decode], token, position))
+            raise exc("'{}' codec can't {}code character '{}' in {} {}"
+                      .format(ename, ["en", "de"][decode], token, item, position))
         elif errors == "leave":
             return token + sep
         elif errors == "replace":
