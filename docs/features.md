@@ -86,6 +86,36 @@ In this second example, we can see that:
 
 -----
 
+## Search for encodings
+
+Natively, `codecs` provides a `lookup` function that allows to get the `CodecInfo` object for the desired encoding. This performs a lookup in the registry based on an exact match. Sometimes, it can be useful to search for available encodings based on a regular expression. Therefore, a `search` function is added by `codext` to allow to get a list of encoding names matching the input regex.
+
+```python
+>>> codext.search("baudot")
+['baudot', 'baudot_spaced', 'baudot_tape']
+>>> codext.search("al")
+['capitalize', 'octal', 'octal_spaced', 'ordinal', 'ordinal_spaced', 'radio']
+>>> codext.search("white")
+['whitespace', 'whitespace_after_before']
+```
+
+!!! note "For new encodings only"
+    
+    The `search` function relies on `codext`'s registry and not the native one, hence returning only regex matches for new encodings added with `codext` and an exact match by also using the `lookup` function.
+
+Also, `codext` provides an `examples` function to get some examples of valid encoding names. This is especially useful when it concerns dynamicly named encodings (e.g. `rot`, `shift` or `dna`).
+
+```python
+>>> codext.examples("rot")
+['rot-14', 'rot-24', 'rot-7', 'rot18', 'rot3', 'rot4', 'rot6', 'rot_1', 'rot_12', 'rot_2']
+>>> codext.examples("dna")
+['dna-1', 'dna-2', 'dna-5', 'dna1', 'dna4', 'dna5', 'dna6', 'dna8', 'dna_3', 'dna_5']
+>>> codext.examples("barbie", 5)
+['barbie-1', 'barbie1', 'barbie4', 'barbie_2', 'barbie_4']
+```
+
+-----
+
 ## Add a custom map encoding
 
 New codecs using encoding maps can be added easily using the new function `add_map`.
@@ -168,12 +198,7 @@ New codecs can be removed easily using the new function `remove`, which will onl
 >>> codext.encode("test", "bin")
 
 Traceback (most recent call last):
-  File "<pyshell#39>", line 1, in <module>
-    codext.encode("test", "bin")
-  File "codext/__common__.py", line 245, in __encode
-    return __lookup(encoding).encode(obj, errors)[0]
-  File "codext/__common__.py", line 259, in __lookup
-    codecs.lookup = __lookup
+  [...]
 LookupError: unknown encoding: bin
 ```
 
@@ -194,13 +219,9 @@ It can be useful while playing with encodings e.g. from Idle to be able to remov
 ```python
 >>> codext.clear()
 >>> codext.encode("test", "bin")
+
 Traceback (most recent call last):
-  File "<pyshell#4>", line 1, in <module>
-    codext.encode("test", "bin")
-  File "/mnt/data/Projects/maint/python-codext/codext/__common__.py", line 245, in __encode
-    return __lookup(encoding).encode(obj, errors)[0]
-  File "/mnt/data/Projects/maint/python-codext/codext/__common__.py", line 258, in __lookup
-    return orig_lookup(encoding)
+  [...]
 LookupError: unknown encoding: bin
 ```
 
@@ -217,3 +238,4 @@ LookupError: unknown encoding: bin
 In order to select the right de/encoding function and avoid any conflict, the native `codecs` library registers search functions (using the `register(search_function)` function), called in order of registration while searching for a codec.
 
 While being imported, `codext` hooks the following base functions of `codecs` dealing with the codecs registry: `encode`, `decode`, `lookup` and `register`. This way, `codext` holds a private registry that is called before reaching out to the native one, causing the codecs defined in `codext` to override native codecs with a matching registry search function.
+

@@ -2,11 +2,13 @@
 import _codecs
 import codecs
 import os
+import random
 import re
 import sys
-from functools import wraps
+from functools import reduce, wraps
 from importlib import import_module
 from inspect import currentframe
+from itertools import chain, product
 from six import binary_type, string_types, text_type
 from string import *
 from types import FunctionType
@@ -24,8 +26,9 @@ except ImportError:  # Python 3
     maketrans = str.maketrans
 
 
-__all__ = ["add", "add_map", "b", "clear", "codecs", "ensure_str", "get_alphabet_from_mask", "handle_error",
-           "maketrans", "re", "register", "remove", "reset", "s2i", "MASKS", "PY3"]
+__all__ = ["add", "add_map", "b", "clear", "codecs", "decode", "encode", "ensure_str", "examples",
+           "get_alphabet_from_mask", "handle_error", "lookup", "maketrans", "re", "register", "remove", "reset", "s2i",
+           "search", "MASKS", "PY3"]
 CODECS_REGISTRY = None
 MASKS = {
     'a': printable,
@@ -146,6 +149,7 @@ def add(ename, encode=None, decode=None, pattern=None, text=True, add_to_codecs=
             _is_text_encoding=text,
         )
     getregentry.__name__ = re.sub(r"[\s\-]", "_", ename)
+    getregentry.__pattern__ = pattern
     register(getregentry, add_to_codecs)
 
 
@@ -348,34 +352,41 @@ codecs.add_map = add_map
 
 
 def clear():
-    """
-    Clear codext's local registry of search functions.
-    """
+    """ Clear codext's local registry of search functions. """
     global __codecs_registry
     __codecs_registry = []
 codecs.clear = clear
 
 
+def examples(encoding_regex, number=10):
+    """ Use the search function to get the matching encodings and provide examples of valid encoding names. """
+    matches = search(encoding_regex)
+    examples = []
+    for n in matches:
+        for search_function in __codecs_registry:
+            if n == search_function.__name__:
+                temp = []
+                for s in generate_strings_from_regex(search_function.__pattern__, yield_max=256*number):
+                    temp.append(s)
+                random.shuffle(temp)
+                examples.extend(sorted([temp[i] for i in range(min(number, len(temp)))]))
+    return examples
+codecs.examples = examples
+
+
 def remove(encoding):
-    """
-    Remove all search functions matching the input encoding name from codext's
-     local registry.
-    
-    :param encoding: encoding name
-    """
+    """ Remove all search functions matching the input encoding name from codext's local registry. """
     tbr = []
-    for search in __codecs_registry:
-        if search(encoding) is not None:
-            tbr.append(search)
-    for search in tbr:
-        __codecs_registry.remove(search)
+    for search_function in __codecs_registry:
+        if search_function(encoding) is not None:
+            tbr.append(search_function)
+    for search_function in tbr:
+        __codecs_registry.remove(search_function)
 codecs.remove = remove
 
 
 def reset():
-    """
-    Reset codext's local registry of search functions.
-    """
+    """ Reset codext's local registry of search functions. """
     global CODECS_REGISTRY, __codecs_registry
     clear()
     for pkg in ["base", "crypto", "languages", "others", "stegano"]:
@@ -391,9 +402,7 @@ codecs.reset = reset
 
 # conversion functions
 def b(s):
-    """
-    Non-crashing bytes conversion function.
-    """
+    """ Non-crashing bytes conversion function. """
     if PY3:
         try:
             return s.encode("utf-8")
@@ -407,10 +416,7 @@ def b(s):
 
 
 def ensure_str(s, encoding='utf-8', errors='strict'):
-    """
-    Similar to six.ensure_str. Adapted here to avoid messing up with six version
-     errors.
-    """
+    """ Similar to six.ensure_str. Adapted here to avoid messing up with six version errors. """
     if not PY3 and isinstance(s, text_type):
         return s.encode(encoding, errors)
     elif PY3 and isinstance(s, binary_type):
@@ -423,10 +429,8 @@ def ensure_str(s, encoding='utf-8', errors='strict'):
 
 # make conversion functions compatible with input/output strings/bytes
 def fix_inout_formats(f):
-    """
-    This decorator ensures that the first output of f will have the same text
-     format as the first input (str or bytes).
-    """
+    """ This decorator ensures that the first output of f will have the same text format as the first input (str or
+     bytes). """
     @wraps(f)
     def _wrapper(*args, **kwargs):
         a0 = args[0]
@@ -439,10 +443,8 @@ def fix_inout_formats(f):
 
 # alphabet generation function from a given mask
 def get_alphabet_from_mask(mask):
-    """
-    This function generates an alphabet from the given mask. The style used is similar to Hashcat ; group keys are
-     marked with a heading "?".
-    """
+    """ This function generates an alphabet from the given mask. The style used is similar to Hashcat ; group keys are
+     marked with a heading "?". """
     i, alphabet = 0, ""
     while i < len(mask):
         c = mask[i]
@@ -475,8 +477,8 @@ def handle_error(ename, errors, exc=ValueError, sep="", repl_char="?", repl_minl
 
 
 # codecs module hooks
-orig_lookup   = _codecs.lookup
-orig_register = _codecs.register
+__orig_lookup   = _codecs.lookup
+__orig_register = _codecs.register
 
 
 def __add(ename, encode=None, decode=None, pattern=None, text=True, add_to_codecs=True):
@@ -485,65 +487,164 @@ __add.__doc__ = add.__doc__
 codecs.add = __add
 
 
-def __decode(obj, encoding='utf-8', errors='strict'):
-    """
-    Custom decode function relying on the hooked lookup function.
-    """
-    return __lookup(encoding).decode(obj, errors)[0]
-codecs.decode = __decode
+def decode(obj, encoding='utf-8', errors='strict'):
+    """ Custom decode function relying on the hooked lookup function. """
+    return lookup(encoding).decode(obj, errors)[0]
+codecs.decode = decode
 
 
-def __encode(obj, encoding='utf-8', errors='strict'):
-    """
-    Custom encode function relying on the hooked lookup function.
-    """
-    return __lookup(encoding).encode(obj, errors)[0]
-codecs.encode = __encode
+def encode(obj, encoding='utf-8', errors='strict'):
+    """ Custom encode function relying on the hooked lookup function. """
+    return lookup(encoding).encode(obj, errors)[0]
+codecs.encode = encode
 
 
-def __lookup(encoding):
-    """
-    Hooked lookup function for searching first for codecs in the local registry
-     of this module.
-    """
-    for search in __codecs_registry:
-        codecinfo = search(encoding)
+def lookup(encoding):
+    """ Hooked lookup function for searching first for codecs in the local registry of this module. """
+    for search_function in __codecs_registry:
+        codecinfo = search_function(encoding)
         if codecinfo is not None:
             return codecinfo
-    return orig_lookup(encoding)
-codecs.lookup = __lookup
+    return __orig_lookup(encoding)
+codecs.lookup = lookup
 
 
 def register(search_function, add_to_codecs=False):
     """
-    Register function for registering new codecs in the local registry of this
-     module and, if required, in the native codecs registry (for use with the
-     built-in 'open' function).
+    Register function for registering new codecs in the local registry of this module and, if required, in the native
+     codecs registry (for use with the built-in 'open' function).
     
     :param search_function: search function for the codecs registry
     :param add_to_codecs:   also add the search function to the native registry
-                            NB: this will make the codec available in the
-                                 built-in open(...) but will make it impossible
+                            NB: this will make the codec available in the built-in open(...) but will make it impossible
                                  to remove the codec later
     """
     if search_function not in __codecs_registry:
         __codecs_registry.append(search_function)
     if add_to_codecs:
-        orig_register(search_function)
+        __orig_register(search_function)
 
 
 def __register(search_function, add_to_codecs=True):
-    """
-    Hooked register function for registering new codecs in the local registry
-     of this module and in the native codecs registry (for use with the built-in
-     'open' function).
-    
-    :param search_function: search function for the codecs registry
-    :param add_to_codecs:   also add the search function to the native registry
-                            NB: this will make the codec available in the
-                                 built-in open(...) but will make it impossible
-                                 to remove the codec later
-    """
+    """ Same as register(...), but with add_to_codecs set by default to True. """
     register(search_function, add_to_codecs)
 codecs.register = __register
+
+
+def search(encoding_regex):
+    """ Function similar to lookup but allows to search for an encoding based on a regex instead. It searches this way
+     into the local registry but also tries a simple lookup with the original lookup function. """
+    matches = []
+    for search_function in __codecs_registry:
+        n = search_function.__name__
+        if re.search(encoding_regex, n):
+            matches.append(n)
+            continue
+        for s in generate_strings_from_regex(search_function.__pattern__):
+            if re.search(encoding_regex, s):
+                matches.append(n)
+                break
+    try:
+        lookup(encoding_regex)
+        matches.append(encoding_regex)
+    except:
+        pass
+    return sorted(list(set(matches)))
+codecs.search = search
+
+
+# utility function for the search feature
+CATEGORIES = {
+    'digit':     digits,
+    'not_digit': reduce(lambda x, c: x.replace(c, ""), digits, printable),
+    'space':     whitespace,
+    'not_space': reduce(lambda x, c: x.replace(c, ""), whitespace, printable),
+    'word':      ascii_letters + digits + '_',
+    'not_word':  reduce(lambda x, c: x.replace(c, ""), ascii_letters + digits + '_', printable),
+}
+REPEAT_MAX    = 20
+STAR_PLUS_MAX = 10
+YIELD_MAX     = 100
+
+
+def __gen_str_from_re(regex, star_plus_max, repeat_max, yield_max, parsed=False):
+    """ Recursive function to generate strings from a regex pattern. """
+    __groups = {}
+    tokens = []
+    if regex is None:
+        return
+    for state in (regex if parsed else re.sre_parse.parse(b(getattr(regex, "pattern", regex)))):
+        code = getattr(state[0], "name", state[0]).lower()
+        value = getattr(state[1], "name", state[1])
+        value = value.lower() if isinstance(value, str) else value
+        if code in ["assert_not", "at"]:
+            continue
+        elif code == "any":
+            tokens.append(printable.replace("\n", ""))  # should be ord(x) with x belongs to [0, 256[
+        elif code == "assert":
+            tokens.append(value[1])
+        elif code == "branch":
+            result = []
+            for r in value[1]:
+                result += list(__gen_str_from_re(r, star_plus_max, repeat_max, yield_max, True))
+            tokens.append(result)
+        elif code == "category":
+            tokens.append(CATEGORIES[value[9:]])
+        elif code == "groupref":
+            tokens.extend(__groups[value])
+        elif code == "in":
+            subtokens = list(__gen_str_from_re(value, star_plus_max, repeat_max, yield_max, True))
+            subtokens = [x for l in subtokens for x in l]
+            if subtokens[0] is False:
+                subtokens = [set(printable).difference(chars) for chars in subtokens[1:]]
+            tokens.append(subtokens)
+        elif code == "literal":
+            tokens.append(chr(value))
+        elif code in ["max_repeat", "min_repeat"]:
+            start, end = value[:2]
+            end = min(end, star_plus_max)
+            charset = list(__gen_str_from_re(value[-1], star_plus_max, repeat_max, yield_max, True))
+            subtokens = []
+            if start == 0 and end == 1:
+                subtokens.append("")
+                subtokens.extend(charset)
+            elif len(charset) ** end > repeat_max:
+                for i in range(min(repeat_max, 10 * len(charset))):
+                    n = random.randint(start, end + 1)
+                    token = "" if n == 0 else "".join(random.choice(charset) for i in range(n))
+                    if token not in subtokens:
+                        subtokens.append(token)
+                    else:
+                        i -= 1
+            else:
+                for n in range(start, end + 1):
+                    for c in product(charset, repeat=n):
+                        subtokens.append("".join(c))
+            tokens.append(subtokens)
+        elif code == "negate":
+            tokens.append(False)
+        elif code == "not_literal":
+            tokens.append(printable.replace(chr(value), ""))
+        elif code == "range":
+            tokens.append("".join(chr(i) for i in range(value[0], value[1] + 1)))
+        elif code == "subpattern":
+            result = list(__gen_str_from_re(value[-1], star_plus_max, repeat_max, yield_max, True))
+            if value[0]:
+                __groups[value[0]] = result
+            tokens.append(result)
+    if len(tokens) == 0:
+        tokens = [""]
+    i = 0
+    for result in product(*tokens):
+        yield "".join(result)
+        i += 1
+        if i >= yield_max:
+            break
+
+
+def generate_strings_from_regex(regex, star_plus_max=STAR_PLUS_MAX, repeat_max=REPEAT_MAX, yield_max=YIELD_MAX):
+    """ Utility function to generate strings from a regex pattern. """
+    i = 0
+    for result in __gen_str_from_re(regex, star_plus_max, repeat_max, yield_max):
+        yield result
 
