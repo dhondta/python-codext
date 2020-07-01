@@ -32,5 +32,5 @@ def rot_decode(i):
     return decode
 
 
-add("rotN", rot_encode, rot_decode, r"(?i)rot[-_]?([1-9]|1[0-9]|2[0-5])$")
+add("rot", rot_encode, rot_decode, r"(?i)rot[-_]?([1-9]|1[0-9]|2[0-5])$")
 

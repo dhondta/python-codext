@@ -21,6 +21,6 @@ def ord_shift_encode(i):
     return encode
 
 
-add("shiftN", ord_shift_encode, ord_shift_decode,
+add("shift", ord_shift_encode, ord_shift_decode,
     r"(?i)(?:ord(?:inal)?[-_]?)?shift[-_]?([1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])$")
 
