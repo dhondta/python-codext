@@ -12,14 +12,14 @@ from itertools import chain, product
 from six import binary_type, string_types, text_type
 from string import *
 from types import FunctionType
-try:  # Python3
-    from inspect import getfullargspec
-except ImportError:
-    from inspect import getargspec as getfullargspec
 try: # Python3
     from importlib import reload
 except ImportError:
     pass
+try:  # Python3
+    from inspect import getfullargspec
+except ImportError:
+    from inspect import getargspec as getfullargspec
 try:                 # Python 2
     from string import maketrans
 except ImportError:  # Python 3
@@ -27,8 +27,8 @@ except ImportError:  # Python 3
 
 
 __all__ = ["add", "add_map", "b", "clear", "codecs", "decode", "encode", "ensure_str", "examples",
-           "get_alphabet_from_mask", "handle_error", "lookup", "maketrans", "re", "register", "remove", "reset", "s2i",
-           "search", "MASKS", "PY3"]
+           "generate_strings_from_regex", "get_alphabet_from_mask", "handle_error", "lookup", "maketrans", "re",
+           "register", "remove", "reset", "s2i", "search", "MASKS", "PY3"]
 CODECS_REGISTRY = None
 MASKS = {
     'a': printable,
@@ -569,10 +569,11 @@ YIELD_MAX     = 100
 
 def __gen_str_from_re(regex, star_plus_max, repeat_max, yield_max, parsed=False):
     """ Recursive function to generate strings from a regex pattern. """
-    __groups = {}
-    tokens = []
     if regex is None:
         return
+    __groups = {}
+    tokens = []
+    negate = False
     for state in (regex if parsed else re.sre_parse.parse(b(getattr(regex, "pattern", regex)))):
         code = getattr(state[0], "name", state[0]).lower()
         value = getattr(state[1], "name", state[1])
@@ -582,21 +583,23 @@ def __gen_str_from_re(regex, star_plus_max, repeat_max, yield_max, parsed=False)
         elif code == "any":
             tokens.append(printable.replace("\n", ""))  # should be ord(x) with x belongs to [0, 256[
         elif code == "assert":
-            tokens.append(value[1])
+            tokens.append(list(__gen_str_from_re(value[1], star_plus_max, repeat_max, yield_max, True)))
         elif code == "branch":
             result = []
             for r in value[1]:
                 result += list(__gen_str_from_re(r, star_plus_max, repeat_max, yield_max, True))
             tokens.append(result)
         elif code == "category":
-            tokens.append(CATEGORIES[value[9:]])
+            charset = CATEGORIES[value[9:]]
+            if negate:
+                negate = False
+                charset = list(set(printable).difference(charset))
+            tokens.append(charset)
         elif code == "groupref":
             tokens.extend(__groups[value])
         elif code == "in":
             subtokens = list(__gen_str_from_re(value, star_plus_max, repeat_max, yield_max, True))
             subtokens = [x for l in subtokens for x in l]
-            if subtokens[0] is False:
-                subtokens = [set(printable).difference(chars) for chars in subtokens[1:]]
             tokens.append(subtokens)
         elif code == "literal":
             tokens.append(chr(value))
@@ -622,7 +625,7 @@ def __gen_str_from_re(regex, star_plus_max, repeat_max, yield_max, parsed=False)
                         subtokens.append("".join(c))
             tokens.append(subtokens)
         elif code == "negate":
-            tokens.append(False)
+            negate = True
         elif code == "not_literal":
             tokens.append(printable.replace(chr(value), ""))
         elif code == "range":
@@ -632,6 +635,8 @@ def __gen_str_from_re(regex, star_plus_max, repeat_max, yield_max, parsed=False)
             if value[0]:
                 __groups[value[0]] = result
             tokens.append(result)
+        else:
+            raise NotImplementedError("Unhandled code '{}'".format(code))
     if len(tokens) == 0:
         tokens = [""]
     i = 0

@@ -3,10 +3,9 @@
 """Codecs added assets' tests.
 
 """
-from unittest import TestCase
-
+import codecs
 import codext
-from codext.__common__ import *
+from unittest import TestCase
 
 
 def dummy_encode(input, errors="strict"):
@@ -69,3 +68,15 @@ class TestCommon(TestCase):
         self.assertIsNone(codext.reset())
         self.assertIsNotNone(codext.encode("test", "morse"))
         self.assertRaises(LookupError, codext.encode, "test", "dummy")
+    
+    def test_search_codecs(self):
+        self.assertIsNotNone(codext.search("morse"))
+        self.assertIsNotNone(codext.search("geohash"))
+        self.assertIsNotNone(codext.examples("morse"))
+        self.assertIsNotNone(list(codext.generate_strings_from_regex(r"[ab]{1,3}")))
+        self.assertIsNotNone(list(codext.generate_strings_from_regex(r"(?<=ab)cd")))
+        self.assertIsNotNone(list(codext.generate_strings_from_regex(r"(?<=-)\w+")))
+        self.assertIsNotNone(list(codext.generate_strings_from_regex(r"([^\s])\1")))
+        self.assertIsNotNone(list(codext.generate_strings_from_regex(r"[^\\]")))
+        self.assertIsNotNone(list(codext.generate_strings_from_regex(r"[^a]")))
+
