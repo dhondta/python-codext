@@ -2,6 +2,10 @@ With `codext`, the `codecs` library has multiple new encodings in addition to [t
 
 Unless explicitely specified, each codec supports writing to and reading from a file.
 
+!!! warning "Lossy conversion"
+    
+    Some encodings are lossy, meaning that it is not always possible to decode back to the exact start string. This should be considered especially when chaining codecs.
+
 -----
 
 ### Ascii85
@@ -10,7 +14,7 @@ This encoding relies on the `base64` library and is only supported in Python 3.
 
 **Codec** | **Conversions** | **Aliases** | **Comment**
 :---: | :---: | --- | ---
-`ascii85` | Ascii85 <-> text | none | Python 3 only
+`ascii85` | text <-> ascii85 | none | Python 3 only
 
 ```python
 >>> codext.encode("this is a test", "ascii85")
@@ -27,13 +31,65 @@ This encoding relies on the `base64` library and is only supported in Python 3.
 
 -----
 
+### Baudot
+
+It supports various formats such as CCITT-1 and CCITT-2, ITA1 and ITA2, and some others.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`baudot` | text <-> text | Baudot code bits | `baudot-ccitt1`, `baudot_ccitt2_lsb`, ... | supports CCITT-1, CCITT-2, EU/FR, ITA1, ITA2, MTK-2 (Python3 only), UK, ...
+`baudot-spaced` | text <-> Baudot code groups of bits | `baudot-spaced-ita1_lsb`, `baudot_spaced_ita2_msb`, ... | groups of 5 bits are whitespace-separated
+`baudot-tape` | text <-> Baudot code tape | `baudot-tape-mtk2`, `baudot_tape_murray`, ... | outputs a string that looks like a perforated tape
+
+!!! note "LSB / MSB"
+    
+    "`_lsb`" or "`_msb`" can be specified in the codec name to set the bits order. If not specified, it defaults to MSB.
+
+
+```python
+>>> codext.encode("12345", "baudot-fr")
+'010000000100010001000010100111'
+>>> codext.decode("010000000100010001000010100111", "baudot-fr")
+'12345'
+```
+
+```python
+>>> codext.encode("TEST", "baudot-spaced_uk")
+'10101 00010 10100 10101'
+>>> codext.decode("10101 00010 10100 10101", "baudot-spaced_uk")
+'TEST'
+```
+
+```python
+>>> s = codext.encode("HELLO WORLD!", "baudot-tape_ita2")
+>>> print(s)
+***.**
+* *.  
+   . *
+*  .* 
+*  .* 
+** .  
+  *.  
+*  .**
+** .  
+ * .* 
+*  .* 
+ * . *
+** .**
+ **. *
+>>> codext.decode(s, "baudot-tape_ita2")
+'HELLO WORLD!'
+```
+
+-----
+
 ### Braille
 
 It supports letters, digits and some special characters.
 
 **Codec** | **Conversions** | **Aliases** | **Comment**
 :---: | :---: | --- | ---
-`braille` | Braille <-> text | none | Python 3 only
+`braille` | text <-> braille symbols | | Python 3 only
 
 ```python
 >>> codext.encode("this is a test", "braille")
@@ -52,9 +108,9 @@ This implements the 8 methods of ATGC nucleotides following the rule of compleme
 
 **Codec** | **Conversions** | **Aliases** | **Comment**
 :---: | :---: | --- | ---
-`dna` (rule 1) | DNA-1 <-> text | `dna1`, `dna-1`, `dna_1` | 
-`dna` (rule X) | DNA-X <-> text | ... | 
-`dna` (rule 8) | DNA-8 <-> text | `dna8`, `dna-8`, `dna_8` | 
+`dna` (rule 1) | text <-> DNA-1 | `dna1`, `dna-1`, `dna_1` | 
+`dna` (rule X) | text <-> DNA-X | ... | 
+`dna` (rule 8) | text <-> DNA-8 | `dna8`, `dna-8`, `dna_8` | 
 
 ```python
 >>> for i in range(8):
@@ -77,7 +133,7 @@ CACTCGGTCGGCCATATGTTCGGCCATATGTTCGTCTGTTCACTCGCCCATACACT
 
 **Codec** | **Conversions** | **Aliases** | **Comment**
 :---: | :---: | --- | ---
-`leetspeak` | LeetSpeak <-> text | `leet`, `1337`, `leetspeak` | based on minimalistic elite speaking rules
+`leetspeak` | text <-> leetspeak encoded text | `leet`, `1337`, `leetspeak` | based on minimalistic elite speaking rules
 
 ```python
 >>> codext.encode("this is a test", "leetspeak")
@@ -85,10 +141,6 @@ CACTCGGTCGGCCATATGTTCGGCCATATGTTCGTCTGTTCACTCGCCCATACACT
 >>> codext.decode("7h15 15 4 7357", "leetspeak")
 'ThIS IS A TEST'
 ```
-
-!!! warning "Lossy conversion"
-    
-    This "encoding" is lossy, as it can be seen in the previous example.
 
 -----
 
@@ -113,7 +165,7 @@ It supports of course letters and digits, but also a few special characters: `.,
 
 **Codec** | **Conversions** | **Aliases** | **Comment**
 :---: | :---: | --- | ---
-`morse` | Morse <-> text | none | uses whitespace as a separator, dynamic tokens mapping ; we can define a mapping of encoding's tokens (original tokens: `/-.`)
+`morse` | text <-> morse encoded text | none | uses whitespace as a separator, dynamic tokens mapping ; we can define a mapping of encoding's tokens (original tokens: `/-.`)
 
 ```python
 >>> codext.encode("this is a test", "morse")
@@ -140,8 +192,8 @@ This simple codec converts characters into their octal values.
 
 **Codec** | **Conversions** | **Aliases** | **Comment**
 :---: | :---: | --- | ---
-`octal` | Octal <-> text | `octals` | groups of 3-chars octal values when encoded
-`octal-spaced` | Spaced octal <-> text | `octals-spaced` | whitespace-separated suite of variable-length groups of octal digits when encoded
+`octal` | text <-> octal digits | `octals` | groups of 3-chars octal values when encoded
+`octal-spaced` | text <-> spaced octal digits | `octals-spaced` | whitespace-separated suite of variable-length groups of octal digits when encoded
 
 ```python
 >>> codext.encode("this is a test", "octal")
@@ -165,8 +217,8 @@ This simple codec converts characters into their ordinals.
 
 **Codec** | **Conversions** | **Aliases** | **Comment**
 :---: | :---: | --- | ---
-`ordinal` | Ordinal <-> text | `ordinals` | groups of 3-chars ordinal values when encoded
-`ordinal-spaced` | Spaced ordinal <-> text | `ordinals-spaced` | whitespace-separated suite of variable-length groups of ordinal digits when encoded
+`ordinal` | text <-> ordinal digits | `ordinals` | groups of 3-chars ordinal values when encoded
+`ordinal-spaced` | text <-> spaced ordinal digits | `ordinals-spaced` | whitespace-separated suite of variable-length groups of ordinal digits when encoded
 
 ```python
 >>> codext.encode("this is a test", "ordinal")
@@ -190,7 +242,7 @@ This is also known as the [NATO phonetic alphabet](https://en.wikipedia.org/wiki
 
 **Codec** | **Conversions** | **Aliases** | **Comment**
 :---: | :---: | --- | ---
-`radio` | Radio <-> text | `military_alphabet`, `nato-phonetic-alphabet`, `radio-alphabet` | 
+`radio` | text <-> radio alphabet words | `military_alphabet`, `nato-phonetic-alphabet`, `radio-alphabet` | 
 
 ```python
 >>> codext.encode("foobar", "nato_phonetic_alphabet")
@@ -207,7 +259,7 @@ This uses the [electronic color code](https://en.wikipedia.org/wiki/Electronic_c
 
 **Codec** | **Conversions** | **Aliases** | **Comment**
 :---: | :---: | --- | ---
-`resistor` | Resistor <-> text | `resistors-color`, `resistor_color_code` | visually, it only works in a terminal supporting ANSI color codes
+`resistor` | text <-> resistor colors | `resistors-color`, `resistor_color_code` | visually, it only works in a terminal supporting ANSI color codes
 
 ```python
 >>> codext.encode("1234", "resistor")
@@ -224,7 +276,7 @@ This codec.
 
 **Codec** | **Conversions** | **Aliases** | **Comment**
 :---: | :---: | --- | ---
-`sms` | Phone keystrokes <-> text | `nokia`, `nokia_3310`, `t9` | uses "`-`" as a separator for encoding, "`-`" or "`_`" or whitespace for decoding
+`sms` | text <-> phone keystrokes | `nokia`, `nokia_3310`, `t9` | uses "`-`" as a separator for encoding, "`-`" or "`_`" or whitespace for decoding
 
 ```python
 >>> codext.encode("this is a test", "sms")
@@ -243,7 +295,7 @@ This handles URL encoding, regardless of the case when decoding and with no erro
 
 **Codec** | **Conversions** | **Aliases** | **Comment**
 :---: | :---: | --- | ---
-`url` | URL <-> text | `url`, `urlencode` | 
+`url` | text <-> URL encoded text | `url`, `urlencode` | 
 
 ```python
 >>> codecs.encode("?=this/is-a_test/../", "url")
@@ -262,8 +314,8 @@ This simple encoding replaces zeros and ones of the binary version of the input 
 
 **Codec** | **Conversions** | **Aliases** | **Comment**
 :---: | :---: | --- | ---
-`whitespace` | Whitespaces <-> text | `whitespaces?-inv(erted)?` | The default encoding uses tabs for zeros and spaces for ones
-`whitespace_after_before` | Whitespaces[letter]whitespaces <-> text | | This codec encodes characters as new characters with whitespaces before and after according to an equation described in the codec name (e.g. "`whitespace+2*after-3*before`")
+`whitespace` | text <-> whitespaces and tabs | `whitespaces?-inv(erted)?` | The default encoding uses tabs for zeros and spaces for ones
+`whitespace_after_before` | text <-> whitespaces[letter]whitespaces | | This codec encodes characters as new characters with whitespaces before and after according to an equation described in the codec name (e.g. "`whitespace+2*after-3*before`")
 
 ```python
 >>> codext.encode("test", "whitespace")

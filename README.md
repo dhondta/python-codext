@@ -13,35 +13,38 @@ This library extends the native `codecs` library and provides some new encodings
 
 **Codec** | **Conversions** | **Comment**
 :---: | :---: | ---
-`affine` | Affine <-> text | aka Affine Cipher
-`ascii85` | Ascii85 <-> text | Python 3 only
-`atbash` | Atbash <-> text | aka Atbash Cipher
-`bacon` | Bacon <-> text | aka Baconian Cipher
-`barbie-N` | Barbie <-> text | aka Barbie Typewriter (N belongs to [1, 4])
-`baseXX` | BaseXX <-> text | see [base encodings](https://python-codext.readthedocs.io/en/latest/base.html)
-`braille` | braille <-> text | Python 3 only
-`dna-N` | DNA-N <-> text | implements the 8 rules of DNA sequences (N belongs to [1,8])
-`leetspeak` | leetspeak <-> text | based on minimalistic elite speaking rules
+`affine` | text <-> affine ciphertext | aka Affine Cipher
+`ascii85` | text <-> ascii85 encoded text | Python 3 only
+`atbash` | text <-> Atbash ciphertext | aka Atbash Cipher
+`bacon` | text <-> Bacon ciphertext | aka Baconian Cipher
+`barbie-N` | text <-> barbie ciphertext | aka Barbie Typewriter (N belongs to [1, 4])
+`baseXX` | text <-> baseXX | see [base encodings](https://python-codext.readthedocs.io/en/latest/base.html)
+`baudot` | text <-> Baudot code bits | supports CCITT-1, CCITT-2, EU/FR, ITA1, ITA2, MTK-2 (Python3 only), UK, ...
+`braille` | text <-> braille symbols | Python 3 only
+`dna-N` | text <-> DNA-N sequence | implements the 8 rules of DNA sequences (N belongs to [1,8])
+`leetspeak` | text <-> leetspeak encoded text | based on minimalistic elite speaking rules
 `markdown` | markdown --> HTML | unidirectional
-`morse` | morse <-> text | uses whitespace as a separator
-`octal` | Octal <-> text | dummy octal conversion (converts to 3-digits groups)
-`ordinal` | Ordinal <-> text | dummy character ordinals conversion (converts to 3-digits groups)
-`radio` | Radio <-> text | aka NATO or radio phonetic alphabet
-`resistor` | Resistor <-> text | aka resistor color codes
-`rot-N` | ROT(N) <-> text | aka Caesar cipher (N belongs to [1,25])
-`shift` | shift(N) <-> text | shift ordinals with N (belongs to [1,255])
-`sms` | Phone keystrokes <-> text | also called T9 code ; uses "`-`" as a separator for encoding, "`-`" or "`_`" or whitespace for decoding
-`url` | URL <-> text | aka URL encoding
-`xor-N` | XOR(N) <-> text | XOR with a single byte (N belongs to [1,255])
-`whitespace` | Whitespaces <-> text | replaces bits with whitespaces and tabs
+`morse` | text <-> morse encoded text | uses whitespace as a separator
+`octal` | text <-> octal digits | dummy octal conversion (converts to 3-digits groups)
+`ordinal` | text <-> ordinal digits | dummy character ordinals conversion (converts to 3-digits groups)
+`radio` | text <-> radio words | aka NATO or radio phonetic alphabet
+`resistor` | text <-> resistor colors | aka resistor color codes
+`rot-N` | text <-> rot(N) ciphertext | aka Caesar cipher (N belongs to [1,25])
+`shift` | text <-> shift(N) ciphertext | shift ordinals with N (belongs to [1,255])
+`sms` | text <-> phone keystrokes | also called T9 code ; uses "`-`" as a separator for encoding, "`-`" or "`_`" or whitespace for decoding
+`url` | text <-> URL encoded text | aka URL encoding
+`xor-N` | text <-> XOR(N) ciphertext | XOR with a single byte (N belongs to [1,255])
+`whitespace` | text <-> whitespaces and tabs | replaces bits with whitespaces and tabs
 
 A few variants are also implemented.
 
 **Codec** | **Conversions** | **Comment**
 :---: | :---: | ---
-`octal-spaced` | Octal (whitespace-separated) <-> text | dummy octal conversion
-`ordinal-spaced` | Ordinal (whitespace-separated) <-> text | dummy character ordinals conversion
-`whitespace_after_before` | Whitespaces[letter]whitespaces <-> text | encodes characters as new characters with whitespaces before and after according to an equation described in the codec name (e.g. "`whitespace+2*after-3*before`")
+`baudot-spaced` | text <-> Baudot code groups of bits | groups of 5 bits are whitespace-separated
+`baudot-tape` | text <-> Baudot code tape | outputs a string that looks like a perforated tape
+`octal-spaced` | text <-> octal digits (whitespace-separated) | dummy octal conversion
+`ordinal-spaced` | text <-> ordinal digits (whitespace-separated) | dummy character ordinals conversion
+`whitespace_after_before` | text <-> lines of whitespaces[letter]whitespaces | encodes characters as new characters with whitespaces before and after according to an equation described in the codec name (e.g. "`whitespace+2*after-3*before`")
 
 
 ## Setup
