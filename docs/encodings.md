@@ -129,7 +129,26 @@ CACTCGGTCGGCCATATGTTCGGCCATATGTTCGTCTGTTCACTCGCCCATACACT
 
 -----
 
+### HTML Entities
+
+This implements the full list of characters available at [this reference](https://dev.w3.org/html5/html-author/charref).
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`html` | text <-> HTML entities | `html-entity`, `html_entities` | implements entities according to [this reference](https://dev.w3.org/html5/html-author/charref)
+
+```python
+>>> codext.encode("Тħĩş Їś ą Ţêšŧ", "html")
+'&Tcy;&hstrok;&itilde;&scedil; &YIcy;&sacute; &aogon; &Tcedil;&ecirc;&scaron;&tstrok;'
+>>> codext.decode("&Tcy;&hstrok;&itilde;&scedil; &YIcy;&sacute; &aogon; &Tcedil;&ecirc;&scaron;&tstrok;", "html-entities")
+'Тħĩş Їś ą Ţêšŧ'
+```
+
+-----
+
 ### Leetspeak
+
+This implements a very basic ruleset of elite speaking.
 
 **Codec** | **Conversions** | **Aliases** | **Comment**
 :---: | :---: | --- | ---
@@ -272,7 +291,7 @@ This uses the [electronic color code](https://en.wikipedia.org/wiki/Electronic_c
 
 ### SMS (T9)
 
-This codec.
+This codec implements the SMS encoding, also caled T9, that is the conversion from characters to their corresponding phone keystrokes.
 
 **Codec** | **Conversions** | **Aliases** | **Comment**
 :---: | :---: | --- | ---
