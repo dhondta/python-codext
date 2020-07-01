@@ -21,7 +21,7 @@ This library extends the native `codecs` library and provides some new encodings
 `baseXX` | text <-> baseXX | see [base encodings](https://python-codext.readthedocs.io/en/latest/base.html)
 `baudot` | text <-> Baudot code bits | supports CCITT-1, CCITT-2, EU/FR, ITA1, ITA2, MTK-2 (Python3 only), UK, ...
 `braille` | text <-> braille symbols | Python 3 only
-`dna-N` | text <-> DNA-N sequence | implements the 8 rules of DNA sequences (N belongs to [1,8])
+`dna` | text <-> DNA-N sequence | implements the 8 rules of DNA sequences (N belongs to [1,8])
 `html` | text <-> HTML entities | implements entities according to [this reference](https://dev.w3.org/html5/html-author/charref)
 `leetspeak` | text <-> leetspeak encoded text | based on minimalistic elite speaking rules
 `markdown` | markdown --> HTML | unidirectional
@@ -30,11 +30,11 @@ This library extends the native `codecs` library and provides some new encodings
 `ordinal` | text <-> ordinal digits | dummy character ordinals conversion (converts to 3-digits groups)
 `radio` | text <-> radio words | aka NATO or radio phonetic alphabet
 `resistor` | text <-> resistor colors | aka resistor color codes
-`rot-N` | text <-> rot(N) ciphertext | aka Caesar cipher (N belongs to [1,25])
+`rot` | text <-> rot(N) ciphertext | aka Caesar cipher (N belongs to [1,25])
 `shift` | text <-> shift(N) ciphertext | shift ordinals with N (belongs to [1,255])
 `sms` | text <-> phone keystrokes | also called T9 code ; uses "`-`" as a separator for encoding, "`-`" or "`_`" or whitespace for decoding
 `url` | text <-> URL encoded text | aka URL encoding
-`xor-N` | text <-> XOR(N) ciphertext | XOR with a single byte (N belongs to [1,255])
+`xor` | text <-> XOR(N) ciphertext | XOR with a single byte (N belongs to [1,255])
 `whitespace` | text <-> whitespaces and tabs | replaces bits with whitespaces and tabs
 
 A few variants are also implemented.
