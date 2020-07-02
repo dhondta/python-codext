@@ -587,7 +587,7 @@ def __gen_str_from_re(regex, star_plus_max, repeat_max, yield_max, parsed=False)
         elif code == "branch":
             result = []
             for r in value[1]:
-                result += list(__gen_str_from_re(r, star_plus_max, repeat_max, yield_max, True))
+                result += list(__gen_str_from_re(r, star_plus_max, repeat_max, yield_max, True)) or [""]
             tokens.append(result)
         elif code == "category":
             charset = CATEGORIES[value[9:]]
