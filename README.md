@@ -31,6 +31,7 @@ This library extends the native `codecs` library and provides some new encodings
 `radio` | text <-> radio words | aka NATO or radio phonetic alphabet
 `resistor` | text <-> resistor colors | aka resistor color codes
 `rot` | text <-> rot(N) ciphertext | aka Caesar cipher (N belongs to [1,25])
+`scytale` | text <-> scytale ciphertext | encrypts with L, the number of letters on the rod (belongs to [1,[)
 `shift` | text <-> shift(N) ciphertext | shift ordinals with N (belongs to [1,255])
 `sms` | text <-> phone keystrokes | also called T9 code ; uses "`-`" as a separator for encoding, "`-`" or "`_`" or whitespace for decoding
 `url` | text <-> URL encoded text | aka URL encoding
