@@ -1,5 +1,5 @@
 # -*- coding: UTF-8 -*-
-"""Shift-N Codec - Shift-ordinal-with-N content encoding.
+"""Shift Codec - Shift-ordinal-with-N content encoding.
 
 This codec:
 - en/decodes strings from str to str

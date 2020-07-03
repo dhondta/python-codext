@@ -40,9 +40,9 @@ class TestCodecsShift(TestCase):
         with codecs.open(TFILE, 'w', encoding="shift-1") as f:
             f.write(b(STR))
         with open(TFILE) as f:
-            r = f.read().strip()
+            r = f.read()
         self.assertEqual(SH1, r)
         with codecs.open(TFILE, encoding="shift-1") as f:
-            s = f.read().strip()
+            s = f.read()
         self.assertEqual(STR, ensure_str(s))
         os.remove(TFILE)

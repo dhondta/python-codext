@@ -10,12 +10,12 @@ from unittest import TestCase
 from codext.__common__ import *
 
 
-class TestCodecsRotN(TestCase):
-    def test_codecs_rotn(self):
+class TestCodecsRot(TestCase):
+    def test_codecs_rot(self):
         STR = "this is a test"
         RT1 = "uijt jt b uftu"
         RT3 = "wklv lv d whvw"
-        TFILE = "test-codec-rotn.txt"
+        TFILE = "test-codec-rot.txt"
         self.assertTrue(isinstance(codecs.encode(STR, "rot12"), string_types))
         self.assertEqual(codecs.encode(STR, "rot1"), RT1)
         self.assertEqual(codecs.encode(STR, "rot-1"), RT1)
@@ -36,9 +36,10 @@ class TestCodecsRotN(TestCase):
         with codecs.open(TFILE, 'w', encoding="rot-3") as f:
             f.write(b(STR))
         with open(TFILE) as f:
-            r = f.read().strip()
+            r = f.read()
         self.assertEqual(RT3, r)
         with codecs.open(TFILE, encoding="rot-3") as f:
-            s = f.read().strip()
+            s = f.read()
         self.assertEqual(STR, ensure_str(s))
         os.remove(TFILE)
+

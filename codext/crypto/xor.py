@@ -1,5 +1,5 @@
 # -*- coding: UTF-8 -*-
-"""XOR-N Codec - XOR-with-1-byte content encoding.
+"""XOR Codec - XOR-with-1-byte content encoding.
 
 This codec:
 - en/decodes strings from str to str

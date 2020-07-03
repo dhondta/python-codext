@@ -10,8 +10,8 @@ from unittest import TestCase
 from codext.__common__ import *
 
 
-class TestCodecsXORN(TestCase):
-    def test_codec_xorn(self):
+class TestCodecsXOR(TestCase):
+    def test_codec_xor(self):
         STR = "this is a test"
         XR3 = "wkjp#jp#b#wfpw"
         XR6 = "rnou&ou&g&rcur"
@@ -37,9 +37,10 @@ class TestCodecsXORN(TestCase):
         with codecs.open(TFILE, 'w', encoding="xor-3") as f:
             f.write(b(STR))
         with open(TFILE) as f:
-            r = f.read().strip()
+            r = f.read()
         self.assertEqual(XR3, r)
         with codecs.open(TFILE, encoding="xor-3") as f:
-            s = f.read().strip()
+            s = f.read()
         self.assertEqual(STR, ensure_str(s))
         os.remove(TFILE)
+

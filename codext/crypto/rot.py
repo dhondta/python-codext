@@ -1,5 +1,5 @@
 # -*- coding: UTF-8 -*-
-"""ROT-N Codec - rotN content encoding.
+"""ROT Codec - rot-with-N-offset content encoding.
 
 This codec:
 - en/decodes strings from str to str
