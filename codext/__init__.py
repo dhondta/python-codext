@@ -38,6 +38,7 @@ def main():
             "\nThis tool allows to encode/decode input strings/files with an extended set of codecs.\n\n" \
             .format(__version__, __author__, __email__, __copyright__, __license__, __source__)
     examples = "usage examples:\n- " + "\n- ".join([
+        "codext --search bitcoin",
         "codext -d base32 -i file.b32",
         "codext morse < to_be_encoded.txt",
         "echo \"test\" | codext base100",
@@ -56,7 +57,15 @@ def main():
     parser.add_argument("-i", "--input-file", dest="infile", help="input file (if none, take stdin as input)")
     parser.add_argument("-o", "--output-file", dest="outfile", help="output file (if none, display result to stdout)")
     parser.add_argument("-s", "--strip-newlines", action="store_true", dest="strip", help="strip newlines from input")
+    parser.add_argument("--search", action="store_true", help="search for encoding names")
     args = parser.parse_args()
+    # if a search pattern is given, only handle it
+    if args.search:
+        results = []
+        for enc in args.encoding:
+            results.extend(codecs.search(enc))
+        print(", ".join(results) or "No encoding found")
+        return
     # handle input file or stdin
     if args.infile:
         with open(args.infile, 'rb') as f:

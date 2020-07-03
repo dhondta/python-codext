@@ -369,7 +369,7 @@ def examples(encoding_regex, number=10):
                 for s in generate_strings_from_regex(search_function.__pattern__, yield_max=256*number):
                     temp.append(s)
                 random.shuffle(temp)
-                examples.extend(sorted([temp[i] for i in range(min(number, len(temp)))]))
+                examples.extend(sorted([temp[i] for i in range(min(number, len(temp)))], key=_human_keys))
     return examples
 codecs.examples = examples
 
@@ -549,7 +549,7 @@ def search(encoding_regex):
         matches.append(encoding_regex)
     except:
         pass
-    return sorted(list(set(matches)))
+    return sorted(list(set(matches)), key=_human_keys)
 codecs.search = search
 
 
@@ -645,6 +645,14 @@ def __gen_str_from_re(regex, star_plus_max, repeat_max, yield_max, parsed=False)
         i += 1
         if i >= yield_max:
             break
+
+
+def _human_keys(text):
+    """ Sorting function for considering strings with numbers (e.g. base2, base10, base100) """
+    tokens = []
+    for s in re.split(r"(\d+|\D+)", text):
+        tokens.append(int(s) if s.isdigit() else s)
+    return tokens
 
 
 def generate_strings_from_regex(regex, star_plus_max=STAR_PLUS_MAX, repeat_max=REPEAT_MAX, yield_max=YIELD_MAX):
