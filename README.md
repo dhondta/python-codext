@@ -34,6 +34,7 @@ This library extends the native `codecs` library and provides some new encodings
 `scytale` | text <-> scytale ciphertext | encrypts with L, the number of letters on the rod (belongs to [1,[)
 `shift` | text <-> shift(N) ciphertext | shift ordinals with N (belongs to [1,255])
 `sms` | text <-> phone keystrokes | also called T9 code ; uses "`-`" as a separator for encoding, "`-`" or "`_`" or whitespace for decoding
+`tomtom` | text <-> tom-tom encoded text | similar to `morse`, using slashes and backslashes
 `url` | text <-> URL encoded text | aka URL encoding
 `xor` | text <-> XOR(N) ciphertext | XOR with a single byte (N belongs to [1,255])
 `whitespace` | text <-> whitespaces and tabs | replaces bits with whitespaces and tabs

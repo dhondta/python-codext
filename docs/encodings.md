@@ -308,6 +308,23 @@ This codec implements the SMS encoding, also caled T9, that is the conversion fr
 
 -----
 
+### Tom-Tom
+
+This codec is similar to morse. It converts text into slashes and backslashes.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`tomtom` | text <-> tom-tom encoded text | `tom-tom` | uses "`|`" as a separator
+
+```python
+>>> codext.encode("this is a test", "tom-tom")
+'\\\\/\\ /\\\\ /\\\\\\ \\/\\ | /\\\\\\ \\/\\ | / | \\\\/\\ /\\ \\/\\ \\\\/\\'
+>>> codext.decode("\\\\/\\ /\\\\ /\\\\\\ \\/\\ | /\\\\\\ \\/\\ | / | \\\\/\\ /\\ \\/\\ \\\\/\\", "tomtom")
+'THIS IS A TEST'
+```
+
+-----
+
 ### URL
 
 This handles URL encoding, regardless of the case when decoding and with no error.
