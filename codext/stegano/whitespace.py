@@ -14,14 +14,14 @@ from string import printable
 from ..__common__ import *
 
 
-__examples__ = {
+__examples1__ = {
     'enc(whitespace|whitespaces)':             {'test': "\t   \t \t\t\t  \t\t \t \t   \t\t  \t   \t \t\t"},
     'enc(whitespace-inv|whitespace_inverted)': {'test': " \t\t\t \t   \t\t  \t \t \t\t\t  \t\t \t\t\t \t  "},
 }
 
 
 ENCMAP = {r'': {'0': "\t", '1': " "}, r'[-_]inv(erted)?': {'0': " ", '1': "\t"}}
-add_map("whitespace", ENCMAP, binary=True, pattern=r"^whitespaces?([-_]inv(?:erted)?)?$")
+add_map("whitespace", ENCMAP, binary=True, pattern=r"^whitespaces?([-_]inv(?:erted)?)?$", examples=__examples1__)
 
 
 def wsba_encode(p):
