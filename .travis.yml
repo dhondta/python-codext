@@ -8,10 +8,8 @@ python:
   - "3.8"
 cache: pip
 install:
-  - pip install coveralls
+  - pip install coveralls pytest
   - pip install -r requirements.txt
   - python setup.py install
-script:
-  - nosetests -v --with-coverage --cover-tests --cover-package codext tests
-after_success:
-  - coveralls
+script: pytest
+after_success: coveralls --data_file=.coverage
