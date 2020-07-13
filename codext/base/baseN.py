@@ -10,7 +10,7 @@ These codecs:
 from string import ascii_lowercase as lower, ascii_uppercase as upper, digits
 
 from ..__common__ import *
-from ._base import base
+from ._base import base, base_generic
 from ._base2n import base2n
 
 
@@ -85,7 +85,5 @@ B91 = {
 base(B91, r"(?i)^base[-_]?91(|[-_]inv(?:erted)?)$")
 
 
-# generic base encodings
-for i in range(2, 256):
-    base(i, r"(?i)^base[-_]?%d[-_]generic$" % i)
-
+# generic base encodings, to be added after all others as they have the precedence
+base_generic()

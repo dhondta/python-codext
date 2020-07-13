@@ -10,7 +10,6 @@ from types import FunctionType
 from ..__common__ import *
 
 
-# generic base en/decoding functions
 class BaseError(ValueError):
     pass
 
@@ -80,6 +79,7 @@ def _get_charset(charset, p=""):
     raise ValueError("Bad charset descriptor")
 
 
+# generic base en/decoding functions
 def base_encode(input, charset, errors="strict", exc=BaseEncodeError):
     """
     Base-10 to base-N encoding.
@@ -98,7 +98,7 @@ def base_encode(input, charset, errors="strict", exc=BaseEncodeError):
     return r
 
 
-def base_decode(input, charset, errors="strict", exc=BaseEncodeError):
+def base_decode(input, charset, errors="strict", exc=BaseDecodeError):
     """
     Base-N to base-10 decoding.
     
@@ -113,16 +113,12 @@ def base_decode(input, charset, errors="strict", exc=BaseEncodeError):
         try:
             i = i * n + charset.index(c)
         except ValueError:
-            if errors == "strict":
-                raise exc("'base' codec can't decode character '{}' in position {}".format(c, k))
-            elif errors in ["ignore", "replace"]:
-                continue
-            else:
-                raise ValueError("Unsupported error handling {}".format(errors))
+            handle_error("base", errors, exc, decode=True)(c, k)
     return base_encode(i, [chr(j) for j in range(256)], errors, exc)
 
 
-def base(charset, pattern=None, pow2=False, encode_template=base_encode, decode_template=base_decode):
+# base codec factory functions
+def base(charset, pattern, pow2=False, encode_template=base_encode, decode_template=base_decode):
     """
     Base-N codec factory.
     
@@ -131,25 +127,41 @@ def base(charset, pattern=None, pow2=False, encode_template=base_encode, decode_
                      the charset)
     :param pow2:    whether the base codec's N is a power of 2
     """
-    is_n = isinstance(charset, int)
-    n = len(_generate_charset(charset) if is_n else _get_charset(charset))
+    n = len(_get_charset(charset))
     nb = log(n, 2)
     if pow2 and nb != int(nb):
         raise BaseError("Bad charset ; {} is not a power of 2".format(n))
     
     def encode(param=""):
-        a = _generate_charset(n) if is_n else _get_charset(charset, param)
+        a = _get_charset(charset, param)
         def _encode(input, errors="strict"):
             return encode_template(input, a, errors), len(input)
         return _encode
     
     def decode(param=""):
-        a = _generate_charset(n) if is_n else _get_charset(charset, param)
+        a = _get_charset(charset, param)
         def _decode(input, errors="strict"):
             return decode_template(input, a, errors), len(input)
         return _decode
     
-    if pattern is None:
-        pattern = "base{}".format(n)
     add("base{}".format(n), encode, decode, pattern)
+
+
+def base_generic():
+    """
+    Base-N generic codec.
+    """
+    def encode(n):
+        a = _generate_charset(int(n))
+        def _encode(input, errors="strict"):
+            return base_encode(input, a, errors), len(input)
+        return _encode
+    
+    def decode(n):
+        a = _generate_charset(int(n))
+        def _decode(input, errors="strict"):
+            return base_decode(input, a, errors), len(input)
+        return _decode
+    
+    add("base", encode, decode, r"(?i)^base[-_]?([2-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(?:[-_]generic)?$")
 
