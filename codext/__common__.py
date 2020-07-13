@@ -27,8 +27,8 @@ except ImportError:  # Python 3
 
 
 __all__ = ["add", "add_map", "b", "clear", "codecs", "decode", "encode", "ensure_str", "examples",
-           "generate_strings_from_regex", "get_alphabet_from_mask", "handle_error", "lookup", "maketrans", "re",
-           "register", "remove", "reset", "s2i", "search", "MASKS", "PY3"]
+           "generate_strings_from_regex", "get_alphabet_from_mask", "handle_error", "list_encodings", "lookup",
+           "maketrans", "re", "register", "remove", "reset", "s2i", "search", "MASKS", "PY3"]
 CODECS_REGISTRY = None
 MASKS = {
     'a': printable,
@@ -52,10 +52,10 @@ fix = lambda x, ref: b(x) if isb(ref) else ensure_str(x) if iss(ref) else x
 s2i = lambda s: int(codecs.encode(s, "base16"), 16)
 
 
-def add(ename, encode=None, decode=None, pattern=None, text=True, add_to_codecs=False):
+def add(ename, encode=None, decode=None, pattern=None, text=True, add_to_codecs=False, **kwargs):
     """
     This adds a new codec to the codecs module setting its encode and/or decode functions, eventually dynamically naming
-     the encoding with a pattern and with file handling (if text is True).
+     the encoding with a pattern and with file handling.
     
     :param ename:         encoding name
     :param encode:        encoding function or None
@@ -72,39 +72,13 @@ def add(ename, encode=None, decode=None, pattern=None, text=True, add_to_codecs=
         raise ValueError("Bad 'decode' function")
     if not encode and not decode:
         raise ValueError("At least one en/decoding function must be defined")
+    glob = currentframe().f_back.f_globals
     # search function for the new encoding
     def getregentry(encoding):
         if encoding != ename and not (pattern and re.match(pattern, encoding)):
             return
         fenc, fdec, name = encode, decode, encoding
         # prepare CodecInfo input arguments
-        class Codec(codecs.Codec):
-            def encode(self, input, errors="strict"):
-                if fenc is None:
-                    raise NotImplementedError
-                return fenc(input, errors)
-
-            def decode(self, input, errors="strict"):
-                if fdec is None:
-                    raise NotImplementedError
-                return fdec(input, errors)
-        
-        class IncrementalEncoder(codecs.IncrementalEncoder):
-            def encode(self, input, final=False):
-                if fenc is None:
-                    raise NotImplementedError
-                return b(fenc(input, self.errors)[0])
-        
-        class IncrementalDecoder(codecs.IncrementalDecoder):
-            def decode(self, input, final=False):
-                if fdec is None:
-                    raise NotImplementedError
-                return ensure_str(fdec(input, self.errors)[0])
-        
-        incrementalencoder = IncrementalEncoder
-        incrementaldecoder = IncrementalDecoder
-        streamwriter       = None
-        streamreader       = None
         if pattern:
             m = re.match(pattern, encoding)
             try:
@@ -127,27 +101,54 @@ def add(ename, encode=None, decode=None, pattern=None, text=True, add_to_codecs=
         if fdec:
             fdec = fix_inout_formats(fdec)
         
-        if text:
+        class Codec(codecs.Codec):
+            def encode(self, input, errors="strict"):
+                if fenc is None:
+                    raise NotImplementedError
+                return fenc(input, errors)
             
-            class StreamWriter(Codec, codecs.StreamWriter):
-                charbuffertype = bytes
-
-            class StreamReader(Codec, codecs.StreamReader):
-                charbuffertype = bytes
-            
-            streamwriter = StreamWriter
-            streamreader = StreamReader
+            def decode(self, input, errors="strict"):
+                if fdec is None:
+                    raise NotImplementedError
+                return fdec(input, errors)
         
-        return codecs.CodecInfo(
+        class IncrementalEncoder(codecs.IncrementalEncoder):
+            def encode(self, input, final=False):
+                if fenc is None:
+                    raise NotImplementedError
+                return b(fenc(input, self.errors)[0])
+        
+        class IncrementalDecoder(codecs.IncrementalDecoder):
+            def decode(self, input, final=False):
+                if fdec is None:
+                    raise NotImplementedError
+                return ensure_str(fdec(input, self.errors)[0])
+        
+        class StreamWriter(Codec, codecs.StreamWriter):
+            charbuffertype = bytes
+        
+        class StreamReader(Codec, codecs.StreamReader):
+            charbuffertype = bytes
+        
+        ci = codecs.CodecInfo(
             name=name,
             encode=Codec().encode,
             decode=Codec().decode,
-            incrementalencoder=incrementalencoder,
-            incrementaldecoder=incrementaldecoder,
-            streamwriter=streamwriter,
-            streamreader=streamreader,
+            incrementalencoder=IncrementalEncoder,
+            incrementaldecoder=IncrementalDecoder,
+            streamwriter=StreamWriter,
+            streamreader=StreamReader,
             _is_text_encoding=text,
         )
+        ci.parameters = kwargs
+        ci.parameters['name'] = ename
+        ci.parameters['add_to_codecs'] = add_to_codecs
+        ci.parameters['pattern'] = pattern
+        ci.parameters['text'] = text
+        ci.parameters['type'] = kwargs.get('type', glob['__file__'].split(os.path.sep)[-2].rstrip("s"))
+        ci.parameters['examples'] = kwargs.get('examples', glob.get('__examples__'))
+        return ci
+    
     getregentry.__name__ = re.sub(r"[\s\-]", "_", ename)
     getregentry.__pattern__ = pattern
     register(getregentry, add_to_codecs)
@@ -190,9 +191,10 @@ def add_map(ename, encmap, repl_char="?", sep="", ignore_case=None, no_error=Fal
                 param MUST be an int, otherwise for the first case it could clash with a character of the encoding map)
             2. otherwise handle it as a new encoding character map "ABC" translates to ".-/" for morse
             """
+            p = param
             if isinstance(encmap, FunctionType):
-                mapdict = encmap(param)
-                param = None
+                mapdict = encmap(p)
+                p = None
             else:
                 mapdict = encmap
             if isinstance(mapdict, dict):
@@ -201,8 +203,7 @@ def add_map(ename, encmap, repl_char="?", sep="", ignore_case=None, no_error=Fal
                 smapdict = {k: v for k, v in mapdict[0].items()}
             else:
                 raise ValueError("Bad mapping dictionary or list of mapping dictionaries")
-            if param is not None:
-                p = param
+            if p is not None:
                 # case 1: param is empty string
                 if p == "":
                     if isinstance(mapdict, list):
@@ -332,7 +333,7 @@ def add_map(ename, encmap, repl_char="?", sep="", ignore_case=None, no_error=Fal
                             if len(bs) > 0:
                                 tmp += "[" + bs + "]"
                     r = tmp + lsep
-                return r[:len(r)-len(lsep)], len(text)
+                return r[:len(r)-len(lsep)], len(b(text))
             return code
         if re.search(r"\([^(?:)]", kwargs.get('pattern', "")) is None:
             # in this case, there is no capturing group for parametrization
@@ -347,6 +348,23 @@ def add_map(ename, encmap, repl_char="?", sep="", ignore_case=None, no_error=Fal
     encexc = "{}EncodeError".format(name)
     exec("class {}(ValueError): pass".format(encexc), glob)
     # now use the generic add() function
+    kwargs['type'] = glob['__file__'].split(os.path.sep)[-2].rstrip("s")
+    kwargs['examples'] = kwargs.get('examples', glob.get('__examples__'))
+    kwargs['encmap'] = encmap
+    kwargs['repl_char'] = repl_char
+    kwargs['sep'] = sep
+    kwargs['ignore_case'] = ignore_case
+    kwargs['no_error'] = no_error
+    kwargs['binary'] = binary
+    try:
+        if isinstance(encmap, dict):
+            smapdict = {k: v for k, v in encmap.items()}
+        elif isinstance(encmap, list) and isinstance(encmap[0], dict):
+            smapdict = {k: v for k, v in encmap[0].items()}
+        kwargs['repl_minlen'] = i = max(1, min(map(len, set(smapdict.values()) - {''})))
+        kwargs['repl_minlen_b'] = max(1, min(map(len, map(b, set(smapdict.values()) - {''}))))
+    except:
+        pass
     add(ename, __generic_code(glob[encexc]), __generic_code(glob[decexc], True), **kwargs)
 codecs.add_map = add_map
 
@@ -372,6 +390,14 @@ def examples(encoding_regex, number=10):
                 examples.extend(sorted([temp[i] for i in range(min(number, len(temp)))], key=_human_keys))
     return examples
 codecs.examples = examples
+
+
+def list_encodings():
+    """ Get a list of codext's added encodings from the local registry. """
+    enc = []
+    for search_function in __codecs_registry:
+        enc.append(search_function.__name__)
+    return enc
 
 
 def remove(encoding):

@@ -16,6 +16,8 @@ encode   = codecs.encode
 lookup   = codecs.lookup
 open     = codecs.open
 
+list = list_encodings  # not included in __all__ because of shadow name
+
 
 reset()
 
