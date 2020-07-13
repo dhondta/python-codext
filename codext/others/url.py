@@ -10,6 +10,12 @@ This codec:
 from ..__common__ import *
 
 
+__examples__ = {
+    'enc(url|urlencode)': {'?=this/is-a_test/../': "%3F%3Dthis%2Fis-a_test%2F%2E%2E%2F"},
+    'dec(url|urlencode)': {'test/test%2etxt': "test/test.txt", 'test%2ftest.txt': "test/test.txt"}
+}
+
+
 SAFE = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_-"
 ENCMAP = {}
 for i in range(256):

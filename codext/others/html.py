@@ -13,6 +13,18 @@ from six import unichr
 from ..__common__ import *
 
 
+__examples__ = {
+    'enc(html_entities|html-entity)': {'<This\tis\na test>': "&lt;This&Tab;is&NewLine;a test&gt;"},
+    'dec(html|html_entity)':          {'&DoesNotExist;': None},
+    'dec(html_entities|html-entity)': {
+        '&lt;This&Tab;is&NewLine;a test&gt;': "<This\tis\na test>",
+        '&lt;This&Tab;is&NewLine;a&nbsp;test&gt;': "<This\tis\na test>",
+    },
+}
+if PY3:
+    __examples__['enc(html)'] = {'\u1234': "&1234;"}
+
+
 # source: https://dev.w3.org/html5/html-author/charref
 ENCMAP = {
     '\t': "&Tab;", '\n': "&NewLine;", '!': "&excl;", '"': "&quot;", '#': "&num;", '$': "&dollar;", '%': "&percnt;",
@@ -248,11 +260,8 @@ def htmlentity_encode(text, errors="strict"):
             s += ENCMAP[c]
         except KeyError:
             i = ord(c)
-            if i > 0xff:
-                s += "&" + hex(i)[2:].zfill(0) + ";"
-            else:
-                s += c
-    return s, len(s)
+            s += "&" + hex(i)[2:].zfill(0) + ";" if i > 0xff else c
+    return s, len(text)
 
 
 def htmlentity_decode(text, errors="strict"):
@@ -262,10 +271,10 @@ def htmlentity_decode(text, errors="strict"):
         m = re.match(r"&(?:(?:[A-Za-z][A-Za-z0-9]{1,6}){1,4}|[0-9]{4});", text[i:i+30])
         if m:
             entity = m.group()
-            if entity[1:5].isdigit() and len(entity) == 6:
-                s += unichr(int(entity[1:5], 16))
-            elif entity == "&nbsp;":
-                s += " "
+            c = unichr(int(entity[1:5], 16)) if entity[1:5].isdigit() and len(entity) == 6 else \
+                " " if entity == "&nbsp;" else None
+            if c:
+                s += c
             else:
                 try:
                     s += DECMAP[entity]
@@ -275,7 +284,7 @@ def htmlentity_decode(text, errors="strict"):
         else:
             s += text[i]
             i += 1
-    return s, len(s)
+    return s, len(text)
 
 
 add("html", htmlentity_encode, htmlentity_decode, r"^html(?:[-_]?entit(?:y|ies))?$")

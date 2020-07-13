@@ -10,6 +10,14 @@ This codec:
 from ..__common__ import *
 
 
+__examples__ = {
+    'enc(xor0|xor--10|xor256|xor300)': None,
+    'enc(xor3|xor-3|xor_3)':           {'this is a test': "wkjp#jp#b#wfpw"},
+    'enc(xor3|xor-3|xor_3)':           {'wkjp#jp#b#wfpw': "this is a test"},
+    'enc(XOR6|XOR-6|XOR_6)':           {'this is a test': "rnou&ou&g&rcur"},
+}
+
+
 def _xorn(text, n=1):
     return "".join(chr(ord(c) ^ (n % 256)) for c in text)
 

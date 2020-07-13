@@ -10,6 +10,11 @@ This codec:
 from ..__common__ import *
 
 
+__examples__ = {
+    'enc(braille)': {'this is a test': "⠞⠓⠊⠎⠀⠊⠎⠀⠁⠀⠞⠑⠎⠞"},
+}
+
+
 ENCMAP = {
     # digits
     '0': '⠴', '1': '⠂', '2': '⠆', '3': '⠒', '4': '⠲', '5': '⠢', '6': '⠖', '7': '⠶', '8': '⠦', '9': '⠔',

@@ -10,6 +10,42 @@ This codec:
 from ..__common__ import *
 
 
+__examples1__ = {
+    'enc(baudot-BAD_ALPHABET)': None,
+    'enc(baudot_ccitt2_lsb)':   {'TEST 1234': "00001100001010000001001001101111101110011000001010"},
+    'enc(baudot-ita1)':         {'TEST 1234': "10101000101010010101100000100000001000100010000101"},
+    'enc(baudot_ita2_msb)':     {'TEST 1234': "10000000010010110000001001101110111100110000101010"},
+    'enc(baudot-ita2-us)':      {'TEST 1234': "10000000010010110000001001101110111100110000101010"},
+    'enc(baudot)':              {'abc': None},
+    'enc(baudot_ccitt1-lsb)':   {'TEST ': None},
+}
+__examples2__ = {
+    'enc(baudot_spaced-BAD_ALPHABET)': None,
+    'enc(baudot-spaced_ccitt2_lsb)':   {'TEST 1234': "00001 10000 10100 00001 00100 11011 11101 11001 10000 01010"},
+    'enc(baudot_spaced-ita1)':         {'TEST 1234': "10101 00010 10100 10101 10000 01000 00001 00010 00100 00101"},
+    'enc(baudot-spaced_ita2_msb)':     {'TEST 1234': "10000 00001 00101 10000 00100 11011 10111 10011 00001 01010"},
+    'enc(baudot_spaced-ita2-us)':      {'TEST 1234': "10000 00001 00101 10000 00100 11011 10111 10011 00001 01010"},
+}
+__examples3__ = {
+    'enc(baudot_tape-BAD_ALPHABET)': None,
+    'enc(baudot_tape-ita1)': {
+        'TEST 1234': "***.**\n* *. *\n   .* \n* *.  \n* *. *\n*  .  \n * .  \n   . *\n   .* \n  *.  \n  *. *",
+    },
+    'dec(baudot-tape_ita2)':       {'BAD_HEADER\n   .* \n': None},
+    'dec(baudot-tape_ita2-us)':    {'***.**\nBAD_TAPE\n': None},
+    'dec(baudot_tape-ccitt1_lsb)': {'***.**\n   .* \n*  . *\n*  .  \n': None},
+}
+if PY3:
+    __examples1__.update({
+        'enc(baudot_ccitt1_lsb)': {'TEST1234':  "101010001010001101010100000100000100000100101"},
+        'enc(baudot-fr)':         {'TEST 1234': "10101000101010010101100000100000001000100010000101"},
+    })
+    __examples2__.update({
+        'enc(baudot-spaced_ccitt1_lsb)': {'TEST1234':  "10101 00010 10001 10101 01000 00100 00010 00001 00101"},
+        'enc(baudot_spaced-fr)':         {'TEST 1234': "10101 00010 10100 10101 10000 01000 00001 00010 00100 00101"},
+    })
+
+
 PATTERN = r"^baudot%s([-_](?:ccitt1|ccitt2|eu|fr|ita1|ita2|ita2[-_](?:us" + (r"|meteo" if PY3 else r"") + r")" + \
           (r"|mtk2" if PY3 else r"") + r"|murray|uk|us_tty)(?:[-_](?:lsb|msb))?)?$"
 # reserved character
@@ -154,7 +190,7 @@ def baudot_encode(alphabet=None, spaced=False, tape=False):
     ename = "baudot" + ("-spaced" if spaced else "-tape" if tape else "")
     alphabet, states, func = _handle_alphabet(alphabet)
     def encode(text, errors="strict"):
-        s, state, seen_states = "", None, []
+        s, l, state, seen_states = "", len(text), None, []
         for i, c in enumerate(text):
             # if the state is undefined yet, find the relevant alphabet
             if state is None:
@@ -184,8 +220,8 @@ def baudot_encode(alphabet=None, spaced=False, tape=False):
                     if state not in seen_states:
                         seen_states.append(state)
                 except KeyError as e:
-                    s += handle_error(ename, errors, BaudotEncodeError, "?", 5)(c, i)
                     state = list(set(states.keys()) - {state})[0]  # reset the state
+                    s += handle_error(ename, errors, BaudotEncodeError, "?", 5)(c, i)
         # by default, if no state is specified, the encoded string is handled as letters ; so if figures are used only,
         #  it is necessary to include the groups of bits for figures at the beginning of the encoded string
         s = (states['figures'] if seen_states == ["figures"] else "") + s
@@ -193,7 +229,7 @@ def baudot_encode(alphabet=None, spaced=False, tape=False):
             s = " ".join(s[i:i+5] for i in range(0, len(s), 5))
         elif tape:
             s = _bits_to_tape(s)
-        return s, len(s)
+        return s, l
     return encode
 
 
@@ -203,7 +239,7 @@ def baudot_decode(alphabet=None, spaced=False, tape=False):
     alphabet = {st: {v: k for k, v in alph.items()} for st, alph in alphabet.items()}
     states = {v: k for k, v in states.items()}
     def decode(text, errors="strict"):
-        s = ""
+        s, l = "", len(text)
         if spaced:
             text = text.replace(" ", "")
         elif tape:
@@ -239,19 +275,19 @@ def baudot_decode(alphabet=None, spaced=False, tape=False):
                     state = states[bits]
                 else:
                     s += handle_error(ename, errors, BaudotDecodeError, decode=True, item="group")(bits, i//5)
-        return s, len(s)
+        return s, l
     return decode
 
 
-add("baudot", baudot_encode, baudot_decode, PATTERN % r"")
+add("baudot", baudot_encode, baudot_decode, PATTERN % r"", examples=__examples1__)
 
 
 baudot_spaced_encode = lambda a: baudot_encode(a, spaced=True)
 baudot_spaced_decode = lambda a: baudot_decode(a, spaced=True)
-add("baudot-spaced", baudot_spaced_encode, baudot_spaced_decode, PATTERN % r"[-_]spaced")
+add("baudot-spaced", baudot_spaced_encode, baudot_spaced_decode, PATTERN % r"[-_]spaced", examples=__examples2__)
 
 
 baudot_tape_encode = lambda a: baudot_encode(a, tape=True)
 baudot_tape_decode = lambda a: baudot_decode(a, tape=True)
-add("baudot-tape", baudot_tape_encode, baudot_tape_decode, PATTERN % r"[-_]tape")
+add("baudot-tape", baudot_tape_encode, baudot_tape_decode, PATTERN % r"[-_]tape", examples=__examples3__)
 

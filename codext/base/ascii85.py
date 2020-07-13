@@ -14,6 +14,9 @@ import base64
 from ..__common__ import *
 
 
+__examples__ = {'enc(ascii85|ascii-85|ascii_85)': {'this is a test': "FD,B0+DGm>@3BZ'F*%"}}
+
+
 if PY3:
     def ascii85_encode(input, errors='strict'):
         return base64.a85encode(b(input)), len(input)

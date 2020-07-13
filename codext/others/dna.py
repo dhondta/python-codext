@@ -13,6 +13,19 @@ This codec:
 from ..__common__ import *
 
 
+__examples__ = {
+    'enc(dna0|dna9)': None,
+    'enc(dna1)':      {'this is a test': "GTGAGCCAGCCGGTATACAAGCCGGTATACAAGCAGACAAGTGAGCGGGTATGTGA"},
+    'enc(dna-2)':     {'this is a test': "CTCACGGACGGCCTATAGAACGGCCTATAGAACGACAGAACTCACGCCCTATCTCA"},
+    'enc(dna_3)':     {'this is a test': "ACAGATTGATTAACGCGTGGATTAACGCGTGGATGAGTGGACAGATAAACGCACAG"},
+    'enc(dna4)':      {'this is a test': "AGACATTCATTAAGCGCTCCATTAAGCGCTCCATCACTCCAGACATAAAGCGAGAC"},
+    'enc(dna-5)':     {'this is a test': "TCTGTAAGTAATTCGCGAGGTAATTCGCGAGGTAGTGAGGTCTGTATTTCGCTCTG"},
+    'enc(dna_6)':     {'this is a test': "TGTCTAACTAATTGCGCACCTAATTGCGCACCTACTCACCTGTCTATTTGCGTGTC"},
+    'enc(dna7)':      {'this is a test': "GAGTGCCTGCCGGATATCTTGCCGGATATCTTGCTGTCTTGAGTGCGGGATAGAGT"},
+    'enc(dna-8)':     {'this is a test': "CACTCGGTCGGCCATATGTTCGGCCATATGTTCGTCTGTTCACTCGCCCATACACT"},
+}
+
+
 SEQUENCES = {
     '00': "AAGCGCTT",
     '11': "TTCGCGAA",

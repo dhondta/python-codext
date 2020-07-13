@@ -12,6 +12,13 @@ from math import ceil
 from ..__common__ import *
 
 
+__examples__ = {
+    'enc(scytale0|scytale--10|scytale01)': None,
+    'enc(scytale2|scytale-2|scytale_2)':   {'this is a test': "ti satshsi  et"},
+    'enc(scytale5|scytale-5|scytale_5)':   {'this is a test': "tithsei ssat  "},
+}
+
+
 PADDING_CHAR = ""
 
 

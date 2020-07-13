@@ -10,12 +10,20 @@ This codec:
 from ..__common__ import *
 
 
+__examples1__ = {
+    'enc(octal-spaced|octals_spaced)': {'this is a test': "164 150 151 163 40 151 163 40 141 40 164 145 163 164"},
+}
+__examples2__ = {
+    'enc(octal|octals)': {'this is a test': "164150151163040151163040141040164145163164"},
+}
+
+
 oct2 = lambda i: oct(i).lstrip("0").replace("o", "")
 
 ENCMAP1 = {chr(i): oct2(i) for i in range(256)}
 ENCMAP2 = {chr(i): oct2(i).zfill(3) for i in range(256)}
 
 
-add_map("octal-spaced", ENCMAP1, sep=" ", pattern=r"^octals?[-_]spaced$")
-add_map("octal", ENCMAP2, pattern=r"^octals?$")
+add_map("octal-spaced", ENCMAP1, sep=" ", pattern=r"^octals?[-_]spaced$", examples=__examples1__)
+add_map("octal", ENCMAP2, pattern=r"^octals?$", examples=__examples2__)
 
