@@ -6,6 +6,7 @@
 from unittest import TestCase
 
 from codext.__common__ import *
+from codext.base._base import _generate_charset
 from codext.base.baseN import base
 
 
@@ -15,23 +16,25 @@ class TestCodecsBase(TestCase):
         STR = "this is a test"
     
     def test_new_base_codec(self):
+        for i in [0, 1, 256]:
+            self.assertRaises(ValueError, _generate_charset, i)
         b10 = lambda *a: "0123456789"
-        base(b10)
+        base(b10, "base10")
         B10 = "2361031878030638688519054699098996"
         self.assertEqual(codecs.encode(STR, "base10"), B10)
         self.assertEqual(codecs.encode(b(STR), "base10"), b(B10))
         self.assertEqual(codecs.decode(B10, "base10"), STR)
         self.assertEqual(codecs.decode(b(B10), "base10"), b(STR))
-        self.assertRaises(ValueError, base, 1)
+        self.assertRaises(ValueError, base, 1, "test")
         b11 = "0123456789a"
-        base(b11)
+        base(b11, "base11")
         B11 = "113342054335735319526632a26972419"
         self.assertEqual(codecs.encode(STR, "base11"), B11)
         self.assertEqual(codecs.decode(B11, "base11"), STR)
-        self.assertRaises(ValueError, base, object())
+        self.assertRaises(ValueError, base, object(), "test")
         self.assertIsNone(base({'': "01234"}, r"^base5(test)?$"))
         self.assertIsNotNone(codecs.encode(STR, "base5test"))
-        self.assertRaises(ValueError, base, {'': "01234"}, pow2=True)
+        self.assertRaises(ValueError, base, {'': "01234"}, "base5-test", pow2=True)
     
     def test_codec_base2(self):
         STR = "test"

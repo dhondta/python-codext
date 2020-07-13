@@ -28,6 +28,9 @@ class TestCommon(TestCase):
         self.assertRaises(ValueError, codext.add, "test", lambda: None, "BAD")
         self.assertIsNone(codext.add("dummy", dummy_encode, dummy_decode))
         self.assertEqual(codext.encode("test", "dummy"), "test")
+        ci = codext.lookup("dummy")
+        for k in ["add_to_codecs", "examples", "name", "pattern", "text", "type"]:
+            self.assertIn(k, ci.parameters.keys())
 
     def test_add_map_codec(self):
         ENCMAP = [{'a': "A", 'b': "B", 'c': "C"}, {'d': "D", 'e': "E", 'f': "F"}, {'g': "G", 'h': "H", 'i': "I"}]
@@ -42,6 +45,9 @@ class TestCommon(TestCase):
         self.assertIsNone(codext.add_map("dummy3", ENCMAP, pattern=r"^dummy3([-_]inverted)?$"))
         self.assertRaises(LookupError, codext.encode, "test", "dummy3_inverted")
         self.assertRaises(ValueError, codext.add_map, "dummy2", ENCMAP, ignore_case="BAD")
+        ci = codext.lookup("dummy2")
+        for k in ["binary", "encmap", "examples", "ignore_case", "no_error", "repl_char", "sep", "text", "type"]:
+            self.assertIn(k, ci.parameters.keys())
     
     def test_remove_codec(self):
         self.assertIsNone(codext.add("dummy", dummy_encode, dummy_decode))
@@ -49,7 +55,7 @@ class TestCommon(TestCase):
         self.assertIsNone(codext.remove("dummy"))
         self.assertRaises(LookupError, codext.encode, "test", "dummy")
         # special case, when adding a new codec also to the native codecs registry, then it won't be possible to remove
-        #  it further
+        #  it afterwards
         self.assertIsNone(codecs.add("dummy2", dummy_encode, dummy_decode))
         self.assertEqual(codecs.encode("test", "dummy2"), "test")
         self.assertIsNone(codecs.remove("dummy2"))
