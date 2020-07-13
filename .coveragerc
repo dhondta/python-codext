@@ -3,7 +3,6 @@ source = codext
 omit =
     codext/__info__.py
     codext/**/__init__.py
-    tests/*
 
 [report]
 exclude_lines =
