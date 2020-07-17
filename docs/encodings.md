@@ -129,6 +129,27 @@ CACTCGGTCGGCCATATGTTCGGCCATATGTTCGTCTGTTCACTCGCCCATACACT
 
 -----
 
+### Gray Code
+
+Also called *reflected binary code*, it implements the Gray code applied to characters while converted to bytes.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`gray` | text <-> gray encoded text | `reflected-bin`, `reflected_binary` | 
+
+```python
+>>> codext.encode("this is a test", "gray")
+'N\\]J0]J0Q0NWJN'
+>>> codext.decode("N\\]J0]J0Q0NWJN", "gray")
+'this is a test'
+>>> codext.encode("THIS IS A TEST", "gray")
+'~lmz0mz0a0~gz~'
+>>> codext.decode("~lmz0mz0a0~gz~", "gray")
+'THIS IS A TEST'
+```
+
+-----
+
 ### HTML Entities
 
 This implements the full list of characters available at [this reference](https://dev.w3.org/html5/html-author/charref).

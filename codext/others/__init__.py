@@ -2,6 +2,7 @@
 from .baudot import *
 from .dna import *
 from .dummy import *
+from .gray import *
 from .html import *
 from .markdown import *
 from .octal import *

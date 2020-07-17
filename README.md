@@ -22,6 +22,7 @@ This library extends the native `codecs` library and provides some new encodings
 `baudot` | text <-> Baudot code bits | supports CCITT-1, CCITT-2, EU/FR, ITA1, ITA2, MTK-2 (Python3 only), UK, ...
 `braille` | text <-> braille symbols | Python 3 only
 `dna` | text <-> DNA-N sequence | implements the 8 rules of DNA sequences (N belongs to [1,8])
+`gray` | text <-> gray encoded text | aka reflected binary code
 `html` | text <-> HTML entities | implements entities according to [this reference](https://dev.w3.org/html5/html-author/charref)
 `leetspeak` | text <-> leetspeak encoded text | based on minimalistic elite speaking rules
 `markdown` | markdown --> HTML | unidirectional
