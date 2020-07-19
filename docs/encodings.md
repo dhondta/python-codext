@@ -226,6 +226,24 @@ It supports of course letters and digits, but also a few special characters: `.,
 
 -----
 
+### Navajo Code
+
+It implements the letters from the [Navajo Code Talkers' Dictionary](https://www.history.navy.mil/research/library/online-reading-room/title-list-alphabetically/n/navajo-code-talker-dictionary.html). It conserves digits and newlines.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`navajo` | text <-> Navajo | | 
+
+```python
+>>> import codext
+>>> codext.encode("this is a test 123", "navajo")
+'a-woh cha tkin klesh - a-chi klesh - be-la-sana - a-woh dzeh klesh a-woh - 1 2 3'
+>>> codext.decode("a-woh cha tkin klesh - a-chi klesh - be-la-sana - a-woh dzeh klesh a-woh - 1 2 3", "navajo")
+'this is a test 123'
+```
+
+-----
+
 ### Octal
 
 This simple codec converts characters into their octal values.

@@ -27,6 +27,7 @@ This library extends the native `codecs` library and provides some new encodings
 `leetspeak` | text <-> leetspeak encoded text | based on minimalistic elite speaking rules
 `markdown` | markdown --> HTML | unidirectional
 `morse` | text <-> morse encoded text | uses whitespace as a separator
+`navajo` | text <-> Navajo | only handles letters (not full words from the Navajo dictionary)
 `octal` | text <-> octal digits | dummy octal conversion (converts to 3-digits groups)
 `ordinal` | text <-> ordinal digits | dummy character ordinals conversion (converts to 3-digits groups)
 `radio` | text <-> radio words | aka NATO or radio phonetic alphabet

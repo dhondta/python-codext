@@ -2,6 +2,7 @@
 from .braille import *
 from .leetspeak import *
 from .morse import *
+from .navajo import *
 from .radio import *
 from .tomtom import *
 
