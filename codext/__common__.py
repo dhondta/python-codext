@@ -216,6 +216,7 @@ def add_map(ename, encmap, repl_char="?", sep="", ignore_case=None, no_error=Fal
                     # no 'else' handling a LookupError here ; this case is covered by the first if/elif/else block
                 # case 2: list or dictionary or dictionary of numbered encodings
                 elif isinstance(p, int):
+                    # if mapdict is a list, we shall align the parameter (starting from 1) as an index (starting from 0)
                     if isinstance(mapdict, list):
                         p -= 1
                     if isinstance(mapdict, list) and 0 <= p < len(mapdict) or \
@@ -252,18 +253,23 @@ def add_map(ename, encmap, repl_char="?", sep="", ignore_case=None, no_error=Fal
                     else:
                         raise LookupError("Bad parameter for encoding '{}': '{}'".format(ename, p))
             if ignore_case is not None:
-                case_d = ["upper", "lower"][any(c in "".join(smapdict.values()) for c in "abcdefghijklmnopqrstuvwxyz")]
-                case_e = ["upper", "lower"][any(c in "".join(smapdict.keys()) for c in "abcdefghijklmnopqrstuvwxyz")]
+                cases = ["upper", "lower"]
+                case_d = cases[any(c in str(list(smapdict.values())) for c in "abcdefghijklmnopqrstuvwxyz")]
+                case_e = cases[any(c in str(list(smapdict.keys())) for c in "abcdefghijklmnopqrstuvwxyz")]
                 i = ignore_case
                 smapdict = {getattr(k, case_e)() if i in ["both", "encode"] else k: \
-                            getattr(v, case_d)() if i in ["both", "decode"] else v for k, v in smapdict.items()}
+                            ([getattr(x, case_d)() for x in v] if isinstance(v, list) else getattr(v, case_d)()) \
+                                if i in ["both", "decode"] else v for k, v in smapdict.items()}
             if decode:
                 tmp = {}
                 # this has a meaning for encoding maps that could have clashes in encoded chars (e.g. Bacon's cipher ;
                 #  I => abaaa but also J => abaaa, with the following, we keep I instead of letting J overwrite it)
                 for k, v in sorted(smapdict.items()):
-                    if v not in tmp.keys():
-                        tmp[v] = k
+                    if not isinstance(v, list):
+                        v = [v]
+                    for x in v:
+                        if x not in tmp.keys():
+                            tmp[x] = k
                 smapdict = tmp
             # this allows to avoid an error with Python2 in the "for i, c in enumerate(parts)" loop
             if '' not in smapdict.keys():
@@ -271,7 +277,10 @@ def add_map(ename, encmap, repl_char="?", sep="", ignore_case=None, no_error=Fal
             # determine token and result lengths
             tmaxlen = max(map(len, smapdict.keys()))
             tminlen = max(1, min(map(len, set(smapdict.keys()) - {''})))
-            rminlen = max(1, min(map(len, set(smapdict.values()) - {''})))
+            l = []
+            for x in smapdict.values():
+                getattr(l, ["append", "extend"][isinstance(x, list)])(x)
+            rminlen = max(1, min(map(len, set(l) - {''})))
             
             # generic encoding/decoding function for map encodings
             def code(text, errors="strict"):
@@ -291,12 +300,15 @@ def add_map(ename, encmap, repl_char="?", sep="", ignore_case=None, no_error=Fal
                 # get the value from the mapping dictionary, trying the token with its inverted case if relevant
                 def __get_value(token, position, case_changed=False):
                     try:
-                        return smapdict[token] + lsep
+                        result = smapdict[token]
                     except KeyError:
                         if icase and not case_changed:
                             token_inv_case = getattr(token, case)()
                             return __get_value(token_inv_case, position, True)
                         return handle_error(ename, errors, exc, lsep, repl_char, rminlen, decode)(token, position)
+                    if isinstance(result, list):
+                        result = random.choice(result)
+                    return result + lsep
                 
                 # if a separator is defined, rely on it by splitting the input text
                 if decode and len(sep) > 0:
