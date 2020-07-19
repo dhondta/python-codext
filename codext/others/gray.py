@@ -18,5 +18,8 @@ __examples__ = {
 }
 
 
-add_map("gray", {chr(i): chr(i ^ (i >> 1)) for i in range(256)}, pattern=r"^(?:gray|reflected[-_]bin(?:ary)?)$")
+ENCMAP = {chr(i): chr(i ^ (i >> 1)) for i in range(256)}
+
+
+add_map("gray", ENCMAP, pattern=r"^(?:gray|reflected[-_]bin(?:ary)?)$")
 
