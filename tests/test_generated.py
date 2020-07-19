@@ -63,12 +63,13 @@ def make_test(**params):
                                 sep = params['sep'][0] if len(params['sep']) > 0 else ""
                                 self.assertRaises(ValueError, f1, c2, ename)
                                 self.assertRaises(ValueError, f1, c2, ename, "BAD_ERRORS")
-                                self.assertEqual(f1(c1 + c2, ename, "ignore"), f1(c1, ename))
-                                self.assertEqual(f1(c1 + c2, ename, "leave"), f1(c1, ename) + sep + c2)
-                                self.assertEqual(f1(c1 + c2, ename, "replace"), f1(c1, ename) + sep + \
-                                                 params.get('repl_minlen', 1) * params['repl_char'])
+                                if not k.startswith("enc-dec"):
+                                    self.assertEqual(f1(c1 + c2, ename, "ignore"), f1(c1, ename))
+                                    self.assertEqual(f1(c1 + c2, ename, "leave"), f1(c1, ename) + sep + c2)
+                                    self.assertEqual(f1(c1 + c2, ename, "replace"), f1(c1, ename) + sep + \
+                                                     params.get('repl_minlen', 1) * params['repl_char'])
                     # examples validation tests
-                    if k.startswith("enc_dec") and isintance(examples, list):
+                    if k.startswith("enc-dec") and isinstance(examples, list):
                         for s in examples:
                             self.assertEqual(icdec(f2(icenc(f1(s, ename)), ename)), icdec(s))
                             self.assertEqual(icdec(f2(icenc(f1(b(s), ename)), ename)), b(icdec(s)))
@@ -77,7 +78,7 @@ def make_test(**params):
                                 f.write(b(s))
                             with codecs.open(tfile, 'rb', encoding=ename) as f:
                                 s2 = f.read().strip(b(" \x00"))
-                            self.assertEqual(b(icdec(f2(s2, ename))), b(icdec(s)))
+                            self.assertEqual(b(icdec(s2)), b(icdec(s)))
                             os.remove(tfile)
                     else:
                         for s1, s2 in examples.items():
