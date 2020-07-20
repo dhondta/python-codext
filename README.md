@@ -20,6 +20,7 @@ This library extends the native `codecs` library and provides some new encodings
 `barbie-N` | text <-> barbie ciphertext | aka Barbie Typewriter (N belongs to [1, 4])
 `baseXX` | text <-> baseXX | see [base encodings](https://python-codext.readthedocs.io/en/latest/base.html)
 `baudot` | text <-> Baudot code bits | supports CCITT-1, CCITT-2, EU/FR, ITA1, ITA2, MTK-2 (Python3 only), UK, ...
+`bcd` | text <-> binary coded decimal text | encodes characters from their (zero-left-padded) ordinals
 `braille` | text <-> braille symbols | Python 3 only
 `dna` | text <-> DNA-N sequence | implements the 8 rules of DNA sequences (N belongs to [1,8])
 `excess3` | text <-> XS3 encoded text | uses Excess-3 (aka Stibitz code) binary encoding to convert characters from their ordinals
@@ -50,6 +51,8 @@ A few variants are also implemented.
 :---: | :---: | ---
 `baudot-spaced` | text <-> Baudot code groups of bits | groups of 5 bits are whitespace-separated
 `baudot-tape` | text <-> Baudot code tape | outputs a string that looks like a perforated tape
+`bcd-extended0` | text <-> BCD-extended text | encodes characters from their (zero-left-padded) ordinals using prefix bits `0000`
+`bcd-extended1` | text <-> BCD-extended text | encodes characters from their (zero-left-padded) ordinals using prefix bits `1111`
 `manchester-inverted` | text <-> manchester encoded text | XORes each bit of the input with `10`
 `octal-spaced` | text <-> octal digits (whitespace-separated) | dummy octal conversion
 `ordinal-spaced` | text <-> ordinal digits (whitespace-separated) | dummy character ordinals conversion

@@ -60,9 +60,36 @@ It supports various formats such as CCITT-1 and CCITT-2, ITA1 and ITA2, and some
 
 -----
 
+### Binary Coded Decimal (BCD)
+
+It converts characters to their odrinals, left-pads with zeros, converts digits to 4-bits groups and then make characters with the assembled groups. It can also use a 4-bits prefix for making new characters. It then allows to define extended versions of BCD.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`bcd` | text <-> BCD encoded text | `binary_coded_decimals` | 
+`bcd-extended0` | text <-> BCD encoded text using prefix `0000` | `bcd_ext0`, `bcd-extended-zeros`, `binary_coded_decimals_extended_0` | 
+`bcd-extended1` | text <-> BCD encoded text using prefix `1111` | `bcd_ext1`, `bcd-extended-ones`, `binary_coded_decimals_extended_1` | 
+
+```python
+>>> codext.encode("Test", "bcd")
+'\x08A\x01\x11Q\x16'
+>>> codext.decode("\x08A\x01\x11Q\x16", "binary_coded_decimal")
+'Test'
+>>> codext.encode("Test", "bcd_ext_zero")
+'\x00\x08\x04\x01\x00\x01\x01\x01\x05\x01\x01\x06\x00'
+>>> codext.decode("\x00\x08\x04\x01\x00\x01\x01\x01\x05\x01\x01\x06\x00", "bcd-ext0")
+'Test'
+>>> codext.encode("Test", "bcd_extended_ones")
+'\xf0\xf8\xf4\xf1\xf0\xf1\xf1\xf1\xf5\xf1\xf1\xf6\xf0'
+>>> codext.decode("\xf0\xf8\xf4\xf1\xf0\xf1\xf1\xf1\xf5\xf1\xf1\xf6\xf0", "bcd_ext1")
+'Test'
+```
+
+-----
+
 ### Excess-3
 
-Also called *Stibitz code*, it converts letters to ordinals, left-pads with zeros and then applies Excess-3 (Stibitz) code to get groups of 4 bits that are finally reassembled into bytes.
+Also called *Stibitz code*, it converts characters to ordinals, left-pads with zeros and then applies Excess-3 (Stibitz) code to get groups of 4 bits that are finally reassembled into bytes.
 
 **Codec** | **Conversions** | **Aliases** | **Comment**
 :---: | :---: | --- | ---
