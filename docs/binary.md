@@ -60,7 +60,7 @@ It supports various formats such as CCITT-1 and CCITT-2, ITA1 and ITA2, and some
 
 -----
 
-### Excess-3 Code
+### Excess-3
 
 Also called *Stibitz code*, it converts letters to ordinals, left-pads with zeros and then applies Excess-3 (Stibitz) code to get groups of 4 bits that are finally reassembled into bytes.
 
@@ -77,7 +77,7 @@ Also called *Stibitz code*, it converts letters to ordinals, left-pads with zero
 
 -----
 
-### Gray Code
+### Gray
 
 Also called *reflected binary code*, it implements the Gray code applied to characters while converted to bytes.
 
@@ -94,5 +94,27 @@ Also called *reflected binary code*, it implements the Gray code applied to char
 '~lmz0mz0a0~gz~'
 >>> codext.decode("~lmz0mz0a0~gz~", "gray")
 'THIS IS A TEST'
+```
+
+-----
+
+### Manchester
+
+This codec XORes each group of 4 bits of the input text with a 1-byte clock signal, e.g. `0x55` giving in binary `01010101`.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`manchester` | text <-> manchester encoded text | | clock signal is `0x55` (`01010101`)
+`manchester-inverted` | text <-> manchester encoded text | `ethernet`, `ieee802.4` | clock signal is `0xaa` (`10101010`)
+
+```python
+>>> codext.encode("This is a test!", "manchester")
+'fei\x95i\x96jZYUi\x96jZYUiVYUjeifjZjeYV'
+>>> codext.decode("fei\x95i\x96jZYUi\x96jZYUiVYUjeifjZjeYV", "manchester")
+'This is a test!'
+>>> codext.encode("This is a test!", "manchester-inverted")
+'\x99\x9a\x96j\x96i\x95¥¦ª\x96i\x95¥¦ª\x96©¦ª\x95\x9a\x96\x99\x95¥\x95\x9a¦©'
+>>> codext.decode("\x99\x9a\x96j\x96i\x95¥¦ª\x96i\x95¥¦ª\x96©¦ª\x95\x9a\x96\x99\x95¥\x95\x9a¦©", "ethernet")
+'This is a test!'
 ```
 

@@ -26,6 +26,7 @@ This library extends the native `codecs` library and provides some new encodings
 `gray` | text <-> gray encoded text | aka reflected binary code
 `html` | text <-> HTML entities | implements entities according to [this reference](https://dev.w3.org/html5/html-author/charref)
 `leetspeak` | text <-> leetspeak encoded text | based on minimalistic elite speaking rules
+`manchester` | text <-> manchester encoded text | XORes each bit of the input with `01`
 `markdown` | markdown --> HTML | unidirectional
 `morse` | text <-> morse encoded text | uses whitespace as a separator
 `navajo` | text <-> Navajo | only handles letters (not full words from the Navajo dictionary)
@@ -49,6 +50,7 @@ A few variants are also implemented.
 :---: | :---: | ---
 `baudot-spaced` | text <-> Baudot code groups of bits | groups of 5 bits are whitespace-separated
 `baudot-tape` | text <-> Baudot code tape | outputs a string that looks like a perforated tape
+`manchester-inverted` | text <-> manchester encoded text | XORes each bit of the input with `10`
 `octal-spaced` | text <-> octal digits (whitespace-separated) | dummy octal conversion
 `ordinal-spaced` | text <-> ordinal digits (whitespace-separated) | dummy character ordinals conversion
 `southpark-icase` | text <-> Kenny's language | same as `southpark` but case insensitive
