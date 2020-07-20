@@ -10,7 +10,12 @@ This codec:
 from ..__common__ import *
 
 
-__examples__ = {'enc(excess3|xs-3|stibitz)': {'This is a test': ";t7C\x84H6T8D\x83e<£eD\x944D\x84I"}}
+__examples__ = {
+    'enc(excess3|xs-3|stibitz)': {
+        'This is a test!': ";t7C\x84H6T8D\x83e<\xa3eD\x944D\x84I6`",
+        'This is another test ': ";t7C\x84H6T8D\x83e<\xa4CDDICt4DseD\x944D\x84I6P",
+    },
+}
 
 
 CODE = {
@@ -28,25 +33,25 @@ def excess3_encode(text, errors="strict"):
                 r += chr(int(b, 2))
                 b = ""
     if len(b) > 0:
-        b += "0000"
-        r += chr(int(b, 2))
+        r += chr(int(b + "0000", 2))
     return r, len(text)
 
 
 def excess3_decode(text, errors="strict"):
-    code = {v: k for k, v in CODE}
+    code = {v: k for k, v in CODE.items()}
     r, d = "", ""
     for c in text:
-        b = bin(ord(c))[2:].zfill(8)
+        bin_c = bin(ord(c))[2:].zfill(8)
         for i in range(0, 8, 4):
-            d += code[b[i:i+4]]
+            try:
+                d += code[bin_c[i:i+4]]
+            except KeyError:  # (normal case) occurs when 0000 was used for padding
+                break
             if len(d) == 3:
                 r += chr(int(d))
                 d = ""
-    if len(d) > 0:
-        r += chr(int(d))
-    return r, len(text)
+    return r, len(b(text))
 
 
-add("excess3", excess3_encode, excess3_decode, pattern=r"^(?:excess\-3|xs\-?3|stibitz)$")
+add("excess3", excess3_encode, excess3_decode, pattern=r"^(?:excess\-?3|xs\-?3|stibitz)$", text=False)
 

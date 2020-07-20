@@ -129,6 +129,23 @@ CACTCGGTCGGCCATATGTTCGGCCATATGTTCGTCTGTTCACTCGCCCATACACT
 
 -----
 
+### Excess-3 Code
+
+Also called *Stibitz code*, it converts letters to ordinals, left-pads with zeros and then applies Excess-3 (Stibitz) code to get groups of 4 bits that are finally reassembled into bytes.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`excess3` | text <-> XS3 encoded text | `excess-3`, `xs3`, `stibitz` | 
+
+```python
+>>> codext.encode("This is a test!", "excess-3")
+';t7C\x84H6T8D\x83e<£eD\x944D\x84I6`'
+>>> codext.decode(";t7C\x84H6T8D\x83e<£eD\x944D\x84I6`", "stibitz")
+'This is a test!'
+```
+
+-----
+
 ### Gray Code
 
 Also called *reflected binary code*, it implements the Gray code applied to characters while converted to bytes.
