@@ -5,14 +5,21 @@ docs_dir: docs
 pages:
   - Introduction: index.md
   - Features: features.md
-  - 'Base encodings': base.md
-  - 'Crypto ciphers': ciphers.md
-  - 'Other encodings': encodings.md
+  - Encodings:
+    - 'Base': base.md
+    - 'Binary': binary.md
+    - 'Common': common.md
+    - 'Crypto ciphers': ciphers.md
+    - 'Languages': languages.md
+    - 'Others': others.md
+    - 'Steganography': stegano.md
   - 'String manipulations': manipulations.md
   - 'CLI tool': cli.md
 extra:
   mailto: alexandre.dhondt@gmail.com
 theme: readthedocs
+extra_javascript:
+  - js/collapsible-navbar.js
 use_directory_urls: false
 markdown_extensions:
   - toc:

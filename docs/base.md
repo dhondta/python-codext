@@ -105,6 +105,29 @@ Note that for `base64`, it overwrites the native `base64_codec` to also support 
 
 -----
 
+### Ascii85
+
+This encoding relies on the `base64` library and is only supported in Python 3.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`ascii85` | text <-> ascii85 | none | Python 3 only
+
+```python
+>>> codext.encode("this is a test", "ascii85")
+"FD,B0+DGm>@3BZ'F*%"
+>>> codext.decode("FD,B0+DGm>@3BZ'F*%", "ascii85")
+'this is a test'
+>>> with open("ascii85.txt", 'w', encoding="ascii85") as f:
+	f.write("this is a test")
+14
+>>> with open("ascii85.txt", encoding="ascii85") as f:
+	f.read()
+'this is a test'
+```
+
+-----
+
 ### Other base encodings
 
 **Codec** | **Conversions** | **Aliases** | **Comment**
