@@ -423,7 +423,7 @@ def list_encodings():
     """ Get a list of codext's added encodings from the local registry. """
     enc = []
     for search_function in __codecs_registry:
-        enc.append(search_function.__name__)
+        enc.append(search_function.__name__.replace("_", "-"))
     return enc
 
 

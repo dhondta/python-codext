@@ -190,7 +190,7 @@ def baudot_encode(alphabet=None, spaced=False, tape=False):
     ename = "baudot" + ("-spaced" if spaced else "-tape" if tape else "")
     alphabet, states, func = _handle_alphabet(alphabet)
     def encode(text, errors="strict"):
-        s, l, state, seen_states = "", len(text), None, []
+        s, l, state, seen_states = "", len(b(text)), None, []
         for i, c in enumerate(text):
             # if the state is undefined yet, find the relevant alphabet
             if state is None:
@@ -239,7 +239,7 @@ def baudot_decode(alphabet=None, spaced=False, tape=False):
     alphabet = {st: {v: k for k, v in alph.items()} for st, alph in alphabet.items()}
     states = {v: k for k, v in states.items()}
     def decode(text, errors="strict"):
-        s, l = "", len(text)
+        s, l = "", len(b(text))
         if spaced:
             text = text.replace(" ", "")
         elif tape:

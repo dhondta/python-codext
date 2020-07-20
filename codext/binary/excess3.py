@@ -25,16 +25,16 @@ CODE = {
 
 
 def excess3_encode(text, errors="strict"):
-    r, b = "", ""
+    r, bits = "", ""
     for c in text:
         for i in str(ord(c)).zfill(3):
-            b += CODE[i]
-            if len(b) == 8:
-                r += chr(int(b, 2))
-                b = ""
-    if len(b) > 0:
-        r += chr(int(b + "0000", 2))
-    return r, len(text)
+            bits += CODE[i]
+            if len(bits) == 8:
+                r += chr(int(bits, 2))
+                bits = ""
+    if len(bits) > 0:
+        r += chr(int(bits + "0000", 2))
+    return r, len(b(text))
 
 
 def excess3_decode(text, errors="strict"):
