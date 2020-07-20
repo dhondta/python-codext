@@ -14,12 +14,12 @@ This uses the [electronic color code](https://en.wikipedia.org/wiki/Electronic_c
 
 **Codec** | **Conversions** | **Aliases** | **Comment**
 :---: | :---: | --- | ---
-`resistor` | text <-> resistor colors | `resistors-color`, `resistor_color_code` | visually, it only works in a terminal supporting ANSI color codes
+`resistor` | text <-> resistor colors | `condensator`, `resistors-color`, `resistor_color_code` | visually, it only works in a terminal supporting ANSI color codes
 
 ```python
 >>> codext.encode("1234", "resistor")
 '\x1b[48;5;130m \x1b[0;00m\x1b[48;5;1m \x1b[0;00m\x1b[48;5;214m \x1b[0;00m\x1b[48;5;11m \x1b[0;00m'
->>> codext.decode("\x1b[48;5;130m \x1b[0;00m\x1b[48;5;1m \x1b[0;00m\x1b[48;5;214m \x1b[0;00m\x1b[48;5;11m \x1b[0;00m", "resistors_color")
+>>> codext.decode("\x1b[48;5;130m \x1b[0;00m\x1b[48;5;1m \x1b[0;00m\x1b[48;5;214m \x1b[0;00m\x1b[48;5;11m \x1b[0;00m", "condensators_color")
 '1234'
 ```
 
