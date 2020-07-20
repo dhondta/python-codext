@@ -427,7 +427,10 @@ def reset():
     """ Reset codext's local registry of search functions. """
     global CODECS_REGISTRY, __codecs_registry
     clear()
-    for pkg in ["base", "crypto", "languages", "others", "stegano"]:
+    d = os.path.dirname(__file__)
+    for pkg in sorted(os.listdir(d)):
+        if pkg.startswith("_") or not os.path.isdir(os.path.join(d, pkg)):
+            continue
         reload(import_module("codext." + pkg))
     # backup codext's registry
     if CODECS_REGISTRY is None:

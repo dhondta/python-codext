@@ -9,7 +9,7 @@ from six import binary_type, string_types
 from unittest import TestCase
 
 from codext.__common__ import *
-from codext.others.baudot import _check_alphabet
+from codext.binary.baudot import _check_alphabet
 
 
 class ComplementaryTestCase(TestCase):
