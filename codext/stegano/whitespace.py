@@ -21,7 +21,7 @@ __examples1__ = {
 
 
 ENCMAP = {r'': {'0': "\t", '1': " "}, r'[-_]inv(erted)?': {'0': " ", '1': "\t"}}
-add_map("whitespace", ENCMAP, binary=True, pattern=r"^whitespaces?([-_]inv(?:erted)?)?$", examples=__examples1__)
+add_map("whitespace", ENCMAP, intype="bin", pattern=r"^whitespaces?([-_]inv(?:erted)?)?$", examples=__examples1__)
 
 
 def wsba_encode(p):

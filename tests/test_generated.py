@@ -39,9 +39,9 @@ def make_test(**params):
                     if examples is None:
                         self.assertRaises(LookupError, f1, "test", ename)
                         continue
-                    # unhandled character error tests (only for non-binary-related encodings)
+                    # unhandled character error tests
                     encmap = params.get('encmap')
-                    if encmap and not params['binary'] and not params['no_error']:
+                    if encmap and params['intype'] not in ["bin", "ord"] and not params['no_error']:
                         if not isinstance(encmap, list):
                             encmap = [encmap]
                         for em in encmap:

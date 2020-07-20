@@ -154,7 +154,7 @@ def add(ename, encode=None, decode=None, pattern=None, text=True, add_to_codecs=
     register(getregentry, add_to_codecs)
 
 
-def add_map(ename, encmap, repl_char="?", sep="", ignore_case=None, no_error=False, binary=False, **kwargs):
+def add_map(ename, encmap, repl_char="?", sep="", ignore_case=None, no_error=False, intype=None, outype=None, **kwargs):
     """
     This adds a new mapping codec (that is, declarable with a simple character mapping dictionary) to the codecs module
      dynamically setting its encode and/or decode functions, eventually dynamically naming the encoding with a pattern
@@ -169,15 +169,21 @@ def add_map(ename, encmap, repl_char="?", sep="", ignore_case=None, no_error=Fal
                            - while decoding, separators can be mixed in the input text
     :param ignore_case:   ignore text case while encoding and/or decoding
     :param no_error:      this encoding triggers no error (hence, always in "leave" errors handling)
-    :param binary:        encoding applies to the binary string of the input text
+    :param intype:        specify the input type for pre-transforming the input text
+    :param outype:        specify the output type for post-transforming the output text
     :param pattern:       pattern for dynamically naming the encoding
     :param text:          specify whether the codec is a text encoding
     :param add_to_codecs: also add the search function to the native registry
                            NB: this will make the codec available in the built-in open(...) but will make it impossible
                                 to remove the codec later
     """
+    outype = outype or intype
     if ignore_case not in [None, "encode", "decode", "both"]:
         raise ValueError("Bad ignore_case parameter while creating encoding map")
+    if intype not in [None, "str", "bin", "ord"]:
+        raise ValueError("Bad input type parameter while creating encoding map")
+    if outype not in [None, "str", "bin", "ord"]:
+        raise ValueError("Bad output type parameter while creating encoding map")
     def __generic_code(exc, decode=False):
         def _wrapper(param):
             """
@@ -293,8 +299,11 @@ def add_map(ename, encmap, repl_char="?", sep="", ignore_case=None, no_error=Fal
                 if no_error:
                     errors = "leave"
                 text = ensure_str(text)
-                if binary and not decode:
-                    text = "".join("{:0>8}".format(bin(ord(c))[2:]) for c in text)
+                if not decode:
+                    if intype == "bin":
+                        text = "".join("{:0>8}".format(bin(ord(c))[2:]) for c in text)
+                    elif intype == "ord":
+                        text = "".join(str(ord(c)).zfill(3) for c in text)
                 r = ""
                 lsep = "" if decode else sep if len(sep) <= 1 else sep[0]
                 
@@ -336,16 +345,18 @@ def add_map(ename, encmap, repl_char="?", sep="", ignore_case=None, no_error=Fal
                                 posn = cursor - len(bad)
                                 r += handle_error(ename, errors, exc, lsep, repl_char, rminlen, decode)(bad, posn)
                                 bad = ""
-                if binary and decode:
-                    tmp, r = "", r.replace(lsep, "")
-                    for i in range(0, len(r), 8):
-                        bs = r[i:i+8]
-                        try:
-                            tmp += chr(int(bs, 2))
-                        except ValueError:
-                            if len(bs) > 0:
-                                tmp += "[" + bs + "]"
-                    r = tmp + lsep
+                if decode:
+                    if outype in ["bin", "ord"]:
+                        tmp, r = "", r.replace(lsep, "")
+                        step = [3, 8][outype == "bin"]
+                        for i in range(0, len(r), step):
+                            s = r[i:i+step]
+                            try:
+                                tmp += chr(int(s, 2) if outype == "bin" else int(s))
+                            except ValueError:
+                                if len(s) > 0:
+                                    tmp += "[" + s + "]"
+                        r = tmp + lsep
                 return r[:len(r)-len(lsep)], len(b(text))
             return code
         if re.search(r"\([^(?:)]", kwargs.get('pattern', "")) is None:
@@ -361,14 +372,15 @@ def add_map(ename, encmap, repl_char="?", sep="", ignore_case=None, no_error=Fal
     encexc = "{}EncodeError".format(name)
     exec("class {}(ValueError): pass".format(encexc), glob)
     # now use the generic add() function
-    kwargs['type'] = glob['__file__'].split(os.path.sep)[-2].rstrip("s")
+    kwargs['category'] = glob['__file__'].split(os.path.sep)[-2].rstrip("s")
     kwargs['examples'] = kwargs.get('examples', glob.get('__examples__'))
     kwargs['encmap'] = encmap
     kwargs['repl_char'] = repl_char
     kwargs['sep'] = sep
     kwargs['ignore_case'] = ignore_case
     kwargs['no_error'] = no_error
-    kwargs['binary'] = binary
+    kwargs['intype'] = intype
+    kwargs['outype'] = outype
     try:
         if isinstance(encmap, dict):
             smapdict = {k: v for k, v in encmap.items()}

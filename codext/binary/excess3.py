@@ -53,5 +53,5 @@ def excess3_decode(text, errors="strict"):
     return r, len(b(text))
 
 
-add("excess3", excess3_encode, excess3_decode, pattern=r"^(?:excess\-?3|xs\-?3|stibitz)$", text=False)
+add("excess3", excess3_encode, excess3_decode, pattern=r"^(?:excess\-?3|xs\-?3|stibitz)$")
 

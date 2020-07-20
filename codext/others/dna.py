@@ -37,5 +37,5 @@ for i in range(8):
     ENCMAP.append({k: v[i] for k, v in SEQUENCES.items()})
 
 
-add_map("dna", ENCMAP, binary=True, pattern=r"dna[-_]?([1-8])$")
+add_map("dna", ENCMAP, intype="bin", pattern=r"dna[-_]?([1-8])$")
 

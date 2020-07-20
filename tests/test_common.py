@@ -45,8 +45,10 @@ class TestCommon(TestCase):
         self.assertIsNone(codext.add_map("dummy3", ENCMAP, pattern=r"^dummy3([-_]inverted)?$"))
         self.assertRaises(LookupError, codext.encode, "test", "dummy3_inverted")
         self.assertRaises(ValueError, codext.add_map, "dummy2", ENCMAP, ignore_case="BAD")
+        self.assertRaises(ValueError, codext.add_map, "dummy2", ENCMAP, intype="BAD")
+        self.assertRaises(ValueError, codext.add_map, "dummy2", ENCMAP, outype="BAD")
         ci = codext.lookup("dummy2")
-        for k in ["binary", "encmap", "examples", "ignore_case", "no_error", "repl_char", "sep", "text", "type"]:
+        for k in ["category", "encmap", "ignore_case", "intype", "no_error", "outype", "repl_char", "sep", "text"]:
             self.assertIn(k, ci.parameters.keys())
     
     def test_remove_codec(self):
