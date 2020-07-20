@@ -37,6 +37,7 @@ This library extends the native `codecs` library and provides some new encodings
 `scytale` | text <-> scytale ciphertext | encrypts with L, the number of letters on the rod (belongs to [1,[)
 `shift` | text <-> shift(N) ciphertext | shift ordinals with N (belongs to [1,255])
 `sms` | text <-> phone keystrokes | also called T9 code ; uses "`-`" as a separator for encoding, "`-`" or "`_`" or whitespace for decoding
+`southpark` | text <-> Kenny's language | converts letters to Kenny's language from Southpark (whitespace is also handled)
 `tomtom` | text <-> tom-tom encoded text | similar to `morse`, using slashes and backslashes
 `url` | text <-> URL encoded text | aka URL encoding
 `xor` | text <-> XOR(N) ciphertext | XOR with a single byte (N belongs to [1,255])
@@ -50,6 +51,7 @@ A few variants are also implemented.
 `baudot-tape` | text <-> Baudot code tape | outputs a string that looks like a perforated tape
 `octal-spaced` | text <-> octal digits (whitespace-separated) | dummy octal conversion
 `ordinal-spaced` | text <-> ordinal digits (whitespace-separated) | dummy character ordinals conversion
+`southpark-icase` | text <-> Kenny's language | same as `southpark` but case insensitive
 `whitespace_after_before` | text <-> lines of whitespaces[letter]whitespaces | encodes characters as new characters with whitespaces before and after according to an equation described in the codec name (e.g. "`whitespace+2*after-3*before`")
 
 

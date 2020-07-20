@@ -106,6 +106,36 @@ This is also known as the [NATO phonetic alphabet](https://en.wikipedia.org/wiki
 
 -----
 
+### Southpark
+
+This encodes text according to Kenny's language in Southpark.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`southpark` | text <-> Kenny's language | `kenny` | Dynamic tokens mapping ; we can define a mapping of encoding's tokens (original tokens: `fFMmpP`)
+`southpark-icase` | text <-> Kenny's language | `kenny_icase` | Dynamic tokens mapping ; we can define a mapping of encoding's tokens (original tokens: `FMP`)
+
+```python
+>>> codext.encode("This is a Test", "southpark")
+'FmpmfpmfffmmfffmfffmmfffmmmfffFmpmppfmmfmp'
+>>> codext.decode('FmpmfpmfffmmfffmfffmmfffmmmfffFmpmppfmmfmp', "kenny")
+'This is a Test'
+>>> codext.encode("This is a test", "kenny_123456")
+'245415411144111411144211444111145455144145'
+>>> codext.decode("245415411144111411144211444111145455144145", "kenny-123456")
+'This is a test'
+>>> codext.encode("this is a test", "kenny_icase")
+'FMPMFPMFFFMMFFFMFFFMMFFFMMMFFFFMPMPPFMMFMP'
+>>> codext.decode("FMPMFPMFFFMMFFFMFFFMMFFFMMMFFFFMPMPPFMMFMP", "southpark-icase")
+'this is a test'
+>>> codext.encode("this is a test", "southpark-icase_123")
+'123213211122111211122111222111123233122123'
+>>> codext.decode('123213211122111211122111222111123233122123', "kenny_icase-123")
+'this is a test'
+```
+
+-----
+
 ### Tom-Tom
 
 This codec is similar to morse. It converts text into slashes and backslashes.

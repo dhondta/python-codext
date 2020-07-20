@@ -248,15 +248,17 @@ def add_map(ename, encmap, repl_char="?", sep="", ignore_case=None, no_error=Fal
                     base_tokens = ""
                     for _, c in sorted(mapdict.items()):
                         for t in c:
-                            if t not in base_tokens:
-                                base_tokens += t
-                    base_tokens = base_tokens.strip()
+                            for st in t:
+                                if st not in base_tokens:
+                                    base_tokens += st
+                    if " " not in sep:
+                        base_tokens = base_tokens.replace(" ", "")
                     if len(p) > 0 and p[0] in "-_" and len(p[1:]) == len(set(p[1:])) == len(base_tokens):
                         p = p[1:]
                     if len(p) == len(set(p)) == len(base_tokens):
                         t = maketrans(base_tokens, p)
                         for k, v in smapdict.items():
-                            smapdict[k] = v.translate(t)
+                            smapdict[k] = [x.translate(t) for x in v] if isinstance(v, list) else v.translate(t)
                     else:
                         raise LookupError("Bad parameter for encoding '{}': '{}'".format(ename, p))
             if ignore_case is not None:
