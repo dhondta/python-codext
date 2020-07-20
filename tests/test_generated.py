@@ -77,7 +77,7 @@ def make_test(**params):
                             with codecs.open(tfile, 'wb', encoding=ename) as f:
                                 f.write(b(s))
                             with codecs.open(tfile, 'rb', encoding=ename) as f:
-                                s2 = f.read().strip(b(" \x00"))
+                                s2 = f.read().strip(b("\x00"))
                             self.assertEqual(b(icdec(s2)), b(icdec(s)))
                             os.remove(tfile)
                     else:
@@ -101,7 +101,7 @@ def make_test(**params):
                                 with codecs.open(tfile, 'wb', encoding=ename) as f:
                                     f.write(b(s1))
                                 with codecs.open(tfile, 'rb', encoding=ename) as f:
-                                    s = f.read().strip(b(" \x00"))
+                                    s = f.read().strip(b("\x00"))
                                 self.assertEqual(b(icdec(f2(s2, ename))), b(icdec(s)))
                                 os.remove(tfile)
     return _template

@@ -244,6 +244,7 @@ def add_map(ename, encmap, repl_char="?", sep="", ignore_case=None, no_error=Fal
                         for t in c:
                             if t not in base_tokens:
                                 base_tokens += t
+                    base_tokens = base_tokens.strip()
                     if len(p) > 0 and p[0] in "-_" and len(p[1:]) == len(set(p[1:])) == len(base_tokens):
                         p = p[1:]
                     if len(p) == len(set(p)) == len(base_tokens):
@@ -477,8 +478,7 @@ def fix_inout_formats(f):
         a0 = args[0]
         a0 = ensure_str(a0) if iss(a0) or isb(a0) else a0
         r = f(a0, *args[1:], **kwargs)
-        return (fix(r[0], args[0]), ) + r[1:] if isinstance(r, (tuple, list)) \
-               else fix(r, args[0])
+        return (fix(r[0], args[0]), ) + r[1:] if isinstance(r, (tuple, list)) else fix(r, args[0])
     return _wrapper
 
 
@@ -504,8 +504,8 @@ def get_alphabet_from_mask(mask):
 def handle_error(ename, errors, exc=ValueError, sep="", repl_char="?", repl_minlen=1, decode=False, item="position"):
     def _handle_error(token, position):
         if errors == "strict":
-            raise exc("'{}' codec can't {}code character '{}' in {} {}"
-                      .format(ename, ["en", "de"][decode], token, item, position))
+            msg = "'{}' codec can't {}code character '{}' in {} {}"
+            raise exc(msg.format(ename, ["en", "de"][decode], token, item, position))
         elif errors == "leave":
             return token + sep
         elif errors == "replace":
