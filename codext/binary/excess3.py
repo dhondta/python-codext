@@ -15,6 +15,12 @@ __examples__ = {
         'This is a test!': ";t7C\x84H6T8D\x83e<\xa3eD\x944D\x84I6`",
         'This is another test ': ";t7C\x84H6T8D\x83e<\xa4CDDICt4DseD\x944D\x84I6P",
     },
+    'dec(excess-3|xs3)': {
+        '\x00':                                            None,
+        '\xff':                                            None,
+        ';t7C\x84H6T8D\x83e<\xa3eD\x944D\x84I6`':          "This is a test!",
+        ';t7C\x84H6T8D\x83e<\xa4CDDICt4DseD\x944D\x84I6P': "This is another test ",
+    },
 }
 
 
@@ -22,6 +28,10 @@ CODE = {
     '0': "0011", '1': "0100", '2': "0101", '3': "0110", '4': "0111",
     '5': "1000", '6': "1001", '7': "1010", '8': "1011", '9': "1100",
 }
+
+
+class Excess3DecodeError(ValueError):
+    pass
 
 
 def excess3_encode(text, errors="strict"):
@@ -40,13 +50,15 @@ def excess3_encode(text, errors="strict"):
 def excess3_decode(text, errors="strict"):
     code = {v: k for k, v in CODE.items()}
     r, d = "", ""
-    for c in text:
+    for i, c in enumerate(text):
         bin_c = bin(ord(c))[2:].zfill(8)
-        for i in range(0, 8, 4):
+        for k in range(0, 8, 4):
+            hb = bin_c[k:k+4]
             try:
-                d += code[bin_c[i:i+4]]
+                d += code[hb]
             except KeyError:  # (normal case) occurs when 0000 was used for padding
-                break
+                if i != len(text) - 1 or k != 4 or hb != "0000":
+                    d += handle_error("excess3", errors, Excess3DecodeError, decode=True)(hb, i)
             if len(d) == 3:
                 r += chr(int(d))
                 d = ""
