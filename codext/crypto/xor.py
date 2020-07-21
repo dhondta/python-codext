@@ -14,7 +14,7 @@ __examples__ = {
     'enc(xor0|xor--10|xor256|xor300)': None,
     'enc(xor3|xor-3|xor_3)':           {'this is a test': "wkjp#jp#b#wfpw"},
     'enc(xor3|xor-3|xor_3)':           {'wkjp#jp#b#wfpw': "this is a test"},
-    'enc(XOR6|XOR-6|XOR_6)':           {'this is a test': "rnou&ou&g&rcur"},
+    'enc(xor6|xor-6|xor_6)':           {'this is a test': "rnou&ou&g&rcur"},
 }
 
 
@@ -29,5 +29,5 @@ def xor_byte_encode(i):
     return encode
 
 
-add("xor", xor_byte_encode, xor_byte_encode, r"(?i)xor[-_]?([1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])$")
+add("xor", xor_byte_encode, xor_byte_encode, r"^xor[-_]?([1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])$")
 

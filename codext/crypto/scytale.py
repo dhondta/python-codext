@@ -49,5 +49,5 @@ def scytale_decode(l):
     return decode
 
 
-add("scytale", scytale_encode, scytale_decode, r"(?i)scytale[-_]?([1-9]\d*)$")
+add("scytale", scytale_encode, scytale_decode, r"^scytale[-_]?([1-9]\d*)$")
 

@@ -43,5 +43,5 @@ if PY3:
         return bytes(r), len(input)
     
     
-    add("base100", base100_encode, base100_decode, r"(?i)^(?:base[-_]?100|emoji)$")
+    add("base100", base100_encode, base100_decode, r"^(?:base[-_]?100|emoji)$")
 

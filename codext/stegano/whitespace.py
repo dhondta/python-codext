@@ -58,5 +58,5 @@ def wsba_decode(p):
 
 op = r"[+-](?:\d+(?:\.\d+)?[*/])?"
 add("whitespace_after_before", wsba_encode, wsba_decode,
-    pattern=r"(?i)whitespace("+op+r"before"+op+r"after|"+op+r"after"+op+r"before)$")
+    pattern=r"whitespace("+op+r"before"+op+r"after|"+op+r"after"+op+r"before)$")
 

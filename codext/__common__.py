@@ -145,7 +145,8 @@ def add(ename, encode=None, decode=None, pattern=None, text=True, add_to_codecs=
         ci.parameters['add_to_codecs'] = add_to_codecs
         ci.parameters['pattern'] = pattern
         ci.parameters['text'] = text
-        ci.parameters['type'] = kwargs.get('type', glob['__file__'].split(os.path.sep)[-2].rstrip("s"))
+        f = glob.get('__file__', os.path.join("custom", "_"))
+        ci.parameters['type'] = kwargs.get('type', f.split(os.path.sep)[-2].rstrip("s"))
         ci.parameters['examples'] = kwargs.get('examples', glob.get('__examples__'))
         return ci
     

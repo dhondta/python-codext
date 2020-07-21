@@ -16,8 +16,8 @@ __examples1__ = {
     'enc(baudot-ita1)':         {'TEST 1234': "10101000101010010101100000100000001000100010000101"},
     'enc(baudot_ita2_msb)':     {'TEST 1234': "10000000010010110000001001101110111100110000101010"},
     'enc(baudot-ita2-us)':      {'TEST 1234': "10000000010010110000001001101110111100110000101010"},
-    'enc(baudot)':              {'abc': None},
-    'enc(baudot_ccitt1-lsb)':   {'TEST ': None},
+    'enc(baudot)':              {'\x01\x02':  None},
+    'enc(baudot_ccitt1-lsb)':   {'TEST ':     None},
 }
 __examples2__ = {
     'enc(baudot_spaced-BAD_ALPHABET)': None,
@@ -190,6 +190,7 @@ def baudot_encode(alphabet=None, spaced=False, tape=False):
     ename = "baudot" + ("-spaced" if spaced else "-tape" if tape else "")
     alphabet, states, func = _handle_alphabet(alphabet)
     def encode(text, errors="strict"):
+        text = text.upper()
         s, l, state, seen_states = "", len(b(text)), None, []
         for i, c in enumerate(text):
             # if the state is undefined yet, find the relevant alphabet

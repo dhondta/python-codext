@@ -163,5 +163,5 @@ def base_generic():
             return base_decode(input, a, errors), len(input)
         return _decode
     
-    add("base", encode, decode, r"(?i)^base[-_]?([2-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(?:[-_]generic)?$")
+    add("base", encode, decode, r"^base[-_]?([2-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(?:[-_]generic)?$")
 

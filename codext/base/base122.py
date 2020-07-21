@@ -18,5 +18,5 @@ def base122_decode(input, errors="strict"):
     raise NotImplementedError
 
 
-add("base122", base122_encode, base122_decode, r"(?i)^base[-_]?122$")
+add("base122", base122_encode, base122_decode, r"^base[-_]?122$")
 

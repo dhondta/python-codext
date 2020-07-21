@@ -12,8 +12,8 @@ from ..__common__ import *
 
 __examples__ = {
     'enc(shift0|shift--10|shift256)': None,
-    'enc(shift1|SHIFT_1|shift-1)':    {'this is a test': "uijt!jt!b!uftu"},
-    'enc(shift9|shift_9|SHIFT-9)':    {'this is a test': "}qr|)r|)j)}n|}"},
+    'enc(shift1|shift_1|shift-1)':    {'this is a test': "uijt!jt!b!uftu"},
+    'enc(shift9|shift_9|shift-9)':    {'this is a test': "}qr|)r|)j)}n|}"},
 }
 
 
@@ -28,5 +28,5 @@ def ord_shift_encode(i):
     return encode
 
 
-add("shift", ord_shift_encode, ord_shift_decode, r"(?i)shift[-_]?([1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])$")
+add("shift", ord_shift_encode, ord_shift_decode, r"shift[-_]?([1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])$")
 

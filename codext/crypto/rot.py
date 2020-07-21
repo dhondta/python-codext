@@ -13,9 +13,9 @@ from ..__common__ import *
 
 
 __examples__ = {
-    'enc(rot0|rot--10|rot100)':               None,
-    'enc(rot1|rot-1|rot_1|ROT1|ROT-1|ROT_1)': {'this is a test': "uijt jt b uftu"},
-    'enc(rot3)':                              {'this is a test': "wklv lv d whvw"},
+    'enc(rot0|rot--10|rot100)': None,
+    'enc(rot1|rot-1|rot_1)':    {'this is a test': "uijt jt b uftu"},
+    'enc(rot3)':                {'this is a test': "wklv lv d whvw"},
 }
 
 
@@ -39,5 +39,5 @@ def rot_decode(i):
     return decode
 
 
-add("rot", rot_encode, rot_decode, r"(?i)rot[-_]?([1-9]|1[0-9]|2[0-5])$")
+add("rot", rot_encode, rot_decode, r"rot[-_]?([1-9]|1[0-9]|2[0-5])$")
 
