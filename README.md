@@ -7,9 +7,169 @@
 [![Known Vulnerabilities](https://snyk.io/test/github/dhondta/python-codext/badge.svg?targetFile=requirements.txt)](https://snyk.io/test/github/dhondta/python-codext?targetFile=requirements.txt)
 [![License](https://img.shields.io/pypi/l/codext.svg)](https://pypi.python.org/pypi/codext/)
 
-# Codecs Extension
+# CODecs EXTension
 
 This library extends the native `codecs` library and provides some new encodings (static or parametrized, like `rot-N` or `xor-N`).
+
+## Setup
+
+This library is available on [PyPi](https://pypi.python.org/pypi/codext/) and can be simply installed using Pip:
+
+```sh
+$ pip install codext
+```
+
+or
+
+```sh
+$ pip3 install codext
+```
+
+**Note**: Some more encodings are available when installing in Python 3.
+
+## Usage (from terminal)
+
+```sh
+$ codext dna-1 -i test.txt
+GTGAGCGGGTATGTGA
+$ echo -en "test" | codext morse
+- . ... -
+```
+
+Python 3 (includes Ascii85, Base85, Base100 and braille):
+
+```sh
+$ echo -en "test" | codext braille
+⠞⠑⠎⠞
+$ echo -en "test" | codext base100
+👫👜👪👫
+```
+
+Using codecs chaining:
+
+```sh
+$ echo -en "Test string" | codext reverse
+gnirts tseT
+$ echo -en "Test string" | codext reverse morse
+--. -. .. .-. - ... / - ... . -
+$ echo -en "Test string" | codext reverse morse dna-2
+AGTCAGTCAGTGAGAAAGTCAGTGAGAAAGTGAGTGAGAAAGTGAGTCAGTGAGAAAGTCAGAAAGTGAGTGAGTGAGAAAGTTAGAAAGTCAGAAAGTGAGTGAGTGAGAAAGTGAGAAAGTC
+$ echo -en "Test string" | codext reverse morse dna-2 octal
+101107124103101107124103101107124107101107101101101107124103101107124107101107101101101107124107101107124107101107101101101107124107101107124103101107124107101107101101101107124103101107101101101107124107101107124107101107124107101107101101101107124124101107101101101107124103101107101101101107124107101107124107101107124107101107101101101107124107101107101101101107124103
+$ echo -en "AGTCAGTCAGTGAGAAAGTCAGTGAGAAAGTGAGTGAGAAAGTGAGTCAGTGAGAAAGTCAGAAAGTGAGTGAGTGAGAAAGTTAGAAAGTCAGAAAGTGAGTGAGTGAGAAAGTGAGAAAGTC" | codext -d dna-2 morse reverse
+test string
+```
+
+## Usage (within Python)
+
+Getting the list of available codecs:
+
+```python
+>>> import codext
+>>> codext.list()
+['ascii85', 'base85', 'base100', 'base122', ..., 'tomtom', 'dna', 'html', 'markdown', 'url', 'resistor', 'sms', 'whitespace', 'whitespace-after-before']
+```
+
+Usage examples:
+
+```python
+>>> codext.encode("this is a test", "base58-bitcoin")
+'jo91waLQA1NNeBmZKUF'
+>>> codext.encode("this is a test", "base58-ripple")
+'jo9rA2LQwr44eBmZK7E'
+>>> codext.encode("this is a test", "base58-url")
+'JN91Wzkpa1nnDbLyjtf'
+```
+
+```python
+>>> codecs.encode("this is a test", "base100")
+'👫👟👠👪🐗👠👪🐗👘🐗👫👜👪👫'
+>>> codecs.decode("👫👟👠👪🐗👠👪🐗👘🐗👫👜👪👫", "base100")
+'this is a test'
+```
+
+```python
+>>> for i in range(8):
+        print(codext.encode("this is a test", "dna-%d" % (i + 1)))
+GTGAGCCAGCCGGTATACAAGCCGGTATACAAGCAGACAAGTGAGCGGGTATGTGA
+CTCACGGACGGCCTATAGAACGGCCTATAGAACGACAGAACTCACGCCCTATCTCA
+ACAGATTGATTAACGCGTGGATTAACGCGTGGATGAGTGGACAGATAAACGCACAG
+AGACATTCATTAAGCGCTCCATTAAGCGCTCCATCACTCCAGACATAAAGCGAGAC
+TCTGTAAGTAATTCGCGAGGTAATTCGCGAGGTAGTGAGGTCTGTATTTCGCTCTG
+TGTCTAACTAATTGCGCACCTAATTGCGCACCTACTCACCTGTCTATTTGCGTGTC
+GAGTGCCTGCCGGATATCTTGCCGGATATCTTGCTGTCTTGAGTGCGGGATAGAGT
+CACTCGGTCGGCCATATGTTCGGCCATATGTTCGTCTGTTCACTCGCCCATACACT
+>>> codext.decode("GTGAGCCAGCCGGTATACAAGCCGGTATACAAGCAGACAAGTGAGCGGGTATGTGA", "dna-1")
+'this is a test'
+```
+
+```python
+>>> codecs.encode("this is a test", "morse")
+'- .... .. ... / .. ... / .- / - . ... -'
+>>> codecs.decode("- .... .. ... / .. ... / .- / - . ... -", "morse")
+'this is a test'
+>>> with open("morse.txt", 'w', encoding="morse") as f:
+	f.write("this is a test")
+14
+>>> with open("morse.txt",encoding="morse") as f:
+	f.read()
+'this is a test'
+```
+
+```python
+>>> codext.decode("""
+      =            
+              X         
+   :            
+      x         
+  n  
+    r 
+        y   
+      Y            
+              y        
+     p    
+         a       
+ `          
+            n            
+          |    
+  a          
+o    
+       h        
+          `            
+          g               
+           o 
+   z      """, "whitespace-after+before")
+'CSC{not_so_invisible}'
+```
+
+```python
+>>> print(codext.encode("An example test string", "baudot-tape"))
+***.**
+   . *
+***.* 
+*  .  
+   .* 
+*  .* 
+   . *
+** .* 
+***.**
+** .**
+   .* 
+*  .  
+* *. *
+   .* 
+* *.  
+* *. *
+*  .  
+* *.  
+* *. *
+***.  
+  *.* 
+***.* 
+ * .* 
+```
+
+## List of codecs
 
 **Codec** | **Conversions** | **Comment**
 :---: | :---: | ---
@@ -58,121 +218,4 @@ A few variants are also implemented.
 `ordinal-spaced` | text <-> ordinal digits (whitespace-separated) | dummy character ordinals conversion
 `southpark-icase` | text <-> Kenny's language | same as `southpark` but case insensitive
 `whitespace_after_before` | text <-> lines of whitespaces[letter]whitespaces | encodes characters as new characters with whitespaces before and after according to an equation described in the codec name (e.g. "`whitespace+2*after-3*before`")
-
-
-## Setup
-
-This library is available on [PyPi](https://pypi.python.org/pypi/codext/) and can be simply installed using Pip:
-
-```sh
-$ pip install codext
-```
-
-or
-
-```sh
-$ pip3 install codext
-```
-
-**Note**: Some more encodings are available when installing in Python 3.
-
-## Usage (from terminal)
-
-```sh
-$ codext dna-1 -i test.txt
-GTGAGCGGGTATGTGA
-$ echo -en "test" | codext morse
-- . ... -
-```
-
-Python 3 (includes Ascii85, Base85, Base100 and braille):
-
-```sh
-$ echo -en "test" | codext braille
-⠞⠑⠎⠞
-$ echo -en "test" | codext base100
-👫👜👪👫
-```
-
-## Usage (within Python)
-
-Example with Base58:
-
-```python
->>> codext.encode("this is a test", "base58-bitcoin")
-'jo91waLQA1NNeBmZKUF'
->>> codext.encode("this is a test", "base58-ripple")
-'jo9rA2LQwr44eBmZK7E'
->>> codext.encode("this is a test", "base58-url")
-'JN91Wzkpa1nnDbLyjtf'
-```
-
-Example with Base100 (emoji's):
-
-```python
->>> codecs.encode("this is a test", "base100")
-'👫👟👠👪🐗👠👪🐗👘🐗👫👜👪👫'
->>> codecs.decode("👫👟👠👪🐗👠👪🐗👘🐗👫👜👪👫", "base100")
-'this is a test'
-```
-
-Example with DNA sequence encoding:
-
-```python
->>> for i in range(8):
-        print(codext.encode("this is a test", "dna-%d" % (i + 1)))
-GTGAGCCAGCCGGTATACAAGCCGGTATACAAGCAGACAAGTGAGCGGGTATGTGA
-CTCACGGACGGCCTATAGAACGGCCTATAGAACGACAGAACTCACGCCCTATCTCA
-ACAGATTGATTAACGCGTGGATTAACGCGTGGATGAGTGGACAGATAAACGCACAG
-AGACATTCATTAAGCGCTCCATTAAGCGCTCCATCACTCCAGACATAAAGCGAGAC
-TCTGTAAGTAATTCGCGAGGTAATTCGCGAGGTAGTGAGGTCTGTATTTCGCTCTG
-TGTCTAACTAATTGCGCACCTAATTGCGCACCTACTCACCTGTCTATTTGCGTGTC
-GAGTGCCTGCCGGATATCTTGCCGGATATCTTGCTGTCTTGAGTGCGGGATAGAGT
-CACTCGGTCGGCCATATGTTCGGCCATATGTTCGTCTGTTCACTCGCCCATACACT
->>> codext.decode("GTGAGCCAGCCGGTATACAAGCCGGTATACAAGCAGACAAGTGAGCGGGTATGTGA", "dna-1")
-'this is a test'
-```
-
-Example with morse:
-
-```python
->>> codecs.encode("this is a test", "morse")
-'- .... .. ... / .. ... / .- / - . ... -'
->>> codecs.decode("- .... .. ... / .. ... / .- / - . ... -", "morse")
-'this is a test'
->>> with open("morse.txt", 'w', encoding="morse") as f:
-	f.write("this is a test")
-14
->>> with open("morse.txt",encoding="morse") as f:
-	f.read()
-'this is a test'
-```
-
-Example with whitespaces before and after:
-
-```python
->>> codext.decode("""
-      =            
-              X         
-   :            
-      x         
-  n  
-    r 
-        y   
-      Y            
-              y        
-     p    
-         a       
- `          
-            n            
-          |    
-  a          
-o    
-       h        
-          `            
-          g               
-           o 
-   z      """, "whitespace-after+before")
-'CSC{not_so_invisible}'
-```
 
