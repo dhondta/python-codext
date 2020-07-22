@@ -5,6 +5,7 @@ import os
 import random
 import re
 import sys
+from encodings.aliases import aliases
 from functools import reduce, wraps
 from importlib import import_module
 from inspect import currentframe
@@ -146,8 +147,9 @@ def add(ename, encode=None, decode=None, pattern=None, text=True, add_to_codecs=
         ci.parameters['pattern'] = pattern
         ci.parameters['text'] = text
         f = glob.get('__file__', os.path.join("custom", "_"))
-        ci.parameters['type'] = kwargs.get('type', f.split(os.path.sep)[-2].rstrip("s"))
+        ci.parameters['category'] = kwargs.get('category', f.split(os.path.sep)[-2].rstrip("s"))
         ci.parameters['examples'] = kwargs.get('examples', glob.get('__examples__'))
+        ci.parameters['module'] = kwargs.get('module', glob.get('__name__'))
         return ci
     
     getregentry.__name__ = re.sub(r"[\s\-]", "_", ename)
@@ -185,7 +187,8 @@ def add_map(ename, encmap, repl_char="?", sep="", ignore_case=None, no_error=Fal
         raise ValueError("Bad input type parameter while creating encoding map")
     if outype not in [None, "str", "bin", "ord"]:
         raise ValueError("Bad output type parameter while creating encoding map")
-    def __generic_code(exc, decode=False):
+
+    def __generic_code(decode=False):
         def _wrapper(param):
             """
             The parameter for wrapping comes from the encoding regex pattern ; e.g.
@@ -318,7 +321,7 @@ def add_map(ename, encmap, repl_char="?", sep="", ignore_case=None, no_error=Fal
                         if icase and not case_changed:
                             token_inv_case = getattr(token, case)()
                             return __get_value(token_inv_case, position, True)
-                        return handle_error(ename, errors, exc, lsep, repl_char, rminlen, decode)(token, position)
+                        return handle_error(ename, errors, lsep, repl_char, rminlen, decode)(token, position)
                     if isinstance(result, list):
                         result = random.choice(result)
                     return result + lsep
@@ -346,7 +349,7 @@ def add_map(ename, encmap, repl_char="?", sep="", ignore_case=None, no_error=Fal
                             # if the number of bad chars is the minimum token length, consume it and start a new buffer
                             if len(bad) == tminlen or errors == "leave":
                                 posn = cursor - len(bad)
-                                r += handle_error(ename, errors, exc, lsep, repl_char, rminlen, decode)(bad, posn)
+                                r += handle_error(ename, errors, lsep, repl_char, rminlen, decode)(bad, posn)
                                 bad = ""
                 if decode:
                     if outype in ["bin", "ord"]:
@@ -367,14 +370,7 @@ def add_map(ename, encmap, repl_char="?", sep="", ignore_case=None, no_error=Fal
             return _wrapper(None)
         return _wrapper
 
-    name = "".join(t.capitalize() for t in re.split(r"[-_]", ename))
     glob = currentframe().f_back.f_globals
-    # dynamically make dedicated exception classes
-    decexc = "{}DecodeError".format(name)
-    exec("class {}(ValueError): pass".format(decexc), glob)
-    encexc = "{}EncodeError".format(name)
-    exec("class {}(ValueError): pass".format(encexc), glob)
-    # now use the generic add() function
     kwargs['category'] = glob['__file__'].split(os.path.sep)[-2].rstrip("s")
     kwargs['examples'] = kwargs.get('examples', glob.get('__examples__'))
     kwargs['encmap'] = encmap
@@ -384,6 +380,7 @@ def add_map(ename, encmap, repl_char="?", sep="", ignore_case=None, no_error=Fal
     kwargs['no_error'] = no_error
     kwargs['intype'] = intype
     kwargs['outype'] = outype
+    kwargs['module'] = glob.get('__name__')
     try:
         if isinstance(encmap, dict):
             smapdict = {k: v for k, v in encmap.items()}
@@ -393,7 +390,7 @@ def add_map(ename, encmap, repl_char="?", sep="", ignore_case=None, no_error=Fal
         kwargs['repl_minlen_b'] = max(1, min(map(len, map(b, set(smapdict.values()) - {''}))))
     except:
         pass
-    add(ename, __generic_code(glob[encexc]), __generic_code(glob[decexc], True), **kwargs)
+    add(ename, __generic_code(), __generic_code(True), **kwargs)
 codecs.add_map = add_map
 
 
@@ -404,28 +401,38 @@ def clear():
 codecs.clear = clear
 
 
-def examples(encoding_regex, number=10):
+def examples(encoding, number=10):
     """ Use the search function to get the matching encodings and provide examples of valid encoding names. """
-    matches = search(encoding_regex)
-    examples = []
-    for n in matches:
+    e = []
+    for n in search(encoding):
         for search_function in __codecs_registry:
             if n == search_function.__name__:
                 temp = []
-                for s in generate_strings_from_regex(search_function.__pattern__, yield_max=256*number):
+                for s in generate_strings_from_regex(search_function.__pattern__, yield_max=16*number):
                     temp.append(s)
                 random.shuffle(temp)
-                examples.extend(sorted([temp[i] for i in range(min(number, len(temp)))], key=_human_keys))
-    return examples
+                i = 0
+                while i < min(number, len(temp)):
+                    if not temp[i].isdigit():
+                        e.append(temp[i])
+                    i += 1
+        for alias, codec in aliases.items():
+            if n == codec:
+                if codec not in e:
+                    e.append(codec)
+                if not alias.isdigit():
+                    e.append(alias)
+    random.shuffle(e)
+    return sorted([e[i] for i in range(min(number, len(e)))], key=_human_keys)
 codecs.examples = examples
 
 
 def list_encodings():
-    """ Get a list of codext's added encodings from the local registry. """
-    enc = []
+    """ Get a list of all codecs. """
+    enc = list(set(aliases.values()))
     for search_function in __codecs_registry:
         enc.append(search_function.__name__.replace("_", "-"))
-    return enc
+    return sorted(list(set(enc)), key=_human_keys)
 
 
 def remove(encoding):
@@ -516,11 +523,17 @@ def get_alphabet_from_mask(mask):
 
 
 # generic error handling function
-def handle_error(ename, errors, exc=ValueError, sep="", repl_char="?", repl_minlen=1, decode=False, item="position"):
+def handle_error(ename, errors, sep="", repl_char="?", repl_minlen=1, decode=False, item="position"):
+    name = "".join(t.capitalize() for t in re.split(r"[-_]", ename))
+    # dynamically make dedicated exception classes bound to the related codec module
+    exc = "%s%scodeError" % (name, ["En", "De"][decode])
+    glob = {'__name__': "__main__"}
+    exec("class %s(ValueError): pass" % exc, glob)
+    
     def _handle_error(token, position):
         if errors == "strict":
             msg = "'{}' codec can't {}code character '{}' in {} {}"
-            raise exc(msg.format(ename, ["en", "de"][decode], token, item, position))
+            raise glob[exc](msg.format(ename, ["en", "de"][decode], token, item, position))
         elif errors == "leave":
             return token + sep
         elif errors == "replace":
@@ -561,7 +574,9 @@ def lookup(encoding):
         codecinfo = search_function(encoding)
         if codecinfo is not None:
             return codecinfo
-    return __orig_lookup(encoding)
+    ci = __orig_lookup(encoding)
+    ci.parameters = {'category': "native", 'module': "codecs", 'name': aliases.get(ci.name, ci.name)}
+    return ci
 codecs.lookup = lookup
 
 
@@ -589,22 +604,33 @@ codecs.register = __register
 
 def search(encoding_regex):
     """ Function similar to lookup but allows to search for an encoding based on a regex instead. It searches this way
-     into the local registry but also tries a simple lookup with the original lookup function. """
+         into the local registry but also tries a simple lookup with the original lookup function. """
     matches = []
     for search_function in __codecs_registry:
         n = search_function.__name__
         if re.search(encoding_regex, n):
             matches.append(n)
             continue
-        for s in generate_strings_from_regex(search_function.__pattern__):
-            if re.search(encoding_regex, s):
+        # in some cases, encoding_regex can match a generated string that uses a particular portion of its generating
+        #  pattern ; e.g. we expect encoding_regex="uu_" to find "uu" and "uu_codec" while it can also find "morse" or
+        #  "atbash" very rarely because of their dynamic patterns and the limited number of randomly generated strings
+        # so, we can use a qualified majority voting to ensure we do not get a "junk" encoding in the list of matches ;
+        #  executing 5 times the string generation for a given codec but adding the codec to the list of matches only
+        #  if we get at least 3 matches ensures that we consider up to 2 failures that could be stochastic, therefore
+        #  drastically decreasing the probability to get a "junk" encoding in the matches list
+        c = 0
+        for i in range(5):
+            for s in generate_strings_from_regex(search_function.__pattern__):
+                if re.search(encoding_regex, s):
+                    c += 1
+                    break
+            if c >= 3:
                 matches.append(n)
                 break
-    try:
-        lookup(encoding_regex)
-        matches.append(encoding_regex)
-    except:
-        pass
+    for s, n in aliases.items():
+        if re.search(encoding_regex, s) or re.search(encoding_regex, n):
+            matches.append(n)
+            break
     return sorted(list(set(matches)), key=_human_keys)
 codecs.search = search
 
@@ -618,7 +644,7 @@ CATEGORIES = {
     'word':      ascii_letters + digits + '_',
     'not_word':  reduce(lambda x, c: x.replace(c, ""), ascii_letters + digits + '_', printable),
 }
-REPEAT_MAX    = 20
+REPEAT_MAX    = 10
 STAR_PLUS_MAX = 10
 YIELD_MAX     = 100
 
@@ -662,6 +688,7 @@ def __gen_str_from_re(regex, star_plus_max, repeat_max, yield_max, parsed=False)
         elif code in ["max_repeat", "min_repeat"]:
             start, end = value[:2]
             end = min(end, star_plus_max)
+            start = min(start, end)
             charset = list(__gen_str_from_re(value[-1], star_plus_max, repeat_max, yield_max, True))
             subtokens = []
             if start == 0 and end == 1:

@@ -28,5 +28,5 @@ ENCMAP = {
 }
 
 
-add_map("tomtom", ENCMAP, ".", " ", ignore_case="both", pattern=r"^tom-?tom([-_]?.{2})?$")
+add_map("tom-tom", ENCMAP, ".", " ", ignore_case="both", pattern=r"^tom-?tom([-_]?.{2})?$")
 

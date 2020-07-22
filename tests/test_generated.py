@@ -124,7 +124,7 @@ for encoding in list_encodings():
     if error:
         continue
     # only consider codecs with __examples__ defined in their globals for dynamic tests generation
-    if ci.parameters['examples'] is not None:
+    if ci.parameters.get('examples') is not None:
         f = make_test(**ci.parameters)
         f.__name__ = n = "test_" + encoding.replace("-", "_")
         setattr(GeneratedTestCase, n, f)

@@ -37,10 +37,6 @@ __examples3__ = {
 CODE = {str(i): bin(i)[2:].zfill(4) for i in range(10)}
 
 
-class BCDDecodeError(ValueError):
-    pass
-
-
 def bcd_encode(prefix=""):
     def encode(text, errors="strict"):
         r, bits = "", prefix
@@ -67,7 +63,7 @@ def bcd_decode(prefix=""):
                 try:
                     d += code[hb]
                 except KeyError:
-                    d += handle_error("bcd", errors, BCDDecodeError, decode=True)(hb, i)
+                    d += handle_error("bcd", errors, decode=True)(hb, i)
                 if len(d) == 3:
                     r += chr(int(d))
                     d = ""

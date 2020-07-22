@@ -29,7 +29,7 @@ class TestCommon(TestCase):
         self.assertIsNone(codext.add("dummy", dummy_encode, dummy_decode))
         self.assertEqual(codext.encode("test", "dummy"), "test")
         ci = codext.lookup("dummy")
-        for k in ["add_to_codecs", "examples", "name", "pattern", "text", "type"]:
+        for k in ["add_to_codecs", "category", "examples", "name", "pattern", "text"]:
             self.assertIn(k, ci.parameters.keys())
 
     def test_add_map_codec(self):
@@ -81,6 +81,7 @@ class TestCommon(TestCase):
         self.assertIsNotNone(codext.search("morse"))
         self.assertIsNotNone(codext.search("geohash"))
         self.assertIsNotNone(codext.examples("morse"))
+        self.assertIsNotNone(codext.examples("cp"))
         self.assertIsNotNone(list(codext.generate_strings_from_regex(r"[ab]{1,3}")))
         self.assertIsNotNone(list(codext.generate_strings_from_regex(r"(?<=ab)cd")))
         self.assertIsNotNone(list(codext.generate_strings_from_regex(r"(?<=-)\w+")))

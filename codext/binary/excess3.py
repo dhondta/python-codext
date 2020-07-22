@@ -30,10 +30,6 @@ CODE = {
 }
 
 
-class Excess3DecodeError(ValueError):
-    pass
-
-
 def excess3_encode(text, errors="strict"):
     r, bits = "", ""
     for c in text:
@@ -58,7 +54,7 @@ def excess3_decode(text, errors="strict"):
                 d += code[hb]
             except KeyError:  # (normal case) occurs when 0000 was used for padding
                 if i != len(text) - 1 or k != 4 or hb != "0000":
-                    d += handle_error("excess3", errors, Excess3DecodeError, decode=True)(hb, i)
+                    d += handle_error("excess3", errors, decode=True)(hb, i)
             if len(d) == 3:
                 r += chr(int(d))
                 d = ""

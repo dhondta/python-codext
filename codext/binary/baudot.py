@@ -128,14 +128,6 @@ UK = [
 ]
 
 
-class BaudotDecodeError(ValueError):
-    pass
-
-
-class BaudotEncodeError(ValueError):
-    pass
-
-
 def _bits_from_tape(tape, trans={'*': "1", ' ': "0"}):
     """ Converts a tape-like string with the given translation for ones and zeros to a series of bits. """
     bits = ""
@@ -206,7 +198,7 @@ def baudot_encode(alphabet=None, spaced=False, tape=False):
                     except KeyError:
                         pass
                 if bits is None:
-                    bits = handle_error(ename, errors, BaudotEncodeError, "?", 5)(c, i)
+                    bits = handle_error(ename, errors, "?", 5)(c, i)
                 s += bits
             # otherwise, handle state change (when the current alphabet does not contain the character to encode but the
             #  other alphabet does
@@ -222,7 +214,7 @@ def baudot_encode(alphabet=None, spaced=False, tape=False):
                         seen_states.append(state)
                 except KeyError as e:
                     state = list(set(states.keys()) - {state})[0]  # reset the state
-                    s += handle_error(ename, errors, BaudotEncodeError, "?", 5)(c, i)
+                    s += handle_error(ename, errors, "?", 5)(c, i)
         # by default, if no state is specified, the encoded string is handled as letters ; so if figures are used only,
         #  it is necessary to include the groups of bits for figures at the beginning of the encoded string
         s = (states['figures'] if seen_states == ["figures"] else "") + s
@@ -275,7 +267,7 @@ def baudot_decode(alphabet=None, spaced=False, tape=False):
                 if bits in states.keys() and states[bits] != state:
                     state = states[bits]
                 else:
-                    s += handle_error(ename, errors, BaudotDecodeError, decode=True, item="group")(bits, i//5)
+                    s += handle_error(ename, errors, decode=True, item="group")(bits, i//5)
         return s, l
     return decode
 
