@@ -78,41 +78,10 @@ In this second example, we can see that:
 
 - Only the encoding function is defined.
 - A pattern is defined to match the prefix "`mydyn-`" and then an integer which is captured and used with `mydyncodec_encode(i)`.
-- The `text=True` keyword-argument could have been used to only support text de/encoding and not file handling.
 
 !!! warning "Pattern capture group"
     
     A capture group means that the parameter will be used with a dynamic (decorated) encoding function. In order to avoid this, i.e. for matching multiple names leading to the same encoding while calling a static encoding function, we can simply define a non-capturing group, e.g. "`(?:my|special_)codec`".
-
------
-
-## Search for encodings
-
-Natively, `codecs` provides a `lookup` function that allows to get the `CodecInfo` object for the desired encoding. This performs a lookup in the registry based on an exact match. Sometimes, it can be useful to search for available encodings based on a regular expression. Therefore, a `search` function is added by `codext` to allow to get a list of encoding names matching the input regex.
-
-```python
->>> codext.search("baudot")
-['baudot', 'baudot_spaced', 'baudot_tape']
->>> codext.search("al")
-['capitalize', 'octal', 'octal_spaced', 'ordinal', 'ordinal_spaced', 'radio']
->>> codext.search("white")
-['whitespace', 'whitespace_after_before']
-```
-
-!!! note "For new encodings only"
-    
-    The `search` function relies on `codext`'s registry and not the native one, hence returning only regex matches for new encodings added with `codext` and an exact match by also using the `lookup` function.
-
-Also, `codext` provides an `examples` function to get some examples of valid encoding names. This is especially useful when it concerns dynamicly named encodings (e.g. `rot`, `shift` or `dna`).
-
-```python
->>> codext.examples("rot")
-['rot-14', 'rot-24', 'rot-7', 'rot18', 'rot3', 'rot4', 'rot6', 'rot_1', 'rot_12', 'rot_2']
->>> codext.examples("dna")
-['dna-1', 'dna-2', 'dna-5', 'dna1', 'dna4', 'dna5', 'dna6', 'dna8', 'dna_3', 'dna_5']
->>> codext.examples("barbie", 5)
-['barbie-1', 'barbie1', 'barbie4', 'barbie_2', 'barbie_4']
-```
 
 -----
 
@@ -125,21 +94,22 @@ New codecs using encoding maps can be added easily using the new function `add_m
 >>> help(codext.add)
 Help on function add_map in module codext.__common__:
 
-add_map(ename, encmap, repl_char='?', sep='', ignore_case=False, no_error=False, binary=False, **kwargs)
+add_map(ename, encmap, repl_char='?', sep='', ignore_case=None, no_error=False, intype=None, outype=None, **kwargs)
     This adds a new mapping codec (that is, declarable with a simple character mapping dictionary) to the codecs module
      dynamically setting its encode and/or decode functions, eventually dynamically naming the encoding with a pattern
      and with file handling (if text is True).
     
     :param ename:         encoding name
     :param encmap:        characters encoding map ; can be a dictionary of encoding maps (for use with the first capture
-                           group of the regex pattern)
+                           group of the regex pattern) or a function building the encoding map
     :param repl_char:     replacement char (used when errors handling is set to "replace")
     :param sep:           string of possible character separators (hence, only single-char separators are considered) ;
                            - while encoding, the first separator is used
                            - while decoding, separators can be mixed in the input text
-    :param ignore_case:   ignore text case
+    :param ignore_case:   ignore text case while encoding and/or decoding
     :param no_error:      this encoding triggers no error (hence, always in "leave" errors handling)
-    :param binary:        encoding applies to the binary string of the input text
+    :param intype:        specify the input type for pre-transforming the input text
+    :param outype:        specify the output type for post-transforming the output text
     :param pattern:       pattern for dynamically naming the encoding
     :param text:          specify whether the codec is a text encoding
     :param add_to_codecs: also add the search function to the native registry
@@ -175,7 +145,7 @@ ENCMAP = [
     {'00': "D", '01': "C", '10': "B", '11': "A"},
 ]
 
-codext.add("mydyncodec", ENCMAP, "#", ignore_case=True, binary=True, pattern=r"mydyn-(\d+)$")
+codext.add("mydyncodec", ENCMAP, "#", ignore_case=True, intype="bin", pattern=r"mydyn-(\d+)$")
 ```
 
 In this second example, we can see that:
@@ -184,6 +154,47 @@ In this second example, we can see that:
 - Instead of using the default character "`?`" for replacements, we use "`#`".
 - The case is ignored ; decoding either "`abcd`" or "`ABCD`" will succeed.
 - The binary mode is enabled, meaning that the input text is converted to a binary string for encoding, while it is converted from binary to text when decoding.
+
+!!! warning "Input/Output types"
+    
+    By default, when `intype` is defined, `outype` takes the same value. So, if the new encoding uses a pre-conversion to bits (`intype="bin"`) but maps bits to characters (therefore binary conversion to text is not needed), `outype` shall then be set to "`str`" (or if it maps bits to ordinals, use `outype="ord"`).
+
+-----
+
+## List new encodings
+
+New codecs added with `codext` can be listed with the related function. Note that it only lists new codecs, not native ones.
+
+```python
+>>> codext.list()
+['ascii85', 'base85', 'base100', 'base122', 'base2', ..., 'scytale', 'shift', 'xor', 'braille', 'leet', 'morse', 'navajo', 'radio', 'southpark', ..., 'markdown', 'url', 'resistor', 'sms', 'whitespace', 'whitespace-after-before']
+```
+
+-----
+
+## Search for encodings
+
+Natively, `codecs` provides a `lookup` function that allows to get the `CodecInfo` object for the desired encoding. This performs a lookup in the registry based on an exact match. Sometimes, it can be useful to search for available encodings based on a regular expression. Therefore, a `search` function is added by `codext` to allow to get a list of encoding names matching the input regex.
+
+```python
+>>> codext.search("baudot")
+['baudot', 'baudot_spaced', 'baudot_tape']
+>>> codext.search("al")
+['capitalize', 'octal', 'octal_spaced', 'ordinal', 'ordinal_spaced', 'radio']
+>>> codext.search("white")
+['whitespace', 'whitespace_after_before']
+```
+
+Also, `codext` provides an `examples` function to get some examples of valid encoding names. This is especially useful when it concerns dynamicly named encodings (e.g. `rot`, `shift` or `dna`).
+
+```python
+>>> codext.examples("rot")
+['rot-14', 'rot-24', 'rot-7', 'rot18', 'rot3', 'rot4', 'rot6', 'rot_1', 'rot_12', 'rot_2']
+>>> codext.examples("dna")
+['dna-1', 'dna-2', 'dna-5', 'dna1', 'dna4', 'dna5', 'dna6', 'dna8', 'dna_3', 'dna_5']
+>>> codext.examples("barbie", 5)
+['barbie-1', 'barbie1', 'barbie4', 'barbie_2', 'barbie_4']
+```
 
 -----
 

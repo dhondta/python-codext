@@ -1,20 +1,22 @@
-site_name: "Codext - Extension of native codecs"
+site_name: "Codext - Extension of native codecs for Python"
 repo_url: https://github.com/dhondta/python-codext
 site_author: dhondta
 docs_dir: docs
 pages:
   - Introduction: index.md
   - Features: features.md
+  - Encodings: encodings.md
   - Encodings:
-    - 'Base': base.md
-    - 'Binary': binary.md
-    - 'Common': common.md
-    - 'Crypto ciphers': ciphers.md
-    - 'Languages': languages.md
-    - 'Others': others.md
-    - 'Steganography': stegano.md
+    - 'Base': enc/base.md
+    - 'Binary': enc/binary.md
+    - 'Common': enc/common.md
+    - 'Cryptography': enc/crypto.md
+    - 'Languages': enc/languages.md
+    - 'Others': enc/others.md
+    - 'Steganography': enc/stegano.md
   - 'String manipulations': manipulations.md
   - 'CLI tool': cli.md
+  - 'Create your codec': howto.md
 extra:
   mailto: alexandre.dhondt@gmail.com
 theme: readthedocs

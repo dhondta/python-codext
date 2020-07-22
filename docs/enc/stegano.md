@@ -1,10 +1,4 @@
-With `codext`, the `codecs` library has multiple new encodings in addition to [the native ones](https://docs.python.org/3.8/library/codecs.html#standard-encodings), like presented hereafter.
-
-Unless explicitely specified, each codec supports writing to and reading from a file.
-
-!!! warning "Lossy conversion"
-    
-    Some encodings are lossy, meaning that it is not always possible to decode back to the exact start string. This should be considered especially when chaining codecs.
+`codext` defines a few steganography-related encodings. While encoding is not really steganography (that is, concealing data within data), the following codecs are worth creating this category as they relate to converting data into something that could mislead the unaware reader.
 
 -----
 
@@ -48,7 +42,7 @@ This codec implements the SMS encoding, also caled T9, that is the conversion fr
 
 This simple encoding replaces zeros and ones of the binary version of the input text with spaces and tabs. It is supported either with its original mapping or with the inverted mapping.
 
-!!! warning "Do not confuse"
+!!! warning "Encoding, not programming !"
     
     This should not be confused with the [whitespace esoteric language](https://en.wikipedia.org/wiki/Whitespace_(programming_language)).
 

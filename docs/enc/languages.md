@@ -1,10 +1,4 @@
-With `codext`, the `codecs` library has multiple new encodings in addition to [the native ones](https://docs.python.org/3.8/library/codecs.html#standard-encodings), like presented hereafter.
-
-Unless explicitely specified, each codec supports writing to and reading from a file.
-
-!!! warning "Lossy conversion"
-    
-    Some encodings are lossy, meaning that it is not always possible to decode back to the exact start string. This should be considered especially when chaining codecs.
+`codext` also adds some common languages for encoding.
 
 -----
 
@@ -71,7 +65,7 @@ It supports of course letters and digits, but also a few special characters: `.,
 
 -----
 
-### Navajo Code
+### Navajo
 
 It implements the letters from the [Navajo Code Talkers' Dictionary](https://www.history.navy.mil/research/library/online-reading-room/title-list-alphabetically/n/navajo-code-talker-dictionary.html). It conserves digits and newlines.
 

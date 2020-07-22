@@ -16,7 +16,7 @@ These "encodings" are simple string transformations, mostly using `str`'s method
 `title` | text <-> titled text |  | decoding "untitles" the text
 `uppercase` | text <-> uppercase text | `upper` | decoding is `lowercase`
 
-Of course, these "encodings" have no interest while using them in Python as the `str` methods can be called. It can be useful while using `codext` from the terminal (see [*CLI tool*](cli.md)).
+Of course, these "encodings" have no interest while using them in Python as the `str` methods can be called. It can be useful while using `codext` from the terminal (see [*CLI tool*](cli.html)).
 
 A simple example:
 
