@@ -16,8 +16,8 @@ from ..__common__ import *
 
 
 __examples__ = {
-    'enc(barbie)':  None,
-    'enc(barbie1)': {'\r': None},
+    'enc(barbie)':                    None,
+    'enc(barbie1)':                   {'\r': None},
     'enc(barbie1|barbie_1|barbie-1)': {'this is a test': "hstf tf i hafh"},
     'enc(barbie2|barbie_2|barbie-2)': {'this is a test': "sfhp hp t sips"},
     'enc(barbie3|barbie_3|barbie-3)': {'this is a test': "fpsu su h ftuf"},

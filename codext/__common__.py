@@ -187,7 +187,7 @@ def add_map(ename, encmap, repl_char="?", sep="", ignore_case=None, no_error=Fal
         raise ValueError("Bad input type parameter while creating encoding map")
     if outype not in [None, "str", "bin", "ord"]:
         raise ValueError("Bad output type parameter while creating encoding map")
-
+    
     def __generic_code(decode=False):
         def _wrapper(param):
             """
@@ -238,7 +238,7 @@ def add_map(ename, encmap, repl_char="?", sep="", ignore_case=None, no_error=Fal
                 elif isinstance(mapdict, dict) and isinstance(list(mapdict.values())[0], dict):
                     tmp = None
                     for r, d in mapdict.items():
-                        if r == '':   # this is already handled in case 1 ; anyway, an empty regex always match, hence
+                        if r == '':   # this is already handled in case 1 ; anyway, an empty regex always matches, hence
                             continue  #  it must be excluded
                         if re.match(r, p):
                             tmp = d
@@ -312,6 +312,7 @@ def add_map(ename, encmap, repl_char="?", sep="", ignore_case=None, no_error=Fal
                         text = "".join(str(ord(c)).zfill(3) for c in text)
                 r = ""
                 lsep = "" if decode else sep if len(sep) <= 1 else sep[0]
+                error_func = handle_error(ename, errors, lsep, repl_char, rminlen, decode)
                 
                 # get the value from the mapping dictionary, trying the token with its inverted case if relevant
                 def __get_value(token, position, case_changed=False):
@@ -321,7 +322,7 @@ def add_map(ename, encmap, repl_char="?", sep="", ignore_case=None, no_error=Fal
                         if icase and not case_changed:
                             token_inv_case = getattr(token, case)()
                             return __get_value(token_inv_case, position, True)
-                        return handle_error(ename, errors, lsep, repl_char, rminlen, decode)(token, position)
+                        return error_func(token, position)
                     if isinstance(result, list):
                         result = random.choice(result)
                     return result + lsep
@@ -349,7 +350,7 @@ def add_map(ename, encmap, repl_char="?", sep="", ignore_case=None, no_error=Fal
                             # if the number of bad chars is the minimum token length, consume it and start a new buffer
                             if len(bad) == tminlen or errors == "leave":
                                 posn = cursor - len(bad)
-                                r += handle_error(ename, errors, lsep, repl_char, rminlen, decode)(bad, posn)
+                                r += error_func(bad, posn)
                                 bad = ""
                 if decode:
                     if outype in ["bin", "ord"]:
@@ -524,6 +525,17 @@ def get_alphabet_from_mask(mask):
 
 # generic error handling function
 def handle_error(ename, errors, sep="", repl_char="?", repl_minlen=1, decode=False, item="position"):
+    """
+    This shortcut function allows to handle error modes given some tuning parameters.
+    
+    :param ename:       encoding name
+    :param errors:      error handling mode
+    :param sep:         token separator
+    :param repl_char:   replacement character (for use when errors="replace")
+    :param repl_minlen: repeat number for the replacement character
+    :param decode:      whether we are encoding or decoding
+    :param item:        position item description (for describing the error ; e.g. "group" or "token")
+    """
     name = "".join(t.capitalize() for t in re.split(r"[-_]", ename))
     # dynamically make dedicated exception classes bound to the related codec module
     exc = "%s%scodeError" % (name, ["En", "De"][decode])
@@ -531,6 +543,12 @@ def handle_error(ename, errors, sep="", repl_char="?", repl_minlen=1, decode=Fal
     exec("class %s(ValueError): pass" % exc, glob)
     
     def _handle_error(token, position):
+        """
+        This handles an encoding/decoding error according to the selected handling mode.
+        
+        :param token:    input token to be encoded/decoded
+        :param position: token position index
+        """
         if errors == "strict":
             msg = "'{}' codec can't {}code character '{}' in {} {}"
             raise glob[exc](msg.format(ename, ["en", "de"][decode], token, item, position))
