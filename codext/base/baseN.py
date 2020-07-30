@@ -69,21 +69,6 @@ B64 = {
 base2n(B64, r"^base[-_]?64(|[-_]inv(?:erted)?|[-_](?:file|url)(?:safe)?)$")
 
 
-#FIXME
-#B85 = {
-#    r'':               "!\"#$%&'()*+,-./" + digits + ":;<=>?@" + upper + "[\\]^_`" + lower[:21],
-#    r'[-_]z(eromq)?$': digits + upper + lower + ".-:+=^!/*?&<>()[]{}@%$#",
-#    r'[-_]rfc1924$':   digits + upper + lower + "!#$%&()*+-;<=>?@^_`{|}~",
-#}
-#base(B85, r"^(?:ascii|base)[-_]?85(|[-_](?:z(?:eromq)?|rfc1924))$")
-
-
-B91 = {
-    '':    upper + lower + digits + "!#$%&()*+,./:;<=>?@[]^_`{|}~\"",
-    'inv': lower + upper + digits + "!#$%&()*+,./:;<=>?@[]^_`{|}~\"",
-}
-base(B91, r"^base[-_]?91(|[-_]inv(?:erted)?)$")
-
-
 # generic base encodings, to be added after all others as they have the precedence
 base_generic()
+

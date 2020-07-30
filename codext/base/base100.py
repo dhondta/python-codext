@@ -13,11 +13,7 @@ from ..__common__ import *
 
 
 if PY3:
-    class Base100Error(ValueError):
-        pass
-    
-    
-    class Base100DecodeError(Base100Error):
+    class Base100DecodeError(ValueError):
         pass
     
     
