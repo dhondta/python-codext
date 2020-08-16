@@ -12,7 +12,7 @@ from ..__common__ import *
 
 __examples__ = {
     'enc(excess3|xs-3|stibitz)': {
-        'This is a test!': ";t7C\x84H6T8D\x83e<\xa3eD\x944D\x84I6`",
+        'This is a test!':       ";t7C\x84H6T8D\x83e<\xa3eD\x944D\x84I6`",
         'This is another test ': ";t7C\x84H6T8D\x83e<\xa4CDDICt4DseD\x944D\x84I6P",
     },
     'dec(excess-3|xs3)': {

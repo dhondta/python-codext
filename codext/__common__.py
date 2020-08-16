@@ -405,9 +405,10 @@ codecs.clear = clear
 def examples(encoding, number=10):
     """ Use the search function to get the matching encodings and provide examples of valid encoding names. """
     e = []
-    for n in search(encoding):
+    for name in search(encoding):
         for search_function in __codecs_registry:
-            if n == search_function.__name__:
+            n = search_function.__name__
+            if name in [n, n.replace("_", "-")]:
                 temp = []
                 for s in generate_strings_from_regex(search_function.__pattern__, yield_max=16*number):
                     temp.append(s)
@@ -418,7 +419,7 @@ def examples(encoding, number=10):
                         e.append(temp[i])
                     i += 1
         for alias, codec in aliases.items():
-            if n == codec:
+            if name == codec:
                 if codec not in e:
                     e.append(codec)
                 if not alias.isdigit():
@@ -626,9 +627,10 @@ def search(encoding_regex):
     matches = []
     for search_function in __codecs_registry:
         n = search_function.__name__
-        if re.search(encoding_regex, n):
-            matches.append(n)
-            continue
+        for name in [n, n.replace("_", "-")]:
+            if re.search(encoding_regex, name):
+                matches.append(name)
+                continue
         # in some cases, encoding_regex can match a generated string that uses a particular portion of its generating
         #  pattern ; e.g. we expect encoding_regex="uu_" to find "uu" and "uu_codec" while it can also find "morse" or
         #  "atbash" very rarely because of their dynamic patterns and the limited number of randomly generated strings
