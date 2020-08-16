@@ -16,28 +16,34 @@ __examples__ = {
     'enc(rot0|rot--10|rot100)': None,
     'enc(rot1|rot-1|rot_1)':    {'this is a test': "uijt jt b uftu"},
     'enc(rot3)':                {'this is a test': "wklv lv d whvw"},
+    'enc(rot47)':               {'this is a test': "E9:D :D 2 E6DE"},
 }
 
 
-def _rotn(text, n=13):
-    n = n % 26
-    t = maketrans(LC + UC, LC[n:] + LC[:n] + UC[n:] + UC[:n])
+ROT47 = "!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"
+
+
+def _rotn(text, n=13, a=LC+UC, l=26):
+    n = n % l
+    t = maketrans(a, "".join(a[i:i+l][n:] + a[i:i+l][:n] for i in range(0, len(a), l)))
     return text.translate(t)
 
 
 def rot_encode(i):
     def encode(text, errors="strict"):
-        r = _rotn(ensure_str(text), i)
+        t = ensure_str(text)
+        r = _rotn(t, 47, ROT47, 94) if i == 47 else _rotn(t, i)
         return r, len(r)
     return encode
 
 
 def rot_decode(i):
     def decode(text, errors="strict"):
-        r = _rotn(ensure_str(text), -i)
+        t = ensure_str(text)
+        r = _rotn(t, -47, ROT47, 94) if i == 47 else _rotn(t, -i)
         return r, len(r)
     return decode
 
 
-add("rot", rot_encode, rot_decode, r"rot[-_]?([1-9]|1[0-9]|2[0-5])$")
+add("rot", rot_encode, rot_decode, r"rot[-_]?([1-9]|1[0-9]|2[0-5]|47)$")
 
