@@ -187,6 +187,7 @@ o
 `gray` | text <-> gray encoded text | aka reflected binary code
 `html` | text <-> HTML entities | implements entities according to [this reference](https://dev.w3.org/html5/html-author/charref)
 `leetspeak` | text <-> leetspeak encoded text | based on minimalistic elite speaking rules
+`letter-indices` | text <-> text with letter indices | encodes consonants and/or vowels with their corresponding indices
 `manchester` | text <-> manchester encoded text | XORes each bit of the input with `01`
 `markdown` | markdown --> HTML | unidirectional
 `morse` | text <-> morse encoded text | uses whitespace as a separator

@@ -120,9 +120,13 @@ for encoding in list_encodings():
             error = False
             break
         except (LookupError, ValueError):
+            
             error = True
     if error:
-        continue
+        try:
+            ci = lookup(examples(encoding, 1)[0])
+        except LookupError:
+            continue
     # only consider codecs with __examples__ defined in their globals for dynamic tests generation
     if ci.parameters.get('examples') is not None:
         f = make_test(**ci.parameters)
