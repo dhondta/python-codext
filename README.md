@@ -9,25 +9,17 @@
 
 # CODecs EXTension
 
-This library extends the native `codecs` library and provides some new encodings (static or parametrized, like `rot-N` or `xor-N`).
+This library extends the native `codecs` library (namely for adding new custom encodings and character mappings) and provides a myriad of new encodings (static or parametrized, like `rot` or `xor`).
 
 ## Setup
-
-This library is available on [PyPi](https://pypi.python.org/pypi/codext/) and can be simply installed using Pip:
 
 ```sh
 $ pip install codext
 ```
 
-or
+**Note**: Some encodings are available in Python 3 only.
 
-```sh
-$ pip3 install codext
-```
-
-**Note**: Some more encodings are available when installing in Python 3.
-
-## Usage (from terminal)
+## Usage (CLI tool)
 
 ```sh
 $ codext dna-1 -i test.txt
@@ -60,7 +52,7 @@ $ echo -en "AGTCAGTCAGTGAGAAAGTCAGTGAGAAAGTGAGTGAGAAAGTGAGTCAGTGAGAAAGTCAGAAAGTG
 test string
 ```
 
-## Usage (within Python)
+## Usage (Python)
 
 Getting the list of available codecs:
 
