@@ -1,17 +1,97 @@
 language: python
-sudo: required
-python:
-  - "2.7"
-  - "3.5"
-  - "3.6"
-  - "3.7"
-  - "3.8"
+jobs:
+  allow_failures:
+    - arch: arm64
+    - os: osx
+    - python: nightly
+  fast_finish: true
+  include:
+    - python: 2.7
+    - python: 3.5
+    - python: 3.6
+      dist: bionic
+    - python: 3.7
+      dist: focal
+    - python: 3.8
+      dist: focal
+    - python: nightly
+    - os: windows
+      language: shell
+      before_install: choco install python2 --version 2.7.18
+      env: PATH=/c/Python27:/c/Python27/Scripts:$PATH
+    - os: windows
+      language: shell
+      before_install: choco install python --version 3.5.4
+      env: PATH=/c/Python35:/c/Python35/Scripts:$PATH
+    - os: windows
+      language: shell
+      before_install: choco install python --version 3.6.8
+      env: PATH=/c/Python36:/c/Python36/Scripts:$PATH
+    - os: windows
+      language: shell
+      before_install: choco install python --version 3.7.6
+      env: PATH=/c/Python37:/c/Python37/Scripts:$PATH
+    - os: windows
+      language: shell
+      before_install: choco install python --version 3.8.1
+      env: PATH=/c/Python38:/c/Python38/Scripts:$PATH
+    - python: 2.7
+      arch: arm64
+    - python: 3.5
+      arch: arm64
+    - python: 3.6
+      arch: arm64
+      dist: bionic
+    - python: 3.7
+      arch: arm64
+      dist: focal
+    - python: 3.8
+      arch: arm64
+      dist: focal
+    - python: nightly
+      arch: arm64
+    - os: osx
+      osx_image: xcode9.2
+      language: shell
+      env:
+        - PATH=/Users/travis/.pyenv/shims:$PATH
+        - PYENV_VERSION=2.7.18
+      before_install: travis_wait brew upgrade pyenv && pyenv install $PYENV_VERSION
+    - os: osx
+      osx_image: xcode9.2
+      language: shell
+      env:
+        - PATH=/Users/travis/.pyenv/shims:$PATH
+        - PYENV_VERSION=3.5.2
+      before_install: travis_wait brew upgrade pyenv && pyenv install $PYENV_VERSION
+    - os: osx
+      osx_image: xcode9.2
+      language: shell
+      env:
+        - PATH=/Users/travis/.pyenv/shims:$PATH
+        - PYENV_VERSION=3.6.8
+      before_install: travis_wait brew upgrade pyenv && pyenv install $PYENV_VERSION
+    - os: osx
+      osx_image: xcode10.1
+      language: shell
+      env:
+        - PATH=/Users/travis/.pyenv/shims:$PATH
+        - PYENV_VERSION=3.7.6
+      before_install: travis_wait brew upgrade pyenv && pyenv install $PYENV_VERSION
+    - os: osx
+      osx_image: xcode10.2
+      language: shell
+      env:
+        - PATH=/Users/travis/.pyenv/shims:$PATH
+        - PYENV_VERSION=3.8.1
+      before_install: travis_wait brew upgrade pyenv && pyenv install $PYENV_VERSION
 cache: pip
 install:
+  - python -m pip install --upgrade pip
   - pip install pytest
   - pip install pytest-cov
   - pip install coveralls
   - pip install -r requirements.txt
-  - python setup.py install
+  - pip install .
 script: pytest --cov=codext --cov-report=term-missing tests
 after_success: coveralls
