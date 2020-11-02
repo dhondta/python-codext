@@ -429,11 +429,32 @@ def examples(encoding, number=10):
 codecs.examples = examples
 
 
-def list_encodings():
+def list_encodings(*categories):
     """ Get a list of all codecs. """
-    enc = list(set(aliases.values()))
+    enc, seen = [], []
+    if len(categories) == 0 or "native" in categories:
+        enc.extend(list(set(aliases.values())))
     for search_function in __codecs_registry:
-        enc.append(search_function.__name__.replace("_", "-"))
+        name = search_function.__name__.replace("_", "-")
+        if name in seen:
+            continue
+        seen.append(name)
+        p = search_function.__pattern__
+        if p is None:
+            ci = search_function(name)
+        else:
+            ci = search_function(list(generate_strings_from_regex(p, yield_max=1))[0])
+        c = "other" if ci is None else ci.parameters['category']
+        if len(categories) == 0 or c in categories:
+            enc.append(name)
+    valid_categories = ["native"]
+    root = os.path.dirname(__file__)
+    for d in os.listdir(root):
+        if os.path.isdir(os.path.join(root, d)) and not d.startswith("__"):
+            valid_categories.append(d.rstrip("s"))
+    for category in categories:
+        if category not in valid_categories:
+            raise ValueError("Category '%s' does not exist" % category)
     return sorted(list(set(enc)), key=_human_keys)
 
 

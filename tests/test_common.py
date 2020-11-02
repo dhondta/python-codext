@@ -51,6 +51,13 @@ class TestCommon(TestCase):
         for k in ["category", "encmap", "ignore_case", "intype", "no_error", "outype", "repl_char", "sep", "text"]:
             self.assertIn(k, ci.parameters.keys())
     
+    def test_list_codecs(self):
+        self.assertIsNotNone(codext.list())
+        self.assertIsNotNone(codext.list("other"))
+        self.assertIsNotNone(codext.list("native"))
+        self.assertIsNotNone(codext.list("native", "language", "crypto"))
+        self.assertRaises(ValueError, codext.list, "BAD_CATEGORY")
+    
     def test_remove_codec(self):
         self.assertIsNone(codext.add("dummy", dummy_encode, dummy_decode))
         self.assertEqual(codext.encode("test", "dummy"), "test")

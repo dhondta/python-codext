@@ -161,14 +161,40 @@ In this second example, we can see that:
 
 -----
 
-## List new encodings
+## List codecs
 
-New codecs added with `codext` can be listed with the related function. Note that it only lists new codecs, not native ones.
+Codecs can be listed with the `list` function, either the whole codecs or only some categories.
 
 ```python
 >>> codext.list()
-['ascii85', 'base85', 'base100', 'base122', 'base2', ..., 'scytale', 'shift', 'xor', 'braille', 'leet', 'morse', 'navajo', 'radio', 'southpark', ..., 'markdown', 'url', 'resistor', 'sms', 'whitespace', 'whitespace-after-before']
+['affine', 'ascii', 'ascii85', 'atbash', 'bacon', ..., 'base36', 'base58', 'base62', 'base64', 'base64_codec', ..., 'baudot-tape', 'bcd', 'bcd-extended0', 'bcd-extended1', 'big5', 'big5hkscs', 'braille', 'bz2_codec', 'capitalize', 'cp037', ...]
 ```
+
+!!! note "Codecs categories"
+    
+    - `native`: the built-in codecs from the original `codecs` package
+    - `base`: baseX codecs (e.g. `base`, `base100`)
+    - `binary`: codecs working on strings but applying their algorithms on their binary forms (e.g. `baudot`, `manchester`)
+    - `common`: common codecs not included in the native ones or simly added for the purpose of standardization (e.g. `octal`, `ordinal`)
+    - `crypto`: codecs related to cryptography algorithms (e.g. `barbie`, `rot`, `xor`)
+    - `language`: language-related codecs (e.g. `morse`, `navajo`)
+    - `other`: uncategorized codecs (e.g. `letters`, `url`)
+    - `stegano`: steganography-related codecs (e.g. `sms`, `resistor`)
+    
+    Except the native category, the other ones are simply the name of the subdirectories (with "`s`" right-stripped) of the `codext` package.
+
+```python
+>>> codext.list("binary")
+['baudot', 'baudot-spaced', 'baudot-tape', 'bcd', 'bcd-extended0', 'bcd-extended1', 'excess3', 'gray', 'manchester', 'manchester-inverted']
+>>> codext.list("language")
+['braille', 'leet', 'morse', 'navajo', 'radio', 'southpark', 'southpark-icase', 'tom-tom']
+>>> codext.list("native")
+['ascii', 'base64_codec', 'big5', 'big5hkscs', 'bz2_codec', 'cp037', 'cp273', 'cp424', 'cp437', 'cp500', 'cp775', 'cp850', 'cp852', 'cp855', 'cp857', 'cp858', 'cp860', 'cp861', 'cp862', 'cp863', ...]
+```
+
+!!! warning "Codecs listed, not encodings"
+    
+    Beware that this function only lists the codecs, not the encodings. This means that, for instance, it only lists `base` (codecs' name) instead of `base17`, `base61`, `base97`, ... (the valid encoding names related to the `base` codec).
 
 -----
 
