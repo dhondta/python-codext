@@ -6,8 +6,12 @@
 import codecs
 import codext
 import random
-from six import b, ensure_str
+import sys
+from six import b, binary_type, text_type
 from unittest import TestCase
+
+
+PY3 = sys.version[0] == "3"
 
 
 def dummy_encode(input, errors="strict"):
@@ -16,6 +20,18 @@ def dummy_encode(input, errors="strict"):
 
 def dummy_decode(input, errors="strict"):
     return input, len(input)
+
+
+def ensure_str(s, encoding='utf-8', errors='strict'):
+    """ Similar to six.ensure_str. Adapted here to avoid messing up with six version errors. """
+    if not PY3 and isinstance(s, text_type):
+        return s.encode(encoding, errors)
+    elif PY3 and isinstance(s, binary_type):
+        try:
+            return s.decode(encoding, errors)
+        except:
+            return s.decode("latin-1")
+    return s
 
 
 def getregentry(encoding):

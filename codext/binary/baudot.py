@@ -13,7 +13,7 @@ from ..__common__ import *
 __CODES = ["ccitt1", "ccitt2", "eu", "ita1", "ita2", "ita2_us", "murray", "uk"]
 if PY3:
     __CODES.extend(["ita2_meteo", "mtk2"])
-__guess__    = ["baudot%s-{}-{}".format(a, b) for a in __CODES for b in ["lsb", "msb"]]
+__guess__    = ["baudot%s-{}-{}".format(x, y) for x in __CODES for y in ["lsb", "msb"]]
 __examples1__ = {
     'enc(baudot-BAD_ALPHABET)': None,
     'enc(baudot_ccitt2_lsb)':   {'TEST 1234': "00001100001010000001001001101111101110011000001010"},
