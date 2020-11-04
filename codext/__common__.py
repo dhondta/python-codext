@@ -28,7 +28,7 @@ except ImportError:  # Python 3
 
 
 __all__ = ["add", "add_map", "b", "clear", "codecs", "decode", "encode", "ensure_str", "examples",
-           "generate_strings_from_regex", "get_alphabet_from_mask", "handle_error", "list_encodings", "lookup",
+           "generate_strings_from_regex", "get_alphabet_from_mask", "guess", "handle_error", "list_encodings", "lookup",
            "maketrans", "re", "register", "remove", "reset", "s2i", "search", "MASKS", "PY3"]
 CODECS_REGISTRY = None
 MASKS = {
@@ -45,6 +45,9 @@ MASKS = {
 PY3 = sys.version[0] == "3"
 __codecs_registry = []
 
+
+entropy      = lambda s: -sum([p * log(p, 2) for p in [float(s.count(c)) / len(s) for c in set(s)]])
+is_printable = lambda s: all(c in printable for c in s)
 
 isb = lambda s: isinstance(s, binary_type)
 iss = lambda s: isinstance(s, string_types)
@@ -149,6 +152,7 @@ def add(ename, encode=None, decode=None, pattern=None, text=True, add_to_codecs=
         f = glob.get('__file__', os.path.join("custom", "_"))
         ci.parameters['category'] = kwargs.get('category', f.split(os.path.sep)[-2].rstrip("s"))
         ci.parameters['examples'] = kwargs.get('examples', glob.get('__examples__'))
+        ci.parameters['guess'] = kwargs.get('guess', glob.get('__guess__', [ename]))
         ci.parameters['module'] = kwargs.get('module', glob.get('__name__'))
         return ci
     
@@ -431,27 +435,41 @@ codecs.examples = examples
 
 def list_encodings(*categories):
     """ Get a list of all codecs. """
-    enc, seen = [], []
-    if len(categories) == 0 or "native" in categories:
-        enc.extend(list(set(aliases.values())))
-    for search_function in __codecs_registry:
-        name = search_function.__name__.replace("_", "-")
-        if name in seen:
-            continue
-        seen.append(name)
-        p = search_function.__pattern__
-        if p is None:
-            ci = search_function(name)
-        else:
-            ci = search_function(list(generate_strings_from_regex(p, yield_max=1))[0])
-        c = "other" if ci is None else ci.parameters['category']
-        if len(categories) == 0 or c in categories:
-            enc.append(name)
+    # first, determine the list of valid categories
     valid_categories = ["native"]
     root = os.path.dirname(__file__)
     for d in os.listdir(root):
         if os.path.isdir(os.path.join(root, d)) and not d.startswith("__"):
             valid_categories.append(d.rstrip("s"))
+    # then, if "non-native" is in the input list, extend the list with the whole categories but "native"
+    categories = list(categories)
+    for c in categories[:]:
+        if c == "non-native":
+            for c in valid_categories:
+                if c == "native" or c in categories:
+                    continue
+                categories.append(c)
+            categories.remove("non-native")
+            break
+    # now, filter codecs according to the input list of categories
+    enc = []
+    if len(categories) == 0 or "native" in categories:
+        for a in set(aliases.values()):
+            try:
+                __orig_lookup(a)
+            except LookupError:
+                continue
+            enc.append(a)
+    for search_function in __codecs_registry:
+        name = search_function.__name__.replace("_", "-")
+        p = search_function.__pattern__
+        if p is None:
+            ci = search_function(name)
+        else:
+            ci = search_function(generate_string_from_regex(p))
+        c = "other" if ci is None else ci.parameters['category']
+        if len(categories) == 0 or c in categories:
+            enc.append(name)
     for category in categories:
         if category not in valid_categories:
             raise ValueError("Category '%s' does not exist" % category)
@@ -558,7 +576,7 @@ def handle_error(ename, errors, sep="", repl_char="?", repl_minlen=1, decode=Fal
     :param decode:      whether we are encoding or decoding
     :param item:        position item description (for describing the error ; e.g. "group" or "token")
     """
-    name = "".join(t.capitalize() for t in re.split(r"[-_]", ename))
+    name = "".join(t.capitalize() for t in re.split(r"[-_+]", ename))
     # dynamically make dedicated exception classes bound to the related codec module
     exc = "%s%scodeError" % (name, ["En", "De"][decode])
     glob = {'__name__': "__main__"}
@@ -610,10 +628,18 @@ codecs.encode = encode
 
 def lookup(encoding):
     """ Hooked lookup function for searching first for codecs in the local registry of this module. """
+    # first, try to match the given encoding with codecs' search functions
     for search_function in __codecs_registry:
         codecinfo = search_function(encoding)
         if codecinfo is not None:
             return codecinfo
+    # then, if a codec name was given, generate an encoding name from its pattern and get the CodecInfo
+    for search_function in __codecs_registry:
+        if search_function.__name__.replace("_", "-") == encoding:
+            codecinfo = search_function(generate_string_from_regex(search_function.__pattern__))
+            if codecinfo is not None:
+                return codecinfo
+    # finally, get a CodecInfo with the original lookup function and refine it with a dictionary of parameters
     ci = __orig_lookup(encoding)
     ci.parameters = {'category': "native", 'module': "codecs", 'name': aliases.get(ci.name, ci.name)}
     return ci
@@ -779,9 +805,80 @@ def _human_keys(text):
     return tokens
 
 
+def generate_string_from_regex(regex):
+    """ Utility function to generate a single string from a regex pattern. """
+    if regex:
+        return list(generate_strings_from_regex(regex, yield_max=1))[0]
+
+
 def generate_strings_from_regex(regex, star_plus_max=STAR_PLUS_MAX, repeat_max=REPEAT_MAX, yield_max=YIELD_MAX):
     """ Utility function to generate strings from a regex pattern. """
     i = 0
     for result in __gen_str_from_re(regex, star_plus_max, repeat_max, yield_max):
         yield result
+
+
+# guess feature objects
+def __guess(input, stop_func, depth, max_depth, codecs, result, found=()):
+    """ Perform a breadth-first tree search using a ranking logic to select and prune the list of codecs. """
+    if depth > 0 and stop_func(input):
+        result.append((input, found))
+        return
+    if depth >= max_depth or len(result) > 0:
+        return
+    for new_input, encoding in __rank(input, codecs):
+        __guess(new_input, stop_func, depth+1, max_depth, codecs, result, found + (encoding, ))
+
+
+def __rank(input, codecs):
+    """ Filter valid encodings and rank them by relevance. """
+    ranking = {}
+    for codec in codecs:
+        for score, new_input, encoding in __score(input, codec):
+            if score is not None:
+                ranking[encoding] = (score, new_input)
+    for encoding, result in sorted(ranking.items(), key=lambda x: -x[1][0]):
+        yield result[1], encoding
+
+
+def __score(input, codec):
+    """ Score relevant encodings given an input. """
+    for encoding in lookup(codec).parameters.get('guess', [codec]):
+        try:
+            new_input = decode(input, encoding)
+        except:
+            continue
+        score = 1.0
+        #FIXME: score the input/new_input to establish priorities of the depth-first search
+        #This could rely on a series of weighted features:
+        #- is input's length within a given interval (e.g. (1, 65) for base64)
+        #- is input's length within a given interval of possible maximum lengths (e.g. (64, 65) for base64)
+        #- is input's entropy within a given interval
+        yield score, new_input, encoding
+
+
+def guess(input, stop_func=is_printable, max_depth=5, codec_categories=None, found=()):
+    """ Try decoding without the knowledge of the encoding(s). """
+    if max_depth <= 0:
+        raise ValueError("Depth must be a non-null positive integer")
+    if len(found) > 0:
+        for encoding in found:
+            input = decode(input, encoding)
+    if isinstance(stop_func, string_types):
+        p = stop_func
+        stop_func = lambda s: re.search(ensure_str(p).lower(), ensure_str(s).lower()) is not None
+    if codec_categories is None:
+        codecs = list_encodings()
+    elif isinstance(codec_categories, string_types):
+        codecs = list_encodings(codec_categories)
+    elif isinstance(codec_categories, (tuple, list, set)):
+        codecs = list_encodings(*codec_categories)
+    if len(input) > 0:
+        result = []
+        for d in range(max_depth):
+            __guess(input, stop_func, 0, d+1, codecs, result, tuple(found))
+            if len(result) > 0:
+                return result[0]
+    return None, None
+codecs.guess = guess
 

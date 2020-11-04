@@ -12,6 +12,9 @@ Reference: https://crypto.interactive-maths.com/atbash-cipher.html
 from ..__common__ import *
 
 
+__guess__ = []
+
+
 def encmap_factory(mask=None):
     alphabet = get_alphabet_from_mask(mask or "?l?u?s")
     return {k: v for k, v in zip(alphabet, alphabet[::-1])}

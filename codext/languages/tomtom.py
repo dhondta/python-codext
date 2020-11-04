@@ -15,6 +15,8 @@ __examples__ = {
         'this is a test': "\\\\/\\ /\\\\ /\\\\\\ \\/\\ | /\\\\\\ \\/\\ | / | \\\\/\\ /\\ \\/\\ \\\\/\\"
     }
 }
+__guess__ = ["tom-tom", "tom-tom/_.", "tom-tom-/01", "tom-tom-01", "tom-tom-/ab", "tom-tom-ab", "tom-tom-/AB",
+             "tom-tom-AB"]
 
 
 ENCMAP = {
@@ -28,5 +30,5 @@ ENCMAP = {
 }
 
 
-add_map("tom-tom", ENCMAP, ".", " ", ignore_case="both", pattern=r"^tom-?tom([-_]?.{2})?$")
+add_map("tom-tom", ENCMAP, ".", " ", ignore_case="both", pattern=r"^tom-?tom([-_]?.{3})?$")
 

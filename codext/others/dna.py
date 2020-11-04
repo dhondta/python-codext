@@ -24,6 +24,7 @@ __examples__ = {
     'enc(dna7)':      {'this is a test': "GAGTGCCTGCCGGATATCTTGCCGGATATCTTGCTGTCTTGAGTGCGGGATAGAGT"},
     'enc(dna-8)':     {'this is a test': "CACTCGGTCGGCCATATGTTCGGCCATATGTTCGTCTGTTCACTCGCCCATACACT"},
 }
+__guess__ = ["dna%d" % i for i in range(1, 9)]
 
 
 SEQUENCES = {

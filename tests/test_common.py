@@ -5,6 +5,8 @@
 """
 import codecs
 import codext
+import random
+from six import b, ensure_str
 from unittest import TestCase
 
 
@@ -52,10 +54,14 @@ class TestCommon(TestCase):
             self.assertIn(k, ci.parameters.keys())
     
     def test_list_codecs(self):
-        self.assertIsNotNone(codext.list())
-        self.assertIsNotNone(codext.list("other"))
-        self.assertIsNotNone(codext.list("native"))
-        self.assertIsNotNone(codext.list("native", "language", "crypto"))
+        codext.reset()
+        self.assertTrue(len(codext.list()) > 0)
+        self.assertTrue(len(codext.list("other")) > 0)
+        self.assertTrue(len(codext.list("native")) > 0)
+        self.assertTrue(len(codext.list("non-native")) > 0)
+        self.assertTrue(len(codext.list("native", "non-native", "crypto", "base")) > 0)
+        self.assertTrue(len(codext.list("native", "language", "crypto")) > 0)
+        self.assertEqual(set(codext.list()), set(codext.list("native") + codext.list("non-native")))
         self.assertRaises(ValueError, codext.list, "BAD_CATEGORY")
     
     def test_remove_codec(self):
@@ -95,4 +101,37 @@ class TestCommon(TestCase):
         self.assertIsNotNone(list(codext.generate_strings_from_regex(r"([^\s])\1")))
         self.assertIsNotNone(list(codext.generate_strings_from_regex(r"[^\\]")))
         self.assertIsNotNone(list(codext.generate_strings_from_regex(r"[^a]")))
+    
+    def test_guess_decode(self):
+        codext.reset()
+        STR = "This is a test"
+        self.assertEqual(STR, codext.guess("VGhpcyBpcyBhIHRlc3Q=", "a test", 1)[0])
+        self.assertEqual(STR, codext.guess("CJG3Ix8bVcSRMLOqwDUg28aDsT7", "a test", found=["base62"])[0])
+        self.assertEqual(STR, codext.guess("VGhpcyBpcyBhIHRlc3Q=", "a test", 1, "base")[0])
+        self.assertIsNone(codext.guess("NOT THE ENCODED TEST STRING", "a test", 1)[0])
+        self.assertRaises(ValueError, codext.guess, STR, max_depth=0)
+        for c in ["base", "language", "native", "stegano"]:
+            e = codext.list(c)
+            random.shuffle(e)
+            for ename in e[:10]:
+                for encoding in codext.lookup(ename).parameters.get('guess', [ename])[:10]:
+                    try:
+                        enc = codext.encode(STR, encoding)
+                    except (NotImplementedError, ValueError):
+                        continue
+                    except TypeError:
+                        enc = codext.encode(b(STR), encoding)
+                    if codext.decode(enc, encoding) == STR:
+                        continue
+                    found_dec, found_encodings = codext.guess(enc, "a test", 1, [c])
+                    print(encoding, found_encodings)
+                    self.assertEqual(ensure_str(STR).lower(), ensure_str(found_dec).lower())
+                    if c != "base":
+                        # do not check for base as the guessed encoding name can be different, e.g.:
+                        #  actual:  base2
+                        #  guessed: base2-generic
+                        if "-icase" in encoding:
+                            self.assertEqual(encoding.lower(), found_encodings[0].lower())
+                        else:
+                            self.assertEqual(encoding, found_encodings[0])
 

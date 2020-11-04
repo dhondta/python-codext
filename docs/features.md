@@ -173,6 +173,7 @@ Codecs can be listed with the `list` function, either the whole codecs or only s
 !!! note "Codecs categories"
     
     - `native`: the built-in codecs from the original `codecs` package
+    - `non-native`: this special category regroups all the categories mentioned hereafter
     - `base`: baseX codecs (e.g. `base`, `base100`)
     - `binary`: codecs working on strings but applying their algorithms on their binary forms (e.g. `baudot`, `manchester`)
     - `common`: common codecs not included in the native ones or simly added for the purpose of standardization (e.g. `octal`, `ordinal`)
@@ -181,7 +182,7 @@ Codecs can be listed with the `list` function, either the whole codecs or only s
     - `other`: uncategorized codecs (e.g. `letters`, `url`)
     - `stegano`: steganography-related codecs (e.g. `sms`, `resistor`)
     
-    Except the native category, the other ones are simply the name of the subdirectories (with "`s`" right-stripped) of the `codext` package.
+    Except the `native` and `non-native` categories, the other ones are simply the name of the subdirectories (with "`s`" right-stripped) of the `codext` package.
 
 ```python
 >>> codext.list("binary")
@@ -267,6 +268,64 @@ LookupError: unknown encoding: bin
 >>> codext.encode("test", "bin")
 '01110100011001010111001101110100'
 ```
+
+-----
+
+## Guess-decode an arbitrary input
+
+This is done by trying encodings using the breadth-first tree search algorithm. It stops when a given condition (by default, all characters must be printable), in the form of a function applied to the decoded string at the current depth, is met. It returns two results: the decoded string and a tuple with the related encoding names in order of application. The following parameters can be entered:
+
+- `stop_func`: can be a function or a regular expression to be matched (automatically converted to a function that uses the `re` module) ; by default, checks if all input characters are printable.
+- `max_depth`: the maximum depth for the tree search ; by default 5.
+- `codec_categories`: a string indicating a codec [category](#list-codecs) or a list of [category](#list-codecs) strings ; by default, `None`, meaning the whole [categories](#list-codecs) (very slow).
+- `found`: a list or tuple of currently found encodings, this can be used to save time if the first decoding steps are known ; by default, an empty tuple.
+
+
+A simple example for a 1-stage base64-encoded string:
+
+```python
+>>> codext.guess("VGhpcyBpcyBhIHRlc3Q=")
+('This is a test', ('base64',))
+```
+
+An example of a 2-stages base64- then base62-encoded string:
+
+```python
+>>> codext.guess("CJG3Ix8bVcSRMLOqwDUg28aDsT7")
+('FKU2Ng7lJbR>.IHuzLDv17eLhE6', ('barbie',))
+```
+
+In the second example, we can see that the given encoded string is not decoded as expected. This is the case because the stop condition (default) is too broad. If we have a prior knowledge on what we should expect, we can input a simple string or a regex:
+
+```python
+>>> codext.guess("CJG3Ix8bVcSRMLOqwDUg28aDsT7", "test")
+('This is a test', ('base62', 'base64'))
+```
+
+If we know the first encoding, we can set this in the `found` parameter to save time:
+
+```python
+>>> codext.guess("CJG3Ix8bVcSRMLOqwDUg28aDsT7", "test", found=["base62"])
+('This is a test', ('base62', 'base64'))
+```
+
+If we are sure that only `base` (which is a valid [category](#list-codecs)) encodings are used, we can restrict the tree search using the `codec_categories` parameter to save time:
+
+```python
+>>> codext.guess("CJG3Ix8bVcSRMLOqwDUg28aDsT7", "test", codec_categories="base")
+('This is a test', ('base62', 'base64'))
+```
+
+Another example of 2-stages encoded string:
+
+```python
+>>> codext.guess("LSAuLi4uIC4uIC4uLiAvIC4uIC4uLiAvIC4tIC8gLSAuIC4uLiAt", "test")
+('this is a test', ('base64', 'morse'))
+>>> codext.guess("LSAuLi4uIC4uIC4uLiAvIC4uIC4uLiAvIC4tIC8gLSAuIC4uLiAt", "test", codec_categories=["base", "language"])
+('this is a test', ('base64', 'morse'))
+```
+
+Note that the first call takes much longer than the second one but requires no knowledge about the possible [categories](#list-codecs) of encodings.
 
 -----
 

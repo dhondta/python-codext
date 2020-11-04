@@ -222,7 +222,9 @@ class TestCodecsBase(TestCase):
     
     def test_codec_base_generic(self):
         for n in range(2, 255):
-            self.assertIsNotNone(codecs.encode(STR, "base{}_generic".format(n)))
+            bn = "base{}_generic".format(n)
+            self.assertEqual(codecs.decode(codecs.encode(STR, bn), bn), STR)
         self.assertRaises(LookupError, codecs.decode, "test", "base0-generic")
         self.assertRaises(LookupError, codecs.decode, "test", "base1-generic")
         self.assertRaises(LookupError, codecs.decode, "test", "base256-generic")
+

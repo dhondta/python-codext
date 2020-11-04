@@ -9,10 +9,11 @@ from .__common__ import *
 from .__info__ import __author__, __copyright__, __email__, __license__, __source__, __version__
 
 
-__all__ = ["add", "add_map", "clear", "decode", "encode", "lookup",  "open", "register", "remove", "reset"]
+__all__ = ["add", "add_map", "clear", "decode", "encode", "guess", "lookup",  "open", "register", "remove", "reset"]
 
 decode   = codecs.decode
 encode   = codecs.encode
+guess    = codecs.guess
 lookup   = codecs.lookup
 open     = codecs.open
 

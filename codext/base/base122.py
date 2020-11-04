@@ -9,6 +9,7 @@ This codec:
 """
 from ..__common__ import *
 
+# no __examples__ ; handled manually in tests/test_base.py
 
 def base122_encode(input, errors="strict"):
     raise NotImplementedError

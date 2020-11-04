@@ -14,10 +14,12 @@ __examples1__ = {
     'enc_dec(kenny|southpark)': ["This is a Test"],
     'enc_dec(kenny_123456|southpark-ABCDEF)': ["This is a Test"],
 }
+__guess1__    = ["southpark", "southpark-123456", "southpark-abcdef", "southpark-ABCDEF"]
 __examples2__ = {
     'enc(southpark-icase|kenny_icase)': {'this is a test': "FMPMFPMFFFMMFFFMFFFMMFFFMMMFFFFMPMPPFMMFMP"},
     'enc(southpark_icase-123)':         {'this is a test': "123213211122111211122111222111123233122123"},
 }
+__guess2__    = ["southpark-icase", "southpark-icase-123", "southpark-icase-abc", "southpark-icase-ABC"]
 
 
 ENCMAP1 = {
@@ -36,7 +38,7 @@ ENCMAP2 = {
 }
 
 
-add_map("southpark", ENCMAP1, pattern=r"^(?:kenny|southpark)([-_].{6})?$", examples=__examples1__)
+add_map("southpark", ENCMAP1, pattern=r"^(?:kenny|southpark)([-_].{6})?$", examples=__examples1__, guess=__guess1__)
 add_map("southpark-icase", ENCMAP2, ignore_case="both", pattern=r"^(?:kenny|southpark)[-_]icase([-_].{3})?$",
-        examples=__examples2__)
+        examples=__examples2__, guess=__guess2__)
 

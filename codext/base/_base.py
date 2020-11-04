@@ -28,9 +28,9 @@ def _generate_charset(n):
     
     :param n: size of charset
     """
-    if 1 < n <= 100:
+    if 1 < n <= len(printable):
         return printable[:n]
-    elif 100 < n < 256:
+    elif len(printable) < n < 256:
         return "".join(chr(i) for i in range(n))
     raise ValueError("Bad size of character set")
 
@@ -108,7 +108,6 @@ def base_decode(input, charset, errors="strict", exc=BaseDecodeError):
     :param exc:     exception to be raised in case of error
     """
     i, n = 0, len(charset)
-    input = re.sub(r"\s", "", input)
     for k, c in enumerate(input):
         try:
             i = i * n + charset.index(c)
@@ -118,7 +117,7 @@ def base_decode(input, charset, errors="strict", exc=BaseDecodeError):
 
 
 # base codec factory functions
-def base(charset, pattern, pow2=False, encode_template=base_encode, decode_template=base_decode):
+def base(charset, pattern, pow2=False, encode_template=base_encode, decode_template=base_decode, name=None):
     """
     Base-N codec factory.
     
@@ -144,7 +143,7 @@ def base(charset, pattern, pow2=False, encode_template=base_encode, decode_templ
             return decode_template(input, a, errors), len(input)
         return _decode
     
-    add("base{}".format(n), encode, decode, pattern)
+    add("base{}".format(n) if name is None else name, encode, decode, pattern)
 
 
 def base_generic():
@@ -163,5 +162,6 @@ def base_generic():
             return base_decode(input, a, errors), len(input)
         return _decode
     
-    add("base", encode, decode, r"^base[-_]?([2-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(?:[-_]generic)?$")
+    add("base", encode, decode, r"^base[-_]?([2-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(?:[-_]generic)?$",
+        guess=["base%d-generic" % i for i in range(2, 255)])
 

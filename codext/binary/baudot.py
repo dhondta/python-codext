@@ -10,6 +10,10 @@ This codec:
 from ..__common__ import *
 
 
+__CODES = ["ccitt1", "ccitt2", "eu", "ita1", "ita2", "ita2_us", "murray", "uk"]
+if PY3:
+    __CODES.extend(["ita2_meteo", "mtk2"])
+__guess__    = ["baudot%s-{}-{}".format(a, b) for a in __CODES for b in ["lsb", "msb"]]
 __examples1__ = {
     'enc(baudot-BAD_ALPHABET)': None,
     'enc(baudot_ccitt2_lsb)':   {'TEST 1234': "00001100001010000001001001101111101110011000001010"},
@@ -272,15 +276,17 @@ def baudot_decode(alphabet=None, spaced=False, tape=False):
     return decode
 
 
-add("baudot", baudot_encode, baudot_decode, PATTERN % r"", examples=__examples1__)
+add("baudot", baudot_encode, baudot_decode, PATTERN % r"", examples=__examples1__, guess=[x % "" for x in __guess__])
 
 
 baudot_spaced_encode = lambda a: baudot_encode(a, spaced=True)
 baudot_spaced_decode = lambda a: baudot_decode(a, spaced=True)
-add("baudot-spaced", baudot_spaced_encode, baudot_spaced_decode, PATTERN % r"[-_]spaced", examples=__examples2__)
+add("baudot-spaced", baudot_spaced_encode, baudot_spaced_decode, PATTERN % r"[-_]spaced", examples=__examples2__,
+    guess=[x % "-spaced" for x in __guess__])
 
 
 baudot_tape_encode = lambda a: baudot_encode(a, tape=True)
 baudot_tape_decode = lambda a: baudot_decode(a, tape=True)
-add("baudot-tape", baudot_tape_encode, baudot_tape_decode, PATTERN % r"[-_]tape", examples=__examples3__)
+add("baudot-tape", baudot_tape_encode, baudot_tape_decode, PATTERN % r"[-_]tape", examples=__examples3__,
+    guess=[x % "-tape" for x in __guess__])
 

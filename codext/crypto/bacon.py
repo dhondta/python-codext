@@ -20,6 +20,7 @@ __examples__ = {
         'this is a test': "10010001110100010001 0100010001 00000 10010001001000110010",
     },
 }
+__guess__ = {"bacon", "bacon-ba", "bacon-01", "bacon-10"}
 
 
 ENCMAP = {

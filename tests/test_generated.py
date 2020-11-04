@@ -112,21 +112,10 @@ class GeneratedTestCase(TestCase):
 
 
 for encoding in list_encodings():
-    # in the case of dynamically named encodings, this will throw LookupError because it requires a number
-    #  (e.g. 'base57', 'base13-generic', ... for the 'base' encoding)
-    for suffix in ["", "1", "2"]:
-        try:
-            ci = lookup(encoding + suffix)
-            error = False
-            break
-        except (LookupError, ValueError):
-            
-            error = True
-    if error:
-        try:
-            ci = lookup(examples(encoding, 1)[0])
-        except LookupError:
-            continue
+    try:
+        ci = lookup(encoding)
+    except LookupError:
+        continue
     # only consider codecs with __examples__ defined in their globals for dynamic tests generation
     if ci.parameters.get('examples') is not None:
         f = make_test(**ci.parameters)

@@ -12,6 +12,9 @@ Reference: https://crypto.interactive-maths.com/affine-cipher.html
 from ..__common__ import *
 
 
+__guess__ = []
+
+
 def encmap_factory(mask=None):
     mask = mask or "?l?u?s-1,2"
     mask, key = mask.split("-")

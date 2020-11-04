@@ -11,6 +11,7 @@ This codec:
 """
 from ..__common__ import *
 
+# no __examples__ ; handled manually in tests/test_base.py
 
 if PY3:
     class Base100DecodeError(ValueError):

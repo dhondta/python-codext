@@ -28,6 +28,7 @@ __examples__ = {
     'enc(consonant-vowel_indices)':    {'This is a test':               "C16C6V3C15V3C15V1C16V2C15C16"},
     'dec(consonants_vowels-index)':    {'C16C6V3C15V3C15V1C16V2C15C16': "THISISATEST"},
 }
+__guess__ = ["consonant-index", "vowel-index", "consonants_vowels-index"]
 
 
 VOWELS = "AEIOUY"

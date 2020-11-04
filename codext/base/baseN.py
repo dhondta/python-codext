@@ -42,7 +42,7 @@ B32 = {
 }
 base2n(B32, r"^base[-_]?32(|[-_]inv(?:erted)?|(?:[-_]ext(?:ended)?)?[-_]hex|[-_]geohash)$")
 ZB32 = {'': "ybndrfg8ejkmcpqxot1uwisza345h769"}
-base2n(ZB32, r"^z[-_]?base[-_]?32$")
+base2n(ZB32, r"^z[-_]?base[-_]?32$", name="zbase32")
 
 
 B36 = {'': digits + upper, 'inv': upper + digits}
@@ -62,11 +62,11 @@ base(B62, r"^base[-_]?62(|[-_]inv(?:erted)?)$")
 
 
 B64 = {
-    r'':                       upper + lower + digits + "+/",
-    r'[-_]inv(erted)?$':       lower + upper + digits + "+/",
-    r'[-_](file|url)(safe)?$': upper + lower + digits + "-_",
+    r'':                        upper + lower + digits + "+/",
+    r'[-_]inv(erted)?$':        lower + upper + digits + "+/",
+    r'[-_]?(file|url)(safe)?$': upper + lower + digits + "-_",
 }
-base2n(B64, r"^base[-_]?64(|[-_]inv(?:erted)?|[-_](?:file|url)(?:safe)?)$")
+base2n(B64, r"^base[-_]?64(|[-_]inv(?:erted)?|[-_]?(?:file|url)(?:safe)?)$")
 
 
 # generic base encodings, to be added after all others as they have the precedence

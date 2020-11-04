@@ -15,6 +15,7 @@ __examples__ = {
     'enc(morse-/AB)':      {'this is a test': "A BBBB BB BBB / BB BBB / BA / A B BBB A"},
     'enc(morse-01)':       {'this is a test': "0 1111 11 111 - 11 111 - 10 - 0 1 111 0"},
 }
+__guess__ = ["morse", "morse/_.", "morse-/01", "morse-01", "morse-/ab", "morse-ab", "morse-/AB", "morse-AB"]
 
 
 ENCMAP = {

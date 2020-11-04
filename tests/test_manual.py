@@ -107,4 +107,10 @@ class ManualTestCase(TestCase):
             c = "whitespace{}{}*after{}{}*before".format("-+"[random.randint(0, 1)], random.randint(1, 3),
                                                          "-+"[random.randint(0, 1)], random.randint(1, 3))
             self.assertEqual(codecs.decode("\n" + codecs.encode(STR, c) + "\n", c), STR)
+        # in this special case, the whitespaces between words cannot be encoded because:
+        # - ord(" ") == 32
+        # - the next minimal value in the printable characters excluding the latest 6 is ord("!") == 33
+        # and therefore ord(" ")-random(0,20)-random(0,20) will never fall into the valid ordinals !
+        self.assertRaises(ValueError, codecs.encode, "this is a test", "whitespace-after-before")
+        self.assertIn("\x00", codecs.encode("this is a test", "whitespace-after-before", "replace"))
 

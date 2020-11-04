@@ -11,6 +11,9 @@ from markdown2 import markdown as md2html
 from ..__common__ import *
 
 
+__guess__ = []
+
+
 def markdown_encode(mdtext, errors="strict"):
     return md2html(mdtext), len(mdtext)
 

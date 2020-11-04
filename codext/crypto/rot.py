@@ -18,6 +18,7 @@ __examples__ = {
     'enc(rot3)':                {'this is a test': "wklv lv d whvw"},
     'enc(rot47)':               {'this is a test': "E9:D :D 2 E6DE"},
 }
+__guess__ = ["rot%d" % i for i in range(1, 26)] + ["rot47"]
 
 
 ROT47 = "!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"

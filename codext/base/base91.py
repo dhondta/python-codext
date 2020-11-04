@@ -11,6 +11,9 @@ from string import ascii_lowercase as lower, ascii_uppercase as upper, digits
 
 from ..__common__ import *
 
+# no __examples__ ; handled manually in tests/test_base.py
+__guess__    = ["base91", "base91-inv"]
+
 
 B91 = {
     '':    upper + lower + digits + "!#$%&()*+,./:;<=>?@[]^_`{|}~\"",
