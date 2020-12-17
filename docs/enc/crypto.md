@@ -115,9 +115,9 @@ This is a dynamic encoding, that is, it can be called with an integer to define 
 
 **Codec** | **Conversions** | **Aliases** | **Comment**
 :---: | :---: | --- | ---
-`rot` | text <-> rot(1) ciphertext | `rot1`, `rot-1`, `rot_1` | 
+`rot` | text <-> rot(1) ciphertext | `rot1`, `rot-1`, `rot_1`, `caesar1` | 
 `rot` | text <-> rot(X) ciphertext | ... | 
-`rot` | text <-> rot(25) ciphertext | `rot25`, `rot-25`, `rot_25` | 
+`rot` | text <-> rot(25) ciphertext | `rot25`, `rot-25`, `rot_25`, `caesar25` | 
 
 ```python
 >>> codext.encode("this is a test", "rot-15")

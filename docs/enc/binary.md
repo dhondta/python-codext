@@ -147,10 +147,12 @@ This codec rotates N bits using the `>>` (to the right) and `<<` (to the left) o
 
 **Codec** | **Conversions** | **Aliases** | **Comment**
 :---: | :---: | --- | ---
-`rotate` | text <-> N-bits-rotated text | `rotate-N`, `rotate-right-N`, `rotate_left_N` | N belongs to [1,7] ; when nothing specified, it rotates to the right
+`rotate` | text <-> N-bits-rotated text | `rotate-N`, `rotate_bits-N`, `rotate-right-N`, `rotate_left_N` | N belongs to [1,7] ; when nothing specified, it rotates to the right
 
 ```python
 >>> codext.encode("test", "rotate-1")
+':29:'
+>>> codext.encode("test", "rotatebits-1")
 ':29:'
 >>> codext.encode("test", "rotate_right-1")
 ':29:'

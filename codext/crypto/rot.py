@@ -14,8 +14,8 @@ from ..__common__ import *
 
 __examples__ = {
     'enc(rot0|rot--10|rot100)': None,
-    'enc(rot1|rot-1|rot_1)':    {'this is a test': "uijt jt b uftu"},
-    'enc(rot3)':                {'this is a test': "wklv lv d whvw"},
+    'enc(rot1|rot-1|caesar_1)': {'this is a test': "uijt jt b uftu"},
+    'enc(rot3|caesar-3)':       {'this is a test': "wklv lv d whvw"},
     'enc(rot47)':               {'this is a test': "E9:D :D 2 E6DE"},
 }
 __guess__ = ["rot%d" % i for i in range(1, 26)] + ["rot47"]
@@ -46,5 +46,5 @@ def rot_decode(i):
     return decode
 
 
-add("rot", rot_encode, rot_decode, r"rot[-_]?([1-9]|1[0-9]|2[0-5]|47)$")
+add("rot", rot_encode, rot_decode, r"(?:caesar|rot)[-_]?([1-9]|1[0-9]|2[0-5]|47)$")
 
