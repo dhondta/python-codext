@@ -22,6 +22,13 @@ def dummy_decode(input, errors="strict"):
     return input, len(input)
 
 
+def dummy_errored_decode(useless):
+    raise AttributeError
+    def decode(input, errors="strict"):
+        return input, len(input)
+    return decode
+
+
 def ensure_str(s, encoding='utf-8', errors='strict'):
     """ Similar to six.ensure_str. Adapted here to avoid messing up with six version errors. """
     if not PY3 and isinstance(s, text_type):
@@ -49,6 +56,8 @@ class TestCommon(TestCase):
         ci = codext.lookup("dummy")
         for k in ["add_to_codecs", "category", "examples", "name", "pattern", "text"]:
             self.assertIn(k, ci.parameters.keys())
+        self.assertIsNone(codext.add("dummy_errored", None, dummy_errored_decode, r"dummy_errored(\d+)$"))
+        self.assertRaises(AttributeError, codext.lookup, "dummy_errored1")
 
     def test_add_map_codec(self):
         ENCMAP = [{'a': "A", 'b': "B", 'c': "C"}, {'d': "D", 'e': "E", 'f': "F"}, {'g': "G", 'h': "H", 'i': "I"}]

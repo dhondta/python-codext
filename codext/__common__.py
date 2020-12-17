@@ -10,7 +10,7 @@ from functools import reduce, wraps
 from importlib import import_module
 from inspect import currentframe
 from itertools import chain, product
-from six import binary_type, string_types, text_type
+from six import binary_type, string_types, text_type, BytesIO
 from string import *
 from types import FunctionType
 try: # Python3
@@ -29,7 +29,7 @@ except ImportError:  # Python 3
 
 __all__ = ["add", "add_map", "b", "clear", "codecs", "decode", "encode", "ensure_str", "examples",
            "generate_strings_from_regex", "get_alphabet_from_mask", "guess", "handle_error", "list_encodings", "lookup",
-           "maketrans", "re", "register", "remove", "reset", "s2i", "search", "MASKS", "PY3"]
+           "maketrans", "re", "register", "remove", "reset", "s2i", "search", "BytesIO", "MASKS", "PY3"]
 CODECS_REGISTRY = None
 MASKS = {
     'a': printable,
@@ -47,7 +47,7 @@ __codecs_registry = []
 
 
 entropy      = lambda s: -sum([p * log(p, 2) for p in [float(s.count(c)) / len(s) for c in set(s)]])
-is_printable = lambda s: all(c in printable for c in s)
+is_printable = lambda s: all(c in printable for c in ensure_str(s))
 
 isb = lambda s: isinstance(s, binary_type)
 iss = lambda s: isinstance(s, string_types)
@@ -92,7 +92,10 @@ def add(ename, encode=None, decode=None, pattern=None, text=True, add_to_codecs=
                 fenc = fenc(g) if fenc else fenc
                 fdec = fdec(g) if fdec else fdec
             except AttributeError:
-                return  # this occurs when m is None, meaning no match
+                # this occurs when m is None or there is an error in fenc(g) or fdec(g), meaning no match
+                if m is not None:
+                    raise
+                return
             except IndexError:
                 # this occurs while m is not None, but possibly no capture group that gives at least 1 group index ; in
                 #  this case, if fenc/fdec is a decorated function, execute it with no arg
@@ -510,11 +513,11 @@ def b(s):
     """ Non-crashing bytes conversion function. """
     if PY3:
         try:
-            return s.encode("utf-8")
+            return s.encode("latin-1")
         except:
             pass
         try:
-            return s.encode("latin-1")
+            return s.encode("utf-8")
         except:
             pass
     return s
@@ -539,8 +542,13 @@ def fix_inout_formats(f):
     @wraps(f)
     def _wrapper(*args, **kwargs):
         a0 = args[0]
-        a0 = ensure_str(a0) if iss(a0) or isb(a0) else a0
+        a0_isb = isb(a0)
+        a0 = ensure_str(a0) if iss(a0) or a0_isb else a0
         r = f(a0, *args[1:], **kwargs)
+        # special case: input is in bytes ; ensure that the returned length is this of the bytes, not this processed by
+        #                the decode/encode function
+        if isinstance(r, (tuple, list)) and isinstance(r[1], int) and a0_isb:
+            r = tuple([list(r)[0]] + [len(args[0])] + list(r)[2:])
         return (fix(r[0], args[0]), ) + r[1:] if isinstance(r, (tuple, list)) else fix(r, args[0])
     return _wrapper
 
