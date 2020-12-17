@@ -22,31 +22,31 @@ $ pip install codext
 ## Usage (CLI tool)
 
 ```sh
-$ codext dna-1 -i test.txt
+$ codext -i test.txt encode dna-1
 GTGAGCGGGTATGTGA
-$ echo -en "test" | codext morse
+$ echo -en "test" | codext encode morse
 - . ... -
 ```
 
 Python 3 (includes Ascii85, Base85, Base100 and braille):
 
 ```sh
-$ echo -en "test" | codext braille
+$ echo -en "test" | codext encode braille
 ⠞⠑⠎⠞
-$ echo -en "test" | codext base100
+$ echo -en "test" | codext encode base100
 👫👜👪👫
 ```
 
 Using codecs chaining:
 
 ```sh
-$ echo -en "Test string" | codext reverse
+$ echo -en "Test string" | codext encode reverse
 gnirts tseT
-$ echo -en "Test string" | codext reverse morse
+$ echo -en "Test string" | codext encode reverse morse
 --. -. .. .-. - ... / - ... . -
-$ echo -en "Test string" | codext reverse morse dna-2
+$ echo -en "Test string" | codext encode reverse morse dna-2
 AGTCAGTCAGTGAGAAAGTCAGTGAGAAAGTGAGTGAGAAAGTGAGTCAGTGAGAAAGTCAGAAAGTGAGTGAGTGAGAAAGTTAGAAAGTCAGAAAGTGAGTGAGTGAGAAAGTGAGAAAGTC
-$ echo -en "Test string" | codext reverse morse dna-2 octal
+$ echo -en "Test string" | codext encode reverse morse dna-2 octal
 101107124103101107124103101107124107101107101101101107124103101107124107101107101101101107124107101107124107101107101101101107124107101107124103101107124107101107101101101107124103101107101101101107124107101107124107101107124107101107101101101107124124101107101101101107124103101107101101101107124107101107124107101107124107101107101101101107124107101107101101101107124103
 $ echo -en "AGTCAGTCAGTGAGAAAGTCAGTGAGAAAGTGAGTGAGAAAGTGAGTCAGTGAGAAAGTCAGAAAGTGAGTGAGTGAGAAAGTTAGAAAGTCAGAAAGTGAGTGAGTGAGAAAGTGAGAAAGTC" | codext -d dna-2 morse reverse
 test string

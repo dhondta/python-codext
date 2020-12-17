@@ -41,31 +41,43 @@ def main():
             "\nThis tool allows to encode/decode input strings/files with an extended set of codecs.\n\n" \
             .format(__version__, __author__, __email__, __copyright__, __license__, __source__)
     examples = "usage examples:\n- " + "\n- ".join([
-        "codext --search bitcoin",
-        "codext -d base32 -i file.b32",
-        "codext morse < to_be_encoded.txt",
-        "echo \"test\" | codext base100",
-        "echo -en \"test\" | codext braille -o test.braille",
-        "codext base64 < to_be_encoded.txt > text.b64",
-        "echo -en \"test\" | codext base64 | codext base32",
-        "echo -en \"mrdvm6teie6t2cq=\" | codext upper | codext -d base32 | codext -d base64",
-        "echo -en \"test\" | codext upper reverse base32 | codext -d base32 reverse lower",
-        "echo -en \"test\" | codext upper reverse base32 base64 morse",
+        "codext search bitcoin",
+        "codext decode base32 -i file.b32",
+        "codext encode morse < to_be_encoded.txt",
+        "echo \"test\" | codext encode base100",
+        "echo -en \"test\" | codext encode braille -o test.braille",
+        "codext encode base64 < to_be_encoded.txt > text.b64",
+        "echo -en \"test\" | codext encode base64 | codext encode base32",
+        "echo -en \"mrdvm6teie6t2cq=\" | codext encode upper | codext decode base32 | codext decode base64",
+        "echo -en \"test\" | codext encode upper reverse base32 | codext decode base32 reverse lower",
+        "echo -en \"test\" | codext encode upper reverse base32 base64 morse",
+        "echo -en \"test\" | codext encode base64 gzip | codext guess",
+        "echo -en \"test\" | codext encode base64 gzip | codext guess gzip",
     ])
     parser = argparse.ArgumentParser(description=descr, epilog=examples, formatter_class=argparse.RawTextHelpFormatter)
-    parser.add_argument("encoding", nargs="+", help="list of encodings to apply")
-    parser.add_argument("-d", "--decode", action="store_true", help="set decode mode")
-    parser.add_argument("-e", "--errors", default="strict", choices=["ignore", "leave", "replace", "strict"],
-                        help="error handling")
+    sparsers = parser.add_subparsers(dest="command", help="command to be executed")
     parser.add_argument("-i", "--input-file", dest="infile", help="input file (if none, take stdin as input)")
     parser.add_argument("-o", "--output-file", dest="outfile", help="output file (if none, display result to stdout)")
     parser.add_argument("-s", "--strip-newlines", action="store_true", dest="strip", help="strip newlines from input")
-    parser.add_argument("--search", action="store_true", help="search for encoding names")
+    encode = sparsers.add_parser("encode", help="encode input using the specified codecs")
+    encode.add_argument("encoding", nargs="+", help="list of encodings to apply")
+    encode.add_argument("-e", "--errors", default="strict", choices=["ignore", "leave", "replace", "strict"],
+                        help="error handling")
+    decode = sparsers.add_parser("decode", help="decode input using the specified codecs")
+    decode.add_argument("encoding", nargs="+", help="list of encodings to apply")
+    decode.add_argument("-e", "--errors", default="strict", choices=["ignore", "leave", "replace", "strict"],
+                        help="error handling")
+    guess = sparsers.add_parser("guess", help="try guessing the decoding codecs")
+    guess.add_argument("encoding", nargs="*", help="list of known encodings to apply")
+    guess.add_argument("-c", "--category", choices=list_categories(), nargs="*", help="codec categories to search in")
+    guess.add_argument("-d", "--depth", default=3, type=int, help="maximum codec search depth")
+    search = sparsers.add_parser("search", help="search for codecs")
+    search.add_argument("pattern", nargs="+", help="encoding pattern to search")
     args = parser.parse_args()
     # if a search pattern is given, only handle it
-    if args.search:
+    if args.command == "search":
         results = []
-        for enc in args.encoding:
+        for enc in args.pattern:
             results.extend(codecs.search(enc))
         print(", ".join(results) or "No encoding found")
         return
@@ -79,18 +91,18 @@ def main():
             c += line
     if args.strip:
         c = re.sub(r"\r?\n", "", c)
-    # encode or decode
-    for encoding in args.encoding:
-        c = getattr(codecs, ["encode", "decode"][args.decode])(c, encoding, args.errors)
+    if args.command in ["decode", "encode"]:
+        # encode or decode
+        for encoding in args.encoding:
+            c = getattr(codecs, ["encode", "decode"][args.command == "decode"])(c, encoding, args.errors)
+    elif args.command == "guess":
+        c, e = codecs.guess(c, max_depth=args.depth, codec_categories=args.category, found=args.encoding)
+        if e:
+            print("Encodings: %s" % ", ".join(e))
     # handle output file or stdout
     if args.outfile:
         with open(args.outfile, 'wb') as f:
             f.write(c)
     else:
-        if PY3:
-            try:
-                c = c.decode("utf-8")
-            except:
-                c = c.decode("latin-1")
-        print(c, end="")
+        print(ensure_str(c), end="")
 

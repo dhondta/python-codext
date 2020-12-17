@@ -7,12 +7,9 @@
 The help message describes everything to know:
 
 ```sh
-$ codext --help
-usage: codext [-h] [-d] [-e {ignore,leave,replace,strict}] [-i INFILE]
-              [-o OUTFILE] [-s]
-              encoding [encoding ...]
+usage: codext [-h] [-i INFILE] [-o OUTFILE] [-s] {encode,decode,guess,search} ...
 
-Codecs Extension (CodExt) 1.4.0
+Codecs Extension (CodExt) 1.6.2
 
 Author   : Alexandre D'Hondt (alexandre.dhondt@gmail.com)
 Copyright: © 2019-2020 A. D'Hondt
@@ -22,13 +19,15 @@ Source   : https://github.com/dhondta/python-codext
 This tool allows to encode/decode input strings/files with an extended set of codecs.
 
 positional arguments:
-  encoding              list of encodings to apply
+  {encode,decode,guess,search}
+                        command to be executed
+    encode              encode input using the specified codecs
+    decode              decode input using the specified codecs
+    guess               try guessing the decoding codecs
+    search              search for codecs
 
 optional arguments:
   -h, --help            show this help message and exit
-  -d, --decode          set decode mode
-  -e {ignore,leave,replace,strict}, --errors {ignore,leave,replace,strict}
-                        error handling
   -i INFILE, --input-file INFILE
                         input file (if none, take stdin as input)
   -o OUTFILE, --output-file OUTFILE
@@ -36,14 +35,18 @@ optional arguments:
   -s, --strip-newlines  strip newlines from input
 
 usage examples:
-- codext -d base32 -i file.b32
-- codext morse < to_be_encoded.txt
-- echo "test" | codext base100
-- echo -en "test" | codext braille -o test.braille
-- codext base64 < to_be_encoded.txt > text.b64
-- echo -en "test" | codext base64 | codext base32
-- echo -en "mrdvm6teie6t2cq=" | codext upper | codext -d base32 | codext -d base64
-- echo -en "test" | codext upper reverse base32 base64 morse
+- codext search bitcoin
+- codext decode base32 -i file.b32
+- codext encode morse < to_be_encoded.txt
+- echo "test" | codext encode base100
+- echo -en "test" | codext encode braille -o test.braille
+- codext encode base64 < to_be_encoded.txt > text.b64
+- echo -en "test" | codext encode base64 | codext encode base32
+- echo -en "mrdvm6teie6t2cq=" | codext encode upper | codext decode base32 | codext decode base64
+- echo -en "test" | codext encode upper reverse base32 | codext decode base32 reverse lower
+- echo -en "test" | codext encode upper reverse base32 base64 morse
+- echo -en "test" | codext encode base64 gzip | codext guess
+- echo -en "test" | codext encode base64 gzip | codext guess gzip
 ```
 
 !!! note "Input/output"
@@ -55,3 +58,4 @@ usage examples:
 !!! note "Encodings chaining"
     
     Encodings can be chained as shown in the last examples of the help message. This can be practical for quickly manipulating data.
+

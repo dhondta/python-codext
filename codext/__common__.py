@@ -27,9 +27,9 @@ except ImportError:  # Python 3
     maketrans = str.maketrans
 
 
-__all__ = ["add", "add_map", "b", "clear", "codecs", "decode", "encode", "ensure_str", "examples",
-           "generate_strings_from_regex", "get_alphabet_from_mask", "guess", "handle_error", "list_encodings", "lookup",
-           "maketrans", "re", "register", "remove", "reset", "s2i", "search", "BytesIO", "MASKS", "PY3"]
+__all__ = ["add", "add_map", "b", "clear", "codecs", "decode", "encode", "ensure_str", "examples", "guess",
+           "generate_strings_from_regex", "get_alphabet_from_mask", "handle_error", "list_categories", "list_encodings",
+           "lookup", "maketrans", "re", "register", "remove", "reset", "s2i", "search", "BytesIO", "MASKS", "PY3"]
 CODECS_REGISTRY = None
 MASKS = {
     'a': printable,
@@ -436,14 +436,20 @@ def examples(encoding, number=10):
 codecs.examples = examples
 
 
-def list_encodings(*categories):
-    """ Get a list of all codecs. """
-    # first, determine the list of valid categories
-    valid_categories = ["native"]
+def list_categories():
+    """ Get a list of all codec categories. """
+    c = ["native"]
     root = os.path.dirname(__file__)
     for d in os.listdir(root):
         if os.path.isdir(os.path.join(root, d)) and not d.startswith("__"):
-            valid_categories.append(d.rstrip("s"))
+            c.append(d.rstrip("s"))
+    return c
+
+
+def list_encodings(*categories):
+    """ Get a list of all codecs. """
+    # first, determine the list of valid categories
+    valid_categories = list_categories()
     # then, if "non-native" is in the input list, extend the list with the whole categories but "native"
     categories = list(categories)
     for c in categories[:]:
@@ -855,6 +861,9 @@ def __score(input, codec):
         try:
             new_input = decode(input, encoding)
         except:
+            continue
+        # ignore encodings that give an output identical to the input (identity transformation)
+        if b(input) == b(new_input):
             continue
         score = 1.0
         #FIXME: score the input/new_input to establish priorities of the depth-first search
