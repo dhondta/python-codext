@@ -139,3 +139,22 @@ This codec XORes each group of 4 bits of the input text with a 1-byte clock sign
 'This is a test!'
 ```
 
+-----
+
+### Rotate/Shift N bits
+
+This codec rotates N bits using the `>>` (to the right) and `<<` (to the left) operations.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`rotate` | text <-> N-bits-rotated text | `rotate-N`, `rotate-right-N`, `rotate_left_N` | N belongs to [1,7] ; when nothing specified, it rotates to the right
+
+```python
+>>> codext.encode("test", "rotate-1")
+':29:'
+>>> codext.encode("test", "rotate_right-1")
+':29:'
+>>> codext.encode("test", "rotate_left_1")
+'èÊæè'
+```
+
