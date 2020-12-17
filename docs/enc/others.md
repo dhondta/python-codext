@@ -29,6 +29,23 @@ CACTCGGTCGGCCATATGTTCGGCCATATGTTCGTCTGTTCACTCGCCCATACACT
 
 -----
 
+### GZip
+
+This is, of course, not an encoding properly speaking, but it is implemented for the sake of convenience.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`gzip` | data <-> GZipped data |  | decoding tries with and without the file signature
+
+```python
+>>> codext.encode('test', "gzip")
+'\x1f\x8b\x08\x00\x0esÛ_\x02ÿ+I-.\x01\x00\x0c~\x7fØ\x04\x00\x00\x00'
+>>> codext.decode('\x1f\x8b\x08\x00\x0esÛ_\x02ÿ+I-.\x01\x00\x0c~\x7fØ\x04\x00\x00\x00', "gzip")
+'test'
+```
+
+-----
+
 ### HTML Entities
 
 This implements the full list of characters available at [this reference](https://dev.w3.org/html5/html-author/charref).
