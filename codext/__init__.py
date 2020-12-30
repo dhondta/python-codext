@@ -97,12 +97,12 @@ def main():
             c = getattr(codecs, ["encode", "decode"][args.command == "decode"])(c, encoding, args.errors)
     elif args.command == "guess":
         c, e = codecs.guess(c, max_depth=args.depth, codec_categories=args.category, found=args.encoding)
-        if e:
-            print("Encodings: %s" % ", ".join(e))
+        if len(e) > 0:
+            print("Codecs: %s" % ", ".join(e))
     # handle output file or stdout
     if args.outfile:
         with open(args.outfile, 'wb') as f:
             f.write(c)
     else:
-        print(ensure_str(c), end="")
+        print(ensure_str(c or "Could not decode :-("), end="")
 
