@@ -109,6 +109,23 @@ It implements the cipher for its 4 different keys.
 
 -----
 
+### Citrix CTX1
+
+This implements the Citrix CTX1 password encoding algorithm.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`citrix` | text <-> Citrix CTX1 ciphertext | `citrix`, `citrix-1`, `citrix_ctx1` | 
+
+```python
+>>> codext.encode("this is a test", "citrix-ctx1")
+'NBBMNAAGIDEPJJBMNIFNIMEMJKEL'
+>>> codext.decode("NBBMNAAGIDEPJJBMNIFNIMEMJKEL", "citrix-ctx1")
+'this is a test'
+```
+
+-----
+
 ### ROT N
 
 This is a dynamic encoding, that is, it can be called with an integer to define the ROT offset. Encoding will apply a positive offset, decoding will apply a negative one.

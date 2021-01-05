@@ -174,9 +174,11 @@ o
 `baudot` | text <-> Baudot code bits | supports CCITT-1, CCITT-2, EU/FR, ITA1, ITA2, MTK-2 (Python3 only), UK, ...
 `bcd` | text <-> binary coded decimal text | encodes characters from their (zero-left-padded) ordinals
 `braille` | text <-> braille symbols | Python 3 only
+`citrix` | text <-> Citrix CTX1 ciphertext | aka Citrix CTX1 passord encoding
 `dna` | text <-> DNA-N sequence | implements the 8 rules of DNA sequences (N belongs to [1,8])
 `excess3` | text <-> XS3 encoded text | uses Excess-3 (aka Stibitz code) binary encoding to convert characters from their ordinals
 `gray` | text <-> gray encoded text | aka reflected binary code
+`gzip` | text <-> Gzip-compressed text | standard Gzip compression/decompression
 `html` | text <-> HTML entities | implements entities according to [this reference](https://dev.w3.org/html5/html-author/charref)
 `leetspeak` | text <-> leetspeak encoded text | based on minimalistic elite speaking rules
 `letter-indices` | text <-> text with letter indices | encodes consonants and/or vowels with their corresponding indices
@@ -189,6 +191,7 @@ o
 `radio` | text <-> radio words | aka NATO or radio phonetic alphabet
 `resistor` | text <-> resistor colors | aka resistor color codes
 `rot` | text <-> rot(N) ciphertext | aka Caesar cipher (N belongs to [1,25])
+`rotate` | text <-> N-bits-rotated text | rotates characters by the specified number of bits
 `scytale` | text <-> scytale ciphertext | encrypts with L, the number of letters on the rod (belongs to [1,[)
 `shift` | text <-> shift(N) ciphertext | shift ordinals with N (belongs to [1,255])
 `sms` | text <-> phone keystrokes | also called T9 code ; uses "`-`" as a separator for encoding, "`-`" or "`_`" or whitespace for decoding
