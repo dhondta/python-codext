@@ -132,9 +132,20 @@ class TestCommon(TestCase):
         STR = "This is a test"
         self.assertEqual(STR, codext.guess("VGhpcyBpcyBhIHRlc3Q=", "a test", 1)[0])
         self.assertEqual(STR, codext.guess("CJG3Ix8bVcSRMLOqwDUg28aDsT7", "a test", found=["base62"])[0])
-        self.assertEqual(STR, codext.guess("VGhpcyBpcyBhIHRlc3Q=", "a test", 1, "base")[0])
-        self.assertIsNone(codext.guess("NOT THE ENCODED TEST STRING", "a test", 1)[0])
+        if hasattr(codext.stopfunc, "lang_en"):
+            f = codext.stopfunc.lang_en
+            self.assertEqual(STR, codext.guess("CJG3Ix8bVcSRMLOqwDUg28aDsT7", f, found=["base62"])[0])
+            self.assertIsNotNone(codext.guess("CJG3Ix8bVcSRMLOqwDUg28aDsT7", f, max_depth=1)[0])
+        self.assertEqual(STR, codext.guess("VGhpcyBpcyBhIHRlc3Q=", "a test", 1, "base", exclude=["base100"])[0])
+        self.assertEqual(STR, codext.guess("VGhpcyBpcyBhIHRlc3Q=", "a test", 1, ["base", "crypto"])[0])
+        self.assertIsNone(codext.guess("NOT THE ENCODED TEST STRING", "a test", 1, exclude=[None])[0])
+        self.assertIn("F1@9", codext.guess("VGVzdCBGMUA5ICE=", codext.stopfunc.flag, 1)[0])
+        self.assertIsNone(codext.guess("VGhpcyBpcyBhIHRlc3Q=", " a test", 1, codec_categories="base",
+                                       exclude="base64")[0])
+        self.assertIsNone(codext.guess("VGhpcyBpcyBhIHRlc3Q=", " a test", 1, codec_categories="base",
+                                       exclude=("base64", "atbash"))[0])
         self.assertRaises(ValueError, codext.guess, STR, max_depth=0)
+        self.assertRaises(ValueError, codext.guess, STR, exclude=42)
         for c in ["base", "language", "native", "stegano"]:
             e = codext.list(c)
             random.shuffle(e)

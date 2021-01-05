@@ -12,7 +12,7 @@ from inspect import currentframe
 from itertools import chain, product
 from six import binary_type, string_types, text_type, BytesIO
 from string import *
-from types import FunctionType
+from types import FunctionType, ModuleType
 try: # Python3
     from importlib import reload
 except ImportError:
@@ -29,7 +29,8 @@ except ImportError:  # Python 3
 
 __all__ = ["add", "add_map", "b", "clear", "codecs", "decode", "encode", "ensure_str", "examples", "guess",
            "generate_strings_from_regex", "get_alphabet_from_mask", "handle_error", "list_categories", "list_encodings",
-           "lookup", "maketrans", "re", "register", "remove", "reset", "s2i", "search", "BytesIO", "MASKS", "PY3"]
+           "lookup", "maketrans", "re", "register", "remove", "reset", "s2i", "search", "stopfunc", "BytesIO", "MASKS",
+           "PY3"]
 CODECS_REGISTRY = None
 MASKS = {
     'a': printable,
@@ -46,8 +47,7 @@ PY3 = sys.version[0] == "3"
 __codecs_registry = []
 
 
-entropy      = lambda s: -sum([p * log(p, 2) for p in [float(s.count(c)) / len(s) for c in set(s)]])
-is_printable = lambda s: all(c in printable for c in ensure_str(s))
+entropy = lambda s: -sum([p * log(p, 2) for p in [float(s.count(c)) / len(s) for c in set(s)]])
 
 isb = lambda s: isinstance(s, binary_type)
 iss = lambda s: isinstance(s, string_types)
@@ -833,14 +833,64 @@ def generate_strings_from_regex(regex, star_plus_max=STAR_PLUS_MAX, repeat_max=R
 
 
 # guess feature objects
-def __guess(input, stop_func, depth, max_depth, codecs, result, found=()):
+stopfunc = ModuleType("stopfunc", """
+    Predefined stop functions
+    ~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    This submodule contains stop functions for the guess feature of codext.
+    
+    - `flag`:       searches for the pattern "[Ff][Ll1][Aa4@][Gg9]" (either UTF-8 or UTF-16)
+    - `lang_**`:    checks if the given lang (any from the PROFILES_DIRECTORY of the langdetect module) is detected
+    - `printables`: checks that every output character is in the set of printables
+""")
+stopfunc.printables = lambda s: all(c in printable for c in ensure_str(s))
+
+try:
+    from langdetect import detect, PROFILES_DIRECTORY
+    for lang in [p.replace("-", "") for p in os.listdir(PROFILES_DIRECTORY)]:
+        setattr(stopfunc, "lang_%s" % lang, lambda s, l=lang: stopfunc.printables(s) and detect(s) == l)
+except ImportError:
+    pass
+
+
+__flag = lambda x: re.search(r"[Ff][Ll1][Aa4@][Gg9]", x) is not None
+def _flag(x):
+    try:
+        return __flag(ensure_str(b(x).decode("utf16")))
+    except (UnicodeDecodeError, UnicodeEncodeError):
+        return __flag(x)
+stopfunc.flag = _flag
+
+
+def __guess(input, stop_func, depth, max_depth, codecs, result, found=(), exclude=()):
     """ Perform a breadth-first tree search using a ranking logic to select and prune the list of codecs. """
     if depth > 0 and stop_func(input):
         result.append((input, found))
         return
     if depth >= max_depth or len(result) > 0:
         return
+    # format 1: when 'exclude' is a string, take it as the only encoding to be excluded at any depth
+    if isinstance(exclude, string_types):
+        e = (exclude, )
+    # format 2: when 'exclude' is a tuple, consider it as the encodings to be excluded at any depth
+    elif isinstance(exclude, tuple):
+        e = exclude
+    # format 3: when 'exclude' is a list, consider it as the list of tuples of encodings to be exlucded with the order
+    #            number corresponding to the applicable depth
+    elif isinstance(exclude, list):
+        try:
+            e = exclude[depth]
+            if e is None:
+                e = ()
+            elif isinstance(e, string_types):
+                e = (e, )
+        except IndexError:
+            e = ()
+    else:
+        raise ValueError("Bad exclude format %s" % exclude)
     for new_input, encoding in __rank(input, codecs):
+        if encoding in e:
+            continue
         __guess(new_input, stop_func, depth+1, max_depth, codecs, result, found + (encoding, ))
 
 
@@ -874,7 +924,7 @@ def __score(input, codec):
         yield score, new_input, encoding
 
 
-def guess(input, stop_func=is_printable, max_depth=5, codec_categories=None, found=()):
+def guess(input, stop_func=stopfunc.printables, max_depth=5, codec_categories=None, found=(), exclude=None):
     """ Try decoding without the knowledge of the encoding(s). """
     if max_depth <= 0:
         raise ValueError("Depth must be a non-null positive integer")
@@ -893,7 +943,7 @@ def guess(input, stop_func=is_printable, max_depth=5, codec_categories=None, fou
     if len(input) > 0:
         result = []
         for d in range(max_depth):
-            __guess(input, stop_func, 0, d+1, codecs, result, tuple(found))
+            __guess(input, stop_func, 0, d+1, codecs, result, tuple(found), exclude or [])
             if len(result) > 0:
                 return result[0]
     return None, None
