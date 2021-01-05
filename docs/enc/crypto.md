@@ -54,18 +54,18 @@ This codec implements the Affine monoalphabetic substitution cipher. It is param
 
 ### Atbash Cipher
 
-It implements the monoalphabetic substitution cipher used for the Hebrew alphabet. By default, it considers the lowercase and uppercase letters and the whitespace for the alphabet. It can also use a mask to extend it.
+It implements the monoalphabetic substitution cipher used for the Hebrew alphabet. By default, it considers the lowercase and uppercase letters, inverted per group, as the alphabet. It can also use a mask to extend it. Note that it does not generate any error for characters that are not part of the alphabet.
 
 **Codec** | **Conversions** | **Aliases** | **Comment**
 :---: | :---: | --- | ---
-`atbash` | text <-> Atbash ciphertext | `atbash`, `atbash_cipher-?l?d?s`, ... | Mask-generated alphabet ; uses default mask "`?l?u?s`"
+`atbash` | text <-> Atbash ciphertext | `atbash`, `atbash_cipher-?l?d?s`, ... | Mask-generated alphabet ; uses default mask "`?u?l`"
 
 ```python
 >>> codext.encode("this is a test", "atbash")
-'HTSIaSIa aHWIH'
->>> codext.encode("this is a test", "atbash-?l?u?p?s")
+'gsrh rh z gvhg'
+>>> codext.encode("this is a test", "atbash-[?l?u?p?s]")
 '.^]/a]/a a.{/.'
->>> codext.decode(".^]/a]/a a.{/.", "atbash_cipher_?l?u?p?s")
+>>> codext.decode(".^]/a]/a a.{/.", "atbash_cipher_[?l?u?p?s]")
 'this is a test'
 ```
 
