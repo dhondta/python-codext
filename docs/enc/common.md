@@ -2,6 +2,23 @@
 
 -----
 
+### A1Z26
+
+This simple codec converts letters to their order number in the alphabet using a separator between characters and keeping words separated by a whitespace. It is similar to the [`consonant-vowel-indices`](others.html#letter-indices) encoding.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`a1z26` | text <-> alphabet order numbers | `a1z26`, `a1z26-/`, `a1z26-,`, ... | this codec does not preserve the case and is dynamic (separator of characters in each word can be customized among these: "`-_/|,;:*`")
+
+```python
+>>> codext.encode("This is a test", "a1z26")
+'20-8-9-19 9-19 1 20-5-19-20'
+>>> codext.decode("20-8-9-19 9-19 1 20-5-19-20", "a1z26")
+'this is a test'
+```
+
+-----
+
 ### Octal
 
 This simple codec converts characters into their octal values.

@@ -165,6 +165,7 @@ o
 
 **Codec** | **Conversions** | **Comment**
 :---: | :---: | ---
+`a1z26` | text <-> alphabet order numbers | keeps words whitespace-separated and uses a custom character separator
 `affine` | text <-> affine ciphertext | aka Affine Cipher
 `ascii85` | text <-> ascii85 encoded text | Python 3 only
 `atbash` | text <-> Atbash ciphertext | aka Atbash Cipher

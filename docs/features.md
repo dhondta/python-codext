@@ -302,7 +302,7 @@ In the second example, we can see that the given encoded string is not decoded a
 ('This is a test', ('base62', 'base64'))
 ```
 
-Instead of a string, we can also pass a function. For this purpose, standard stop functions are predefined in the `stopfunc` submodule. So, we can for instance use `stopfunc.lang_en` to stop when we find something that is English (only works if [`langdetect`](https://pypi.org/project/langdetect/) is installed). Note that working this way gives lots of false positives if the text is very short like in the example case. That's why the `codec_categories` argument is used to only consider baseX codecs. This is also demonstrated in the next examples.
+Instead of a string, we can also pass a function. For this purpose, standard stop functions are predefined in the `stopfunc` submodule. So, we can for instance use `stopfunc.lang_en` to stop when we find something that is English (only works if [`langdetect`](https://pypi.org/project/langdetect/) is installed, which is willingly NOT in the requirements of this package). Note that working this way gives lots of false positives if the text is very short like in the example case. That's why the `codec_categories` argument is used to only consider baseX codecs. This is also demonstrated in the next examples.
 
 ```python
 >>> codext.guess("CJG3Ix8bVcSRMLOqwDUg28aDsT7", codext.stopfunc.lang_en, codec_categories="base")
@@ -332,6 +332,8 @@ Another example of 2-stages encoded string:
 ('this is a test', ('base64', 'morse'))
 ```
 
+When multiple results are expected, `stop` and `show` arguments can be used respectively to avoid stopping while finding a result and to display the intermediate result.
+
 !!! warning "Computation time"
     
     Note that, in the very last examples, the first call takes much longer than the second one but requires no knowledge about the possible [categories](#list-codecs) of encodings.
@@ -341,7 +343,7 @@ Another example of 2-stages encoded string:
     Currently, a few standard stop functions are provided with the `stopfunc` submodule:
     
     - `flag`:       searches for the pattern "`[Ff][Ll1][Aa4@][Gg9]`" (either UTF-8 or UTF-16)
-    - `lang_**`:    checks if the given lang (any from the [`PROFILES_DIRECTORY`](https://github.com/Mimino666/langdetect/tree/master/langdetect/profiles) of the [`langdetect` module](https://github.com/Mimino666/langdetect)) is detected (note that it first checks if all characters are printable)
+    - `lang_**`:    checks if the given lang (any from the [`PROFILES_DIRECTORY`](https://github.com/Mimino666/langdetect/tree/master/langdetect/profiles) of the [`langdetect` module](https://github.com/Mimino666/langdetect) if it is installed) is detected (note that it first checks if all characters are printable)
     - `printables`: checks that every output character is in the set of printables
 
 -----
