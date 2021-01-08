@@ -7,10 +7,8 @@ These codecs:
 - decode file content to str (read)
 - encode file content from str to bytes (write)
 """
-from string import ascii_lowercase as lower, ascii_uppercase as upper, digits
-
 from ..__common__ import *
-from ._base import base, base_generic
+from ._base import base, base_generic, digits, lower, upper
 from ._base2n import base2n
 
 

@@ -10,6 +10,7 @@ This codec:
 from string import ascii_lowercase as lower, ascii_uppercase as upper, digits
 
 from ..__common__ import *
+from ._base import digits, lower, upper
 
 # no __examples__ ; handled manually in tests/test_base.py
 __guess__    = ["base91", "base91-inv"]
@@ -28,7 +29,7 @@ __ord = lambda c: ord(c) if not isinstance(c, int) else c
 class Base91DecodeError(ValueError):
     pass
 
-    
+
 def base91_encode(mode):
     b91 = B91[["inv", ""][mode == ""]]
     def encode(text, errors="strict"):

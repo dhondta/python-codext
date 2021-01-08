@@ -4,7 +4,7 @@
 """
 from math import log
 from six import integer_types, string_types
-from string import printable
+from string import ascii_lowercase as lower, ascii_uppercase as upper, digits, printable
 from types import FunctionType
 
 from ..__common__ import *
