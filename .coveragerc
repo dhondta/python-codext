@@ -10,6 +10,7 @@ exclude_lines =
     if.*?__name__.*?==.*?.__main__.:
     def main\(\)\:
     def __stdin_pipe\(\)\:
+    def __literal_eval\(o\)\:
     except ImportError:
     except NameError:
     raise NotImplementedError

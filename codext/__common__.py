@@ -57,9 +57,8 @@ s2i = lambda s: int(codecs.encode(s, "base16"), 16)
 
 
 def add(ename, encode=None, decode=None, pattern=None, text=True, add_to_codecs=False, **kwargs):
-    """
-    This adds a new codec to the codecs module setting its encode and/or decode functions, eventually dynamically naming
-     the encoding with a pattern and with file handling.
+    """ This adds a new codec to the codecs module setting its encode and/or decode functions, eventually dynamically
+         naming the encoding with a pattern and with file handling.
     
     :param ename:         encoding name
     :param encode:        encoding function or None
@@ -165,10 +164,9 @@ def add(ename, encode=None, decode=None, pattern=None, text=True, add_to_codecs=
 
 
 def add_map(ename, encmap, repl_char="?", sep="", ignore_case=None, no_error=False, intype=None, outype=None, **kwargs):
-    """
-    This adds a new mapping codec (that is, declarable with a simple character mapping dictionary) to the codecs module
-     dynamically setting its encode and/or decode functions, eventually dynamically naming the encoding with a pattern
-     and with file handling (if text is True).
+    """ This adds a new mapping codec (that is, declarable with a simple character mapping dictionary) to the codecs
+         module dynamically setting its encode and/or decode functions, eventually dynamically naming the encoding with
+         a pattern and with file handling (if text is True).
     
     :param ename:         encoding name
     :param encmap:        characters encoding map ; can be a dictionary of encoding maps (for use with the first capture
@@ -197,11 +195,10 @@ def add_map(ename, encmap, repl_char="?", sep="", ignore_case=None, no_error=Fal
     
     def __generic_code(decode=False):
         def _wrapper(param):
-            """
-            The parameter for wrapping comes from the encoding regex pattern ; e.g.
-                [no pattern]           => param will be None everytime
-                r"barbie[-_]?([1-4])$" => param could be int 1, 2, 3 or 4
-                r"^morse(|[-_]?.{3})$" => param could be None, "-ABC" (for mapping to ".-/")
+            """ The parameter for wrapping comes from the encoding regex pattern ; e.g.
+                 [no pattern]           => param will be None everytime
+                 r"barbie[-_]?([1-4])$" => param could be int 1, 2, 3 or 4
+                 r"^morse(|[-_]?.{3})$" => param could be None, "-ABC" (for mapping to ".-/")
             
             In order of precedence:
             1. when param is a key in mapdict or mapdict is a list of encoding maps (hence in the case of "barbie...",
@@ -544,7 +541,7 @@ def ensure_str(s, encoding='utf-8', errors='strict'):
 # make conversion functions compatible with input/output strings/bytes
 def fix_inout_formats(f):
     """ This decorator ensures that the first output of f will have the same text format as the first input (str or
-     bytes). """
+         bytes). """
     @wraps(f)
     def _wrapper(*args, **kwargs):
         a0 = args[0]
@@ -562,7 +559,7 @@ def fix_inout_formats(f):
 # alphabet generation function from a given mask
 def get_alphabet_from_mask(mask):
     """ This function generates an alphabet from the given mask. The style used is similar to Hashcat ; group keys are
-     marked with a heading "?". """
+         marked with a heading "?". """
     i, alphabet = 0, ""
     while i < len(mask):
         c = mask[i]
@@ -579,8 +576,7 @@ def get_alphabet_from_mask(mask):
 
 # generic error handling function
 def handle_error(ename, errors, sep="", repl_char="?", repl_minlen=1, decode=False, item="position"):
-    """
-    This shortcut function allows to handle error modes given some tuning parameters.
+    """ This shortcut function allows to handle error modes given some tuning parameters.
     
     :param ename:       encoding name
     :param errors:      error handling mode
@@ -597,8 +593,7 @@ def handle_error(ename, errors, sep="", repl_char="?", repl_minlen=1, decode=Fal
     exec("class %s(ValueError): pass" % exc, glob)
     
     def _handle_error(token, position):
-        """
-        This handles an encoding/decoding error according to the selected handling mode.
+        """ This handles an encoding/decoding error according to the selected handling mode.
         
         :param token:    input token to be encoded/decoded
         :param position: token position index
@@ -661,9 +656,8 @@ codecs.lookup = lookup
 
 
 def register(search_function, add_to_codecs=False):
-    """
-    Register function for registering new codecs in the local registry of this module and, if required, in the native
-     codecs registry (for use with the built-in 'open' function).
+    """ Register function for registering new codecs in the local registry of this module and, if required, in the
+         native codecs registry (for use with the built-in 'open' function).
     
     :param search_function: search function for the codecs registry
     :param add_to_codecs:   also add the search function to the native registry
@@ -862,36 +856,43 @@ def _flag(x):
 stopfunc.flag = _flag
 
 
-def __guess(input, stop_func, depth, max_depth, codecs, result, found=(), exclude=()):
+def __guess(input, stop_func, depth, max_depth, codec_categories, exclude, result, found=(), stop=True, show=False):
     """ Perform a breadth-first tree search using a ranking logic to select and prune the list of codecs. """
     if depth > 0 and stop_func(input):
+        if not stop and show:
+            s = "[*] %s: %s" % (", ".join(found), ensure_str(input))
+            print(s if len(s) <= 80 else s[:77] + "...")
         result.append((input, found))
         return
     if depth >= max_depth or len(result) > 0:
         return
-    # format 1: when 'exclude' is a string, take it as the only encoding to be excluded at any depth
-    if isinstance(exclude, string_types):
-        e = (exclude, )
-    # format 2: when 'exclude' is a tuple, consider it as the encodings to be excluded at any depth
-    elif isinstance(exclude, tuple):
-        e = exclude
-    # format 3: when 'exclude' is a list, consider it as the list of tuples of encodings to be exlucded with the order
-    #            number corresponding to the applicable depth
-    elif isinstance(exclude, list):
-        try:
-            e = exclude[depth]
-            if e is None:
-                e = ()
-            elif isinstance(e, string_types):
-                e = (e, )
-        except IndexError:
-            e = ()
-    else:
-        raise ValueError("Bad exclude format %s" % exclude)
-    for new_input, encoding in __rank(input, codecs):
+    # compute included and excluded codecs for this depth
+    def __expand(items, descr=None, transform=None):
+        # format 1: when string, take it as the only items at any depth
+        if isinstance(items, string_types):
+            r = (items, )
+        # format 2: when tuple, consider it as a list of items at any depth
+        elif isinstance(items, tuple):
+            r = items
+        # format 3: when list, consider it as the list of tuples of items with the order number corresponding to the
+        #            applicable depth
+        elif isinstance(items, list):
+            try:
+                r = items[depth] or ()
+                if isinstance(r, string_types):
+                    r = (r, )
+            except IndexError:
+                r = ()
+        else:
+            raise ValueError("Bad %sformat %s" % (["%s " % descr, ""][descr is None], items))
+        return r if transform is None else transform(*r)
+    # parse valid encodings, expanding included/excluded codecs
+    c, e = __expand(codec_categories, "codec_categories", list_encodings), __expand(exclude, "exclude")
+    for new_input, encoding in __rank(input, c):
         if encoding in e:
             continue
-        __guess(new_input, stop_func, depth+1, max_depth, codecs, result, found + (encoding, ))
+        __guess(new_input, stop_func, depth+1, max_depth, codec_categories, exclude, result, found + (encoding, ), stop,
+                show)
 
 
 def __rank(input, codecs):
@@ -924,7 +925,8 @@ def __score(input, codec):
         yield score, new_input, encoding
 
 
-def guess(input, stop_func=stopfunc.printables, max_depth=5, codec_categories=None, found=(), exclude=None):
+def guess(input, stop_func=stopfunc.printables, max_depth=5, codec_categories=None, exclude=None, found=(), stop=True,
+          show=False):
     """ Try decoding without the knowledge of the encoding(s). """
     if max_depth <= 0:
         raise ValueError("Depth must be a non-null positive integer")
@@ -934,18 +936,12 @@ def guess(input, stop_func=stopfunc.printables, max_depth=5, codec_categories=No
     if isinstance(stop_func, string_types):
         p = stop_func
         stop_func = lambda s: re.search(ensure_str(p).lower(), ensure_str(s).lower()) is not None
-    if codec_categories is None:
-        codecs = list_encodings()
-    elif isinstance(codec_categories, string_types):
-        codecs = list_encodings(codec_categories)
-    elif isinstance(codec_categories, (tuple, list, set)):
-        codecs = list_encodings(*codec_categories)
     if len(input) > 0:
         result = []
         for d in range(max_depth):
-            __guess(input, stop_func, 0, d+1, codecs, result, tuple(found), exclude or [])
-            if len(result) > 0:
-                return result[0]
-    return None, None
+            __guess(input, stop_func, 0, d+1, codec_categories or [], exclude or [], result, tuple(found), stop, show)
+            if stop and len(result) > 0:
+                return result
+    return result
 codecs.guess = guess
 

@@ -3,6 +3,7 @@
 
 """
 from __future__ import print_function
+from ast import literal_eval
 from six import b, binary_type, text_type
 
 from .__common__ import *
@@ -21,6 +22,14 @@ list = list_encodings  # not included in __all__ because of shadow name
 
 
 reset()
+
+
+def __literal_eval(o):
+    """ Non-failing ast.literal_eval alias function. """
+    try:
+        return literal_eval(str(o))
+    except ValueError:
+        return literal_eval("'" + str(o) + "'")
 
 
 def __stdin_pipe():
@@ -69,8 +78,12 @@ def main():
                         help="error handling")
     guess = sparsers.add_parser("guess", help="try guessing the decoding codecs")
     guess.add_argument("encoding", nargs="*", help="list of known encodings to apply")
-    guess.add_argument("-c", "--category", choices=list_categories(), nargs="*", help="codec categories to search in")
+    guess.add_argument("-c", "--codec-categories", help="codec categories to be included in the search\n"
+                       "format: string|tuple|list(strings|tuples) ; see the documentation")
     guess.add_argument("-d", "--depth", default=3, type=int, help="maximum codec search depth")
+    guess.add_argument("-e", "--exclude-codecs", help="codecs to be explicitely not used\n"
+                       "format: string|tuple|list(strings|tuples) ; see the documentation")
+    guess.add_argument("-s", "--do-not-stop", action="store_true", help="do not stop if a valid output is found")
     search = sparsers.add_parser("search", help="search for codecs")
     search.add_argument("pattern", nargs="+", help="encoding pattern to search")
     args = parser.parse_args()
@@ -95,14 +108,24 @@ def main():
         # encode or decode
         for encoding in args.encoding:
             c = getattr(codecs, ["encode", "decode"][args.command == "decode"])(c, encoding, args.errors)
+        # handle output file or stdout
+        if args.outfile:
+            with open(args.outfile, 'wb') as f:
+                f.write(c)
+        else:
+            print(ensure_str(c or "Could not decode :-("), end="")
     elif args.command == "guess":
-        c, e = codecs.guess(c, max_depth=args.depth, codec_categories=args.category, found=args.encoding)
-        if len(e) > 0:
-            print("Codecs: %s" % ", ".join(e))
-    # handle output file or stdout
-    if args.outfile:
-        with open(args.outfile, 'wb') as f:
-            f.write(c)
-    else:
-        print(ensure_str(c or "Could not decode :-("), end="")
+        l = [o for o in codecs.guess(c, stopfunc.printables, args.depth, __literal_eval(args.codec_categories),
+                                     __literal_eval(args.exclude_codecs), args.encoding, not args.do_not_stop, True)]
+        for i, o in enumerate(l):
+            out, e = o
+            if len(e) > 0:
+                if args.outfile:
+                    n, ext = os.path.splitext(args.outfile)
+                    fn = args.outfile if len(l) == 1 else "%s-%d%s" % (n, i+1, ext)
+                else:
+                    print("Codecs: %s" % ", ".join(e))
+                    print(ensure_str(out), end="")
+        if len(l) == 0:
+            print("Could not decode :-(")
 

@@ -130,20 +130,20 @@ class TestCommon(TestCase):
     def test_guess_decode(self):
         codext.reset()
         STR = "This is a test"
-        self.assertEqual(STR, codext.guess("VGhpcyBpcyBhIHRlc3Q=", "a test", 1)[0])
-        self.assertEqual(STR, codext.guess("CJG3Ix8bVcSRMLOqwDUg28aDsT7", "a test", found=["base62"])[0])
+        self.assertEqual(STR, codext.guess("VGhpcyBpcyBhIHRlc3Q=", "a test", 1)[0][0])
+        self.assertEqual(STR, codext.guess("CJG3Ix8bVcSRMLOqwDUg28aDsT7", "a test", found=["base62"])[0][0])
         if hasattr(codext.stopfunc, "lang_en"):
             f = codext.stopfunc.lang_en
-            self.assertEqual(STR, codext.guess("CJG3Ix8bVcSRMLOqwDUg28aDsT7", f, found=["base62"])[0])
-            self.assertIsNotNone(codext.guess("CJG3Ix8bVcSRMLOqwDUg28aDsT7", f, max_depth=1)[0])
-        self.assertEqual(STR, codext.guess("VGhpcyBpcyBhIHRlc3Q=", "a test", 1, "base", exclude=["base100"])[0])
-        self.assertEqual(STR, codext.guess("VGhpcyBpcyBhIHRlc3Q=", "a test", 1, ["base", "crypto"])[0])
-        self.assertIsNone(codext.guess("NOT THE ENCODED TEST STRING", "a test", 1, exclude=[None])[0])
-        self.assertIn("F1@9", codext.guess("VGVzdCBGMUA5ICE=", codext.stopfunc.flag, 1)[0])
-        self.assertIsNone(codext.guess("VGhpcyBpcyBhIHRlc3Q=", " a test", 1, codec_categories="base",
-                                       exclude="base64")[0])
-        self.assertIsNone(codext.guess("VGhpcyBpcyBhIHRlc3Q=", " a test", 1, codec_categories="base",
-                                       exclude=("base64", "atbash"))[0])
+            self.assertEqual(STR, codext.guess("CJG3Ix8bVcSRMLOqwDUg28aDsT7", f, found=["base62"])[0][0])
+            self.assertIsNotNone(codext.guess("CJG3Ix8bVcSRMLOqwDUg28aDsT7", f, max_depth=1)[0][0])
+        self.assertEqual(STR, codext.guess("VGhpcyBpcyBhIHRlc3Q=", "a test", 1, "base", exclude=["base100"])[0][0])
+        self.assertEqual(STR, codext.guess("VGhpcyBpcyBhIHRlc3Q=", "a test", 1, ["base", "crypto"])[0][0])
+        self.assertEqual(len(codext.guess("NOT THE ENCODED TEST STRING", "a test", 1, exclude=[None])), 0)
+        self.assertIn("F1@9", codext.guess("VGVzdCBGMUA5ICE=", codext.stopfunc.flag, 1, stop=False, show=True)[0][0])
+        self.assertEqual(len(codext.guess("VGhpcyBpcyBhIHRlc3Q=", " a test", 1, codec_categories="base",
+                                          exclude="base64")), 0)
+        self.assertEqual(len(codext.guess("VGhpcyBpcyBhIHRlc3Q=", " a test", 1, codec_categories="base",
+                                          exclude=("base64", "atbash"))), 0)
         self.assertRaises(ValueError, codext.guess, STR, max_depth=0)
         self.assertRaises(ValueError, codext.guess, STR, exclude=42)
         for c in ["base", "language", "native", "stegano"]:
@@ -159,15 +159,14 @@ class TestCommon(TestCase):
                         enc = codext.encode(b(STR), encoding)
                     if codext.decode(enc, encoding) == STR:
                         continue
-                    found_dec, found_encodings = codext.guess(enc, "a test", 1, [c])
-                    print(encoding, found_encodings)
-                    self.assertEqual(ensure_str(STR).lower(), ensure_str(found_dec).lower())
-                    if c != "base":
-                        # do not check for base as the guessed encoding name can be different, e.g.:
-                        #  actual:  base2
-                        #  guessed: base2-generic
-                        if "-icase" in encoding:
-                            self.assertEqual(encoding.lower(), found_encodings[0].lower())
-                        else:
-                            self.assertEqual(encoding, found_encodings[0])
+                    for found_dec, found_encodings in codext.guess(enc, "a test", 1, [c]):
+                        self.assertEqual(ensure_str(STR).lower(), ensure_str(found_dec).lower())
+                        if c != "base":
+                            # do not check for base as the guessed encoding name can be different, e.g.:
+                            #  actual:  base2
+                            #  guessed: base2-generic
+                            if "-icase" in encoding:
+                                self.assertEqual(encoding.lower(), found_encodings[0].lower())
+                            else:
+                                self.assertEqual(encoding, found_encodings[0])
 
