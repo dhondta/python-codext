@@ -21,6 +21,23 @@ It supports letters, digits and some special characters.
 
 -----
 
+### Ipsum
+
+This implements a codec that uses lorem ipsum words. It selects random words per letter and keeps the following punctuations: "`.,:;+=-*/\\`".
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`ipsum` | text <-> latin words | `loremipsum`, `lorem-ipsum` | words from the classical lorem ipsum
+
+```python
+>>> codext.encode("This is a test.", "ipsum")
+'Torquent hystericus id sit  interdum sit  aliquam  tempor erat scelerisque taciti.'
+>>> codext.decode("Torquent hystericus id sit  interdum sit  aliquam  tempor erat scelerisque taciti.", "lorem-ipsum")
+'This is a test.'
+```
+
+-----
+
 ### Leetspeak
 
 This implements a very basic ruleset of elite speaking.

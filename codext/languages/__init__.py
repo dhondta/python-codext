@@ -1,5 +1,6 @@
 # -*- coding: UTF-8 -*-
 from .braille import *
+from .ipsum import *
 from .leetspeak import *
 from .morse import *
 from .navajo import *
