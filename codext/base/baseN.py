@@ -38,9 +38,9 @@ B32 = {
     r'(?:[-_]ext(?:ended)?)?[-_]hex$': digits + upper[:22],
     r'[-_]geohash':                    digits + "bcdefghjkmnpqrstuvwxyz",
 }
-base2n(B32, r"^base[-_]?32(|[-_]inv(?:erted)?|(?:[-_]ext(?:ended)?)?[-_]hex|[-_]geohash)$")
+base2n(B32, r"^base[-_]?32(|[-_]inv(?:erted)?|(?:[-_]ext(?:ended)?)?[-_]hex|[-_]geohash)$", padding_char="=")
 ZB32 = {'': "ybndrfg8ejkmcpqxot1uwisza345h769"}
-base2n(ZB32, r"^z[-_]?base[-_]?32$", name="zbase32")
+base2n(ZB32, r"^z[-_]?base[-_]?32$", name="zbase32", padding_char="=")
 
 
 B36 = {'': digits + upper, 'inv': upper + digits}
@@ -64,7 +64,7 @@ B64 = {
     r'[-_]inv(erted)?$':        lower + upper + digits + "+/",
     r'[-_]?(file|url)(safe)?$': upper + lower + digits + "-_",
 }
-base2n(B64, r"^base[-_]?64(|[-_]inv(?:erted)?|[-_]?(?:file|url)(?:safe)?)$")
+base2n(B64, r"^base[-_]?64(|[-_]inv(?:erted)?|[-_]?(?:file|url)(?:safe)?)$", padding_char="=")
 
 
 # generic base encodings, to be added after all others as they have the precedence

@@ -31,5 +31,5 @@ ENCMAP = {
 }
 
 
-add_map("bacon", ENCMAP, ignore_case="both", pattern=r"bacon(?:(?:ian)?[-_]cipher)?([\-_].{2})?$")
+add_map("bacon", ENCMAP, ignore_case="both", pattern=r"bacon(?:(?:ian)?[-_]cipher)?([\-_].{2})?$", printables_rate=1.)
 

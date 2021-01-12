@@ -46,5 +46,5 @@ def rot_decode(i):
     return decode
 
 
-add("rot", rot_encode, rot_decode, r"(?:caesar|rot)[-_]?([1-9]|1[0-9]|2[0-5]|47)$")
+add("rot", rot_encode, rot_decode, r"(?:caesar|rot)[-_]?([1-9]|1[0-9]|2[0-5]|47)$", printables_rate=lambda pr: pr)
 

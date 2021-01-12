@@ -10,6 +10,7 @@ from functools import reduce, wraps
 from importlib import import_module
 from inspect import currentframe
 from itertools import chain, product
+from math import log
 from six import binary_type, string_types, text_type, BytesIO
 from string import *
 from types import FunctionType, ModuleType
@@ -156,6 +157,11 @@ def add(ename, encode=None, decode=None, pattern=None, text=True, add_to_codecs=
         ci.parameters['examples'] = kwargs.get('examples', glob.get('__examples__'))
         ci.parameters['guess'] = kwargs.get('guess', glob.get('__guess__', [ename]))
         ci.parameters['module'] = kwargs.get('module', glob.get('__name__'))
+        ci.parameters.setdefault("scoring", {})
+        for attr in ["entropy", "len_charset", "printables_rate", "padding_char"]:
+            a = kwargs.get(attr)
+            if a is not None:
+                ci.parameters['scoring'][attr] = a
         return ci
     
     getregentry.__name__ = re.sub(r"[\s\-]", "_", ename)
@@ -838,6 +844,7 @@ stopfunc = ModuleType("stopfunc", """
     - `printables`: checks that every output character is in the set of printables
 """)
 stopfunc.printables = lambda s: all(c in printable for c in ensure_str(s))
+stopfunc.regex      = lambda p: lambda s: re.search(p, ensure_str(s), re.I) is not None
 
 try:
     from langdetect import detect, PROFILES_DIRECTORY
@@ -847,7 +854,7 @@ except ImportError:
     pass
 
 
-__flag = lambda x: re.search(r"[Ff][Ll1][Aa4@][Gg9]", x) is not None
+__flag = lambda x: re.search(r"[Ff][Ll1][Aa4@][Gg96]", x) is not None
 def _flag(x):
     try:
         return __flag(ensure_str(b(x).decode("utf16")))
@@ -856,7 +863,8 @@ def _flag(x):
 stopfunc.flag = _flag
 
 
-def __guess(input, stop_func, depth, max_depth, codec_categories, exclude, result, found=(), stop=True, show=False):
+def __guess(prev_input, input, stop_func, depth, max_depth, codec_categories, exclude, result, found=(), stop=True,
+            show=False, extended=False):
     """ Perform a breadth-first tree search using a ranking logic to select and prune the list of codecs. """
     if depth > 0 and stop_func(input):
         if not stop and show:
@@ -867,7 +875,8 @@ def __guess(input, stop_func, depth, max_depth, codec_categories, exclude, resul
     if depth >= max_depth or len(result) > 0:
         return
     # compute included and excluded codecs for this depth
-    def __expand(items, descr=None, transform=None):
+    def expand(items, descr=None, transform=None):
+        items = items or []
         # format 1: when string, take it as the only items at any depth
         if isinstance(items, string_types):
             r = (items, )
@@ -887,46 +896,103 @@ def __guess(input, stop_func, depth, max_depth, codec_categories, exclude, resul
             raise ValueError("Bad %sformat %s" % (["%s " % descr, ""][descr is None], items))
         return r if transform is None else transform(*r)
     # parse valid encodings, expanding included/excluded codecs
-    c, e = __expand(codec_categories, "codec_categories", list_encodings), __expand(exclude, "exclude")
-    for new_input, encoding in __rank(input, c):
+    c, e = expand(codec_categories, "codec_categories", list_encodings), expand(exclude, "exclude")
+    for new_input, encoding in __rank(prev_input, input, c, extended):
         if encoding in e:
             continue
-        __guess(new_input, stop_func, depth+1, max_depth, codec_categories, exclude, result, found + (encoding, ), stop,
-                show)
+        __guess(input, new_input, stop_func, depth+1, max_depth, codec_categories, exclude, result,
+                found + (encoding, ), stop, show, extended)
 
 
-def __rank(input, codecs):
+def __rank(prev_input, input, codecs, extended=False):
     """ Filter valid encodings and rank them by relevance. """
     ranking = {}
     for codec in codecs:
-        for score, new_input, encoding in __score(input, codec):
-            if score is not None:
-                ranking[encoding] = (score, new_input)
+        for score, new_input, encoding in __score(prev_input, input, codec, extended):
+            ranking[encoding] = (score, new_input)
     for encoding, result in sorted(ranking.items(), key=lambda x: -x[1][0]):
         yield result[1], encoding
 
 
-def __score(input, codec):
+class _Text(object):
+    def __init__(self, text, pad_char=None):
+        self.len = len(text)
+        self.lcharset = len(set(text))
+        self.padding = pad_char is not None and text[-1] in [pad_char, b(pad_char)]
+        self.printables = float(len([c for c in text if (chr(c) if isinstance(c, int) else c) in printable])) / self.len
+        self.entropy = entropy(text)
+
+
+def __score(prev_input, input, codec, extended=False):
     """ Score relevant encodings given an input. """
-    for encoding in lookup(codec).parameters.get('guess', [codec]):
+    obj, ci = None, lookup(codec)  # NB: lookup(...) won't fail as the codec value comes from list_encodings(...)
+    for encoding in ci.parameters.get('guess', [codec]):
+        # ignore encodings that fail to decode with their default errors handling value
         try:
             new_input = decode(input, encoding)
         except:
             continue
-        # ignore encodings that give an output identical to the input (identity transformation)
-        if b(input) == b(new_input):
+        # ignore encodings that give an output identical to the input (identity transformation) or to the previous input
+        if b(input) == b(new_input) or b(prev_input) == b(new_input):
             continue
-        score = 1.0
-        #FIXME: score the input/new_input to establish priorities of the depth-first search
-        #This could rely on a series of weighted features:
-        #- is input's length within a given interval (e.g. (1, 65) for base64)
-        #- is input's length within a given interval of possible maximum lengths (e.g. (64, 65) for base64)
-        #- is input's entropy within a given interval
-        yield score, new_input, encoding
+        # compute input's characteristics only once and only if the control flow reaches this point
+        pad = ci.parameters.get('scoring', {}).get('padding_char')
+        if obj is None:
+            obj = _Text(input, pad)
+        # from here, the goal (e.g. if the input is Base32) is to rank candidate encodings (e.g. multiple base codecs)
+        #  so that we can put the right one as early as possible and eventually exclude bad candidates
+        s = .0
+        # first, apply a bonus if the length of input text's charset is exactly the same as encoding's charset ;
+        #  on the contrary, if the length of input text's charset is strictly greater, give a penalty
+        lcs = ci.parameters.get('scoring', {}).get('len_charset', 256)
+        if isinstance(lcs, type(lambda: None)):
+            lcs = int(lcs(encoding))
+        if (pad and obj.padding and lcs + 1 == obj.lcharset) or lcs == obj.lcharset:
+            s += .3
+        elif (pad and obj.padding and lcs + 1 < obj.lcharset) or lcs < obj.lcharset:
+            s -= .2  # this can occur for encodings with no_error set to True
+        # then, take padding into account, giving a bonus if padding is to be encountered and effectively present, or a
+        #  penalty when it should not be encountered but it is present
+        if pad and obj.padding:
+            s += .2  # when padding is encountered while it is legitimate, it could be a good indication => good bonus
+        elif not pad and obj.padding:
+            s -= .1  # it could arise that a padding character is encountered while not being padding => small penalty
+        # give a bonus when the rate of printable characters is greater or equal than expected and a penalty when lower
+        #  only for codecs that tolerate errors (otherwise, the printables rate can be biased)
+        if not ci.parameters.get('no_error', False):
+            pr = ci.parameters.get('scoring', {}).get('printables_rate', 0)
+            if isinstance(pr, type(lambda: None)):
+                pr = float(pr(obj.printables))
+            if obj.printables - pr <= .05:
+                s += .1
+        # afterwards, if the input text has an entropy close to the expected one, give a bonus weighted on the number of
+        #  input characters to take bad entropies of shorter strings into account
+        entr = ci.parameters.get('entropy', {})
+        entr = entr.get(encoding, entr.get('default')) if isinstance(entr, dict) else entr
+        if isinstance(entr, type(lambda: None)):
+            try:  # this case allows to consider the current encoding name from the current codec
+                entr = entr(obj.entropy, encoding)
+            except TypeError:
+                entr = entr(obj.entropy)
+        if entr is not None:
+            # use a quadratic heuristic to compute a weight for the entropy delta, aligned on (100w, .1) and (200w, 1)
+            d_entr = min(4e-05 * obj.len**2 - .003 * obj.len, 1) * abs(entr - obj.entropy)
+            if d_entr <= .5:
+                s += .5 - d_entr
+        # finally, if relevant, apply a custom bonus (e.g. when a regex pattern is matched)
+        bonus = ci.parameters.get('scoring', {}).get('bonus_func')
+        if bonus is not None:
+            if isinstance(bon, type(lambda: None)):
+                bonus = bonus(obj, ci, encoding)
+            if bonus:
+                s += .2
+        # exclude negative (and eventually null) scores as they are (hopefully) not relevant
+        if extended and s >= .0 or not extended and s > .0:
+            yield s, new_input, encoding
 
 
 def guess(input, stop_func=stopfunc.printables, max_depth=5, codec_categories=None, exclude=None, found=(), stop=True,
-          show=False):
+          show=False, extended=False):
     """ Try decoding without the knowledge of the encoding(s). """
     if max_depth <= 0:
         raise ValueError("Depth must be a non-null positive integer")
@@ -934,12 +1000,11 @@ def guess(input, stop_func=stopfunc.printables, max_depth=5, codec_categories=No
         for encoding in found:
             input = decode(input, encoding)
     if isinstance(stop_func, string_types):
-        p = stop_func
-        stop_func = lambda s: re.search(ensure_str(p).lower(), ensure_str(s).lower()) is not None
+        stop_func = stopfunc.regex(stop_func)
     if len(input) > 0:
         result = []
         for d in range(max_depth):
-            __guess(input, stop_func, 0, d+1, codec_categories or [], exclude or [], result, tuple(found), stop, show)
+            __guess("", input, stop_func, 0, d+1, codec_categories, exclude, result, tuple(found), stop, show, extended)
             if stop and len(result) > 0:
                 return result
     return result

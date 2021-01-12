@@ -24,6 +24,8 @@ ENCMAP1 = {chr(i): oct2(i) for i in range(256)}
 ENCMAP2 = {chr(i): oct2(i).zfill(3) for i in range(256)}
 
 
-add_map("octal-spaced", ENCMAP1, sep=" ", pattern=r"^octals?[-_]spaced$", examples=__examples1__)
-add_map("octal", ENCMAP2, pattern=r"^octals?$", examples=__examples2__)
+add_map("octal-spaced", ENCMAP1, sep=" ", pattern=r"^octals?[-_]spaced$", examples=__examples1__,
+        entropy=lambda e: .07258*e+2.3739, printables_rate=1.)
+add_map("octal", ENCMAP2, pattern=r"^octals?$", examples=__examples2__, entropy=lambda e: .08803*e+2.19498,
+        printables_rate=1.)
 

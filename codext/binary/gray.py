@@ -21,5 +21,5 @@ __examples__ = {
 ENCMAP = {chr(i): chr(i ^ (i >> 1)) for i in range(256)}
 
 
-add_map("gray", ENCMAP, pattern=r"^(?:gray|reflected[-_]bin(?:ary)?)$")
+add_map("gray", ENCMAP, pattern=r"^(?:gray|reflected[-_]bin(?:ary)?)$", entropy=lambda e: e)
 

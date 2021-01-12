@@ -23,8 +23,7 @@ class BaseEncodeError(BaseError):
 
 
 def _generate_charset(n):
-    """
-    Generate a characters set.
+    """ Generate a characters set.
     
     :param n: size of charset
     """
@@ -36,8 +35,7 @@ def _generate_charset(n):
 
 
 def _get_charset(charset, p=""):
-    """
-    Characters set selection function. It allows to define charsets in many different ways.
+    """ Characters set selection function. It allows to define charsets in many different ways.
     
     :param charset: charset object, can be a string (the charset itself), a function (that chooses the right charset
                      depending on the input parameter) or a dictionary (either by exact key or by pattern matching)
@@ -81,8 +79,7 @@ def _get_charset(charset, p=""):
 
 # generic base en/decoding functions
 def base_encode(input, charset, errors="strict", exc=BaseEncodeError):
-    """
-    Base-10 to base-N encoding.
+    """ Base-10 to base-N encoding.
     
     :param input:   input (str or int) to be decoded
     :param charset: base-N characters set
@@ -99,8 +96,7 @@ def base_encode(input, charset, errors="strict", exc=BaseEncodeError):
 
 
 def base_decode(input, charset, errors="strict", exc=BaseDecodeError):
-    """
-    Base-N to base-10 decoding.
+    """ Base-N to base-10 decoding.
     
     :param input:   input to be decoded
     :param charset: base-N characters set
@@ -117,9 +113,8 @@ def base_decode(input, charset, errors="strict", exc=BaseDecodeError):
 
 
 # base codec factory functions
-def base(charset, pattern, pow2=False, encode_template=base_encode, decode_template=base_decode, name=None):
-    """
-    Base-N codec factory.
+def base(charset, pattern, pow2=False, encode_template=base_encode, decode_template=base_decode, name=None, **kwargs):
+    """ Base-N codec factory.
     
     :param charset: charset selection function
     :param pattern: matching pattern for the codec name (first capturing group is used as the parameter for selecting
@@ -143,13 +138,13 @@ def base(charset, pattern, pow2=False, encode_template=base_encode, decode_templ
             return decode_template(input, a, errors), len(input)
         return _decode
     
-    add("base{}".format(n) if name is None else name, encode, decode, pattern)
+    kwargs['len_charset'] = n
+    kwargs['printables_rate'] = 1.
+    add("base{}".format(n) if name is None else name, encode, decode, pattern, entropy=nb, **kwargs)
 
 
 def base_generic():
-    """
-    Base-N generic codec.
-    """
+    """ Base-N generic codec. """
     def encode(n):
         a = _generate_charset(int(n))
         def _encode(input, errors="strict"):
@@ -163,5 +158,6 @@ def base_generic():
         return _decode
     
     add("base", encode, decode, r"^base[-_]?([2-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(?:[-_]generic)?$",
-        guess=["base%d-generic" % i for i in range(2, 255)])
+        guess=["base%d-generic" % i for i in range(2, 255)], entropy=lambda e, n: log(int(n.split("-")[0][4:]), 2),
+        len_charset=lambda n: int(n.split("-")[0][4:]), printables_rate=1.)
 

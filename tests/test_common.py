@@ -169,4 +169,7 @@ class TestCommon(TestCase):
                                 self.assertEqual(encoding.lower(), found_encodings[0].lower())
                             else:
                                 self.assertEqual(encoding, found_encodings[0])
+        txt = "".join(chr(i) for i in range(256))
+        b64 = codext.encode(txt, "base64")
+        self.assertEqual(txt, codext.guess(b64, "0123456789", max_depth=1, codec_categories="base")[0][0])
 

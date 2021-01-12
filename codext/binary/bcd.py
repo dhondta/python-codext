@@ -71,9 +71,10 @@ def bcd_decode(prefix=""):
     return decode
 
 
-add("bcd", bcd_encode(), bcd_decode(), pattern=r"^(?:bcd|binary[-_]coded[-_]decimals?)$", examples=__examples1__)
-add("bcd-extended0", bcd_encode("0000"), bcd_decode("0000"), examples=__examples2__,
+add("bcd", bcd_encode(), bcd_decode(), pattern=r"^(?:bcd|binary[-_]coded[-_]decimals?)$", examples=__examples1__,
+    entropy=lambda e: .45739*e+2.63519, printables_rate=.2)
+add("bcd-extended0", bcd_encode("0000"), bcd_decode("0000"), examples=__examples2__, entropy=lambda e: .13584*e+2.07486,
     pattern=r"^(?:bcd|binary[-_]coded[-_]decimals?)[-_]ext(?:ended)?(?:[-_]?0|[-_]zeros?)$")
-add("bcd-extended1", bcd_encode("1111"), bcd_decode("1111"), examples=__examples3__,
+add("bcd-extended1", bcd_encode("1111"), bcd_decode("1111"), examples=__examples3__, entropy=lambda e: .13584*e+2.07486,
     pattern=r"^(?:bcd|binary[-_]coded[-_]decimals?)[-_]ext(?:ended)?(?:[-_]?1|[-_]ones?)$")
 

@@ -43,7 +43,8 @@ def manchester_decode(clock):
     return decode
 
 
-add("manchester", manchester_encode(0x55), manchester_decode(0x55), examples=__examples1__)
+add("manchester", manchester_encode(0x55), manchester_decode(0x55), examples=__examples1__, printables_rate=.25,
+    entropy=lambda e: .17616*e+2.56229)
 add("manchester-inverted", manchester_encode(0xaa), manchester_decode(0xaa), examples=__examples2__,
-    pattern=r"^(?:manchester-inverted|ethernet|ieee802\.4)$")
+    pattern=r"^(?:manchester-inverted|ethernet|ieee802\.4)$", entropy=lambda e: .17616*e+2.56229)
 

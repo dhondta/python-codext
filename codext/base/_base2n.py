@@ -21,21 +21,19 @@ class Base2NEncodeError(BaseError):
     pass
 
 
-def base2n(charset, pattern=None, name=None):
-    """
-    Base-N codec factory for N a power of 2.
+def base2n(charset, pattern=None, name=None, **kwargs):
+    """ Base-N codec factory for N a power of 2.
     
     :param charset: charset selection function
     :param pattern: matching pattern for the codec name (first capturing group is used as the parameter for selecting
                      the charset)
     :param name:    forced encoding name (useful e.g. for zbase32)
     """
-    base(charset, pattern, True, base2n_encode, base2n_decode, name)
+    base(charset, pattern, True, base2n_encode, base2n_decode, name, **kwargs)
 
 
 def base2n_encode(string, charset, errors="strict", exc=Base2NEncodeError):
-    """
-    8-bits characters to base-N encoding for N a power of 2.
+    """ 8-bits characters to base-N encoding for N a power of 2.
     
     :param string:  string to be decoded
     :param charset: base-N characters set
@@ -67,8 +65,7 @@ def base2n_encode(string, charset, errors="strict", exc=Base2NEncodeError):
 
 
 def base2n_decode(string, charset, errors="strict", exc=Base2NDecodeError):
-    """
-    Base-N to 8-bits characters decoding for N a power of 2.
+    """ Base-N to 8-bits characters decoding for N a power of 2.
     
     :param string:  string to be decoded
     :param charset: base-N characters set

@@ -30,5 +30,5 @@ ENCMAP = {
 }
 
 
-add_map("tom-tom", ENCMAP, ".", " ", ignore_case="both", pattern=r"^tom-?tom([-_]?.{3})?$")
+add_map("tom-tom", ENCMAP, ".", " ", ignore_case="both", pattern=r"^tom-?tom([-_]?.{3})?$", printables_rate=1.)
 

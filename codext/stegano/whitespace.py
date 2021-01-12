@@ -24,7 +24,7 @@ __guess2__ = ["whitespace+after-before", "whitespace-after+before"]
 
 ENCMAP = {r'': {'0': "\t", '1': " "}, r'[-_]inv(erted)?': {'0': " ", '1': "\t"}}
 add_map("whitespace", ENCMAP, intype="bin", pattern=r"^whitespaces?([-_]inv(?:erted)?)?$", examples=__examples1__,
-        guess=__guess1__)
+        guess=__guess1__, entropy=1., printables_rate=1.)
 
 
 def wsba_encode(p):
@@ -63,6 +63,6 @@ def wsba_decode(p):
 
 
 op = r"[+-](?:\d+(?:\.\d+)?[*/])?"
-add("whitespace_after_before", wsba_encode, wsba_decode, guess=__guess2__,
+add("whitespace_after_before", wsba_encode, wsba_decode, guess=__guess2__, entropy=1., printables_rate=1.,
     pattern=r"whitespace("+op+r"before"+op+r"after|"+op+r"after"+op+r"before)$")
 

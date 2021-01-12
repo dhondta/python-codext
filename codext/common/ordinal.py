@@ -22,6 +22,7 @@ ENCMAP1 = {chr(i): str(i) for i in range(256)}
 ENCMAP2 = {chr(i): str(i).zfill(3) for i in range(256)}
 
 
-add_map("ordinal-spaced", ENCMAP1, sep=" ", pattern=r"^ordinals?[-_]spaced$", examples=__examples1__)
-add_map("ordinal", ENCMAP2, pattern=r"^ordinals?$", examples=__examples2__)
+add_map("ordinal-spaced", ENCMAP1, sep=" ", pattern=r"^ordinals?[-_]spaced$", examples=__examples1__, entropy=3.,
+        printables_rate=1.)
+add_map("ordinal", ENCMAP2, pattern=r"^ordinals?$", examples=__examples2__, entropy=3., printables_rate=1.)
 

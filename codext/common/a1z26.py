@@ -56,5 +56,5 @@ def a1z26_decode(sep):
     return decode
 
 
-add("a1z26", a1z26_encode, a1z26_decode, pattern=r"^a1z26(|[-_]|[-_][/|,;:\*])$")
+add("a1z26", a1z26_encode, a1z26_decode, pattern=r"^a1z26(|[-_]|[-_][/|,;:\*])$", printables_rate=1.)
 

@@ -50,5 +50,5 @@ for i in range(4):
     ENCMAP.append(encmap)
 
 
-add_map("barbie", ENCMAP, pattern=r"^barbie[-_]?([1-4])$")
+add_map("barbie", ENCMAP, pattern=r"^barbie[-_]?([1-4])$", printables_rate=lambda pr: .857 * pr)
 

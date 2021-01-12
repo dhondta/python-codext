@@ -47,5 +47,5 @@ def citrix_decode(t):
     return decode
 
 
-add("citrix", citrix_encode, citrix_decode, pattern=r"citrix(|[-_]?(?:ctx)?1)$")
+add("citrix", citrix_encode, citrix_decode, pattern=r"citrix(|[-_]?(?:ctx)?1)$", entropy=4., printables_rate=1.)
 

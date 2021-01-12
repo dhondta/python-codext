@@ -30,5 +30,5 @@ ENCMAP = {
 }
 
 
-add_map("navajo", ENCMAP, ignore_case="both", sep=" ", pattern=r"^navajo$")
+add_map("navajo", ENCMAP, ignore_case="both", sep=" ", pattern=r"^navajo$", printables_rate=1.)
 

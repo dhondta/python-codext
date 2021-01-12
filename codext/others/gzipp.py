@@ -41,5 +41,5 @@ def gzip_decode(data, errors="strict"):
     return r, len(r)
 
 
-add("gzip", gzip_encode, gzip_decode)
+add("gzip", gzip_encode, gzip_decode, entropy=7.9)
 

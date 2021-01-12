@@ -34,5 +34,5 @@ if PY3:
     def base85_decode(input, errors='strict'):
         return base64.b85decode(b(input)), len(input)
 
-    add("base85", base85_encode, base85_decode, r"^base[-_]?85$")
+    add("base85", base85_encode, base85_decode, r"^base[-_]?85$", entropy=7.05)
 

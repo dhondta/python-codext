@@ -83,5 +83,5 @@ def base91_decode(mode):
     return decode
 
 
-add("base91", base91_encode, base91_decode, r"^base[-_]?91(|[-_]inv(?:erted)?)$")
+add("base91", base91_encode, base91_decode, r"^base[-_]?91(|[-_]inv(?:erted)?)$", entropy=6.5)
 
