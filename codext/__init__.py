@@ -67,23 +67,29 @@ def main():
     sparsers = parser.add_subparsers(dest="command", help="command to be executed")
     parser.add_argument("-i", "--input-file", dest="infile", help="input file (if none, take stdin as input)")
     parser.add_argument("-o", "--output-file", dest="outfile", help="output file (if none, display result to stdout)")
-    parser.add_argument("-s", "--strip-newlines", action="store_true", dest="strip", help="strip newlines from input")
+    parser.add_argument("-s", "--strip-newlines", action="store_true", dest="strip",
+                        help="strip newlines from input (default: False)")
     encode = sparsers.add_parser("encode", help="encode input using the specified codecs")
     encode.add_argument("encoding", nargs="+", help="list of encodings to apply")
     encode.add_argument("-e", "--errors", default="strict", choices=["ignore", "leave", "replace", "strict"],
-                        help="error handling")
+                        help="error handling (default: strict)")
     decode = sparsers.add_parser("decode", help="decode input using the specified codecs")
     decode.add_argument("encoding", nargs="+", help="list of encodings to apply")
     decode.add_argument("-e", "--errors", default="strict", choices=["ignore", "leave", "replace", "strict"],
-                        help="error handling")
+                        help="error handling (default: strict)")
     guess = sparsers.add_parser("guess", help="try guessing the decoding codecs")
-    guess.add_argument("encoding", nargs="*", help="list of known encodings to apply")
-    guess.add_argument("-c", "--codec-categories", help="codec categories to be included in the search\n"
-                       "format: string|tuple|list(strings|tuples) ; see the documentation")
-    guess.add_argument("-d", "--depth", default=3, type=int, help="maximum codec search depth")
-    guess.add_argument("-e", "--exclude-codecs", help="codecs to be explicitely not used\n"
-                       "format: string|tuple|list(strings|tuples) ; see the documentation")
-    guess.add_argument("-s", "--do-not-stop", action="store_true", help="do not stop if a valid output is found")
+    guess.add_argument("encoding", nargs="*", help="list of known encodings to apply (default: none)")
+    guess.add_argument("-c", "--codec-categories", help="codec categories to be included in the search ; "
+                       "format: string|tuple|list(strings|tuples)")
+    guess.add_argument("-d", "--depth", default=3, type=int, help="maximum codec search depth (default: 3)")
+    guess.add_argument("-e", "--exclude-codecs", help="codecs to be explicitely not used ; "
+                       "format: string|tuple|list(strings|tuples)")
+    guess.add_argument("--extended", action="store_true",
+                       help="while using the scoring heuristic, also consider null scores (default: False)")
+    guess.add_argument("--heuristic", action="store_true",
+                       help="use a scoring heuristic to accelerate guessing (default: False)")
+    guess.add_argument("-s", "--do-not-stop", action="store_true",
+                       help="do not stop if a valid output is found (default: False)")
     search = sparsers.add_parser("search", help="search for codecs")
     search.add_argument("pattern", nargs="+", help="encoding pattern to search")
     args = parser.parse_args()
@@ -116,7 +122,8 @@ def main():
             print(ensure_str(c or "Could not decode :-("), end="")
     elif args.command == "guess":
         l = [o for o in codecs.guess(c, stopfunc.printables, args.depth, __literal_eval(args.codec_categories),
-                                     __literal_eval(args.exclude_codecs), args.encoding, not args.do_not_stop, True)]
+                                     __literal_eval(args.exclude_codecs), args.encoding, not args.do_not_stop, True,
+                                     args.heuristic, args.extended)]
         for i, o in enumerate(l):
             out, e = o
             if len(e) > 0:

@@ -864,7 +864,7 @@ stopfunc.flag = _flag
 
 
 def __guess(prev_input, input, stop_func, depth, max_depth, codec_categories, exclude, result, found=(), stop=True,
-            show=False, extended=False):
+            show=False, scoring_heuristic=False, extended=False):
     """ Perform a breadth-first tree search using a ranking logic to select and prune the list of codecs. """
     if depth > 0 and stop_func(input):
         if not stop and show:
@@ -897,18 +897,18 @@ def __guess(prev_input, input, stop_func, depth, max_depth, codec_categories, ex
         return r if transform is None else transform(*r)
     # parse valid encodings, expanding included/excluded codecs
     c, e = expand(codec_categories, "codec_categories", list_encodings), expand(exclude, "exclude")
-    for new_input, encoding in __rank(prev_input, input, c, extended):
+    for new_input, encoding in __rank(prev_input, input, c, scoring_heuristic, extended):
         if encoding in e:
             continue
         __guess(input, new_input, stop_func, depth+1, max_depth, codec_categories, exclude, result,
                 found + (encoding, ), stop, show, extended)
 
 
-def __rank(prev_input, input, codecs, extended=False):
+def __rank(prev_input, input, codecs, heuristic=False, extended=False):
     """ Filter valid encodings and rank them by relevance. """
     ranking = {}
     for codec in codecs:
-        for score, new_input, encoding in __score(prev_input, input, codec, extended):
+        for score, new_input, encoding in __score(prev_input, input, codec, heuristic, extended):
             ranking[encoding] = (score, new_input)
     for encoding, result in sorted(ranking.items(), key=lambda x: -x[1][0]):
         yield result[1], encoding
@@ -923,7 +923,7 @@ class _Text(object):
         self.entropy = entropy(text)
 
 
-def __score(prev_input, input, codec, extended=False):
+def __score(prev_input, input, codec, heuristic=False, extended=False):
     """ Score relevant encodings given an input. """
     obj, ci = None, lookup(codec)  # NB: lookup(...) won't fail as the codec value comes from list_encodings(...)
     for encoding in ci.parameters.get('guess', [codec]):
@@ -939,60 +939,63 @@ def __score(prev_input, input, codec, extended=False):
         pad = ci.parameters.get('scoring', {}).get('padding_char')
         if obj is None:
             obj = _Text(input, pad)
-        # from here, the goal (e.g. if the input is Base32) is to rank candidate encodings (e.g. multiple base codecs)
-        #  so that we can put the right one as early as possible and eventually exclude bad candidates
-        s = .0
-        # first, apply a bonus if the length of input text's charset is exactly the same as encoding's charset ;
-        #  on the contrary, if the length of input text's charset is strictly greater, give a penalty
-        lcs = ci.parameters.get('scoring', {}).get('len_charset', 256)
-        if isinstance(lcs, type(lambda: None)):
-            lcs = int(lcs(encoding))
-        if (pad and obj.padding and lcs + 1 == obj.lcharset) or lcs == obj.lcharset:
-            s += .3
-        elif (pad and obj.padding and lcs + 1 < obj.lcharset) or lcs < obj.lcharset:
-            s -= .2  # this can occur for encodings with no_error set to True
-        # then, take padding into account, giving a bonus if padding is to be encountered and effectively present, or a
-        #  penalty when it should not be encountered but it is present
-        if pad and obj.padding:
-            s += .2  # when padding is encountered while it is legitimate, it could be a good indication => good bonus
-        elif not pad and obj.padding:
-            s -= .1  # it could arise that a padding character is encountered while not being padding => small penalty
-        # give a bonus when the rate of printable characters is greater or equal than expected and a penalty when lower
-        #  only for codecs that tolerate errors (otherwise, the printables rate can be biased)
-        if not ci.parameters.get('no_error', False):
-            pr = ci.parameters.get('scoring', {}).get('printables_rate', 0)
-            if isinstance(pr, type(lambda: None)):
-                pr = float(pr(obj.printables))
-            if obj.printables - pr <= .05:
-                s += .1
-        # afterwards, if the input text has an entropy close to the expected one, give a bonus weighted on the number of
-        #  input characters to take bad entropies of shorter strings into account
-        entr = ci.parameters.get('entropy', {})
-        entr = entr.get(encoding, entr.get('default')) if isinstance(entr, dict) else entr
-        if isinstance(entr, type(lambda: None)):
-            try:  # this case allows to consider the current encoding name from the current codec
-                entr = entr(obj.entropy, encoding)
-            except TypeError:
-                entr = entr(obj.entropy)
-        if entr is not None:
-            # use a quadratic heuristic to compute a weight for the entropy delta, aligned on (100w, .1) and (200w, 1)
-            d_entr = min(4e-05 * obj.len**2 - .003 * obj.len, 1) * abs(entr - obj.entropy)
-            if d_entr <= .5:
-                s += .5 - d_entr
-        # finally, if relevant, apply a custom bonus (e.g. when a regex pattern is matched)
-        bonus = ci.parameters.get('scoring', {}).get('bonus_func')
-        if bonus is not None:
-            if isinstance(bon, type(lambda: None)):
-                bonus = bonus(obj, ci, encoding)
-            if bonus:
-                s += .2
+        if heuristic:
+            # from here, the goal (e.g. if the input is Base32) is to rank candidate encodings (e.g. multiple base
+            #  codecs) so that we can put the right one as early as possible and eventually exclude bad candidates
+            s = .0
+            # first, apply a bonus if the length of input text's charset is exactly the same as encoding's charset ;
+            #  on the contrary, if the length of input text's charset is strictly greater, give a penalty
+            lcs = ci.parameters.get('scoring', {}).get('len_charset', 256)
+            if isinstance(lcs, type(lambda: None)):
+                lcs = int(lcs(encoding))
+            if (pad and obj.padding and lcs + 1 == obj.lcharset) or lcs == obj.lcharset:
+                s += .3
+            elif (pad and obj.padding and lcs + 1 < obj.lcharset) or lcs < obj.lcharset:
+                s -= .2  # this can occur for encodings with no_error set to True
+            # then, take padding into account, giving a bonus if padding is to be encountered and effectively present,
+            #  or a penalty when it should not be encountered but it is present
+            if pad and obj.padding:
+                s += .2  # when padding is encountered while it is legitimate, it could be a good indication => bonus
+            elif not pad and obj.padding:
+                s -= .1  # it could arise a padding character is encountered while not being padding => small penalty
+            # give a bonus when the rate of printable characters is greater or equal than expected and a penalty when
+            #  lower only for codecs that tolerate errors (otherwise, the printables rate can be biased)
+            if not ci.parameters.get('no_error', False):
+                pr = ci.parameters.get('scoring', {}).get('printables_rate', 0)
+                if isinstance(pr, type(lambda: None)):
+                    pr = float(pr(obj.printables))
+                if obj.printables - pr <= .05:
+                    s += .1
+            # afterwards, if the input text has an entropy close to the expected one, give a bonus weighted on the
+            #  number of input characters to take bad entropies of shorter strings into account
+            entr = ci.parameters.get('entropy', {})
+            entr = entr.get(encoding, entr.get('default')) if isinstance(entr, dict) else entr
+            if isinstance(entr, type(lambda: None)):
+                try:  # this case allows to consider the current encoding name from the current codec
+                    entr = entr(obj.entropy, encoding)
+                except TypeError:
+                    entr = entr(obj.entropy)
+            if entr is not None:
+                # use a quadratic heuristic to compute a weight for the entropy delta, aligned on (100w,.1) and (200w,1)
+                d_entr = min(4e-05 * obj.len**2 - .003 * obj.len, 1) * abs(entr - obj.entropy)
+                if d_entr <= .5:
+                    s += .5 - d_entr
+            # finally, if relevant, apply a custom bonus (e.g. when a regex pattern is matched)
+            bonus = ci.parameters.get('scoring', {}).get('bonus_func')
+            if bonus is not None:
+                if isinstance(bon, type(lambda: None)):
+                    bonus = bonus(obj, ci, encoding)
+                if bonus:
+                    s += .2
+        else:
+            s = 1.
         # exclude negative (and eventually null) scores as they are (hopefully) not relevant
         if extended and s >= .0 or not extended and s > .0:
             yield s, new_input, encoding
 
 
 def guess(input, stop_func=stopfunc.printables, max_depth=5, codec_categories=None, exclude=None, found=(), stop=True,
-          show=False, extended=False):
+          show=False, scoring_heuristic=False, extended=False):
     """ Try decoding without the knowledge of the encoding(s). """
     if max_depth <= 0:
         raise ValueError("Depth must be a non-null positive integer")
@@ -1004,7 +1007,8 @@ def guess(input, stop_func=stopfunc.printables, max_depth=5, codec_categories=No
     if len(input) > 0:
         result = []
         for d in range(max_depth):
-            __guess("", input, stop_func, 0, d+1, codec_categories, exclude, result, tuple(found), stop, show, extended)
+            __guess("", input, stop_func, 0, d+1, codec_categories, exclude, result, tuple(found), stop, show,
+                    scoring_heuristic, extended)
             if stop and len(result) > 0:
                 return result
     return result
