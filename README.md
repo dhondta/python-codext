@@ -7,9 +7,9 @@
 [![Known Vulnerabilities](https://snyk.io/test/github/dhondta/python-codext/badge.svg?targetFile=requirements.txt)](https://snyk.io/test/github/dhondta/python-codext?targetFile=requirements.txt)
 [![License](https://img.shields.io/pypi/l/codext.svg)](https://pypi.python.org/pypi/codext/)
 
-# CODecs EXTension
+## Introduction
 
-This library extends the native `codecs` library (namely for adding new custom encodings and character mappings) and provides a myriad of new encodings (static or parametrized, like `rot` or `xor`).
+This library extends the native [`codecs`](https://docs.python.org/3/library/codecs.html) library (namely for adding new custom encodings and character mappings) and provides a myriad of new encodings (static or parametrized, like `rot` or `xor`), hence its named combining *CODecs EXTension*.
 
 ## Setup
 
