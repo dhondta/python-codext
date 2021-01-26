@@ -1,0 +1,138 @@
+remote_theme: "dhondta/dhondta.github.io"
+
+# General options
+title-fa: true
+#title-img: /assets/img/logo.png
+description: Open source projects
+url: "https://projects.praxisec.be"
+baseurl: ""
+
+# Navigation bar
+navbar-links:
+  Resume: /resume
+  'Python Modules':
+    - asciistuff: /python-asciistuff
+    - codext: /python-codext
+    - pybots: /python-pybots
+    - sploitkit: /python-sploitkit
+    - tinyscript: /python-tinyscript
+  Projects:
+    - AppmemDumper: /AppmemDumper
+    - 'Bots Scheduler': /bots-scheduler
+    - DroneSploit: /dronesploit
+    - 'Malicious Macro Tester': /malicious-macro-tester
+    - 'Recursive Compression': /recursive-compression
+    - 'RPL Attacks Framework': /rpl-attacks
+    - WebGrep: /webgrep
+    - 'Zotero CLI': /zotero-cli
+  'Other resources':
+    - 'LaTeX Book Template': /tex-book-template
+    - 'LaTeX Course Index Template': /tex-course-index-template
+    - 'LaTeX Master Thesis Template': /tex-master-thesis-template
+    - 'Steganography Tools': /stegano-tools
+  PraxiSec: "https://www.praxisec.be"
+
+# Color options
+navbar-col: "#7E4FAD"
+navbar-text-col: "#F8F2FC"
+navbar-children-col: "#7E4FAD"
+page-col: "#FFFFFF"
+link-col: "#B785CC"
+hover-col: "#61018A"
+footer-col: "#7E4FAD"
+footer-text-col: "#F8F2FC"
+footer-link-col: "#61018A"
+
+# Personal data and social media
+avatar: /assets/img/avatar.png
+author: Alexandre D'Hondt
+social-network-links:
+  rss: true
+  email: alexandre.dhondt@gmail.com
+  github: dhondta
+  twitter: alex_dhondt
+  linkedin: alexandre-d-hondt
+share-links-active:
+  twitter: true
+  facebook: true
+  linkedin: true
+#rss-description: Test
+
+# Google Analytics / gtag.js / tag manager ID
+#gtag: ""
+#google_analytics: ""
+#gtm: ""
+
+# disqus: ""  # Disqus shortname
+#just-comments: "ABCD-EFGH-IJKL"  # JustComments API Key
+#fb_comment_id: ""  # Facebook App ID
+#fb_app_id: ""  # Facebook App ID
+
+# To use Staticman comments, fill in repository, branch, and endpoint
+#staticman:
+#  repository : dhondta/dhondta.github.io # GitHub username/repository eg. "daattali/beautiful-jekyll"
+#  branch     : master # If you're not using `master` branch, then you also need to update the `branch` parameter in `staticman.yml`
+#  endpoint   : # URL of your own deployment, with a trailing slash (will fallback to a public GitLab instance) eg. https://<your-api>/v3/entry/github/
+#  reCaptcha:
+    # reCaptcha for Staticman (OPTIONAL, but recommended for spam protection)
+    # If you use reCaptcha, you must also set these parameters in staticman.yml
+#    siteKey  : "6LeWascUAAAAAIwWQIuqlAvA2YQCqWIRjmjgvfZr"
+#    secret   : "Z3OLIfg/8mt4uThi59KmVAPLzVKxLq2EfKVRh6SUWOkX7Uf6LVXdc1IwcrJerDE203G1BzE3ZeTt18dPg/l/aoNcz6Ar5Bmq+nPszBhz1/TQoDQYsG1GGzvKppwaFAjIZkrZo+h/VoWiD9oIdhuD3u7kvM5HsrEFB1kyupCJqCw="
+
+excerpt_length: 50
+
+# Character used to separate site title and description in HTML document title and RSS feed title
+title-separator: "-"
+
+# Ruby Date Format
+date_format: "%B %-d, %Y"
+
+# --- Don't need to touch anything below here (but you can if you want) --- #
+
+# Output options (more information on Jekyll's site)
+timezone: "GMT"
+markdown: kramdown
+highlighter: rouge
+permalink: /posts/:categories/:year/:month/:day/:title
+paginate: 5
+readtime: true
+
+kramdown:
+  input: GFM
+
+defaults:
+  -
+    scope:
+      path: ""
+      type: "posts"
+    values:
+      layout: "post"
+      author_profile: true
+      readtime: true
+      comments: true  # add comments to all blog posts
+      social-share: true # add social media sharing buttons to all blog posts
+      related: true
+      full-width: true
+  -
+    scope:
+      path: "" # all files
+    values:
+      layout: "page"
+      show-avatar: true
+      full-width: true
+
+# Use tags index page and make tags on each post clickable
+link-tags: true
+
+# Exclude these files from production site
+exclude:
+  - CNAME
+  - LICENSE
+  - Gemfile
+  - README.md
+
+plugins:
+  - jekyll-feed
+  - jekyll-paginate
+  - jekyll-sitemap
+  - jekyll-remote-theme
