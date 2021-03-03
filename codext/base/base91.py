@@ -13,7 +13,7 @@ from ..__common__ import *
 from ._base import digits, lower, upper
 
 # no __examples__ ; handled manually in tests/test_base.py
-__guess__    = ["base91", "base91-inv"]
+__guess__ = ["base91", "base91-inv"]
 
 
 B91 = {

@@ -9,11 +9,11 @@ The help message describes everything to know:
 ```sh
 usage: codext [-h] [-i INFILE] [-o OUTFILE] [-s] {encode,decode,guess,search} ...
 
-Codecs Extension (CodExt) 1.6.2
+Codecs Extension (CodExt) 1.8.1
 
 Author   : Alexandre D'Hondt (alexandre.dhondt@gmail.com)
-Copyright: © 2019-2020 A. D'Hondt
-License  : AGPLv3 (http://www.gnu.org/licenses/agpl.html)
+Copyright: © 2019-2021 A. D'Hondt
+License  : GPLv3 (https://www.gnu.org/licenses/gpl-3.0.fr.html)
 Source   : https://github.com/dhondta/python-codext
 
 This tool allows to encode/decode input strings/files with an extended set of codecs.
@@ -46,7 +46,7 @@ usage examples:
 - echo -en "test" | codext encode upper reverse base32 | codext decode base32 reverse lower
 - echo -en "test" | codext encode upper reverse base32 base64 morse
 - echo -en "test" | codext encode base64 gzip | codext guess
-- echo -en "test" | codext encode base64 gzip | codext guess gzip
+- echo -en "test" | codext encode base64 gzip | codext guess gzip -c base
 ```
 
 !!! note "Input/output"

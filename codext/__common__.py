@@ -446,6 +446,8 @@ def list_categories():
     for d in os.listdir(root):
         if os.path.isdir(os.path.join(root, d)) and not d.startswith("__"):
             c.append(d.rstrip("s"))
+    # particular category, hardcoded from base/_base.py
+    c += ["base-generic"]
     return c
 
 
@@ -844,7 +846,8 @@ stopfunc = ModuleType("stopfunc", """
     - `printables`: checks that every output character is in the set of printables
 """)
 stopfunc.printables = lambda s: all(c in printable for c in ensure_str(s))
-stopfunc.regex      = lambda p: lambda s: re.search(p, ensure_str(s), re.I) is not None
+stopfunc.regex      = lambda p: lambda s: re.search(p, ensure_str(s)) is not None
+stopfunc.text       = lambda s: stopfunc.printables(s) and entropy(s) < 4.5
 
 try:
     from langdetect import detect, PROFILES_DIRECTORY
@@ -864,15 +867,14 @@ stopfunc.flag = _flag
 
 
 def __guess(prev_input, input, stop_func, depth, max_depth, codec_categories, exclude, result, found=(), stop=True,
-            show=False, scoring_heuristic=False, extended=False):
+            show=False, scoring_heuristic=False, extended=False, debug=False):
     """ Perform a breadth-first tree search using a ranking logic to select and prune the list of codecs. """
     if depth > 0 and stop_func(input):
-        if not stop and show:
-            s = "[*] %s: %s" % (", ".join(found), ensure_str(input))
+        if not stop and show and found not in result:
+            s = "[+] %s: %s" % (", ".join(found), ensure_str(input))
             print(s if len(s) <= 80 else s[:77] + "...")
-        result.append((input, found))
-        return
-    if depth >= max_depth or len(result) > 0:
+        result[found] = input
+    if depth >= max_depth or len(result) > 0 and stop:
         return
     # compute included and excluded codecs for this depth
     def expand(items, descr=None, transform=None):
@@ -898,10 +900,14 @@ def __guess(prev_input, input, stop_func, depth, max_depth, codec_categories, ex
     # parse valid encodings, expanding included/excluded codecs
     c, e = expand(codec_categories, "codec_categories", list_encodings), expand(exclude, "exclude")
     for new_input, encoding in __rank(prev_input, input, c, scoring_heuristic, extended):
+        if len(result) > 0 and stop:
+            return
         if encoding in e:
             continue
+        if debug:
+            print("[*] Depth %d/%d ; trying %s" % (depth+1, max_depth, encoding))
         __guess(input, new_input, stop_func, depth+1, max_depth, codec_categories, exclude, result,
-                found + (encoding, ), stop, show, extended)
+                found + (encoding, ), stop, show, scoring_heuristic, extended, debug)
 
 
 def __rank(prev_input, input, codecs, heuristic=False, extended=False):
@@ -994,8 +1000,8 @@ def __score(prev_input, input, codec, heuristic=False, extended=False):
             yield s, new_input, encoding
 
 
-def guess(input, stop_func=stopfunc.printables, max_depth=5, codec_categories=None, exclude=None, found=(), stop=True,
-          show=False, scoring_heuristic=False, extended=False):
+def guess(input, stop_func=stopfunc.printables, max_depth=5, codec_categories=None, exclude=None, result=None, found=(),
+          stop=True, show=False, scoring_heuristic=False, extended=False, debug=False):
     """ Try decoding without the knowledge of the encoding(s). """
     if max_depth <= 0:
         raise ValueError("Depth must be a non-null positive integer")
@@ -1005,10 +1011,11 @@ def guess(input, stop_func=stopfunc.printables, max_depth=5, codec_categories=No
     if isinstance(stop_func, string_types):
         stop_func = stopfunc.regex(stop_func)
     if len(input) > 0:
-        result = []
+        result = result or {}
+        # breadth-first search
         for d in range(max_depth):
             __guess("", input, stop_func, 0, d+1, codec_categories, exclude, result, tuple(found), stop, show,
-                    scoring_heuristic, extended)
+                    scoring_heuristic, extended, debug)
             if stop and len(result) > 0:
                 return result
     return result

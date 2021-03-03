@@ -4,7 +4,7 @@
 """
 from __future__ import print_function
 from ast import literal_eval
-from six import b, binary_type, text_type
+from six import binary_type, text_type
 
 from .__common__ import *
 from .__info__ import __author__, __copyright__, __email__, __license__, __source__, __version__
@@ -61,7 +61,7 @@ def main():
         "echo -en \"test\" | codext encode upper reverse base32 | codext decode base32 reverse lower",
         "echo -en \"test\" | codext encode upper reverse base32 base64 morse",
         "echo -en \"test\" | codext encode base64 gzip | codext guess",
-        "echo -en \"test\" | codext encode base64 gzip | codext guess gzip",
+        "echo -en \"test\" | codext encode base64 gzip | codext guess gzip -c base",
     ])
     parser = argparse.ArgumentParser(description=descr, epilog=examples, formatter_class=argparse.RawTextHelpFormatter)
     sparsers = parser.add_subparsers(dest="command", help="command to be executed")
@@ -81,15 +81,19 @@ def main():
     guess.add_argument("encoding", nargs="*", help="list of known encodings to apply (default: none)")
     guess.add_argument("-c", "--codec-categories", help="codec categories to be included in the search ; "
                        "format: string|tuple|list(strings|tuples)")
-    guess.add_argument("-d", "--depth", default=3, type=int, help="maximum codec search depth (default: 3)")
+    guess.add_argument("-d", "--depth", default=5, type=int, help="maximum codec search depth (default: 3)")
     guess.add_argument("-e", "--exclude-codecs", help="codecs to be explicitely not used ; "
                        "format: string|tuple|list(strings|tuples)")
+    guess.add_argument("-f", "--stop-function", default="test", help="result checking function (default: text) ; "
+                       "format: printables|text|flag|lang_[bigram]|[regex]")
     guess.add_argument("--extended", action="store_true",
                        help="while using the scoring heuristic, also consider null scores (default: False)")
     guess.add_argument("--heuristic", action="store_true",
                        help="use a scoring heuristic to accelerate guessing (default: False)")
     guess.add_argument("-s", "--do-not-stop", action="store_true",
                        help="do not stop if a valid output is found (default: False)")
+    guess.add_argument("-v", "--verbose", action="store_true",
+                       help="show guessing information and steps (default: False)")
     search = sparsers.add_parser("search", help="search for codecs")
     search.add_argument("pattern", nargs="+", help="encoding pattern to search")
     args = parser.parse_args()
@@ -121,18 +125,23 @@ def main():
         else:
             print(ensure_str(c or "Could not decode :-("), end="")
     elif args.command == "guess":
-        l = [o for o in codecs.guess(c, stopfunc.printables, args.depth, __literal_eval(args.codec_categories),
-                                     __literal_eval(args.exclude_codecs), args.encoding, not args.do_not_stop, True,
-                                     args.heuristic, args.extended)]
-        for i, o in enumerate(l):
-            out, e = o
+        sfunc = getattr(stopfunc, args.stop_function, args.stop_function)
+        r = {}
+        try:
+            codecs.guess(c, sfunc, args.depth, __literal_eval(args.codec_categories),
+                         __literal_eval(args.exclude_codecs), r, args.encoding, not args.do_not_stop, True,
+                         args.heuristic, args.extended, args.verbose)
+        except KeyboardInterrupt:
+            pass
+        for i, o in enumerate(r.items()):
+            e, out = o
             if len(e) > 0:
                 if args.outfile:
                     n, ext = os.path.splitext(args.outfile)
-                    fn = args.outfile if len(l) == 1 else "%s-%d%s" % (n, i+1, ext)
+                    fn = args.outfile if len(r) == 1 else "%s-%d%s" % (n, i+1, ext)
                 else:
                     print("Codecs: %s" % ", ".join(e))
-                    print(ensure_str(out), end="")
-        if len(l) == 0:
+                    print(ensure_str(out))
+        if len(r) == 0:
             print("Could not decode :-(")
 
