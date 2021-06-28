@@ -16,7 +16,7 @@ __examples__ = {
     'enc(xor3|xor-3|xor_3)':           {'wkjp#jp#b#wfpw': "this is a test"},
     'enc(xor6|xor-6|xor_6)':           {'this is a test': "rnou&ou&g&rcur"},
 }
-__guess__ = ["xor%d" % i for i in range(1, 256)]
+__guess__ = ["xor-%d" % i for i in range(1, 256)]
 
 
 def _xorn(text, n=1):

@@ -15,7 +15,7 @@ __examples__ = {
     'enc(shift1|shift_1|shift-1)':    {'this is a test': "uijt!jt!b!uftu"},
     'enc(shift9|shift_9|shift-9)':    {'this is a test': "}qr|)r|)j)}n|}"},
 }
-__guess__ = ["shift%d" % i for i in range(1, 256)]
+__guess__ = ["shift-%d" % i for i in range(1, 256)]
 
 
 def ord_shift_decode(i):

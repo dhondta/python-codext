@@ -63,6 +63,6 @@ def wsba_decode(p):
 
 
 op = r"[+-](?:\d+(?:\.\d+)?[*/])?"
-add("whitespace_after_before", wsba_encode, wsba_decode, guess=__guess2__, entropy=1., printables_rate=1.,
+add("whitespace_after_before", wsba_encode, wsba_decode, guess=__guess2__, entropy=1., printables_rate=1., penalty=.1,
     pattern=r"whitespace("+op+r"before"+op+r"after|"+op+r"after"+op+r"before)$")
 

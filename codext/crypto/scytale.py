@@ -17,7 +17,7 @@ __examples__ = {
     'enc(scytale2|scytale-2|scytale_2)':   {'this is a test': "ti satshsi  et"},
     'enc(scytale5|scytale-5|scytale_5)':   {'this is a test': "tithsei ssat  "},
 }
-__guess__ = ["scytale%d" % i for i in range(10)]
+__guess__ = ["scytale-%d" % i for i in range(10)]
 
 
 PADDING_CHAR = ""
