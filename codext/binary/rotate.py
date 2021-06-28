@@ -7,18 +7,15 @@ This codec:
 - decodes file content to str (read)
 - encodes file content from str to bytes (write)
 """
-import operator
-
 from ..__common__ import *
 
 
 __examples__ = {
     'enc(rotate-0|rotate-8|rotate-left-8)': None,
-    'enc(rotate1|rotate-right-1|rotate_1)': {'This is a test': "*449\x1049\x100\x10:29:"},
-    'dec(rotate1)':                         {'*449\x1049\x100\x10:29:': "Thhr hr ` tdrt"},
+    'enc(rotate1|rotate-right-1|rotate_1)': {'This is a test': "*4\xb4\xb9\x10\xb4\xb9\x10\xb0\x10:\xb2\xb9:"},
     'enc(rotate-left-1|rotate_left_1)':     {'This is a test': "¨ÐÒæ@Òæ@Â@èÊæè"},
 }
-__guess__ = ["rotate-%s" % i for i in "12"] + ["rotate-left-%s" % i for i in "12"]
+__guess__ = ["rotate-%d" % i for i in range(1, 8)] + ["rotate-left-%d" % i for i in range(1, 8)]
 
 
 if PY3:
@@ -31,9 +28,11 @@ if PY3:
 
 
     def _rotaten(text, n=1):
-        op = [operator.lshift, operator.rshift][n > 0]
-        n = abs(n)
-        return "".join(chr(op(ord(c), n)) for c in ensure_str(text))
+        r = ""
+        for c in ensure_str(text):
+            b = bin(ord(c))[2:].zfill(8)
+            r += chr(int(b[-n:] + b[:-n], 2))
+        return r
 
 
     def rotate_encode(i):
@@ -48,5 +47,5 @@ if PY3:
         return decode
 
 
-    add("rotate", rotate_encode, rotate_decode, r"rotate(?:[-_]?bits)?[-_]?((?:left[-_]?)?[1-7])$", entropy=1.)
+    add("rotate", rotate_encode, rotate_decode, r"rotate(?:[-_]?bits)?[-_]?((?:(?:left|right)[-_]?)?[1-7])$", entropy=1.)
 

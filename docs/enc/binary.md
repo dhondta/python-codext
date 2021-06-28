@@ -141,9 +141,13 @@ This codec XORes each group of 4 bits of the input text with a 1-byte clock sign
 
 -----
 
-### Rotate/Shift N bits
+### Rotate N bits
 
-This codec rotates N bits using the `>>` (to the right) and `<<` (to the left) operations.
+This codec rotates of N bits each byte of an input string.
+
+!!! note "Lossless"
+    
+    This codec does not use the "`<<`" and "`>>`" operators as it is lossy in some cases. Instead, it rotates per group of 8 bits.
 
 **Codec** | **Conversions** | **Aliases** | **Comment**
 :---: | :---: | --- | ---
