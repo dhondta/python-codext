@@ -80,12 +80,14 @@ def main():
     guess = sparsers.add_parser("guess", help="try guessing the decoding codecs")
     guess.add_argument("encoding", nargs="*", help="list of known encodings to apply (default: none)")
     guess.add_argument("-c", "--codec-categories", help="codec categories to be included in the search ; "
-                       "format: string|tuple|list(strings|tuples)")
-    guess.add_argument("-d", "--depth", default=5, type=int, help="maximum codec search depth (default: 3)")
+                                                        "format: string|tuple|list(strings|tuples)")
     guess.add_argument("-e", "--exclude-codecs", help="codecs to be explicitely not used ; "
-                       "format: string|tuple|list(strings|tuples)")
-    guess.add_argument("-f", "--stop-function", default="test", help="result checking function (default: text) ; "
+                                                      "format: string|tuple|list(strings|tuples)")
+    guess.add_argument("-f", "--stop-function", default="text", help="result checking function (default: text) ; "
                        "format: printables|text|flag|lang_[bigram]|[regex]")
+    guess.add_argument("--max-depth", default=5, type=int, help="maximum codec search depth (default: 5)")
+    guess.add_argument("--min-depth", default=0, type=int, help="minimum codec search depth before triggering results "
+                                                                "(default: 0)")
     guess.add_argument("--extended", action="store_true",
                        help="while using the scoring heuristic, also consider null scores (default: False)")
     guess.add_argument("--heuristic", action="store_true",
@@ -94,6 +96,14 @@ def main():
                        help="do not stop if a valid output is found (default: False)")
     guess.add_argument("-v", "--verbose", action="store_true",
                        help="show guessing information and steps (default: False)")
+    rank = sparsers.add_parser("rank", help="rank the most probable encodings based on the given input")
+    rank.add_argument("-c", "--codec-categories", help="codec categories to be included in the search ; "
+                                                       "format: string|tuple|list(strings|tuples)")
+    rank.add_argument("-e", "--exclude-codecs", help="codecs to be explicitely not used ; "
+                                                     "format: string|tuple|list(strings|tuples)")
+    rank.add_argument("-l", "--limit", type=int, default=10, help="limit the number of displayed results")
+    rank.add_argument("--extended", action="store_true",
+                      help="while using the scoring heuristic, also consider null scores (default: False)")
     search = sparsers.add_parser("search", help="search for codecs")
     search.add_argument("pattern", nargs="+", help="encoding pattern to search")
     args = parser.parse_args()
@@ -112,8 +122,11 @@ def main():
         c = b("")
         for line in __stdin_pipe():
             c += line
+    # strip only the very last (CR)LF
+    c = c.rstrip("\r\n") if isinstance(c, str) else c.rstrip(b"\r\n")
+    # strip any other (CR)LF
     if args.strip:
-        c = re.sub(r"\r?\n", "", c)
+        c = re.sub(r"\r?\n", "", c) if isinstance(c, str) else c.replace(b"\r\n", b"").replace(b"\n", b"")
     if args.command in ["decode", "encode"]:
         # encode or decode
         for encoding in args.encoding:
@@ -125,14 +138,18 @@ def main():
         else:
             print(ensure_str(c or "Could not decode :-("), end="")
     elif args.command == "guess":
-        sfunc = getattr(stopfunc, args.stop_function, args.stop_function)
-        r = {}
-        try:
-            codecs.guess(c, sfunc, args.depth, __literal_eval(args.codec_categories),
-                         __literal_eval(args.exclude_codecs), r, args.encoding, not args.do_not_stop, True,
-                         args.heuristic, args.extended, args.verbose)
-        except KeyboardInterrupt:
-            pass
+        r = codecs.guess(c,
+                         getattr(stopfunc, args.stop_function, args.stop_function),
+                         args.min_depth,
+                         args.max_depth,
+                         __literal_eval(args.codec_categories),
+                         __literal_eval(args.exclude_codecs),
+                         args.encoding,
+                         not args.do_not_stop,
+                         True,  # show
+                         args.heuristic,
+                         args.extended,
+                         args.verbose)
         for i, o in enumerate(r.items()):
             e, out = o
             if len(e) > 0:
@@ -144,4 +161,9 @@ def main():
                     print(ensure_str(out))
         if len(r) == 0:
             print("Could not decode :-(")
+    elif args.command == "rank":
+        for i, e in codecs.rank(c, args.extended, args.limit,
+                                __literal_eval(args.codec_categories), __literal_eval(args.exclude_codecs)):
+            s = "[+] %.5f: %s" % (i[0], e)
+            print(s if len(s) <= 80 else s[:77] + "...")
 

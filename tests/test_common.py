@@ -131,20 +131,21 @@ class TestCommon(TestCase):
         _l = lambda d: list(d.items())[0][1]
         codext.reset()
         STR = "This is a test"
-        self.assertEqual(STR, _l(codext.guess("VGhpcyBpcyBhIHRlc3Q=", "a test", 1)))
+        self.assertEqual(STR, _l(codext.guess("VGhpcyBpcyBhIHRlc3Q=", "a test", max_depth=1)))
         self.assertEqual(STR, _l(codext.guess("CJG3Ix8bVcSRMLOqwDUg28aDsT7", "a test", found=["base62"])))
         if hasattr(codext.stopfunc, "lang_en"):
             f = codext.stopfunc.lang_en
             self.assertEqual(STR, _l(codext.guess("CJG3Ix8bVcSRMLOqwDUg28aDsT7", f, found=["base62"])))
             self.assertIsNotNone(_l(codext.guess("CJG3Ix8bVcSRMLOqwDUg28aDsT7", f, max_depth=1)))
-        self.assertEqual(STR, _l(codext.guess("VGhpcyBpcyBhIHRlc3Q=", "a test", 1, "base", scoring_heuristic=True,
+        self.assertEqual(STR, _l(codext.guess("VGhpcyBpcyBhIHRlc3Q=", "a test", 0, 1, "base", scoring_heuristic=True,
                                               exclude=["base100"])))
-        self.assertEqual(STR, _l(codext.guess("VGhpcyBpcyBhIHRlc3Q=", "a test", 1, ["base", "crypto"])))
-        self.assertEqual(len(codext.guess("NOT THE ENCODED TEST STRING", "a test", 1, exclude=[None])), 0)
-        self.assertIn("F1@9", _l(codext.guess("VGVzdCBGMUA5ICE=", codext.stopfunc.flag, 1, stop=False, show=True)))
-        self.assertEqual(len(codext.guess("VGhpcyBpcyBhIHRlc3Q=", " a test", 1, codec_categories="base",
+        self.assertEqual(STR, _l(codext.guess("VGhpcyBpcyBhIHRlc3Q=", "a test", 0, 1, ["base", "crypto"])))
+        self.assertEqual(len(codext.guess("NOT THE ENCODED TEST STRING", "a test", max_depth=1, exclude=[None])), 0)
+        self.assertIn("F1@9", _l(codext.guess("VGVzdCBGMUA5ICE=", codext.stopfunc.flag, max_depth=1, stop=False,
+                                              show=True)))
+        self.assertEqual(len(codext.guess("VGhpcyBpcyBhIHRlc3Q=", " a test", max_depth=1, codec_categories="base",
                                           exclude="base64")), 0)
-        self.assertEqual(len(codext.guess("VGhpcyBpcyBhIHRlc3Q=", " a test", 1, codec_categories="base",
+        self.assertEqual(len(codext.guess("VGhpcyBpcyBhIHRlc3Q=", " a test", max_depth=1, codec_categories="base",
                                           scoring_heuristic=True, exclude=("base64", "atbash"))), 0)
         self.assertRaises(ValueError, codext.guess, STR, max_depth=0)
         self.assertRaises(ValueError, codext.guess, STR, exclude=42)
@@ -161,8 +162,8 @@ class TestCommon(TestCase):
                         enc = codext.encode(b(STR), encoding)
                     if codext.decode(enc, encoding) == STR:
                         continue
-                    for found_encodings, found_dec in codext.guess(enc, "a test", 1, [c], scoring_heuristic=True,
-                                                                   debug=True).items():
+                    for found_encodings, found_dec in codext.guess(enc, "a test", 0, 1, [c],
+                                                                   scoring_heuristic=True, debug=True).items():
                         self.assertEqual(ensure_str(STR).lower(), ensure_str(found_dec).lower())
                         if c != "base":
                             # do not check for base as the guessed encoding name can be different, e.g.:
@@ -176,4 +177,12 @@ class TestCommon(TestCase):
         b64 = codext.encode(txt, "base64")
         self.assertEqual(txt, _l(codext.guess(b64, "0123456789", max_depth=1, scoring_heuristic=True,
                                               codec_categories="base")))
+    
+    def test_rank_input(self):
+        STR = "This is a test string !"
+        ENC = codext.encode(STR, "base64")
+        self.assertTrue(len(codext.rank(ENC)) > 100)
+        self.assertEqual(len(codext.rank(ENC, limit=20)), 20)
+        self.assertEqual(codext.rank(ENC, exclude=["rot"])[0][1], "base64")
+        self.assertEqual(codext.rank(ENC, codec_categories=["base"])[0][0][1], STR)
 

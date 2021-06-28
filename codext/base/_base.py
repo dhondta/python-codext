@@ -140,7 +140,8 @@ def base(charset, pattern, pow2=False, encode_template=base_encode, decode_templ
     
     kwargs['len_charset'] = n
     kwargs['printables_rate'] = 1.
-    add("base{}".format(n) if name is None else name, encode, decode, pattern, entropy=nb, **kwargs)
+    n = "base{}".format(n) if name is None else name
+    add(n, encode, decode, pattern, entropy=nb, guess=[n], **kwargs)
 
 
 def base_generic():
@@ -159,5 +160,5 @@ def base_generic():
     
     add("base", encode, decode, r"^base[-_]?([2-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(?:[-_]generic)?$",
         guess=["base%d-generic" % i for i in range(2, 255)], entropy=lambda e, n: log(int(n.split("-")[0][4:]), 2),
-        len_charset=lambda n: int(n.split("-")[0][4:]), printables_rate=1., category="base-generic")
+        len_charset=lambda n: int(n.split("-")[0][4:]), printables_rate=1., category="base-generic", penalty=.4)
 

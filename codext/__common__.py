@@ -30,8 +30,8 @@ except ImportError:  # Python 3
 
 __all__ = ["add", "add_map", "b", "clear", "codecs", "decode", "encode", "ensure_str", "examples", "guess",
            "generate_strings_from_regex", "get_alphabet_from_mask", "handle_error", "list_categories", "list_encodings",
-           "lookup", "maketrans", "re", "register", "remove", "reset", "s2i", "search", "stopfunc", "BytesIO", "MASKS",
-           "PY3"]
+           "lookup", "maketrans", "rank", "re", "register", "remove", "reset", "s2i", "search", "stopfunc", "BytesIO",
+           "MASKS", "PY3"]
 CODECS_REGISTRY = None
 MASKS = {
     'a': printable,
@@ -847,31 +847,56 @@ stopfunc = ModuleType("stopfunc", """
 """)
 stopfunc.printables = lambda s: all(c in printable for c in ensure_str(s))
 stopfunc.regex      = lambda p: lambda s: re.search(p, ensure_str(s)) is not None
-stopfunc.text       = lambda s: stopfunc.printables(s) and entropy(s) < 4.5
+stopfunc.text       = lambda s: stopfunc.printables(s) and entropy(s) < 4.4
+
+def _lang(lang):
+    def _test(s):
+        if not stopfunc.text(s):
+            return False
+        try:
+            return detect(ensure_str(s)) == lang
+        except:
+            return False
+    return _test
 
 try:
     from langdetect import detect, PROFILES_DIRECTORY
     for lang in [p.replace("-", "") for p in os.listdir(PROFILES_DIRECTORY)]:
-        setattr(stopfunc, "lang_%s" % lang, lambda s, l=lang: stopfunc.printables(s) and detect(s) == l)
+        setattr(stopfunc, "lang_%s" % lang, _lang(lang))
 except ImportError:
     pass
 
 
 __flag = lambda x: re.search(r"[Ff][Ll1][Aa4@][Gg96]", x) is not None
 def _flag(x):
-    try:
-        return __flag(ensure_str(b(x).decode("utf16")))
-    except (UnicodeDecodeError, UnicodeEncodeError):
-        return __flag(x)
+    return __flag(ensure_str(x))
 stopfunc.flag = _flag
 
 
-def __guess(prev_input, input, stop_func, depth, max_depth, codec_categories, exclude, result, found=(), stop=True,
-            show=False, scoring_heuristic=False, extended=False, debug=False):
+def __develop(encodings):
+    """ Private method for developing the input list of encodings, trying to extend it with every encoding name. """
+    enc = []
+    for e in (encodings or []):
+        try:
+            ci = lookup(e)
+            g = ci.parameters['guess']
+        except:
+            g = [e]
+        if e in g:  # e.g. "rot-1" => ["rot-1", "rot-2", ...] ; only "rot-1" is to be selected
+            enc.append(e)
+        else:       # e.g. "rot"   => ["rot-1", "rot-2", ...] ; all the "rot-N" shall be selected
+            enc.extend(g)
+    return enc
+
+
+def __guess(prev_input, input, stop_func, depth, max_depth, min_depth, codec_categories, exclude, result, found=(),
+            stop=True, show=False, scoring_heuristic=False, extended=False, debug=False):
     """ Perform a breadth-first tree search using a ranking logic to select and prune the list of codecs. """
-    if depth > 0 and stop_func(input):
+    if depth > min_depth and stop_func(input):
         if not stop and show and found not in result:
-            s = "[+] %s: %s" % (", ".join(found), ensure_str(input))
+            s = repr(input)
+            s = s[2:-1] if s.startswith("b'") and s.endswith("'") else s
+            s = "[+] %s: %s" % (", ".join(found), s)
             print(s if len(s) <= 80 else s[:77] + "...")
         result[found] = input
     if depth >= max_depth or len(result) > 0 and stop:
@@ -898,7 +923,7 @@ def __guess(prev_input, input, stop_func, depth, max_depth, codec_categories, ex
             raise ValueError("Bad %sformat %s" % (["%s " % descr, ""][descr is None], items))
         return r if transform is None else transform(*r)
     # parse valid encodings, expanding included/excluded codecs
-    c, e = expand(codec_categories, "codec_categories", list_encodings), expand(exclude, "exclude")
+    c, e = expand(codec_categories, "codec_categories", list_encodings), __develop(expand(exclude, "exclude"))
     for new_input, encoding in __rank(prev_input, input, c, scoring_heuristic, extended):
         if len(result) > 0 and stop:
             return
@@ -906,18 +931,18 @@ def __guess(prev_input, input, stop_func, depth, max_depth, codec_categories, ex
             continue
         if debug:
             print("[*] Depth %d/%d ; trying %s" % (depth+1, max_depth, encoding))
-        __guess(input, new_input, stop_func, depth+1, max_depth, codec_categories, exclude, result,
+        __guess(input, new_input, stop_func, depth+1, max_depth, min_depth, codec_categories, exclude, result,
                 found + (encoding, ), stop, show, scoring_heuristic, extended, debug)
 
 
-def __rank(prev_input, input, codecs, heuristic=False, extended=False):
+def __rank(prev_input, input, codecs, heuristic=False, extended=False, yield_score=False):
     """ Filter valid encodings and rank them by relevance. """
     ranking = {}
     for codec in codecs:
         for score, new_input, encoding in __score(prev_input, input, codec, heuristic, extended):
             ranking[encoding] = (score, new_input)
     for encoding, result in sorted(ranking.items(), key=lambda x: -x[1][0]):
-        yield result[1], encoding
+        yield result if yield_score else result[1], encoding
 
 
 class _Text(object):
@@ -939,7 +964,7 @@ def __score(prev_input, input, codec, heuristic=False, extended=False):
         except:
             continue
         # ignore encodings that give an output identical to the input (identity transformation) or to the previous input
-        if b(input) == b(new_input) or b(prev_input) == b(new_input):
+        if prev_input is not None and b(input) == b(new_input) or b(prev_input) == b(new_input):
             continue
         # compute input's characteristics only once and only if the control flow reaches this point
         pad = ci.parameters.get('scoring', {}).get('padding_char')
@@ -948,14 +973,14 @@ def __score(prev_input, input, codec, heuristic=False, extended=False):
         if heuristic:
             # from here, the goal (e.g. if the input is Base32) is to rank candidate encodings (e.g. multiple base
             #  codecs) so that we can put the right one as early as possible and eventually exclude bad candidates
-            s = .0
+            s = -ci.parameters.get('penalty', .0)
             # first, apply a bonus if the length of input text's charset is exactly the same as encoding's charset ;
             #  on the contrary, if the length of input text's charset is strictly greater, give a penalty
             lcs = ci.parameters.get('scoring', {}).get('len_charset', 256)
             if isinstance(lcs, type(lambda: None)):
                 lcs = int(lcs(encoding))
-            if (pad and obj.padding and lcs + 1 == obj.lcharset) or lcs == obj.lcharset:
-                s += .3
+            if (pad and obj.padding and lcs + 1 >= obj.lcharset) or lcs >= obj.lcharset:
+                s += max(.0, round(.6 * (.99 ** (lcs - obj.lcharset)), 5) - .1)
             elif (pad and obj.padding and lcs + 1 < obj.lcharset) or lcs < obj.lcharset:
                 s -= .2  # this can occur for encodings with no_error set to True
             # then, take padding into account, giving a bonus if padding is to be encountered and effectively present,
@@ -1000,7 +1025,7 @@ def __score(prev_input, input, codec, heuristic=False, extended=False):
             yield s, new_input, encoding
 
 
-def guess(input, stop_func=stopfunc.printables, max_depth=5, codec_categories=None, exclude=None, result=None, found=(),
+def guess(input, stop_func=stopfunc.printables, min_depth=0, max_depth=5, codec_categories=None, exclude=None, found=(),
           stop=True, show=False, scoring_heuristic=False, extended=False, debug=False):
     """ Try decoding without the knowledge of the encoding(s). """
     if max_depth <= 0:
@@ -1011,13 +1036,28 @@ def guess(input, stop_func=stopfunc.printables, max_depth=5, codec_categories=No
     if isinstance(stop_func, string_types):
         stop_func = stopfunc.regex(stop_func)
     if len(input) > 0:
-        result = result or {}
-        # breadth-first search
-        for d in range(max_depth):
-            __guess("", input, stop_func, 0, d+1, codec_categories, exclude, result, tuple(found), stop, show,
-                    scoring_heuristic, extended, debug)
-            if stop and len(result) > 0:
-                return result
+        result = {}
+        try:
+            # breadth-first search
+            for d in range(max_depth):
+                __guess("", input, stop_func, 0, d+1, min_depth, codec_categories, exclude, result, tuple(found), stop,
+                        show, scoring_heuristic, extended, debug)
+                if stop and len(result) > 0:
+                    return result
+        except KeyboardInterrupt:
+            pass
     return result
 codecs.guess = guess
+
+
+def rank(input, extended=False, limit=-1, codec_categories=None, exclude=None):
+    """ Rank the most probable encodings based on the given input. """
+    codecs = list_encodings(*(codec_categories or ()))
+    for e in __develop(exclude):
+        try:
+            codecs.remove(e)
+        except ValueError:
+            pass
+    return list(__rank(None, input, codecs, True, extended, True))[:limit]
+codecs.rank = rank
 
