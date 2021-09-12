@@ -1,6 +1,6 @@
 [![PyPi](https://img.shields.io/pypi/v/codext.svg)](https://pypi.python.org/pypi/codext/)
 [![Read The Docs](https://readthedocs.org/projects/python-codext/badge/?version=latest)](https://python-codext.readthedocs.io/en/latest/?badge=latest)
-[![Build Status](https://travis-ci.org/dhondta/python-codext.svg?branch=master)](https://travis-ci.org/dhondta/python-codext)
+[![Build Status](https://travis-ci.com/dhondta/python-codext.svg?branch=master)](https://travis-ci.com/dhondta/python-codext)
 [![Coverage Status](https://coveralls.io/repos/github/dhondta/python-codext/badge.svg?branch=master)](https://coveralls.io/github/dhondta/python-codext?branch=master)
 [![Python Versions](https://img.shields.io/pypi/pyversions/codext.svg)](https://pypi.python.org/pypi/codext/)
 [![Requirements Status](https://requires.io/github/dhondta/python-codext/requirements.svg?branch=master)](https://requires.io/github/dhondta/python-codext/requirements/?branch=master)
