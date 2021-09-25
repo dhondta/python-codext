@@ -182,6 +182,7 @@ o
 `gzip` | text <-> Gzip-compressed text | standard Gzip compression/decompression
 `html` | text <-> HTML entities | implements entities according to [this reference](https://dev.w3.org/html5/html-author/charref)
 `ipsum` | text <-> latin words | aka lorem ipsum
+`klopf` | text <-> klopf encoded text | Polybius square with trivial alphabetical distribution
 `leetspeak` | text <-> leetspeak encoded text | based on minimalistic elite speaking rules
 `letter-indices` | text <-> text with letter indices | encodes consonants and/or vowels with their corresponding indices
 `manchester` | text <-> manchester encoded text | XORes each bit of the input with `01`

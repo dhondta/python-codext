@@ -2,6 +2,23 @@
 
 -----
 
+### Klopf Code
+
+This is a Polybius code with the trivial alphabetical distribution ("A" -> (1,1), "B" -> (2,1), ...). This can be tested [here](https://gc.de/gc/klopfcode/).
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`klopf` | text <-> klopf encoded text | `klopfcode` | 
+
+```python
+>>> codext.encode("this is a test", "klopf")
+'44324234 4234 11 44513444'
+>>> codext.decode("44324234 4234 11 44513444", "klopf")
+'THIS IS A TEST'
+```
+
+-----
+
 ### Resistor Color Codes
 
 This uses the [electronic color code](https://en.wikipedia.org/wiki/Electronic_color_code#Resistor_color-coding) to encode digits, displaying colors in the terminal with ANSI color codes.
