@@ -7,13 +7,14 @@ pages:
   - Features: features.md
   - Encodings: encodings.md
   - Encodings:
-    - 'Base': enc/base.md
-    - 'Binary': enc/binary.md
-    - 'Common': enc/common.md
-    - 'Cryptography': enc/crypto.md
-    - 'Languages': enc/languages.md
-    - 'Others': enc/others.md
-    - 'Steganography': enc/stegano.md
+    - Base: enc/base.md
+    - Binary: enc/binary.md
+    - Common: enc/common.md
+    - Compressions: enc/compressions.md
+    - Cryptography: enc/crypto.md
+    - Languages: enc/languages.md
+    - Others: enc/others.md
+    - Steganography: enc/stegano.md
   - 'String manipulations': manipulations.md
   - 'CLI tool': cli.md
   - 'Create your codec': howto.md

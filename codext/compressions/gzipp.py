@@ -16,7 +16,6 @@ from ..__common__ import *
 
 
 __examples__ = {'enc-dec(gzip)': ["test", "This is a test"]}
-__guess__ = ["gzip"]
 
 
 def gzip_encode(text, errors="strict"):

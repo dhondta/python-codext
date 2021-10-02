@@ -191,6 +191,9 @@ o
 `navajo` | text <-> Navajo | only handles letters (not full words from the Navajo dictionary)
 `octal` | text <-> octal digits | dummy octal conversion (converts to 3-digits groups)
 `ordinal` | text <-> ordinal digits | dummy character ordinals conversion (converts to 3-digits groups)
+`pkzip_deflate` | text <-> deflated text | standard Zip-deflate compression/decompression
+`pkzip_bzip2` | text <-> Bzipped text | standard BZip2 compression/decompression
+`pkzip_lzma` | text <-> LZMA-compressed text | standard LZMA compression/decompression
 `radio` | text <-> radio words | aka NATO or radio phonetic alphabet
 `resistor` | text <-> resistor colors | aka resistor color codes
 `rot` | text <-> rot(N) ciphertext | aka Caesar cipher (N belongs to [1,25])
