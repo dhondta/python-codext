@@ -185,6 +185,7 @@ o
 `klopf` | text <-> klopf encoded text | Polybius square with trivial alphabetical distribution
 `leetspeak` | text <-> leetspeak encoded text | based on minimalistic elite speaking rules
 `letter-indices` | text <-> text with letter indices | encodes consonants and/or vowels with their corresponding indices
+`lz77` | text <-> LZ77-compressed text | compresses the given data with the algorithm of Lempel and Ziv of 1977
 `manchester` | text <-> manchester encoded text | XORes each bit of the input with `01`
 `markdown` | markdown --> HTML | unidirectional
 `morse` | text <-> morse encoded text | uses whitespace as a separator

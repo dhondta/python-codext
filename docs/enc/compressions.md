@@ -17,6 +17,23 @@
 
 -----
 
+### LZ77
+
+This implements the algorithm of Lempel and Ziv of 1977.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`lz77` | data <-> LZ77-compressed data | | 
+
+```python
+>>> codecs.encode("A test string !", "lz77")
+' \x88\x0e\x86S\x99ÐA\x0029\x1aMÆq\x00\x84'
+>>> codecs.decode(" \x88\x0e\x86S\x99ÐA\x0029\x1aMÆq\x00\x84", "lz77")
+'A test string !'
+```
+
+-----
+
 ### PKZip
 
 This implements multiple compression types available in the native [`zipfile`](https://docs.python.org/3/library/zipfile.html) library.
