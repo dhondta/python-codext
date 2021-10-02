@@ -134,8 +134,7 @@ This encoding relies on the `base64` library and is only supported in Python 3.
 :---: | :---: | --- | ---
 `base85` | text <-> Base85 encoded text | `base[-_]?85` | Python 3 only (relies on `base64` module)
 `base100` | text <-> Base100 encoded text | `base[-_]?100|emoji` | Python 3 only
-
-With Python 3, `base85` and `base100` (emoji's) are also supported.
+`base122` | text <-> Base122 encoded text | `base[-_]?122` | Python 3 only
 
 ```python
 >>> codecs.encode("this is a test", "base85")
@@ -148,6 +147,13 @@ With Python 3, `base85` and `base100` (emoji's) are also supported.
 >>> codecs.encode("this is a test", "base100")
 '👫👟👠👪🐗👠👪🐗👘🐗👫👜👪👫'
 >>> codecs.decode("👫👟👠👪🐗👠👪🐗👘🐗👫👜👪👫", "base100")
+'this is a test'
+```
+
+```python
+>>> codecs.encode("this is a test", "base122")
+':\x1aʗ\x19\x01Rs\x10\x18$\x07#\x15ft'
+>>> codecs.decode(":\x1aʗ\x19\x01Rs\x10\x18$\x07#\x15ft", "base122")
 'this is a test'
 ```
 

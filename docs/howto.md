@@ -192,7 +192,7 @@ __examples__ = {
 
 ```python
 __examples__ = {
-    'enc-dec(codec)': ["test string", "TEST STRING"]
+    'enc-dec(codec)': ["test string", "TEST STRING", "@random", "@random{1024}"]
 }
 ```
 
@@ -201,6 +201,7 @@ __examples__ = {
     - `__examples__` is the standard dunder, thus not specified in `add`/`add_map`.
     - `enc-dec` is used, meaning that a list of inputs is defined.
     - So, whatever its encoded output, the input string shall give the same while applying encoding then decoding.
+    - The special values `@random` and `@random{1024}`, meaning that test strings are generated from any possible byte-character with a specified length (512 when not specified, otherwise specified with `{...}`).
 
 ```python
 __examples__ = {
