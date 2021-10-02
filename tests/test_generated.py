@@ -6,6 +6,7 @@
 import os
 import re
 from itertools import chain
+from random import randint
 from string import printable
 from unittest import TestCase
 
@@ -71,6 +72,9 @@ def make_test(**params):
                     # examples validation tests
                     if k.startswith("enc-dec") and isinstance(examples, list):
                         for s in examples:
+                            rd = re.match(r"\@random(?:\{(\d+)\})?$", s)
+                            if rd:
+                                s = "".join(chr(randint(0, 255)) for i in range(int(rd.group(1) or "512")))
                             self.assertEqual(icdec(f2(icenc(f1(s, ename)), ename)), icdec(s))
                             self.assertEqual(icdec(f2(icenc(f1(b(s), ename)), ename)), b(icdec(s)))
                             # file tests

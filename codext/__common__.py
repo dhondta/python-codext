@@ -29,9 +29,9 @@ except ImportError:  # Python 3
 
 
 __all__ = ["add", "add_map", "b", "clear", "codecs", "decode", "encode", "ensure_str", "examples", "guess",
-           "generate_strings_from_regex", "get_alphabet_from_mask", "handle_error", "list_categories", "list_encodings",
-           "lookup", "maketrans", "rank", "re", "register", "remove", "reset", "s2i", "search", "stopfunc", "BytesIO",
-           "MASKS", "PY3"]
+           "generate_strings_from_regex", "get_alphabet_from_mask", "handle_error", "is_native", "list_categories",
+           "list_encodings", "lookup", "maketrans", "rank", "re", "register", "remove", "reset", "s2i", "search",
+           "stopfunc", "BytesIO", "MASKS", "PY3"]
 CODECS_REGISTRY = None
 MASKS = {
     'a': printable,
@@ -437,6 +437,11 @@ def examples(encoding, number=10):
     random.shuffle(e)
     return sorted([e[i] for i in range(min(number, len(e)))], key=_human_keys)
 codecs.examples = examples
+
+
+def is_native(encoding):
+    """ Determine if a given encoding is native or not. """
+    return codecs.lookup(encoding).parameters['category'] == "native"
 
 
 def list_categories():
