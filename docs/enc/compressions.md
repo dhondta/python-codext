@@ -17,18 +17,26 @@
 
 -----
 
-### LZ77
+### Lempel-Ziv
 
-This implements the algorithm of Lempel and Ziv of 1977.
+This implements the algorithm of Lempel and Ziv of 1977 and 1978.
 
 **Codec** | **Conversions** | **Aliases** | **Comment**
 :---: | :---: | --- | ---
 `lz77` | data <-> LZ77-compressed data | | 
+`lz78` | data <-> LZ78-compressed data | | 
 
 ```python
 >>> codecs.encode("A test string !", "lz77")
 ' \x88\x0e\x86S\x99ÐA\x0029\x1aMÆq\x00\x84'
 >>> codecs.decode(" \x88\x0e\x86S\x99ÐA\x0029\x1aMÆq\x00\x84", "lz77")
+'A test string !'
+```
+
+```python
+>>> codext.encode("A test string !", "lz78")
+'A\x00 \x00t\x00e\x00s\x03 \x05t\x00r\x00i\x00n\x00g\x02!'
+>>> codext.decode("A\x00 \x00t\x00e\x00s\x03 \x05t\x00r\x00i\x00n\x00g\x02!", "lz78")
 'A test string !'
 ```
 
