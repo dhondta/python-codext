@@ -15,17 +15,17 @@ from gzip import GzipFile
 from ..__common__ import *
 
 
-__examples__ = {'enc-dec(gzip)': ["test", "This is a test"]}
+__examples__ = {'enc-dec(gzip)': ["test", "This is a test", "@random{512,1024,2048}"]}
 
 
-def gzip_encode(text, errors="strict"):
+def gzip_compress(text, errors="strict"):
     out = BytesIO()
     with GzipFile(fileobj=out, mode="wb") as f:
         f.write(b(text))
     return out.getvalue(), len(text)
 
 
-def gzip_decode(data, errors="strict"):
+def gzip_decompress(data, errors="strict"):
     # then try decompressing considering the file signature
     try:
         with GzipFile(fileobj=BytesIO(b(data)), mode="rb") as f:
@@ -40,5 +40,5 @@ def gzip_decode(data, errors="strict"):
     return r, len(r)
 
 
-add("gzip", gzip_encode, gzip_decode, entropy=7.9)
+add("gzip", gzip_compress, gzip_decompress, entropy=7.9)
 

@@ -14,12 +14,14 @@ Inspired from: https://github.com/mileswatson/lempel-ziv-compression
 from ..__common__ import *
 
 
-__examples__ = {'enc-dec(lz78)': ["test", "This is a test", "@random{1024}"]}
+__examples__ = {'enc-dec(lz78)': ["test", "This is a test", "@random{512,1024,2048}"]}
 
 
 def lz78_compress(input, errors="strict"):
     """ Compresses the given data by applying LZ78 compression algorithm. """
     data = tuple(c if isinstance(c, int) else ord(c) for c in input)
+    if len(data) == 0:
+        return "", 0
     out = (data[0], )
     d = {tuple(): (0, ), (data[0], ): (1, )}
     a, b, ctr = 1, 1, [2]
@@ -41,14 +43,16 @@ def lz78_compress(input, errors="strict"):
     if data[a:b] in d and a != b:
         w = tuple(d[data[a:b]])
         out += w + tuple(0 for i in range(len(ctr) - len(w)))
-    return bytes(out), len(out)
+    return "".join(chr(i) for i in out), len(out)
 
 
 def lz78_decompress(input, errors="strict"):
     """ Decompresses the given data. """
     data = tuple(c if isinstance(c, int) else ord(c) for c in input)
+    if len(data) == 0:
+        return "", 0
     out = (data[0], )
-    l = [tuple(), (data[0], )]
+    l = [tuple(), out]
     a, b, c, i, char = 1, 1, 256, 0, False
     try:
         while a < len(data):
@@ -69,8 +73,8 @@ def lz78_decompress(input, errors="strict"):
                 a += b
                 char = True
     except:
-        return handle_error("lz78", errors, decode=True)(data[a], a), len(input)
-    return bytes(out), len(out)
+        return handle_error("lz78", errors, decode=True)(chr(data[a]), a), len(input)
+    return "".join(chr(i) for i in out), len(out)
 
 
 add("lz78", lz78_compress, lz78_decompress)

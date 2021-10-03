@@ -14,7 +14,7 @@ Inspired from: https://github.com/manassra/LZ77-Compressor
 from ..__common__ import *
 
 
-__examples__ = {'enc-dec(lz77)': ["test", "This is a test", "@random{1024}"]}
+__examples__ = {'enc-dec(lz77)': ["test", "This is a test", "@random{512,1024,2048}"]}
 
 
 _B2b = lambda B: bin(B if isinstance(B, int) else ord(B))[2:].zfill(8)

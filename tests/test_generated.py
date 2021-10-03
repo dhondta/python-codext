@@ -71,10 +71,13 @@ def make_test(**params):
                                                      params.get('repl_minlen', 1) * params['repl_char'])
                     # examples validation tests
                     if k.startswith("enc-dec") and isinstance(examples, list):
-                        for s in examples:
-                            rd = re.match(r"\@random(?:\{(\d+)\})?$", s)
+                        for e in examples[:]:
+                            rd = re.match(r"\@random(?:\{(\d+(?:,(\d+))*?)\})?$", e)
                             if rd:
-                                s = "".join(chr(randint(0, 255)) for i in range(int(rd.group(1) or "512")))
+                                examples.remove(e)
+                                for n in (rd.group(1) or "512").split(","):
+                                    examples.append("".join(chr(randint(0, 255)) for i in range(int(n))))
+                        for s in [""] + examples:
                             self.assertEqual(icdec(f2(icenc(f1(s, ename)), ename)), icdec(s))
                             self.assertEqual(icdec(f2(icenc(f1(b(s), ename)), ename)), b(icdec(s)))
                             # file tests

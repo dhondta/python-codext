@@ -14,7 +14,7 @@ import zipfile
 from ..__common__ import *
 
 
-_str          = ["test", "This is a test", "@random{1024}"]
+_str          = ["test", "This is a test", "@random{512,1024,2048}"]
 __examples1__ = {'enc-dec(pkzip-deflate|deflate)': _str}
 __examples2__ = {'enc-dec(pkzip_bz2|bzip2)':       _str}
 __examples3__ = {'enc-dec(pkzip-lzma|lzma)':       _str}
