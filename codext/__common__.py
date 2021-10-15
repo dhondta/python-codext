@@ -33,6 +33,7 @@ __all__ = ["add", "add_map", "b", "clear", "codecs", "decode", "encode", "ensure
            "list_encodings", "lookup", "maketrans", "rank", "re", "register", "remove", "reset", "s2i", "search",
            "stopfunc", "BytesIO", "MASKS", "PY3"]
 CODECS_REGISTRY = None
+CODECS_CATEGORIES = ["native", "custom"]
 MASKS = {
     'a': printable,
     'b': "".join(chr(i) for i in range(256)),
@@ -70,6 +71,7 @@ def add(ename, encode=None, decode=None, pattern=None, text=True, add_to_codecs=
                            NB: this will make the codec available in the built-in open(...) but will make it impossible
                                 to remove the codec later
     """
+    remove(ename)
     if encode and not isinstance(encode, FunctionType):
         raise ValueError("Bad 'encode' function")
     if decode and not isinstance(decode, FunctionType):
@@ -153,18 +155,23 @@ def add(ename, encode=None, decode=None, pattern=None, text=True, add_to_codecs=
         ci.parameters['pattern'] = pattern
         ci.parameters['text'] = text
         f = glob.get('__file__', os.path.join("custom", "_"))
-        ci.parameters['category'] = kwargs.get('category', f.split(os.path.sep)[-2].rstrip("s"))
+        cat = f.split(os.path.sep)[-2].rstrip("s")
+        if cat not in CODECS_CATEGORIES:
+            CODECS_CATEGORIES.append(cat)
+        ci.parameters['category'] = kwargs.get('category', cat)
         ci.parameters['examples'] = kwargs.get('examples', glob.get('__examples__'))
         ci.parameters['guess'] = kwargs.get('guess', glob.get('__guess__', [ename]))
         ci.parameters['module'] = kwargs.get('module', glob.get('__name__'))
         ci.parameters.setdefault("scoring", {})
-        for attr in ["entropy", "len_charset", "printables_rate", "padding_char"]:
-            a = kwargs.get(attr)
+        for attr in ["bonus_func", "entropy", "len_charset", "penalty", "printables_rate", "padding_char"]:
+            a = kwargs.pop(attr, None)
             if a is not None:
                 ci.parameters['scoring'][attr] = a
         return ci
     
     getregentry.__name__ = re.sub(r"[\s\-]", "_", ename)
+    if kwargs.get('aliases'):
+        getregentry.__aliases__ = list(map(lambda n: re.sub(r"[\s\-]", "_", n), kwargs['aliases']))
     getregentry.__pattern__ = pattern
     register(getregentry, add_to_codecs)
 
@@ -446,7 +453,7 @@ def is_native(encoding):
 
 def list_categories():
     """ Get a list of all codec categories. """
-    c = ["native"]
+    c = CODECS_CATEGORIES
     root = os.path.dirname(__file__)
     for d in os.listdir(root):
         if os.path.isdir(os.path.join(root, d)) and not d.startswith("__"):
@@ -657,7 +664,8 @@ def lookup(encoding):
             return codecinfo
     # then, if a codec name was given, generate an encoding name from its pattern and get the CodecInfo
     for search_function in __codecs_registry:
-        if search_function.__name__.replace("_", "-") == encoding:
+        if search_function.__name__.replace("_", "-") == encoding or \
+           encoding in getattr(search_function, "__aliases__", []):
             codecinfo = search_function(generate_string_from_regex(search_function.__pattern__))
             if codecinfo is not None:
                 return codecinfo
@@ -962,6 +970,7 @@ class _Text(object):
 def __score(prev_input, input, codec, heuristic=False, extended=False):
     """ Score relevant encodings given an input. """
     obj, ci = None, lookup(codec)  # NB: lookup(...) won't fail as the codec value comes from list_encodings(...)
+    sc = ci.parameters.get('scoring', {})
     for encoding in ci.parameters.get('guess', [codec]):
         # ignore encodings that fail to decode with their default errors handling value
         try:
@@ -972,16 +981,16 @@ def __score(prev_input, input, codec, heuristic=False, extended=False):
         if prev_input is not None and b(input) == b(new_input) or b(prev_input) == b(new_input):
             continue
         # compute input's characteristics only once and only if the control flow reaches this point
-        pad = ci.parameters.get('scoring', {}).get('padding_char')
+        pad = sc.get('padding_char')
         if obj is None:
             obj = _Text(input, pad)
         if heuristic:
             # from here, the goal (e.g. if the input is Base32) is to rank candidate encodings (e.g. multiple base
             #  codecs) so that we can put the right one as early as possible and eventually exclude bad candidates
-            s = -ci.parameters.get('penalty', .0)
+            s = -sc.get('penalty', .0)
             # first, apply a bonus if the length of input text's charset is exactly the same as encoding's charset ;
             #  on the contrary, if the length of input text's charset is strictly greater, give a penalty
-            lcs = ci.parameters.get('scoring', {}).get('len_charset', 256)
+            lcs = sc.get('len_charset', 256)
             if isinstance(lcs, type(lambda: None)):
                 lcs = int(lcs(encoding))
             if (pad and obj.padding and lcs + 1 >= obj.lcharset) or lcs >= obj.lcharset:
@@ -997,14 +1006,14 @@ def __score(prev_input, input, codec, heuristic=False, extended=False):
             # give a bonus when the rate of printable characters is greater or equal than expected and a penalty when
             #  lower only for codecs that tolerate errors (otherwise, the printables rate can be biased)
             if not ci.parameters.get('no_error', False):
-                pr = ci.parameters.get('scoring', {}).get('printables_rate', 0)
+                pr = sc.get('printables_rate', 0)
                 if isinstance(pr, type(lambda: None)):
                     pr = float(pr(obj.printables))
                 if obj.printables - pr <= .05:
                     s += .1
             # afterwards, if the input text has an entropy close to the expected one, give a bonus weighted on the
             #  number of input characters to take bad entropies of shorter strings into account
-            entr = ci.parameters.get('entropy', {})
+            entr = sc.get('entropy', {})
             entr = entr.get(encoding, entr.get('default')) if isinstance(entr, dict) else entr
             if isinstance(entr, type(lambda: None)):
                 try:  # this case allows to consider the current encoding name from the current codec
@@ -1017,9 +1026,9 @@ def __score(prev_input, input, codec, heuristic=False, extended=False):
                 if d_entr <= .5:
                     s += .5 - d_entr
             # finally, if relevant, apply a custom bonus (e.g. when a regex pattern is matched)
-            bonus = ci.parameters.get('scoring', {}).get('bonus_func')
+            bonus = sc.get('bonus_func')
             if bonus is not None:
-                if isinstance(bon, type(lambda: None)):
+                if isinstance(bonus, type(lambda: None)):
                     bonus = bonus(obj, ci, encoding)
                 if bonus:
                     s += .2
@@ -1063,6 +1072,7 @@ def rank(input, extended=False, limit=-1, codec_categories=None, exclude=None):
             codecs.remove(e)
         except ValueError:
             pass
-    return list(__rank(None, input, codecs, True, extended, True))[:limit]
+    r = list(__rank(None, input, codecs, True, extended, True))
+    return r[:limit] if len(r) > 1 else r
 codecs.rank = rank
 
