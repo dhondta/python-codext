@@ -53,7 +53,6 @@ def base91_encode(mode):
                 else:
                     bits += "0" * (13 - len(bits))
                     n = int(bits, 2)
-                    print(bits, n)
                     s += b91[n // 91] + b91[n % 91]
         else:
             for c in t:

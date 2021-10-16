@@ -171,7 +171,7 @@ o
 `atbash` | text <-> Atbash ciphertext | aka Atbash Cipher
 `bacon` | text <-> Bacon ciphertext | aka Baconian Cipher
 `barbie-N` | text <-> barbie ciphertext | aka Barbie Typewriter (N belongs to [1, 4])
-`baseXX` | text <-> baseXX | see [base encodings](https://python-codext.readthedocs.io/en/latest/enc/base.html)
+`baseXX` | text <-> baseXX | see [base encodings](https://python-codext.readthedocs.io/en/latest/enc/base.html) (incl base32, 36, 45, 58, 62, 63, 64, 91, 100, 122)
 `baudot` | text <-> Baudot code bits | supports CCITT-1, CCITT-2, EU/FR, ITA1, ITA2, MTK-2 (Python3 only), UK, ...
 `bcd` | text <-> binary coded decimal text | encodes characters from their (zero-left-padded) ordinals
 `braille` | text <-> braille symbols | Python 3 only

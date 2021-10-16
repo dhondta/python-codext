@@ -59,6 +59,10 @@ B62 = {'': digits + upper + lower, 'inv': digits + lower + upper}
 base(B62, r"^base[-_]?62(|[-_]inv(?:erted)?)$")
 
 
+B63 = {'': upper + lower + digits + "$", 'inv': lower + upper + digits + "$"}
+base(B63, r"^base[-_]?63(|[-_]inv(?:erted)?)$")
+
+
 B64 = {
     r'':                        upper + lower + digits + "+/",
     r'[-_]inv(erted)?$':        lower + upper + digits + "+/",

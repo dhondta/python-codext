@@ -62,8 +62,12 @@ Note that for `base64`, it overwrites the native `base64_codec` to also support 
 :---: | :---: | --- | ---
 `base3` | text <-> Base3 encoded text | `base[-_]?36(|[-_]inv(erted)?)` | 
 `base36` | text <-> Base36 encoded text | `base[-_]?36(|[-_]inv(erted)?)` | 
+`base45` | text <-> Base45 encoded text | `base[-_]?45(|[-_]inv(erted)?)` | 
 `base58` | text <-> Base58 encoded text | `base[-_]?58(|[-_](bc|bitcoin|rp|ripple|fl|flickr|short[-]?url|url))` | supports Bitcoin, Ripple and short URL
 `base62` | text <-> Base62 encoded text | `base[-_]?62(|[-_]inv(erted)?)` | 
+`base63` | text <-> Base63 encoded text | `base[-_]?63(|[-_]inv(erted)?)` | 
+`base91` | text <-> Base91 encoded text | `base[-_]?91(|[-_]inv(erted)?)` | 
+`base91-alt` | text <-> Alternate Base91 encoded text | `base[-_]?91[-_]alt(?:ernate)?(|[-_]inv(erted)?)` | Another version of Base91
 
 ```python
 >>> codext.encode("test", "base3")
@@ -75,6 +79,13 @@ Note that for `base64`, it overwrites the native `base64_codec` to also support 
 'WANEK4'
 >>> codecs.decode("4WMHTK6UZL044O91NKCEB8", "base36")
 'this is a test'
+```
+
+```python
+>>> codext.encode("this is a test!", "base45")
+'AWE+EDH44.OEOCC7WE QEX0'
+>>> codext.decode('AWE+EDH44.OEOCC7WE QEX0', "base45")
+'this is a test!'
 ```
 
 ```python
@@ -91,6 +102,13 @@ Note that for `base64`, it overwrites the native `base64_codec` to also support 
 '289lyu'
 >>> codecs.encode("this is a test", "base62")
 'CsoB4HQ5gmgMyCenF7E'
+```
+
+```python
+>>> codecs.encode("This is a test !", "base91")
+'nX,<:WRT%yxth90oZB^C'
+>>> codext.encode("This is a test !", "base91-alt")
+'?a&[jv4S3Wg>,71@Jo#K'
 ```
 
 !!! note "Generic encodings"
