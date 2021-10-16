@@ -84,7 +84,7 @@ def make_test(**params):
                             with codecs.open(tfile, 'wb', encoding=ename) as f:
                                 f.write(b(s))
                             with codecs.open(tfile, 'rb', encoding=ename) as f:
-                                s2 = f.read().strip(b("\x00"))
+                                s2 = f.read() if PY3 else f.read().rstrip("\x00")
                             self.assertEqual(b(icdec(s2)), b(icdec(s)))
                             os.remove(tfile)
                     else:
