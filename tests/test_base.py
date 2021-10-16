@@ -209,6 +209,17 @@ class TestCodecsBase(TestCase):
         self.assertIsNotNone(codecs.decode("AD", "base91"))
         self.assertRaises(ValueError, codecs.decode, "\xff", "base91")
         self.assertRaises(ValueError, codecs.decode, "a\xff", "base91")
+        B91A = "Jx&[jv4S3Wg>,71@Jk"
+        self.assertEqual(codecs.encode(STR, "base91-alt"), B91A)
+        self.assertEqual(codecs.encode(b(STR), "base91-alt"), b(B91A))
+        self.assertEqual(codecs.decode(B91A, "base91_alt"), STR)
+        self.assertEqual(codecs.decode(b(B91A), "base91_alt"), b(STR))
+        B91A = "jX&[JV4s3wG>,71@jK"
+        self.assertEqual(codecs.encode(STR, "base91-alt-inv"), B91A)
+        self.assertEqual(codecs.decode(B91A, "base91_alt_inv"), STR)
+        self.assertIsNotNone(codecs.encode("\x00\x00", "base91-alt"))
+        self.assertIsNotNone(codecs.decode("abc", "base91-alt"))
+        self.assertIsNotNone(codecs.decode("AD", "base91_alt"))
     
     def test_codec_base100(self):
         if PY3:
