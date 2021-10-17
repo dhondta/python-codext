@@ -18,6 +18,7 @@ guess    = codecs.guess
 lookup   = codecs.lookup
 open     = codecs.open
 
+_lst = list
 list = list_encodings  # not included in __all__ because of shadow name
 
 
@@ -30,18 +31,6 @@ def __literal_eval(o):
         return literal_eval(str(o))
     except ValueError:
         return literal_eval("'" + str(o) + "'")
-
-
-def __stdin_pipe():
-    """ Stdin pipe read function. """
-    try:
-        with open(0, 'rb') as f:
-            for l in f:
-                yield l
-    except TypeError:
-        import sys
-        for l in sys.stdin:
-            yield l
 
 
 def main():
@@ -79,10 +68,10 @@ def main():
                         help="error handling (default: strict)")
     guess = sparsers.add_parser("guess", help="try guessing the decoding codecs")
     guess.add_argument("encoding", nargs="*", help="list of known encodings to apply (default: none)")
-    guess.add_argument("-c", "--codec-categories", help="codec categories to be included in the search ; "
-                                                        "format: string|tuple|list(strings|tuples)")
-    guess.add_argument("-e", "--exclude-codecs", help="codecs to be explicitely not used ; "
-                                                      "format: string|tuple|list(strings|tuples)")
+    guess.add_argument("-c", "--codec-categories", nargs="*", help="codec categories to be included in the search ; "
+                                                                   "format: string|tuple")
+    guess.add_argument("-e", "--exclude-codecs", nargs="*", help="codecs to be explicitely not used ; "
+                                                                 "format: string|tuple")
     guess.add_argument("-f", "--stop-function", default="text", help="result checking function (default: text) ; "
                        "format: printables|text|flag|lang_[bigram]|[regex]")
     guess.add_argument("--max-depth", default=5, type=int, help="maximum codec search depth (default: 5)")
@@ -107,6 +96,15 @@ def main():
     search = sparsers.add_parser("search", help="search for codecs")
     search.add_argument("pattern", nargs="+", help="encoding pattern to search")
     args = parser.parse_args()
+    try:
+        args.codec_categories = _lst(map(__literal_eval, args.codec_categories))
+    except (AttributeError, TypeError):
+        pass
+    try:
+        args.exclude_codecs = _lst(map(__literal_eval, args.exclude_codecs))
+    except (AttributeError, TypeError):
+        pass
+    #print(args.codec_categories, args.exclude_codecs)
     # if a search pattern is given, only handle it
     if args.command == "search":
         results = []
@@ -115,14 +113,7 @@ def main():
         print(", ".join(results) or "No encoding found")
         return
     # handle input file or stdin
-    if args.infile:
-        with open(args.infile, 'rb') as f:
-            c = f.read()
-    else:
-        c = b("")
-        for line in __stdin_pipe():
-            c += line
-    # strip only the very last (CR)LF
+    c =_input(args.infile)
     c = c.rstrip("\r\n") if isinstance(c, str) else c.rstrip(b"\r\n")
     # strip any other (CR)LF
     if args.strip:
@@ -142,8 +133,8 @@ def main():
                          getattr(stopfunc, args.stop_function, args.stop_function),
                          args.min_depth,
                          args.max_depth,
-                         __literal_eval(args.codec_categories),
-                         __literal_eval(args.exclude_codecs),
+                         args.codec_categories,
+                         args.exclude_codecs,
                          args.encoding,
                          not args.do_not_stop,
                          True,  # show
@@ -162,8 +153,7 @@ def main():
         if len(r) == 0:
             print("Could not decode :-(")
     elif args.command == "rank":
-        for i, e in codecs.rank(c, args.extended, args.limit,
-                                __literal_eval(args.codec_categories), __literal_eval(args.exclude_codecs)):
+        for i, e in codecs.rank(c, args.extended, args.limit, args.codec_categories, args.exclude_codecs):
             s = "[+] %.5f: %s" % (i[0], e)
             print(s if len(s) <= 80 else s[:77] + "...")
 

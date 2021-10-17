@@ -2,12 +2,15 @@
 """Generic baseN functions.
 
 """
+from argparse import ArgumentParser, RawTextHelpFormatter
 from math import log
 from six import integer_types, string_types
 from string import ascii_lowercase as lower, ascii_uppercase as upper, digits, printable
-from types import FunctionType
+from textwrap import wrap
+from types import FunctionType, MethodType
 
 from ..__common__ import *
+from ..__info__ import __version__
 
 
 class BaseError(ValueError):
@@ -86,9 +89,7 @@ def base_encode(input, charset, errors="strict", exc=BaseEncodeError):
     :param errors:  errors handling marker
     :param exc:     exception to be raised in case of error
     """
-    i = input if isinstance(input, integer_types) else s2i(input)
-    n = len(charset)
-    r = ""
+    i, n, r = input if isinstance(input, integer_types) else s2i(input), len(charset), ""
     while i > 0:
         i, c = divmod(i, n)
         r = charset[c] + r
@@ -103,13 +104,13 @@ def base_decode(input, charset, errors="strict", exc=BaseDecodeError):
     :param errors:  errors handling marker
     :param exc:     exception to be raised in case of error
     """
-    i, n = 0, len(charset)
+    i, n, dec = 0, len(charset), lambda n: base_encode(n, [chr(x) for x in range(256)], errors, exc)
     for k, c in enumerate(input):
         try:
             i = i * n + charset.index(c)
         except ValueError:
-            handle_error("base", errors, exc, decode=True)(c, k)
-    return base_encode(i, [chr(j) for j in range(256)], errors, exc)
+            handle_error("base", errors, exc, decode=True)(c, k, dec(i))
+    return dec(i)
 
 
 # base codec factory functions
@@ -161,4 +162,56 @@ def base_generic():
     add("base", encode, decode, r"^base[-_]?([2-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(?:[-_]generic)?$",
         guess=["base%d-generic" % i for i in range(2, 255)], entropy=lambda e, n: log(int(n.split("-")[0][4:]), 2),
         len_charset=lambda n: int(n.split("-")[0][4:]), printables_rate=1., category="base-generic", penalty=.4)
+
+
+def main(n, ref=None, alt=None):
+    base = str(n) + ("-" + alt.lstrip("-") if alt else "")
+    src = "The data are encoded as described for the base%(base)s alphabet in %(reference)s.\n" % \
+          {'base': base, 'reference': "\n" + ref if len(ref) > 10 else ref} if ref else ""
+    descr = """Usage: base%(base)s [OPTION]... [FILE]
+Base%(base)s encode or decode FILE, or standard input, to standard output.
+
+With no FILE, or when FILE is -, read standard input.
+
+Mandatory arguments to long options are mandatory for short options too.
+  -d, --decode          decode data
+  -i, --ignore-garbage  when decoding, ignore non-alphabet characters
+  -I, --invert          invert charsets from the base alphabet (e.g. lower- and uppercase)
+  -w, --wrap=COLS       wrap encoded lines after COLS character (default 76).
+                          Use 0 to disable line wrapping
+
+      --help     display this help and exit
+      --version  output version information and exit
+
+%(source)sWhen decoding, the input may contain newlines in addition to the bytes of
+the formal base%(base)s alphabet.  Use --ignore-garbage to attempt to recover
+from any other non-alphabet bytes in the encoded stream.
+
+Report base%(base)s translation bugs to <https://github.com/dhondta/python-codext/issues/new>
+Full documentation at: <https://python-codext.readthedocs.io/en/latest/enc/base.html>
+""" % {'base': base, 'source': src}
+    
+    def _main():
+        parser = ArgumentParser(description=descr, formatter_class=RawTextHelpFormatter, add_help=False)
+        parser.format_help = MethodType(lambda s: s.description, parser)
+        parser.add_argument("file", nargs="?")
+        parser.add_argument("-d", "--decode", action="store_true")
+        parser.add_argument("-i", "--ignore-garbage", action="store_true")
+        parser.add_argument("-I", "--invert", action="store_true")
+        parser.add_argument("-w", "--wrap", type=int, default=76)
+        parser.add_argument("--help", action="help")
+        parser.add_argument("--version", action="version")
+        parser.version = "CodExt " + __version__
+        args = parser.parse_args()
+        c, f = _input(args.file), [encode, decode][args.decode]
+        c = c.rstrip("\r\n") if isinstance(c, str) else c.rstrip(b"\r\n")
+        try:
+            c = f(c, "base" + base + ["", "-inv"][args.invert], ["strict", "ignore"][args.ignore_garbage])
+        except Exception as err:
+            print("%sbase%d: invalid input" % (err.output, n))
+            return 1
+        for l in wrap(ensure_str(c), args.wrap):
+            print(l)
+        return 0
+    return _main
 

@@ -7,7 +7,7 @@ This codec:
 - decodes file content to str (read)
 - encodes file content from str to bytes (write)
 """
-from ._base import digits, lower, upper
+from ._base import digits, lower, main, upper
 from ..__common__ import *
 
 
@@ -57,21 +57,24 @@ def base45_decode(mode):
     b45 = {c: i for i, c in enumerate(B45[['inv', ''][mode == ""]])}
     def decode(text, errors="strict"):
         t, s, err = b(text), "", "'base45' codec can't decode character '%s' in position %d"
+        ehandler = handle_error("base45", errors, Base45DecodeError, decode=True)
         for i in range(0, len(text), 3):
             try:
                 n = b45[__chr(t[i])]
             except KeyError:
-                raise Base45DecodeError(err % (__chr(t[i]), i))
+                ehandler(__chr(t[i]), i, s)
             try:
                 j = i + 1
                 n += 45 * b45[__chr(t[j])]
             except KeyError:
-                raise Base45DecodeError(err % (__chr(t[j]), j))
+                ehandler(__chr(t[j]), j, s)
+            except IndexError:
+                ehandler(__chr(t[i]), i, s)
             try:
                 k = i + 2
                 n += 45 ** 2 * b45[__chr(t[k])]
             except KeyError:
-                raise Base45DecodeError(err % (__chr(t[k]), k))
+                ehandler(__chr(t[k]), k, s)
             except IndexError:
                 s += __chr(n)
                 continue
@@ -81,4 +84,5 @@ def base45_decode(mode):
 
 
 add("base45", base45_encode, base45_decode, r"^base[-_]?45(|[-_]inv(?:erted)?)$")
+main = main(45, "<https://datatracker.ietf.org/doc/html/draft-faltstrom-base45-04.txt>")
 

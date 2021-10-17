@@ -31,7 +31,7 @@ except ImportError:  # Python 3
 __all__ = ["add", "add_map", "b", "clear", "codecs", "decode", "encode", "ensure_str", "examples", "guess",
            "generate_strings_from_regex", "get_alphabet_from_mask", "handle_error", "is_native", "list_categories",
            "list_encodings", "lookup", "maketrans", "rank", "re", "register", "remove", "reset", "s2i", "search",
-           "stopfunc", "BytesIO", "MASKS", "PY3"]
+           "stopfunc", "BytesIO", "MASKS", "PY3", "_input"]
 CODECS_REGISTRY = None
 CODECS_CATEGORIES = ["native", "custom"]
 MASKS = {
@@ -56,6 +56,29 @@ iss = lambda s: isinstance(s, string_types)
 fix = lambda x, ref: b(x) if isb(ref) else ensure_str(x) if iss(ref) else x
 
 s2i = lambda s: int(codecs.encode(s, "base16"), 16)
+
+
+def __stdin_pipe():
+    """ Stdin pipe read function. """
+    try:
+        with open(0, 'rb') as f:
+            for l in f:
+                yield l
+    except TypeError:
+        for l in sys.stdin:
+            yield l
+
+
+def _input(infile):
+    # handle input file or stdin
+    if infile:
+        with open(infile, 'rb') as f:
+            c = f.read()
+    else:
+        c = b("")
+        for line in __stdin_pipe():
+            c += line
+    return c
 
 
 def add(ename, encode=None, decode=None, pattern=None, text=True, add_to_codecs=False, **kwargs):
@@ -612,15 +635,18 @@ def handle_error(ename, errors, sep="", repl_char="?", repl_minlen=1, decode=Fal
     glob = {'__name__': "__main__"}
     exec("class %s(ValueError): pass" % exc, glob)
     
-    def _handle_error(token, position):
+    def _handle_error(token, position, output=""):
         """ This handles an encoding/decoding error according to the selected handling mode.
         
         :param token:    input token to be encoded/decoded
         :param position: token position index
+        :param output:   output, as decoded up to the position of the error
         """
         if errors == "strict":
             msg = "'{}' codec can't {}code character '{}' in {} {}"
-            raise glob[exc](msg.format(ename, ["en", "de"][decode], token, item, position))
+            err = glob[exc](msg.format(ename, ["en", "de"][decode], token, item, position))
+            err.output = output
+            raise err
         elif errors == "leave":
             return token + sep
         elif errors == "replace":

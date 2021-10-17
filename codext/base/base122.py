@@ -7,6 +7,7 @@ This codec:
 - decodes file content to str (read)
 - encodes file content from str to bytes (write)
 """
+from ._base import main
 from ..__common__ import *
 
 
@@ -67,7 +68,6 @@ if PY3:
             r.extend([B1, B2])
         return "".join(map(chr, r)).encode("latin-1"), len(input)
 
-
     # inspired from: https://github.com/kevinAlbs/Base122/blob/master/base122.js
     def base122_decode(input, errors="strict"):
         currB, bob, r, input = 0, 0, [], list(map(ord, input))
@@ -91,7 +91,14 @@ if PY3:
             else:
                 currB, bob = _get_7bits(currB, bob, input[i], r)
         return "".join(map(chr, r)), len(input)
+else:
+    def base122_encode(input, errors='strict'):
+        raise NotImplementedError
+
+    def base122_decode(input, errors='strict'):
+        raise NotImplementedError
 
 
-    add("base122", base122_encode, base122_decode, r"^base[-_]?122$")
+add("base122", base122_encode, base122_decode, r"^base[-_]?122$")
+main = main(122, "<http://blog.kevinalbs.com/base122>")
 

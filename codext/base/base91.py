@@ -7,7 +7,7 @@ This codec:
 - decodes file content to str (read)
 - encodes file content from str to bytes (write)
 """
-from ._base import digits, lower, upper
+from ._base import digits, lower, main, upper
 from ..__common__ import *
 
 # no __examples__ ; handled manually in tests/test_base.py
@@ -79,19 +79,19 @@ def base91_decode(mode):
     b91 = {c: i for i, c in enumerate(B91[mode if mode in B91.keys() else ""])}
     def decode(text, errors="strict"):
         t, s, bits, alt = b(text), "", "", mode.startswith("alt")
-        err = "'base91' codec can't decode character '%s' in position %d"
+        ehandler = handle_error("base91", errors, Base91DecodeError, decode=True)
         for i in range(0, len(t), 2):
             try:
                 n = b91[__chr(t[i])] * [1, 91][alt]
             except KeyError:
-                raise Base91DecodeError(err % (__chr(t[i]), i))
+                ehandler(__chr(t[i]), i, s)
             try:
                 j = i + 1
                 n += b91[__chr(t[j])] * [91, 1][alt]
             except IndexError:
                 pass
             except KeyError:
-                raise Base91DecodeError(err % (__chr(t[j]), j))
+                ehandler(__chr(t[j]), j, s)
             if alt:
                 bits += "{:013b}".format(n)
                 while 8 <= len(bits):
@@ -115,4 +115,5 @@ def base91_decode(mode):
 
 add("base91", base91_encode, base91_decode, r"^base[-_]?91((?:|[-_]alt(?:ernate)?)(?:|[-_]inv(?:erted)?)?)$",
     entropy=6.5)
+main = main(91, "<http://base91.sourceforge.net/>")
 

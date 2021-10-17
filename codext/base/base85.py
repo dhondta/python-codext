@@ -11,6 +11,7 @@ This codec:
 """
 import base64
 
+from ._base import main
 from ..__common__ import *
 
 
@@ -33,6 +34,14 @@ if PY3:
 
     def base85_decode(input, errors='strict'):
         return base64.b85decode(b(input)), len(input)
+else:
+    def base85_encode(input, errors='strict'):
+        raise NotImplementedError
 
-    add("base85", base85_encode, base85_decode, r"^base[-_]?85$", entropy=7.05)
+    def base85_decode(input, errors='strict'):
+        raise NotImplementedError
+
+
+add("base85", base85_encode, base85_decode, r"^base[-_]?85$", entropy=7.05)
+main = main(85, "RFC 1924")
 
