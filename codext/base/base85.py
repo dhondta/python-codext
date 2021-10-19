@@ -15,7 +15,8 @@ from ._base import main
 from ..__common__ import *
 
 
-__examples__ = {'enc(base85|base-85|base_85)': {'this is a test': "bZBXFAZc?TVIXv6b94"}}
+__examples__ = {'enc(base85|base-85|base_85)': {'this is a test': "bZBXFAZc?TVIXv6b94"}} if PY3 else \
+               {'enc(base85': None}
 
 
 #FIXME: implement Z85 (ZeroMQ) in base85.py ; cfr spec https://rfc.zeromq.org/spec/32/

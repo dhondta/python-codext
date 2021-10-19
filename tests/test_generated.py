@@ -91,7 +91,7 @@ def make_test(**params):
                         for s1, s2 in examples.items():
                             # willingly erroneous tests
                             if s2 is None:
-                                self.assertRaises(ValueError, f1, s1, ename)
+                                self.assertRaises((ValueError, NotImplementedError), f1, s1, ename)
                                 continue
                             # raw text tests
                             self.assertEqual(icenc(f1(s1, ename)), icenc(s2))

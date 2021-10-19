@@ -19,7 +19,7 @@ __examples__ = {
             b"9N ;Z.FA\x01H13L.C)\x01Bn2\x08\x0e7\x01MF1\x1a\x0c$\x06\x1b!Br0XnF+If \x10B@"
     },
     'enc-dec(base_122)': ["@random"],
-}
+} if PY3 else {'enc(base122': None}
 
 
 _BAD = [0, 10, 13, 34, 38, 92]
