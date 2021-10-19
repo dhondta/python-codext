@@ -3,11 +3,13 @@
 """Base codecs tests.
 
 """
+import os
+import sys
 from unittest import TestCase
 
 from codext.__common__ import *
 from codext.base._base import _generate_charset
-from codext.base.baseN import base
+from codext.base.baseN import base, main2, main32, main64url
 
 
 class TestCodecsBase(TestCase):
@@ -238,4 +240,17 @@ class TestCodecsBase(TestCase):
         self.assertRaises(LookupError, codecs.decode, "test", "base0-generic")
         self.assertRaises(LookupError, codecs.decode, "test", "base1-generic")
         self.assertRaises(LookupError, codecs.decode, "test", "base256-generic")
+    
+    def test_base_main(self):
+        tmp = sys.argv[:]
+        tfile = "test-base-main.txt"
+        with open(tfile, 'w') as f:
+            f.write("This is a long test string for the sake of causing line wrapping based on default parameters.")
+        sys.argv = [tmp[0], tfile]
+        for m in main32, main64url:
+            self.assertEqual(m(), 0)
+        sys.argv = [tmp[0], tfile, "-d"]
+        self.assertEqual(main2(), 1)
+        os.remove(tfile)
+        sys.argv[:] = tmp
 

@@ -150,9 +150,9 @@ class TestCommon(TestCase):
         self.assertIn("F1@9", _l(codext.guess("VGVzdCBGMUA5ICE=", codext.stopfunc.flag, max_depth=1, stop=False,
                                               show=True)))
         self.assertEqual(len(codext.guess("VGhpcyBpcyBhIHRlc3Q=", " a test", max_depth=1, codec_categories="base",
-                                          exclude="base64")), 0)
+                                          exclude=("base64", "base64-url"))), 0)
         self.assertEqual(len(codext.guess("VGhpcyBpcyBhIHRlc3Q=", " a test", max_depth=1, codec_categories="base",
-                                          scoring_heuristic=True, exclude=("base64", "atbash"))), 0)
+                                          scoring_heuristic=True, exclude=("base64", "base64-url", "atbash"))), 0)
         self.assertRaises(ValueError, codext.guess, STR, max_depth=0)
         self.assertRaises(ValueError, codext.guess, STR, exclude=42)
         for c in ["base", "language", "native", "stegano"]:

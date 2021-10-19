@@ -13,7 +13,7 @@ from ..__common__ import *
 
 __examples__ = {
     'enc(base45|base-45|base_45)': {'this is a test!': "AWE+EDH44.OEOCC7WE QEX0"},
-    'dec(base45)':                 {'BAD STRING\00': None},
+    'dec(base45)':                 {'BAD STRING\00': None, 'AWE+EDH44.OEOCC7WE QEX000': None},
 }
 __guess__ = ["base45", "base45-inv"]
 
