@@ -16,6 +16,14 @@ from ..__common__ import *
 # no __examples__ ; handled manually in tests/test_base.py
 
 
+def base100_encode(input, errors='strict'):
+    raise NotImplementedError
+
+
+def base100_decode(input, errors='strict'):
+    raise NotImplementedError
+
+
 if PY3:
     class Base100DecodeError(ValueError):
         pass
@@ -41,12 +49,6 @@ if PY3:
             elif i % 4 == 3:
                 r[i//4] = (c - 128 + tmp - 55) & 0xff
         return bytes(r), len(input)
-else:
-    def base100_encode(input, errors='strict'):
-        raise NotImplementedError
-
-    def base100_decode(input, errors='strict'):
-        raise NotImplementedError
     
     
 add("base100", base100_encode, base100_decode, r"^(?:base[-_]?100|emoji)$")

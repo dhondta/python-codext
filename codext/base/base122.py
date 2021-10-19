@@ -26,6 +26,14 @@ _BAD = [0, 10, 13, 34, 38, 92]
 _i = lambda c: c if isinstance(c, int) else ord(c)
 
 
+def base122_encode(input, errors='strict'):
+    raise NotImplementedError
+
+
+def base122_decode(input, errors='strict'):
+    raise NotImplementedError
+
+
 if PY3:
     # inspired from: https://github.com/kevinAlbs/Base122/blob/master/base122.js
     def base122_encode(input, errors="strict"):
@@ -91,12 +99,6 @@ if PY3:
             else:
                 currB, bob = _get_7bits(currB, bob, input[i], r)
         return "".join(map(chr, r)), len(input)
-else:
-    def base122_encode(input, errors='strict'):
-        raise NotImplementedError
-
-    def base122_decode(input, errors='strict'):
-        raise NotImplementedError
 
 
 add("base122", base122_encode, base122_decode, r"^base[-_]?122$")

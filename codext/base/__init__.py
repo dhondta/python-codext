@@ -52,7 +52,7 @@ Full documentation at: <https://python-codext.readthedocs.io/en/latest/enc/base.
     c = _input(args.file)
     c = c.rstrip("\r\n") if isinstance(c, str) else c.rstrip(b"\r\n")
     r = codecs.guess(c, sfunc, args.min_depth, args.max_depth, exclude=excl, codec_categories="base",
-                     stop=not args.do_not_stop, show=True, scoring_heuristic=False)
+                     stop=not args.do_not_stop, show=True, scoring_heuristic=False, debug=args.verbose)
     if not args.do_not_stop:
-        print(ensure_str(list(r.items())[0][1]))
+        print("Could not decode :-(" if len(r) == 0 else ensure_str(list(r.items())[0][1]))
 

@@ -28,18 +28,20 @@ __examples__ = {'enc(base85|base-85|base_85)': {'this is a test': "bZBXFAZc?TVIX
 #base(B85, r"^base[-_]?85(|[-_](?:z(?:eromq)?|rfc1924))$")
 
 
+def base85_encode(input, errors='strict'):
+    raise NotImplementedError
+
+
+def base85_decode(input, errors='strict'):
+    raise NotImplementedError
+
+
 if PY3:
     def base85_encode(input, errors='strict'):
         return base64.b85encode(b(input)), len(input)
 
     def base85_decode(input, errors='strict'):
         return base64.b85decode(b(input)), len(input)
-else:
-    def base85_encode(input, errors='strict'):
-        raise NotImplementedError
-
-    def base85_decode(input, errors='strict'):
-        raise NotImplementedError
 
 
 add("base85", base85_encode, base85_decode, r"^base[-_]?85$", entropy=7.05)
