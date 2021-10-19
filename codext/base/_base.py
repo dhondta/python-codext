@@ -135,14 +135,17 @@ def base(charset, pattern, pow2=False, encode_template=base_encode, decode_templ
     
     def decode(param=""):
         a = _get_charset(charset, param)
+        sl, sc = "\n" not in a, "\n" not in a and not "\r" in a
         def _decode(input, errors="strict"):
+            input = _stripl(input, sc, sl)
             return decode_template(input, a, errors), len(input)
         return _decode
     
     kwargs['len_charset'] = n
     kwargs['printables_rate'] = 1.
     n = "base{}".format(n) if name is None else name
-    add(n, encode, decode, pattern, entropy=nb, guess=[n], **kwargs)
+    kwargs['guess'] = kwargs.get('guess', [n])
+    add(n, encode, decode, pattern, entropy=nb, **kwargs)
 
 
 def base_generic():
@@ -155,7 +158,9 @@ def base_generic():
     
     def decode(n):
         a = _generate_charset(int(n))
+        sl, sc = "\n" not in a, "\n" not in a and not "\r" in a
         def _decode(input, errors="strict"):
+            input = _stripl(input, sc, sl)
             return base_decode(input, a, errors), len(input)
         return _decode
     
@@ -164,10 +169,10 @@ def base_generic():
         len_charset=lambda n: int(n.split("-")[0][4:]), printables_rate=1., category="base-generic", penalty=.4)
 
 
-def main(n, ref=None, alt=None):
+def main(n, ref=None, alt=None, inv=True):
     base = str(n) + ("-" + alt.lstrip("-") if alt else "")
     src = "The data are encoded as described for the base%(base)s alphabet in %(reference)s.\n" % \
-          {'base': base, 'reference': "\n" + ref if len(ref) > 10 else ref} if ref else ""
+          {'base': base, 'reference': "\n" + ref if len(ref) > 20 else ref} if ref else ""
     descr = """Usage: base%(base)s [OPTION]... [FILE]
 Base%(base)s encode or decode FILE, or standard input, to standard output.
 
@@ -176,8 +181,7 @@ With no FILE, or when FILE is -, read standard input.
 Mandatory arguments to long options are mandatory for short options too.
   -d, --decode          decode data
   -i, --ignore-garbage  when decoding, ignore non-alphabet characters
-  -I, --invert          invert charsets from the base alphabet (e.g. lower- and uppercase)
-  -w, --wrap=COLS       wrap encoded lines after COLS character (default 76).
+%(inv)s  -w, --wrap=COLS       wrap encoded lines after COLS character (default 76).
                           Use 0 to disable line wrapping
 
       --help     display this help and exit
@@ -189,26 +193,29 @@ from any other non-alphabet bytes in the encoded stream.
 
 Report base%(base)s translation bugs to <https://github.com/dhondta/python-codext/issues/new>
 Full documentation at: <https://python-codext.readthedocs.io/en/latest/enc/base.html>
-""" % {'base': base, 'source': src}
+""" % {'base': base, 'source': src,
+       'inv': ["", "  -I, --invert          invert charsets from the base alphabet (e.g. lower- and uppercase)\n"][inv]}
     
     def _main():
-        parser = ArgumentParser(description=descr, formatter_class=RawTextHelpFormatter, add_help=False)
-        parser.format_help = MethodType(lambda s: s.description, parser)
-        parser.add_argument("file", nargs="?")
-        parser.add_argument("-d", "--decode", action="store_true")
-        parser.add_argument("-i", "--ignore-garbage", action="store_true")
-        parser.add_argument("-I", "--invert", action="store_true")
-        parser.add_argument("-w", "--wrap", type=int, default=76)
-        parser.add_argument("--help", action="help")
-        parser.add_argument("--version", action="version")
-        parser.version = "CodExt " + __version__
-        args = parser.parse_args()
+        p = ArgumentParser(description=descr, formatter_class=RawTextHelpFormatter, add_help=False)
+        p.format_help = MethodType(lambda s: s.description, p)
+        p.add_argument("file", nargs="?")
+        p.add_argument("-d", "--decode", action="store_true")
+        p.add_argument("-i", "--ignore-garbage", action="store_true")
+        if inv:
+            p.add_argument("-I", "--invert", action="store_true")
+        p.add_argument("-w", "--wrap", type=int, default=76)
+        p.add_argument("--help", action="help")
+        p.add_argument("--version", action="version")
+        p.version = "CodExt " + __version__
+        args = p.parse_args()
+        args.invert = getattr(args, "invert", False)
         c, f = _input(args.file), [encode, decode][args.decode]
         c = c.rstrip("\r\n") if isinstance(c, str) else c.rstrip(b"\r\n")
         try:
             c = f(c, "base" + base + ["", "-inv"][args.invert], ["strict", "ignore"][args.ignore_garbage])
         except Exception as err:
-            print("%sbase%d: invalid input" % (err.output, n))
+            print("%sbase%s: invalid input" % (getattr(err, "output", ""), base))
             return 1
         for l in wrap(ensure_str(c), args.wrap):
             print(l)

@@ -28,10 +28,10 @@ except ImportError:  # Python 3
     maketrans = str.maketrans
 
 
-__all__ = ["add", "add_map", "b", "clear", "codecs", "decode", "encode", "ensure_str", "examples", "guess",
+__all__ = ["add", "add_map", "b", "clear", "codecs", "decode", "encode", "ensure_str", "examples", "guess", "isb",
            "generate_strings_from_regex", "get_alphabet_from_mask", "handle_error", "is_native", "list_categories",
            "list_encodings", "lookup", "maketrans", "rank", "re", "register", "remove", "reset", "s2i", "search",
-           "stopfunc", "BytesIO", "MASKS", "PY3", "_input"]
+           "stopfunc", "BytesIO", "MASKS", "PY3", "_input", "_stripl"]
 CODECS_REGISTRY = None
 CODECS_CATEGORIES = ["native", "custom"]
 MASKS = {
@@ -79,6 +79,14 @@ def _input(infile):
         for line in __stdin_pipe():
             c += line
     return c
+
+
+def _stripl(s, st_lines, st_crlf):
+    if st_crlf:
+        s = s.replace(b"\r\n", b"") if isb(s) else s.replace("\r\n", "")
+    if st_lines:
+        s = s.replace(b"\n", b"") if isb(s) else s.replace("\n", "")
+    return s
 
 
 def add(ename, encode=None, decode=None, pattern=None, text=True, add_to_codecs=False, **kwargs):
@@ -132,6 +140,14 @@ def add(ename, encode=None, decode=None, pattern=None, text=True, add_to_codecs=
             fenc = fix_inout_formats(fenc)
         if fdec:
             fdec = fix_inout_formats(fdec)
+            sl, sc = kwargs.pop('strip_lines', False), kwargs.pop('strip_crlf', False)
+            if sl or sc:
+                def _striplines(f):
+                    def __wrapper(input, *a, **kw):
+                        return f(_stripl(input, sc, sl), *a, **kw)
+                    return __wrapper
+                # this fixes issues with wrapped encoded inputs
+                fdec = _striplines(fdec)
         
         class Codec(codecs.Codec):
             def encode(self, input, errors="strict"):
@@ -323,7 +339,9 @@ def add_map(ename, encmap, repl_char="?", sep="", ignore_case=None, no_error=Fal
                     for x in v:
                         if x not in tmp.keys():
                             tmp[x] = k
-                smapdict = tmp
+                smapdict, cs = tmp, reduce(lambda acc, x: acc + x, tmp.keys())
+                kwargs['strip_lines'] = "\n" not in set(cs)
+                kwargs['strip_crlf'] = "\r" not in set(cs) and "\n" not in set(cs) and "\r\n" not in cs
             # this allows to avoid an error with Python2 in the "for i, c in enumerate(parts)" loop
             if '' not in smapdict.keys():
                 smapdict[''] = ""
@@ -1075,8 +1093,8 @@ def guess(input, stop_func=stopfunc.printables, min_depth=0, max_depth=5, codec_
             input = decode(input, encoding)
     if isinstance(stop_func, string_types):
         stop_func = stopfunc.regex(stop_func)
+    result = {}
     if len(input) > 0:
-        result = {}
         try:
             # breadth-first search
             for d in range(max_depth):
