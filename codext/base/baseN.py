@@ -44,9 +44,9 @@ B32 = {
     r'[-_]geohash':                    digits + "bcdefghjkmnpqrstuvwxyz",
 }
 base2n(B32, r"^base[-_]?32(|[-_]inv(?:erted)?|(?:[-_]ext(?:ended)?)?[-_]hex|[-_]geohash)$", padding_char="=",
-       guess=["base32", "base32-inv", "base32-ext", "base32-geohash"])
+       guess=["base32", "base32-inv", "base32-hex", "base32-geohash"])
 main32 = main(32, "RFC 4648")
-main32ext = main(32, "RFC 4648", "extended", False)
+main32hex = main(32, "RFC 4648", "hex", False)
 main32geo = main(32, "RFC 4648", "geohash", False)
 
 

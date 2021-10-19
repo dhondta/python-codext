@@ -340,8 +340,7 @@ def add_map(ename, encmap, repl_char="?", sep="", ignore_case=None, no_error=Fal
                         if x not in tmp.keys():
                             tmp[x] = k
                 smapdict, cs = tmp, reduce(lambda acc, x: acc + x, tmp.keys())
-                kwargs['strip_lines'] = "\n" not in set(cs)
-                kwargs['strip_crlf'] = "\r" not in set(cs) and "\n" not in set(cs) and "\r\n" not in cs
+                kwargs['strip_lines'], kwargs['strip_crlf'] = "\n" not in set(cs), "\r\n" not in cs
             # this allows to avoid an error with Python2 in the "for i, c in enumerate(parts)" loop
             if '' not in smapdict.keys():
                 smapdict[''] = ""
