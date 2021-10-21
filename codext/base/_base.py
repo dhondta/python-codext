@@ -209,6 +209,8 @@ Full documentation at: <https://python-codext.readthedocs.io/en/latest/enc/base.
         p.add_argument("--version", action="version")
         p.version = "CodExt " + __version__
         args = p.parse_args()
+        if args.decode:
+            args.wrap = 0
         args.invert = getattr(args, "invert", False)
         c, f = _input(args.file), [encode, decode][args.decode]
         c = c.rstrip("\r\n") if isinstance(c, str) else c.rstrip(b"\r\n")
@@ -217,7 +219,7 @@ Full documentation at: <https://python-codext.readthedocs.io/en/latest/enc/base.
         except Exception as err:
             print("%sbase%s: invalid input" % (getattr(err, "output", ""), base))
             return 1
-        for l in wrap(ensure_str(c), args.wrap):
+        for l in (wrap(ensure_str(c), args.wrap) if args.wrap > 0 else [ensure_str(c)]):
             print(l)
         return 0
     return _main

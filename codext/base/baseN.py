@@ -37,6 +37,11 @@ base2n(B16, r"^(?:base[-_]?16|hex)(|[-_]inv(?:erted)?)$")
 main16 = main(16, "RFC 4648")
 
 
+B26 = {'': upper, 'inv': lower}
+base(B26, r"^(?:base[-_]?26|hex)(|[-_]inv(?:erted)?)$")
+main26 = main(26)
+
+
 B32 = {
     r'':                               upper + "234567",
     r'[-_]inv(erted)?$':               "234567" + upper,
