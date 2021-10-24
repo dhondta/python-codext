@@ -11,6 +11,8 @@
 
 This library extends the native [`codecs`](https://docs.python.org/3/library/codecs.html) library (namely for adding new custom encodings and character mappings) and provides a myriad of new encodings (static or parametrized, like `rot` or `xor`), hence its named combining *CODecs EXTension*.
 
+
+
 ## Setup
 
 ```sh
@@ -18,6 +20,12 @@ $ pip install codext
 ```
 
 **Note**: Some encodings are available in Python 3 only.
+
+## Demonstrations
+
+<p align="center"><img src="https://raw.githubusercontent.com/dhondta/python-codext/master/docs/demos/using-codext.gif" alt="Using CodExt from the command line"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/dhondta/python-codext/master/docs/demos/using-bases.gif" alt="Using base tools from the command line"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/dhondta/python-codext/master/docs/demos/using-debase.gif" alt="Using the debase command line tool"></p>
 
 ## Usage (CLI tool)
 
