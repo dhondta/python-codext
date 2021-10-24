@@ -47,8 +47,7 @@ def base2n_encode(string, charset, errors="strict", exc=Base2NEncodeError):
     while q % 8 != 0:
         q += nb_out
     # iterate over the characters, gathering bits to be mapped to the charset
-    for i, c in enumerate(string):
-        c = c if isinstance(c, int) else ord(c)
+    for i, c in enumerate(b(string)):
         bs += "{:0>8}".format(bin(c)[2:])
         while len(bs) >= nb_out:
             r += charset[int(bs[:nb_out], 2)]

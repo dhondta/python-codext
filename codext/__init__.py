@@ -127,7 +127,7 @@ def main():
             with open(args.outfile, 'wb') as f:
                 f.write(c)
         else:
-            print(ensure_str(c or "Could not decode :-("), end="")
+            print(ensure_str(c or "Could not %scode :-(" % ["en", "de"][args.command == "decode"]), end="")
     elif args.command == "guess":
         r = codecs.guess(c,
                          getattr(stopfunc, args.stop_function, args.stop_function),
