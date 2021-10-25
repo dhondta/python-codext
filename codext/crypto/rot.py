@@ -47,5 +47,5 @@ def rot_decode(i):
 
 
 add("rot", rot_encode, rot_decode, r"(?:caesar|rot)[-_]?([1-9]|1[0-9]|2[0-5]|47)$", aliases=["caesar"],
-    printables_rate=lambda pr: pr)
+    entropy=lambda e: e, printables_rate=lambda pr: pr)
 

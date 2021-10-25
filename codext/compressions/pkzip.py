@@ -28,20 +28,22 @@ if PY3:
         return _encode
 
 
-    def pkzip_decode(compression_type):
+    def pkzip_decode(compression_type, name):
         def _decode(data, errors="strict"):
             d = zipfile._get_decompressor(compression_type)
             r = d.decompress(b(data))
+            if len(r) == 0:
+                return handle_error(name, errors, decode=True)(data[0], 0) if len(data) > 0 else "", len(data)
             return r, len(r)
         return _decode
 
 
-    add("pkzip_deflate", pkzip_encode(8), pkzip_decode(8), r"(?:(?:pk)?zip[-_])?deflate",
+    add("pkzip_deflate", pkzip_encode(8), pkzip_decode(8, "deflate"), r"(?:(?:pk)?zip[-_])?deflate",
         entropy=7.9, examples=__examples1__, guess=["deflate"])
 
-    add("pkzip_bzip2", pkzip_encode(12), pkzip_decode(12), r"(?:(?:pk)?zip[-_])?bz(?:ip)?2",
+    add("pkzip_bzip2", pkzip_encode(12), pkzip_decode(12, "bzip2"), r"(?:(?:pk)?zip[-_])?bz(?:ip)?2",
         entropy=7.9, examples=__examples2__, guess=["bz2"])
 
-    add("pkzip_lzma", pkzip_encode(14), pkzip_decode(14), r"(?:(?:pk)?zip[-_])?lzma",
+    add("pkzip_lzma", pkzip_encode(14), pkzip_decode(14, "lzma"), r"(?:(?:pk)?zip[-_])?lzma",
         entropy=7.9, examples=__examples3__, guess=["lzma"])
 

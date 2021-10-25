@@ -79,8 +79,7 @@ def main():
                                                                 "(default: 0)")
     guess.add_argument("--extended", action="store_true",
                        help="while using the scoring heuristic, also consider null scores (default: False)")
-    guess.add_argument("--heuristic", action="store_true",
-                       help="use a scoring heuristic to accelerate guessing (default: False)")
+    guess.add_argument("--no-heuristic", action="store_true", help="do not use the scoring heuristic (default: False)")
     guess.add_argument("-s", "--do-not-stop", action="store_true",
                        help="do not stop if a valid output is found (default: False)")
     guess.add_argument("-v", "--verbose", action="store_true",
@@ -138,7 +137,7 @@ def main():
                          args.encoding,
                          not args.do_not_stop,
                          True,  # show
-                         args.heuristic,
+                         not args.no_heuristic,
                          args.extended,
                          args.verbose)
         for i, o in enumerate(r.items()):

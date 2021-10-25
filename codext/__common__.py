@@ -903,7 +903,7 @@ stopfunc = ModuleType("stopfunc", """
 """)
 stopfunc.printables = lambda s: all(c in printable for c in ensure_str(s))
 stopfunc.regex      = lambda p: lambda s: re.search(p, ensure_str(s)) is not None
-stopfunc.text       = lambda s: stopfunc.printables(s) and entropy(s) < 4.4
+stopfunc.text       = lambda s: stopfunc.printables(s) and entropy(s) < 4.6
 
 def _lang(lang):
     def _test(s):
@@ -1021,7 +1021,7 @@ def __score(prev_input, input, codec, heuristic=False, extended=False):
         except:
             continue
         # ignore encodings that give an output identical to the input (identity transformation) or to the previous input
-        if prev_input is not None and b(input) == b(new_input) or b(prev_input) == b(new_input):
+        if len(new_input) == 0 or prev_input is not None and b(input) == b(new_input) or b(prev_input) == b(new_input):
             continue
         # compute input's characteristics only once and only if the control flow reaches this point
         pad = sc.get('padding_char')
