@@ -473,7 +473,11 @@ def examples(encoding, number=10):
                 i = 0
                 while i < min(number, len(temp)):
                     if not temp[i].isdigit():
-                        e.append(temp[i])
+                        try:
+                            lookup(temp[i])
+                            e.append(temp[i])
+                        except LookupError:
+                            pass
                     i += 1
         for alias, codec in aliases.items():
             if name == codec:

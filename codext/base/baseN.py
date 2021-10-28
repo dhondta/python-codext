@@ -13,22 +13,22 @@ from ._base2n import base2n
 
 
 B2 = {r'': "01", r'[-_]inv(erted)?': "10"}
-base2n(B2, r"^(?:base[-_]?2|bin)(|[-_]inv(?:erted)?|[-_][a-zA-Z0-9]{2})$")
+base2n(B2, r"^(?:base[-_]?2|bin)(|[-_]inv(?:erted)?|[-_](?!.*(.).*\2)[a-zA-Z0-9]{2})$")
 main2 = main(2)
 
 
 B3 = {r'': "123", r'[-_]inv(erted)?': "321"}
-base(B3, r"^base[-_]?3(|[-_]inv(?:erted)?|[-_][a-zA-Z0-9]{3})$")
+base(B3, r"^base[-_]?3(|[-_]inv(?:erted)?|[-_](?!.*(.).*\2)[a-zA-Z0-9]{3})$")
 main3 = main(3)
 
 
 B4 = {r'': "1234", r'[-_]inv(erted)?': "4321"}
-base2n(B4, r"^base[-_]?4(|[-_]inv(?:erted)?|[-_][a-zA-Z0-9]{4})$")
+base2n(B4, r"^base[-_]?4(|[-_]inv(?:erted)?|[-_](?!.*(.).*\2)[a-zA-Z0-9]{4})$")
 main4 = main(4)
 
 
 B8 = {r'': "abcdefgh", r'[-_]inv(erted)?': "hgfedcba"}
-base2n(B8, r"^base[-_]?8(|[-_]inv(?:erted)?|[-_][a-zA-Z0-9]{8})$")
+base2n(B8, r"^base[-_]?8(|[-_]inv(?:erted)?|[-_](?!.*(.).*\2)[a-zA-Z0-9]{8})$")
 main8 = main(8)
 
 

@@ -47,5 +47,5 @@ if PY3:
         return decode
 
 
-    add("rotate", rotate_encode, rotate_decode, r"rotate(?:[-_]?bits)?[-_]?((?:(?:left|right)[-_]?)?[1-7])$", entropy=1.)
+    add("rotate", rotate_encode, rotate_decode, r"rotate(?:[-_]?bits)?[-_]?((?:(?:left|right)[-_]?)?[1-7])$")
 

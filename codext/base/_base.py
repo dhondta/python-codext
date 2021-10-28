@@ -122,7 +122,8 @@ def base(charset, pattern, pow2=False, encode_template=base_encode, decode_templ
                      the charset)
     :param pow2:    whether the base codec's N is a power of 2
     """
-    n = len(_get_charset(charset))
+    cs = _get_charset(charset)
+    n = len(cs)
     nb = log(n, 2)
     if pow2 and nb != int(nb):
         raise BaseError("Bad charset ; {} is not a power of 2".format(n))
@@ -142,7 +143,7 @@ def base(charset, pattern, pow2=False, encode_template=base_encode, decode_templ
         return _decode
     
     kwargs['len_charset'] = n
-    kwargs['printables_rate'] = 1.
+    kwargs['printables_rate'] = float(len([c for c in cs if c in printable])) / len(cs)
     n = "base{}".format(n) if name is None else name
     kwargs['guess'] = kwargs.get('guess', [n])
     add(n, encode, decode, pattern, entropy=nb, **kwargs)
