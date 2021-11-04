@@ -1,3 +1,6 @@
+<h1 align="center">CodExt <a href="https://twitter.com/intent/tweet?text=CodExt%20-%20Encoding%2Fdecoding%20anything.%0D%0APython%20library%20extending%20the%20native%20codecs%20library%20with%20many%20new%20encodings%20and%20providing%20CLI%20tools%20with%20a%20guess%20feature%20based%20on%20AI.%0D%0Ahttps%3a%2f%2fgithub%2ecom%2fdhondta%2fpython-codext%0D%0A&hashtags=python,programming,encodings,codecs,cryptography,morse,base,ctftools"><img src="https://img.shields.io/badge/Tweet--lightgrey?logo=twitter&style=social" alt="Tweet" height="20"/></a></h1>
+<h3 align="center">Encode/decode anything.</h3>
+
 [![PyPi](https://img.shields.io/pypi/v/codext.svg)](https://pypi.python.org/pypi/codext/)
 [![Read The Docs](https://readthedocs.org/projects/python-codext/badge/?version=latest)](https://python-codext.readthedocs.io/en/latest/?badge=latest)
 [![Build Status](https://travis-ci.com/dhondta/python-codext.svg?branch=master)](https://travis-ci.com/dhondta/python-codext)
@@ -7,88 +10,105 @@
 [![Known Vulnerabilities](https://snyk.io/test/github/dhondta/python-codext/badge.svg?targetFile=requirements.txt)](https://snyk.io/test/github/dhondta/python-codext?targetFile=requirements.txt)
 [![License](https://img.shields.io/pypi/l/codext.svg)](https://pypi.python.org/pypi/codext/)
 
-## Introduction
-
 This library extends the native [`codecs`](https://docs.python.org/3/library/codecs.html) library (namely for adding new custom encodings and character mappings) and provides a myriad of new encodings (static or parametrized, like `rot` or `xor`), hence its named combining *CODecs EXTension*.
-
-
-
-## Setup
 
 ```sh
 $ pip install codext
 ```
 
-**Note**: Some encodings are available in Python 3 only.
-
-## Demonstrations
+## :mag: Demonstrations
 
 <p align="center"><img src="https://raw.githubusercontent.com/dhondta/python-codext/master/docs/demos/using-codext.gif" alt="Using CodExt from the command line"></p>
 <p align="center"><img src="https://raw.githubusercontent.com/dhondta/python-codext/master/docs/demos/using-bases.gif" alt="Using base tools from the command line"></p>
 <p align="center"><img src="https://raw.githubusercontent.com/dhondta/python-codext/master/docs/demos/using-debase.gif" alt="Using the debase command line tool"></p>
 
-## Usage (CLI tool)
+## :computer: Usage (main CLI tool) <a href="https://twitter.com/intent/tweet?text=CodExt%20-%20Encode%2Fdecode%20anything.%0D%0APython%20tool%20for%20encoding%20and%20decoding%20almost%20anything,%20including%20a%20guess%20feature%20based%20on%20AI.%0D%0Ahttps%3a%2f%2fgithub%2ecom%2fdhondta%2fpython-codext%0D%0A&hashtags=python,encodings,codecs,cryptography,morse,base,stegano,steganography,ctftools"><img src="https://img.shields.io/badge/Tweet%20(codext)--lightgrey?logo=twitter&style=social" alt="Tweet on codext" height="20"/></a>
 
-```sh
+```session
 $ codext -i test.txt encode dna-1
 GTGAGCGGGTATGTGA
+
 $ echo -en "test" | codext encode morse
 - . ... -
-```
 
-Python 3 (includes Ascii85, Base85, Base100 and braille):
-
-```sh
 $ echo -en "test" | codext encode braille
 ⠞⠑⠎⠞
+
 $ echo -en "test" | codext encode base100
 👫👜👪👫
 ```
 
-Using codecs chaining:
+Chaining codecs:
 
 ```sh
 $ echo -en "Test string" | codext encode reverse
 gnirts tseT
+
 $ echo -en "Test string" | codext encode reverse morse
 --. -. .. .-. - ... / - ... . -
+
 $ echo -en "Test string" | codext encode reverse morse dna-2
 AGTCAGTCAGTGAGAAAGTCAGTGAGAAAGTGAGTGAGAAAGTGAGTCAGTGAGAAAGTCAGAAAGTGAGTGAGTGAGAAAGTTAGAAAGTCAGAAAGTGAGTGAGTGAGAAAGTGAGAAAGTC
+
 $ echo -en "Test string" | codext encode reverse morse dna-2 octal
 101107124103101107124103101107124107101107101101101107124103101107124107101107101101101107124107101107124107101107101101101107124107101107124103101107124107101107101101101107124103101107101101101107124107101107124107101107124107101107101101101107124124101107101101101107124103101107101101101107124107101107124107101107124107101107101101101107124107101107101101101107124103
+
 $ echo -en "AGTCAGTCAGTGAGAAAGTCAGTGAGAAAGTGAGTGAGAAAGTGAGTCAGTGAGAAAGTCAGAAAGTGAGTGAGTGAGAAAGTTAGAAAGTCAGAAAGTGAGTGAGTGAGAAAGTGAGAAAGTC" | codext -d dna-2 morse reverse
 test string
 ```
 
-## Usage (Python)
+## :computer: Usage (base CLI tool) <a href="https://twitter.com/intent/tweet?text=Debase%20-%20Decode%20any%20multi-layer%20base-encoded%20string.%0D%0APython%20tool%20for%20decoding%20any%20base-encoded%20string,%20even%20when%20encoded%20with%20multiple%20layers.%0D%0Ahttps%3a%2f%2fgithub%2ecom%2fdhondta%2fpython-codext%0D%0A&hashtags=python,base,encodings,codecs,cryptography,stegano,steganography,ctftools"><img src="https://img.shields.io/badge/Tweet%20(debase)--lightgrey?logo=twitter&style=social" alt="Tweet on debase" height="20"/></a>
+
+```session
+$ echo "Test string !" | base122
+*.7!ft9�-f9Â
+
+$ echo "Test string !" | base91 
+"ONK;WDZM%Z%xE7L
+
+$ echo "Test string !" | base91 | base85
+B2P|BJ6A+nO(j|-cttl%
+
+$ echo "Test string !" | base91 | base85 | base36 | base58-flickr
+QVx5tvgjvCAkXaMSuKoQmCnjeCV1YyyR3WErUUErFf
+
+$ echo "Test string !" | base91 | base85 | base36 | base58-flickr | base58-flickr -d | base36 -d | base85 -d | base91 -d
+Test string !
+```
+
+```session
+$ echo "Test string !" | base91 | base85 | base36 | base58-flickr | debase -m 3
+Test string !
+
+$ echo "Test string !" | base91 | base85 | base36 | base58-flickr | debase -f Test
+Test string !
+```
+
+## :computer: Usage (Python)
 
 Getting the list of available codecs:
 
 ```python
 >>> import codext
+
 >>> codext.list()
 ['ascii85', 'base85', 'base100', 'base122', ..., 'tomtom', 'dna', 'html', 'markdown', 'url', 'resistor', 'sms', 'whitespace', 'whitespace-after-before']
-```
 
-Usage examples:
-
-```python
 >>> codext.encode("this is a test", "base58-bitcoin")
 'jo91waLQA1NNeBmZKUF'
+
 >>> codext.encode("this is a test", "base58-ripple")
 'jo9rA2LQwr44eBmZK7E'
+
 >>> codext.encode("this is a test", "base58-url")
 'JN91Wzkpa1nnDbLyjtf'
-```
 
-```python
 >>> codecs.encode("this is a test", "base100")
 '👫👟👠👪🐗👠👪🐗👘🐗👫👜👪👫'
+
 >>> codecs.decode("👫👟👠👪🐗👠👪🐗👘🐗👫👜👪👫", "base100")
 'this is a test'
-```
 
-```python
 >>> for i in range(8):
         print(codext.encode("this is a test", "dna-%d" % (i + 1)))
 GTGAGCCAGCCGGTATACAAGCCGGTATACAAGCAGACAAGTGAGCGGGTATGTGA
@@ -101,22 +121,21 @@ GAGTGCCTGCCGGATATCTTGCCGGATATCTTGCTGTCTTGAGTGCGGGATAGAGT
 CACTCGGTCGGCCATATGTTCGGCCATATGTTCGTCTGTTCACTCGCCCATACACT
 >>> codext.decode("GTGAGCCAGCCGGTATACAAGCCGGTATACAAGCAGACAAGTGAGCGGGTATGTGA", "dna-1")
 'this is a test'
-```
 
-```python
 >>> codecs.encode("this is a test", "morse")
 '- .... .. ... / .. ... / .- / - . ... -'
+
 >>> codecs.decode("- .... .. ... / .. ... / .- / - . ... -", "morse")
 'this is a test'
+
 >>> with open("morse.txt", 'w', encoding="morse") as f:
 	f.write("this is a test")
 14
+
 >>> with open("morse.txt",encoding="morse") as f:
 	f.read()
 'this is a test'
-```
 
-```python
 >>> codext.decode("""
       =            
               X         
@@ -140,9 +159,7 @@ o
            o 
    z      """, "whitespace-after+before")
 'CSC{not_so_invisible}'
-```
 
-```python
 >>> print(codext.encode("An example test string", "baudot-tape"))
 ***.**
    . *
@@ -169,7 +186,7 @@ o
  * .* 
 ```
 
-## List of codecs
+## :page_with_curl: List of codecs
 
 **Codec** | **Conversions** | **Comment**
 :---: | :---: | ---
@@ -231,3 +248,11 @@ A few variants are also implemented.
 `southpark-icase` | text <-> Kenny's language | same as `southpark` but case insensitive
 `whitespace_after_before` | text <-> lines of whitespaces[letter]whitespaces | encodes characters as new characters with whitespaces before and after according to an equation described in the codec name (e.g. "`whitespace+2*after-3*before`")
 
+
+## :clap:  Supporters
+
+[![Stargazers repo roster for @dhondta/python-codext](https://reporoster.com/stars/dark/dhondta/python-codext)](https://github.com/dhondta/python-codext/stargazers)
+
+[![Forkers repo roster for @dhondta/python-codext](https://reporoster.com/forks/dark/dhondta/python-codext)](https://github.com/dhondta/python-codext/network/members)
+
+<p align="center"><a href="#"><img src="https://img.shields.io/badge/Back%20to%20top--lightgrey?style=social" alt="Back to top" height="20"/></a></p>
