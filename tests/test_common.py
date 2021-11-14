@@ -47,6 +47,9 @@ def getregentry(encoding):
 
 
 class TestCommon(TestCase):
+    def setUp(self):
+        codext.reset()
+    
     def test_add_codec(self):
         self.assertRaises(ValueError, codext.add, "test")
         self.assertRaises(ValueError, codext.add, "test", "BAD")
@@ -79,7 +82,6 @@ class TestCommon(TestCase):
             self.assertIn(k, ci.parameters.keys())
     
     def test_list_codecs(self):
-        codext.reset()
         self.assertTrue(len(codext.list()) > 0)
         self.assertTrue(len(codext.list("other")) > 0)
         self.assertTrue(len(codext.list("native")) > 0)
@@ -129,9 +131,16 @@ class TestCommon(TestCase):
         self.assertIsNotNone(list(codext.generate_strings_from_regex(r"[^\\]")))
         self.assertIsNotNone(list(codext.generate_strings_from_regex(r"[^a]")))
     
+    def test_encode_multiple_rounds(self):
+        self.assertRaises(TypeError, codext.encode, b"test", "utf-8[2]")
+        s = "test"
+        for i in range(3):
+            s = codext.encode(s, "morse")
+        self.assertEqual(s, codext.encode("test", "morse[3]"))
+        self.assertIsNotNone(codext.encode("test", "base64[10]"))
+    
     def test_guess_decode(self):
         _l = lambda d: list(d.items())[0][1] if len(d) > 0 else None
-        codext.reset()
         codext.add("test_codec", lambda x, e="strict": (x + "=", len(x)), lambda x, e="strict": (x[:-1], len(x)-1),
                    "test", no_error=True, bonus_func=lambda *a: True, penalty=-.5)
         self.assertIn("test-codec", codext.list_encodings("test"))

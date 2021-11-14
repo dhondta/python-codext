@@ -698,7 +698,14 @@ codecs.decode = decode
 
 def encode(obj, encoding='utf-8', errors='strict'):
     """ Custom encode function relying on the hooked lookup function. """
-    return lookup(encoding).encode(obj, errors)[0]
+    n, m = 1, re.search(r"\[(\d+)\]$", encoding)
+    if m:
+        n = int(m.group(1))
+        encoding = re.sub(r"\[(\d+)\]$", "", encoding)
+    ci = lookup(encoding)
+    for i in range(n):
+        obj = ci.encode(obj, errors)[0]
+    return obj
 codecs.encode = encode
 
 

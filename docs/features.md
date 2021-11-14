@@ -271,6 +271,28 @@ LookupError: unknown encoding: bin
 
 -----
 
+## Multi-rounds encoding
+
+It is possible to use multiple times the same encoding through the following convention: `encoding[X]`
+
+A simple example for a 1-round and a 2-rounds morse-encoded string:
+
+```python
+>>> codext.encode("This is a test", "morse")
+'- .... .. ... / .. ... / .- / - . ... -'
+>>> codext.encode("This is a test", "morse[2]")
+'-....- / .-.-.- .-.-.- .-.-.- .-.-.- / .-.-.- .-.-.- / .-.-.- .-.-.- .-.-.- / -..-. / .-.-.- .-.-.- / .-.-.- .-.-.- .-.-.- / -..-. / .-.-.- -....- / -..-. / -....- / .-.-.- / .-.-.- .-.-.- .-.-.- / -....-'
+```
+
+Another example using 5-rounds base58:
+
+```python
+>>> codext.encode("Sup3rS3cr3t", "base58[5]")
+'3YrjaeeJE1qfUVkpUbMymEMLJenvRrtcZ4vaDQ3httdiqWV8wGYFpqw'
+```
+
+-----
+
 ## Guess-decode an arbitrary input
 
 This is done by trying encodings using the breadth-first tree search algorithm. It stops when a given condition (by default, all characters must be printable), in the form of a function applied to the decoded string at the current depth, is met. It returns two results: the decoded string and a tuple with the related encoding names in order of application. The following parameters can be entered:
