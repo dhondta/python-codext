@@ -21,6 +21,13 @@ __examples3__ = {'enc-dec(pkzip-lzma|lzma)':       _str}
 
 
 if PY3:
+    NULL = {
+        8:  b"\x03\x00",
+        12: b"BZh9\x17rE8P\x90\x00\x00\x00\x00",
+        14: b"\t\x04\x05\x00]\x00\x00\x80\x00\x00\x83\xff\xfb\xff\xff\xc0\x00\x00\x00",
+    }    
+        
+    
     def pkzip_encode(compression_type):
         def _encode(text, errors="strict"):
             c = zipfile._get_compressor(compression_type)
@@ -32,7 +39,7 @@ if PY3:
         def _decode(data, errors="strict"):
             d = zipfile._get_decompressor(compression_type)
             r = d.decompress(b(data))
-            if len(r) == 0:
+            if len(r) == 0 and b(data) != NULL[compression_type]:
                 return handle_error(name, errors, decode=True)(data[0], 0) if len(data) > 0 else "", len(data)
             return r, len(r)
         return _decode
