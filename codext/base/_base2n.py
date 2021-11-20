@@ -8,6 +8,9 @@ from ..__common__ import *
 from ._base import base, _get_charset, BaseError
 
 
+_bin = lambda x: bin(x if isinstance(x, int) else ord(x))
+
+
 # base en/decoding functions for N a power of 2
 class Base2NError(BaseError):
     pass
@@ -48,7 +51,7 @@ def base2n_encode(string, charset, errors="strict", exc=Base2NEncodeError):
         q += nb_out
     # iterate over the characters, gathering bits to be mapped to the charset
     for i, c in enumerate(b(string)):
-        bs += "{:0>8}".format(bin(c)[2:])
+        bs += "{:0>8}".format(_bin(c)[2:])
         while len(bs) >= nb_out:
             r += charset[int(bs[:nb_out], 2)]
             bs = bs[nb_out:]
@@ -89,7 +92,7 @@ def base2n_decode(string, charset, errors="strict", exc=Base2NDecodeError):
             bs += "0" * nb_in
         else:
             try:
-                bs += ("{:0>%d}" % nb_in).format(bin(charset.index(c))[2:])
+                bs += ("{:0>%d}" % nb_in).format(_bin(charset.index(c))[2:])
             except ValueError:
                 if errors == "strict":
                     raise exc("'base' codec can't decode character '{}' in position {}".format(c, i))
