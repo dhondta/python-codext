@@ -214,7 +214,7 @@ class TestCommon(TestCase):
         MACRO = "test-macro-f2ca1bb6c7e907d06dafe4687e579fce76b37e4e93b7605022da52e6ccc26fd2"
         STR = "this is a test"
         ENC = "H4sIAMrbkmEC/0txzyhIrnQC4QxPj6CcZONAWwAMIDOIFAAAAA=="
-        codext.remove_macro(MACRO)
+        codext.remove(MACRO)
         l = codext.list_macros()
         self.assertTrue(len(l) > 0)
         cm = codext.lookup("example-macro")
@@ -235,14 +235,14 @@ class TestCommon(TestCase):
             json.dump(PERS_MACROS, f)
         codext.reset()
         self.assertRaises(ValueError, codext.lookup, MACRO)
-        self.assertIsNone(codext.remove_macro(MACRO))
+        self.assertIsNone(codext.remove(MACRO))
         self.assertRaises(LookupError, codext.lookup, MACRO)
         self.assertNotIn(MACRO, codext.list_macros())
-        self.assertIsNone(codext.remove_macro("THIS-MACRO-DOES-NOT-EXIST"))
-        self.assertIsNone(codext.remove_macro("VALID-MACRO"))
+        self.assertIsNone(codext.remove("THIS-MACRO-DOES-NOT-EXIST"))
+        self.assertIsNone(codext.remove("VALID-MACRO"))
         self.assertIsNone(codext.add_macro("VALID-MACRO", "gzip", "base64"))
-        self.assertIsNone(codext.remove_macro("VALID-MACRO"))
+        self.assertIsNone(codext.remove("VALID-MACRO"))
         self.assertIsNone(codext.add_macro("VALID-MACRO", "lzma", "base64"))
-        self.assertIsNone(codext.remove_macro("VALID-MACRO"))
+        self.assertIsNone(codext.remove("VALID-MACRO"))
         self.assertRaises(ValueError, codext.add_macro, "SHALL-FAIL", "base26", "sms", "letter-indices")
 

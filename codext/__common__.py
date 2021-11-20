@@ -33,8 +33,7 @@ except ImportError:  # Python 3
 __all__ = ["add", "add_macro", "add_map", "b", "clear", "codecs", "decode", "encode", "ensure_str", "examples", "guess",
            "isb", "generate_strings_from_regex", "get_alphabet_from_mask", "handle_error", "is_native",
            "list_categories", "list_encodings", "list_macros", "lookup", "maketrans", "os", "rank", "re", "register",
-           "remove", "remove_macro", "reset", "s2i", "search", "stopfunc", "BytesIO", "MASKS", "PY3", "_input",
-           "_stripl", "CodecMacro"]
+           "remove", "reset", "s2i", "search", "stopfunc", "BytesIO", "MASKS", "PY3", "_input", "_stripl", "CodecMacro"]
 CODECS_REGISTRY = None
 CODECS_CATEGORIES = ["native", "custom"]
 MASKS = {
@@ -83,7 +82,7 @@ class CodecMacro(tuple):
         self.codecs = [lookup(e, False) for e in self.codecs]  # lookup(e, False)
         self.parameters = {'name': name, 'category': "macro"}  #             ^  means that macros won't be nestable
         # test examples to check that the chain of encodings works
-        for action, examples in (self.codecs[0].parameters.get('examples', {}) or {}).items():
+        for action, examples in (self.codecs[0].parameters.get('examples', {}) or {'enc-dec(': ["T3st str!"]}).items():
             if re.match(r"enc(-dec)?\(", action):
                 for e in (examples.keys() if action.startswith("enc(") else examples or []):
                     rd = re.match(r"\@random(?:\{(\d+(?:,(\d+))*?)\})?$", e)
@@ -298,6 +297,7 @@ def add_macro(mname, *encodings):
     :param mname:     macro name
     :param encodings: encoding names of the encodings to be chained with the macro
     """
+    global PERS_MACROS
     # check for name clash with alreday existing macros and codecs
     if mname in MACROS or mname in PERS_MACROS:
         raise ValueError("Macro name already exists")
@@ -305,10 +305,15 @@ def add_macro(mname, *encodings):
         ci = lookup(mname, False)
         raise ValueError("Macro name clashes with codec '%s'" % ci.name)
     except LookupError:
-        #TODO: test if the encodings sequence can work, using an example from the first codec
+        pass
+    try:
         PERS_MACROS[mname] = encodings
+        CodecMacro(mname)
         with open(PERS_MACROS_FILE, 'w') as f:
-            json.dump(PERS_MACROS, f)
+            json.dump(PERS_MACROS, f, indent=2)
+    except ValueError:
+        del PERS_MACROS[mname]
+        raise
 codecs.add_macro = add_macro
 
 
@@ -551,8 +556,8 @@ codecs.add_map = add_map
 
 def clear():
     """ Clear codext's local registry of search functions. """
-    global __codecs_registry
-    __codecs_registry = []
+    global __codecs_registry, MACROS, PERS_MACROS
+    __codecs_registry, MACROS, PERS_MACROS = [], {}, {}
 codecs.clear = clear
 
 
@@ -648,19 +653,16 @@ def list_macros():
     return sorted(list(set(list(MACROS.keys()) + list(PERS_MACROS.keys()))))
 
 
-def remove(encoding):
-    """ Remove all search functions matching the input encoding name from codext's local registry. """
+def remove(name):
+    """ Remove all search functions matching the input encoding name from codext's local registry or any macro with the
+         given name. """
+    global __codecs_registry, MACROS, PERS_MACROS
     tbr = []
     for search_function in __codecs_registry:
-        if search_function(encoding) is not None:
+        if search_function(name) is not None:
             tbr.append(search_function)
     for search_function in tbr:
         __codecs_registry.remove(search_function)
-codecs.remove = remove
-
-
-def remove_macro(name):
-    """ Remove the given macro from the macro registries. """
     try:
         del MACROS[name]
     except KeyError:
@@ -668,14 +670,15 @@ def remove_macro(name):
     try:
         del PERS_MACROS[name]
         with open(PERS_MACROS_FILE, 'w') as f:
-            json.dump(PERS_MACROS, f)
+            json.dump(PERS_MACROS, f, indent=2)
     except KeyError:
         pass
+codecs.remove = remove
 
 
 def reset():
     """ Reset codext's local registry of search functions and macros. """
-    global CODECS_REGISTRY, MACROS, PERS_MACROS, __codecs_registry
+    global __codecs_registry, CODECS_REGISTRY, MACROS, PERS_MACROS
     clear()
     d = os.path.dirname(__file__)
     for pkg in sorted(os.listdir(d)):

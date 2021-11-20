@@ -161,6 +161,31 @@ In this second example, we can see that:
 
 -----
 
+## Add a macro
+
+**Macros** are chains of encodings. It is possible to define own macros with this feature. It works by giving the precedence to user's macros saved in `~/.codext-macros.json` then using embedded macros from the `codext` package.
+
+Here is an example of adding a macro (and verifying it was indeed added):
+
+```python
+>>> codext.list_macros()
+['example-macro']
+>>> codext.add_macro("test-macro", "gzip", "base64")
+>>> codext.list_macros()
+['example-macro', 'test-macro']
+```
+
+!!! note "Removing a macro"
+    
+    As macros are resolved like codecs (with the precedence for codecs), they can be removed the same way as a codec.
+    
+        :::python
+        >>> codext.remove("test-macro")
+    
+    If this is a built-in macro, it will removed from the runtime list within the `codext` package. Next time this will be loaded, it will reset the builtin list of macros. Otherwise, if this is a custom macro, it will removed from the list of custom macros AND removed from `~/.codext-macros.json`.
+
+-----
+
 ## List codecs
 
 Codecs can be listed with the `list` function, either the whole codecs or only some categories.
@@ -225,7 +250,7 @@ Also, `codext` provides an `examples` function to get some examples of valid enc
 
 -----
 
-## Remove a custom encoding
+## Remove a custom encoding or macro
 
 New codecs can be removed easily using the new function `remove`, which will only remove every codec matching the given encoding name in the proxy codecs registry and NOT in the native one.
 
@@ -240,7 +265,7 @@ Traceback (most recent call last):
 LookupError: unknown encoding: bin
 ```
 
-While trying to remove a codec that is in the native registry won't raise a `LookupError`.
+Trying to remove a codec that is in the native registry won't raise a `LookupError`.
 
 ```python
 >>> codext.remove("utf-8")
@@ -248,11 +273,17 @@ While trying to remove a codec that is in the native registry won't raise a `Loo
 b'test'
 ```
 
+Removing a macro works exactly the same way as for a codec.
+
+```python
+>>> codext.remove("test-macro")
+```
+
 -----
 
-## Remove or restore `codext` encodings
+## Remove or restore `codext` encodings and macros
 
-It can be useful while playing with encodings e.g. from Idle to be able to remove or restore `codext`'s encodings. This can be achieved using respectively the new `clear` and `reset` functions.
+It can be useful while playing with encodings and/or macros e.g. from Idle to be able to remove or restore `codext`'s encodings and macros. This can be achieved using respectively the new `clear` and `reset` functions.
 
 ```python
 >>> codext.clear()

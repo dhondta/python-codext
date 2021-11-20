@@ -16,6 +16,10 @@ This library extends the native [`codecs`](https://docs.python.org/3/library/cod
 $ pip install codext
 ```
 
+Want to contribute a new codec ?    |  Want to contribute a new macro ?
+:----------------------------------:|:---------------------------------
+Check the [documentation](https://python-codext.readthedocs.io/en/latest/howto.html) first<br>Then [PR](https://github.com/dhondta/python-codext/pulls) your new codec | [PR](https://github.com/dhondta/python-codext/pulls) your updated version of [`macros.json`](https://github.com/dhondta/python-codext/blob/master/codext/macros.json)
+
 ## :mag: Demonstrations
 
 <p align="center"><img src="https://raw.githubusercontent.com/dhondta/python-codext/master/docs/demos/using-codext.gif" alt="Using CodExt from the command line"></p>
