@@ -1,0 +1,10 @@
+{
+  "example-macro": [
+    "gzip",
+    "base62",
+    "gzip",
+    "base63",
+    "gzip",
+    "base64"
+  ]
+}

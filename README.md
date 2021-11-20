@@ -38,7 +38,7 @@ $ echo -en "test" | codext encode base100
 👫👜👪👫
 ```
 
-Chaining codecs:
+### Chaining codecs
 
 ```sh
 $ echo -en "Test string" | codext encode reverse
@@ -55,6 +55,23 @@ $ echo -en "Test string" | codext encode reverse morse dna-2 octal
 
 $ echo -en "AGTCAGTCAGTGAGAAAGTCAGTGAGAAAGTGAGTGAGAAAGTGAGTCAGTGAGAAAGTCAGAAAGTGAGTGAGTGAGAAAGTTAGAAAGTCAGAAAGTGAGTGAGTGAGAAAGTGAGAAAGTC" | codext -d dna-2 morse reverse
 test string
+```
+
+### Using macros
+
+```sh
+$ codext add-macro my-encoding-chain gzip base63 lzma base64
+
+$ codext list macros
+example-macro, my-encoding-chain
+
+$ echo -en "Test string" | codext encode my-encoding-chain
+CQQFAF0AAIAAABuTgySPa7WaZC5Sunt6FS0ko71BdrYE8zHqg91qaqadZIR2LafUzpeYDBalvE///ug4AA==
+
+$ codext remove-macro my-encoding-chain
+
+$ codext list macros
+example-macro
 ```
 
 ## :computer: Usage (base CLI tool) <a href="https://twitter.com/intent/tweet?text=Debase%20-%20Decode%20any%20multi-layer%20base-encoded%20string.%0D%0APython%20tool%20for%20decoding%20any%20base-encoded%20string,%20even%20when%20encoded%20with%20multiple%20layers.%0D%0Ahttps%3a%2f%2fgithub%2ecom%2fdhondta%2fpython-codext%0D%0A&hashtags=python,base,encodings,codecs,cryptography,stegano,steganography,ctftools"><img src="https://img.shields.io/badge/Tweet%20(debase)--lightgrey?logo=twitter&style=social" alt="Tweet on debase" height="20"/></a>

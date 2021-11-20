@@ -34,6 +34,33 @@ def __literal_eval(o):
         return literal_eval("'" + str(o) + "'")
 
 
+def __print_tabular(lst, space=4):
+    try:
+        cols, _ = os.get_terminal_size()
+        # first, convert the list to a table that fits into the terminal
+        i, line, w = 0, "", []
+        while i < len(lst):
+            x = lst[i]
+            l = len(x)
+            col = "%-{}s".format(l + space) % x
+            i += 1
+            w.append(l)
+            if len(line) + len(col) > cols:
+                break
+            line += col
+        while True:
+            t = [lst[j:j+i] for j in range(0, len(lst), i)]
+            w = [max(0 if j+k*i >= len(lst) else len(lst[j+k*i]) for k in range(len(t))) for j, _ in enumerate(w)]
+            if sum(w) + space * len(w) >= cols:
+                i -= 1
+                w.pop()
+            else:
+                break
+        print("\n".join("".join("%-{}s".format(w[n] + space) % x for n, x in enumerate(r)) for r in t) + "\n")
+    except (AttributeError, OSError):
+        print(", ".join(lst) + "\n")
+
+
 def main():
     import argparse, os
     descr = "Codecs Extension (CodExt) {}\n\nAuthor   : {} ({})\nCopyright: {}\nLicense  : {}\nSource   : {}\n" \
@@ -95,6 +122,16 @@ def main():
                       help="while using the scoring heuristic, also consider null scores (default: False)")
     search = sparsers.add_parser("search", help="search for codecs")
     search.add_argument("pattern", nargs="+", help="encoding pattern to search")
+    listi = sparsers.add_parser("list", help="list items")
+    lsparsers = listi.add_subparsers(dest="type", help="type of item to be listed")
+    liste = lsparsers.add_parser("encodings", help="list encodings")
+    liste.add_argument("category", nargs="*", help="selected categories")
+    listm = lsparsers.add_parser("macros", help="list macros")
+    addm = sparsers.add_parser("add-macro", help="add a macro to the registry")
+    addm.add_argument("name", help="macro's name")
+    addm.add_argument("encoding", nargs="+", help="list of encodings to chain")
+    remm = sparsers.add_parser("remove-macro", help="remove a macro from the registry")
+    remm.add_argument("name", help="macro's name")
     args = parser.parse_args()
     try:
         args.codec_categories = _lst(map(__literal_eval, args.codec_categories))
@@ -105,55 +142,81 @@ def main():
     except (AttributeError, TypeError):
         pass
     #print(args.codec_categories, args.exclude_codecs)
-    # if a search pattern is given, only handle it
-    if args.command == "search":
-        results = []
-        for enc in args.pattern:
-            results.extend(codecs.search(enc))
-        print(", ".join(results) or "No encoding found")
-        return
-    # handle input file or stdin
-    c =_input(args.infile)
-    c = c.rstrip("\r\n") if isinstance(c, str) else c.rstrip(b"\r\n")
-    # strip any other (CR)LF
-    if args.strip:
-        c = re.sub(r"\r?\n", "", c) if isinstance(c, str) else c.replace(b"\r\n", b"").replace(b"\n", b"")
-    if args.command in ["decode", "encode"]:
-        # encode or decode
-        for encoding in args.encoding:
-            c = getattr(codecs, ["encode", "decode"][args.command == "decode"])(c, encoding, args.errors)
-        # handle output file or stdout
-        if args.outfile:
-            with open(args.outfile, 'wb') as f:
-                f.write(c)
-        else:
-            print(ensure_str(c or "Could not %scode :-(" % ["en", "de"][args.command == "decode"]), end="")
-    elif args.command == "guess":
-        r = codecs.guess(c,
-                         getattr(stopfunc, args.stop_function, args.stop_function),
-                         args.min_depth,
-                         args.max_depth,
-                         args.codec_categories,
-                         args.exclude_codecs,
-                         args.encoding,
-                         not args.do_not_stop,
-                         True,  # show
-                         not args.no_heuristic,
-                         args.extended,
-                         args.verbose)
-        for i, o in enumerate(r.items()):
-            e, out = o
-            if len(e) > 0:
-                if args.outfile:
-                    n, ext = os.path.splitext(args.outfile)
-                    fn = args.outfile if len(r) == 1 else "%s-%d%s" % (n, i+1, ext)
-                else:
-                    print("Codecs: %s" % ", ".join(e))
-                    print(ensure_str(out))
-        if len(r) == 0:
-            print("Could not decode :-(")
-    elif args.command == "rank":
-        for i, e in codecs.rank(c, args.extended, args.limit, args.codec_categories, args.exclude_codecs):
-            s = "[+] %.5f: %s" % (i[0], e)
-            print(s if len(s) <= 80 else s[:77] + "...")
+    try:
+        # if a search pattern is given, only handle it
+        if args.command == "search":
+            results = []
+            for enc in args.pattern:
+                results.extend(codecs.search(enc))
+            print(", ".join(results) or "No encoding found")
+            return 0
+        # add/remove macros (not requiring to input a file or text)
+        elif args.command == "add-macro":
+            add_macro(args.name, *args.encoding)
+            return 0
+        elif args.command == "remove-macro":
+            remove_macro(args.name)
+            return 0
+        # list encodings or macros
+        elif args.command == "list":
+            if args.type == "encodings":
+                cats = args.category or list_categories()
+                for c in sorted(cats):
+                    l = list_encodings(c)
+                    if len(l) > 0:
+                        if len(cats) > 0:
+                            print(c.upper() + ":")
+                        __print_tabular(l)
+            elif args.type == "macros":
+                l = list_macros()
+                if len(l) > 0:
+                    __print_tabular(l)
+            return 0
+        # handle input file or stdin
+        c =_input(args.infile)
+        c = c.rstrip("\r\n") if isinstance(c, str) else c.rstrip(b"\r\n")
+        # strip any other (CR)LF
+        if args.strip:
+            c = re.sub(r"\r?\n", "", c) if isinstance(c, str) else c.replace(b"\r\n", b"").replace(b"\n", b"")
+        if args.command in ["decode", "encode"]:
+            # encode or decode
+            for encoding in args.encoding:
+                c = getattr(codecs, ["encode", "decode"][args.command == "decode"])(c, encoding, args.errors)
+            # handle output file or stdout
+            if args.outfile:
+                with open(args.outfile, 'wb') as f:
+                    f.write(c)
+            else:
+                print(ensure_str(c or "Could not %scode :-(" % ["en", "de"][args.command == "decode"]), end="")
+        elif args.command == "guess":
+            r = codecs.guess(c,
+                             getattr(stopfunc, args.stop_function, args.stop_function),
+                             args.min_depth,
+                             args.max_depth,
+                             args.codec_categories,
+                             args.exclude_codecs,
+                             args.encoding,
+                             not args.do_not_stop,
+                             True,  # show
+                             not args.no_heuristic,
+                             args.extended,
+                             args.verbose)
+            for i, o in enumerate(r.items()):
+                e, out = o
+                if len(e) > 0:
+                    if args.outfile:
+                        n, ext = os.path.splitext(args.outfile)
+                        fn = args.outfile if len(r) == 1 else "%s-%d%s" % (n, i+1, ext)
+                    else:
+                        print("Codecs: %s" % ", ".join(e))
+                        print(ensure_str(out))
+            if len(r) == 0:
+                print("Could not decode :-(")
+        elif args.command == "rank":
+            for i, e in codecs.rank(c, args.extended, args.limit, args.codec_categories, args.exclude_codecs):
+                s = "[+] %.5f: %s" % (i[0], e)
+                print(s if len(s) <= 80 else s[:77] + "...")
+    except Exception as e:
+        m = str(e)
+        print("codext: " + m[0].lower() + m[1:])
 

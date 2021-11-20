@@ -5,8 +5,10 @@
 """
 import codecs
 import codext
+import json
 import random
 import sys
+from codext.__common__ import PERS_MACROS, PERS_MACROS_FILE
 from six import b, binary_type, text_type
 from unittest import TestCase
 
@@ -132,7 +134,8 @@ class TestCommon(TestCase):
         self.assertIsNotNone(list(codext.generate_strings_from_regex(r"[^a]")))
     
     def test_encode_multiple_rounds(self):
-        self.assertRaises(TypeError, codext.encode, b"test", "utf-8[2]")
+        if PY3:
+            self.assertRaises(TypeError, codext.encode, b"test", "utf-8[2]")
         s = "test"
         for i in range(3):
             s = codext.encode(s, "morse")
@@ -206,4 +209,40 @@ class TestCommon(TestCase):
         self.assertEqual(codext.rank(ENC, codec_categories=["base"])[0][0][1], STR)
         self.assertIsNotNone(codext.rank(ENC, codec_categories=["base"], exclude=["does_not_exist"])[0][0][1], STR)
         self.assertIsNotNone(codext.rank("TEST=", codec_categories=["test", "base"])[0][0][1], "TEST")
+    
+    def test_handle_macros(self):
+        MACRO = "test-macro-f2ca1bb6c7e907d06dafe4687e579fce76b37e4e93b7605022da52e6ccc26fd2"
+        STR = "this is a test"
+        ENC = "H4sIAMrbkmEC/0txzyhIrnQC4QxPj6CcZONAWwAMIDOIFAAAAA=="
+        codext.remove_macro(MACRO)
+        l = codext.list_macros()
+        self.assertTrue(len(l) > 0)
+        cm = codext.lookup("example-macro")
+        self.assertIsNotNone(cm)
+        self.assertRaises(LookupError, codext.lookup, "example-macro", False)
+        self.assertRaises(ValueError, codext.add_macro, "example-macro", "base64")
+        self.assertRaises(ValueError, codext.add_macro, "base64", "base91")
+        self.assertIsNotNone(repr(cm))
+        self.assertTrue(hasattr(cm, "parameters"))
+        self.assertRaises(LookupError, codext.lookup, MACRO)
+        self.assertIsNone(codext.add_macro(MACRO, "base64", "gzip", "base64"))
+        self.assertIn(MACRO, codext.list_macros())
+        self.assertIsNotNone(codext.encode(STR, MACRO))
+        self.assertEqual(codext.decode(ENC, MACRO), STR)
+        # insert a bad entry for the list of encodings in the JSON file
+        PERS_MACROS[MACRO] = "not a list or tuple..."
+        with open(PERS_MACROS_FILE, 'w') as f:
+            json.dump(PERS_MACROS, f)
+        codext.reset()
+        self.assertRaises(ValueError, codext.lookup, MACRO)
+        self.assertIsNone(codext.remove_macro(MACRO))
+        self.assertRaises(LookupError, codext.lookup, MACRO)
+        self.assertNotIn(MACRO, codext.list_macros())
+        self.assertIsNone(codext.remove_macro("THIS-MACRO-DOES-NOT-EXIST"))
+        self.assertIsNone(codext.remove_macro("VALID-MACRO"))
+        self.assertIsNone(codext.add_macro("VALID-MACRO", "gzip", "base64"))
+        self.assertIsNone(codext.remove_macro("VALID-MACRO"))
+        self.assertIsNone(codext.add_macro("VALID-MACRO", "lzma", "base64"))
+        self.assertIsNone(codext.remove_macro("VALID-MACRO"))
+        self.assertRaises(ValueError, codext.add_macro, "SHALL-FAIL", "base26", "sms", "letter-indices")
 

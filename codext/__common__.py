@@ -1,6 +1,7 @@
 # -*- coding: UTF-8 -*-
 import _codecs
 import codecs
+import json
 import os
 import random
 import re
@@ -11,6 +12,7 @@ from importlib import import_module
 from inspect import currentframe
 from itertools import chain, product
 from math import log
+from random import randint
 from six import binary_type, string_types, text_type, BytesIO
 from string import *
 from types import FunctionType, ModuleType
@@ -28,10 +30,11 @@ except ImportError:  # Python 3
     maketrans = str.maketrans
 
 
-__all__ = ["add", "add_map", "b", "clear", "codecs", "decode", "encode", "ensure_str", "examples", "guess", "isb",
-           "generate_strings_from_regex", "get_alphabet_from_mask", "handle_error", "is_native", "list_categories",
-           "list_encodings", "lookup", "maketrans", "rank", "re", "register", "remove", "reset", "s2i", "search",
-           "stopfunc", "BytesIO", "MASKS", "PY3", "_input", "_stripl"]
+__all__ = ["add", "add_macro", "add_map", "b", "clear", "codecs", "decode", "encode", "ensure_str", "examples", "guess",
+           "isb", "generate_strings_from_regex", "get_alphabet_from_mask", "handle_error", "is_native",
+           "list_categories", "list_encodings", "list_macros", "lookup", "maketrans", "os", "rank", "re", "register",
+           "remove", "remove_macro", "reset", "s2i", "search", "stopfunc", "BytesIO", "MASKS", "PY3", "_input",
+           "_stripl", "CodecMacro"]
 CODECS_REGISTRY = None
 CODECS_CATEGORIES = ["native", "custom"]
 MASKS = {
@@ -48,6 +51,10 @@ MASKS = {
 PY3 = sys.version[0] == "3"
 __codecs_registry = []
 
+MACROS = {}
+PERS_MACROS = {}
+PERS_MACROS_FILE = os.path.expanduser("~/.codext-macros.json")
+
 
 entropy = lambda s: -sum([p * log(p, 2) for p in [float(s.count(c)) / len(s) for c in set(s)]])
 
@@ -56,6 +63,74 @@ iss = lambda s: isinstance(s, string_types)
 fix = lambda x, ref: b(x) if isb(ref) else ensure_str(x) if iss(ref) else x
 
 s2i = lambda s: int(codecs.encode(s, "base16"), 16)
+
+
+class CodecMacro(tuple):
+    """Macro details when looking up the codec registry. """
+    def __new__(cls, name):
+        self = tuple.__new__(cls)
+        self.name = name
+        # get from personal macros first
+        try:
+            self.codecs = PERS_MACROS[name]
+        except KeyError:
+            try:
+                self.codecs = MACROS[name]
+            except KeyError:
+                raise LookupError("unknown macro: %s" % name)
+        if not isinstance(self.codecs, (tuple, list)):
+            raise ValueError("bad macro list: %s" % str(self.codecs))
+        self.codecs = [lookup(e, False) for e in self.codecs]  # lookup(e, False)
+        self.parameters = {'name': name, 'category': "macro"}  #             ^  means that macros won't be nestable
+        # test examples to check that the chain of encodings works
+        for action, examples in (self.codecs[0].parameters.get('examples', {}) or {}).items():
+            if re.match(r"enc(-dec)?\(", action):
+                for e in (examples.keys() if action.startswith("enc(") else examples or []):
+                    rd = re.match(r"\@random(?:\{(\d+(?:,(\d+))*?)\})?$", e)
+                    if rd:
+                        for n in (rd.group(1) or "512").split(","):
+                            self.encode("".join(chr(randint(0, 255)) for i in range(int(n))))
+                        continue
+                    self.encode(e)
+        
+        class Codec:
+            decode = self.decode
+            encode = self.encode
+        
+        class IncrementalEncoder(codecs.IncrementalEncoder):
+            def encode(self, input, final=False):
+                return b(self.encode(input, self.errors)[0])
+        self.incrementalencoder = IncrementalEncoder
+        
+        class IncrementalDecoder(codecs.IncrementalDecoder):
+            def decode(self, input, final=False):
+                return ensure_str(self.decode(input, self.errors)[0])
+        self.incrementaldecoder = IncrementalDecoder
+        
+        class StreamWriter(Codec, codecs.StreamWriter):
+            charbuffertype = bytes
+        self.streamwriter = StreamWriter
+        
+        class StreamReader(Codec, codecs.StreamReader):
+            charbuffertype = bytes
+        self.streamreader = StreamReader
+        
+        return self
+    
+    def decode(self, input, error="strict"):
+        """ Decode with each codec in reverse order. """
+        for ci in self.codecs[::-1]:
+            input, l = ci.decode(input, error)
+        return input, l
+    
+    def encode(self, input, error="strict"):
+        """ Encode with each codec. """
+        for ci in self.codecs:
+            input, l = ci.encode(input, error)
+        return input, l
+    
+    def __repr__(self):
+        return "<codext.CodecMacro object for encoding %s at %#x>" % (self.name, id(self))
 
 
 def __stdin_pipe():
@@ -213,6 +288,28 @@ def add(ename, encode=None, decode=None, pattern=None, text=True, add_to_codecs=
         getregentry.__aliases__ = list(map(lambda n: re.sub(r"[\s\-]", "_", n), kwargs['aliases']))
     getregentry.__pattern__ = pattern
     register(getregentry, add_to_codecs)
+
+
+def add_macro(mname, *encodings):
+    """ This allows to define a macro, chaining multiple codecs one after the other. This relies on a default set of
+         macros from a YAML file embedded in the package and a local YAML file from the home folder that takes
+         precedence for defining personal macros.
+    
+    :param mname:     macro name
+    :param encodings: encoding names of the encodings to be chained with the macro
+    """
+    # check for name clash with alreday existing macros and codecs
+    if mname in MACROS or mname in PERS_MACROS:
+        raise ValueError("Macro name already exists")
+    try:
+        ci = lookup(mname, False)
+        raise ValueError("Macro name clashes with codec '%s'" % ci.name)
+    except LookupError:
+        #TODO: test if the encodings sequence can work, using an example from the first codec
+        PERS_MACROS[mname] = encodings
+        with open(PERS_MACROS_FILE, 'w') as f:
+            json.dump(PERS_MACROS, f)
+codecs.add_macro = add_macro
 
 
 def add_map(ename, encmap, repl_char="?", sep="", ignore_case=None, no_error=False, intype=None, outype=None, **kwargs):
@@ -474,7 +571,7 @@ def examples(encoding, number=10):
                 while i < min(number, len(temp)):
                     if not temp[i].isdigit():
                         try:
-                            lookup(temp[i])
+                            lookup(temp[i], False)
                             e.append(temp[i])
                         except LookupError:
                             pass
@@ -492,7 +589,7 @@ codecs.examples = examples
 
 def is_native(encoding):
     """ Determine if a given encoding is native or not. """
-    return codecs.lookup(encoding).parameters['category'] == "native"
+    return lookup(encoding, False).parameters['category'] == "native"
 
 
 def list_categories():
@@ -546,6 +643,11 @@ def list_encodings(*categories):
     return sorted(list(set(enc)), key=_human_keys)
 
 
+def list_macros():
+    """ Get a list of all macros, with the precedence on personal ones. """
+    return sorted(list(set(list(MACROS.keys()) + list(PERS_MACROS.keys()))))
+
+
 def remove(encoding):
     """ Remove all search functions matching the input encoding name from codext's local registry. """
     tbr = []
@@ -557,9 +659,23 @@ def remove(encoding):
 codecs.remove = remove
 
 
+def remove_macro(name):
+    """ Remove the given macro from the macro registries. """
+    try:
+        del MACROS[name]
+    except KeyError:
+        pass
+    try:
+        del PERS_MACROS[name]
+        with open(PERS_MACROS_FILE, 'w') as f:
+            json.dump(PERS_MACROS, f)
+    except KeyError:
+        pass
+
+
 def reset():
-    """ Reset codext's local registry of search functions. """
-    global CODECS_REGISTRY, __codecs_registry
+    """ Reset codext's local registry of search functions and macros. """
+    global CODECS_REGISTRY, MACROS, PERS_MACROS, __codecs_registry
     clear()
     d = os.path.dirname(__file__)
     for pkg in sorted(os.listdir(d)):
@@ -572,6 +688,14 @@ def reset():
     # restore codext's registry
     else:
         __codecs_registry = CODECS_REGISTRY[:]
+    # restore codext's embedded set of macros
+    with open(os.path.join(os.path.dirname(__file__), "macros.json")) as f:
+        MACROS = json.load(f)
+    # reload personal set of macros
+    PERS_MACROS = {}
+    if os.path.exists(PERS_MACROS_FILE):
+        with open(PERS_MACROS_FILE) as f:
+            PERS_MACROS = json.load(f)
 codecs.reset = reset
 
 
@@ -709,7 +833,7 @@ def encode(obj, encoding='utf-8', errors='strict'):
 codecs.encode = encode
 
 
-def lookup(encoding):
+def lookup(encoding, macro=True):
     """ Hooked lookup function for searching first for codecs in the local registry of this module. """
     # first, try to match the given encoding with codecs' search functions
     for search_function in __codecs_registry:
@@ -723,10 +847,18 @@ def lookup(encoding):
             codecinfo = search_function(generate_string_from_regex(search_function.__pattern__))
             if codecinfo is not None:
                 return codecinfo
-    # finally, get a CodecInfo with the original lookup function and refine it with a dictionary of parameters
-    ci = __orig_lookup(encoding)
-    ci.parameters = {'category': "native", 'module': "codecs", 'name': aliases.get(ci.name, ci.name)}
-    return ci
+    try:
+        # finally, get a CodecInfo with the original lookup function and refine it with a dictionary of parameters
+        ci = __orig_lookup(encoding)
+        ci.parameters = {'category': "native", 'module': "codecs", 'name': aliases.get(ci.name, ci.name)}
+        return ci
+    except LookupError:
+        if not macro:
+            raise
+    try:
+        return CodecMacro(encoding)
+    except LookupError:
+        raise LookupError("unknown encoding: %s" % encoding)
 codecs.lookup = lookup
 
 
@@ -945,7 +1077,7 @@ def __develop(encodings):
     enc = []
     for e in (encodings or []):
         try:
-            ci = lookup(e)
+            ci = lookup(e, False)
             g = ci.parameters['guess']
         except:
             g = [e]
@@ -1023,7 +1155,7 @@ class _Text(object):
 
 def __score(prev_input, input, codec, heuristic=False, extended=False):
     """ Score relevant encodings given an input. """
-    obj, ci = None, lookup(codec)  # NB: lookup(...) won't fail as the codec value comes from list_encodings(...)
+    obj, ci = None, lookup(codec, False)  # NB: lookup(...) won't fail as the codec value comes from list_encodings(...)
     sc = ci.parameters.get('scoring', {})
     for encoding in ci.parameters.get('guess', [codec]):
         # ignore encodings that fail to decode with their default errors handling value
