@@ -71,18 +71,30 @@ class ManualTestCase(TestCase):
         self.assertEqual(codecs.decode(ATB2, "atbash-[?l?u?p?s]"), STR)
         self.assertEqual(codecs.decode(b(ATB2), "atbash_cipher-[?l?u?p?s]"), b(STR))
     
+    def test_codec_case_related_manips(self):
+        STR = "This is a test"
+        self.assertEqual(codecs.encode(STR, "lower"), "this is a test")
+        self.assertEqual(codecs.encode(b(STR), "uppercase"), b("THIS IS A TEST"))
+        self.assertEqual(codecs.encode(STR, "capitalize"), "This is a test")
+        self.assertEqual(codecs.decode(b(STR), "capitalize"), b("this is a test"))
+        self.assertEqual(codecs.encode(STR, "title"), "This Is A Test")
+        self.assertEqual(codecs.decode(b(STR), "title"), b("this is a test"))
+        self.assertEqual(codecs.encode(b(STR), "swapcase"), b("tHIS IS A TEST"))
+        self.assertEqual(codecs.encode(b(STR), "camelcase"), b("thisIsATest"))
+        self.assertEqual(codecs.encode(b(STR), "kebabcase"), b("this-is-a-test"))
+        self.assertEqual(codecs.encode(b(STR), "pascalcase"), b("ThisIsATest"))
+        self.assertEqual(codecs.encode(b(STR), "slugify"), b("this-is-a-test"))
+        self.assertEqual(codecs.encode(b(STR), "snakecase"), b("this_is_a_test"))
+        self.assertRaises(NotImplementedError, codecs.decode, STR, "camel")
+        self.assertRaises(NotImplementedError, codecs.decode, STR, "pascal")
+        self.assertRaises(NotImplementedError, codecs.decode, STR, "slug")
+        self.assertRaises(NotImplementedError, codecs.decode, STR, "snake")
+    
     def test_codec_dummy_str_manips(self):
         STR = "this is a test"
-        self.assertEqual(codecs.encode(STR, "lower"), STR)
-        self.assertEqual(codecs.encode(b(STR), "uppercase"), b("THIS IS A TEST"))
         self.assertEqual(codecs.decode(STR, "reverse"), "tset a si siht")
         self.assertEqual(codecs.decode(STR, "reverse_words"), "siht si a tset")
         self.assertEqual(codecs.decode(STR.split()[0], "reverse"), codecs.decode(STR.split()[0], "reverse-words"))
-        self.assertEqual(codecs.encode(STR, "capitalize"), "This is a test")
-        self.assertEqual(codecs.decode(b(STR), "capitalize"), b(STR))
-        self.assertEqual(codecs.encode(STR, "title"), "This Is A Test")
-        self.assertEqual(codecs.decode(b(STR), "title"), b(STR))
-        self.assertEqual(codecs.encode(b(STR), "swapcase"), b("THIS IS A TEST"))
     
     def test_codec_markdown(self):
         HTM = "<h1>Test title</h1>\n\n<p>Test paragraph</p>\n"

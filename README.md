@@ -211,65 +211,84 @@ o
 
 ## :page_with_curl: List of codecs
 
-**Codec** | **Conversions** | **Comment**
-:---: | :---: | ---
-`a1z26` | text <-> alphabet order numbers | keeps words whitespace-separated and uses a custom character separator
-`affine` | text <-> affine ciphertext | aka Affine Cipher
-`ascii85` | text <-> ascii85 encoded text | Python 3 only
-`atbash` | text <-> Atbash ciphertext | aka Atbash Cipher
-`bacon` | text <-> Bacon ciphertext | aka Baconian Cipher
-`barbie-N` | text <-> barbie ciphertext | aka Barbie Typewriter (N belongs to [1, 4])
-`baseXX` | text <-> baseXX | see [base encodings](https://python-codext.readthedocs.io/en/latest/enc/base.html) (incl base32, 36, 45, 58, 62, 63, 64, 91, 100, 122)
-`baudot` | text <-> Baudot code bits | supports CCITT-1, CCITT-2, EU/FR, ITA1, ITA2, MTK-2 (Python3 only), UK, ...
-`bcd` | text <-> binary coded decimal text | encodes characters from their (zero-left-padded) ordinals
-`braille` | text <-> braille symbols | Python 3 only
-`citrix` | text <-> Citrix CTX1 ciphertext | aka Citrix CTX1 passord encoding
-`dna` | text <-> DNA-N sequence | implements the 8 rules of DNA sequences (N belongs to [1,8])
-`excess3` | text <-> XS3 encoded text | uses Excess-3 (aka Stibitz code) binary encoding to convert characters from their ordinals
-`gray` | text <-> gray encoded text | aka reflected binary code
-`gzip` | text <-> Gzip-compressed text | standard Gzip compression/decompression
-`html` | text <-> HTML entities | implements entities according to [this reference](https://dev.w3.org/html5/html-author/charref)
-`ipsum` | text <-> latin words | aka lorem ipsum
-`klopf` | text <-> klopf encoded text | Polybius square with trivial alphabetical distribution
-`leetspeak` | text <-> leetspeak encoded text | based on minimalistic elite speaking rules
-`letter-indices` | text <-> text with letter indices | encodes consonants and/or vowels with their corresponding indices
-`lz77` | text <-> LZ77-compressed text | compresses the given data with the algorithm of Lempel and Ziv of 1977
-`lz78` | text <-> LZ78-compressed text | compresses the given data with the algorithm of Lempel and Ziv of 1978
-`manchester` | text <-> manchester encoded text | XORes each bit of the input with `01`
-`markdown` | markdown --> HTML | unidirectional
-`morse` | text <-> morse encoded text | uses whitespace as a separator
-`navajo` | text <-> Navajo | only handles letters (not full words from the Navajo dictionary)
-`octal` | text <-> octal digits | dummy octal conversion (converts to 3-digits groups)
-`ordinal` | text <-> ordinal digits | dummy character ordinals conversion (converts to 3-digits groups)
-`pkzip_deflate` | text <-> deflated text | standard Zip-deflate compression/decompression
-`pkzip_bzip2` | text <-> Bzipped text | standard BZip2 compression/decompression
-`pkzip_lzma` | text <-> LZMA-compressed text | standard LZMA compression/decompression
-`radio` | text <-> radio words | aka NATO or radio phonetic alphabet
-`resistor` | text <-> resistor colors | aka resistor color codes
-`rot` | text <-> rot(N) ciphertext | aka Caesar cipher (N belongs to [1,25])
-`rotate` | text <-> N-bits-rotated text | rotates characters by the specified number of bits ; Python 3 only
-`scytale` | text <-> scytale ciphertext | encrypts with L, the number of letters on the rod (belongs to [1,[)
-`shift` | text <-> shift(N) ciphertext | shift ordinals with N (belongs to [1,255])
-`sms` | text <-> phone keystrokes | also called T9 code ; uses "`-`" as a separator for encoding, "`-`" or "`_`" or whitespace for decoding
-`southpark` | text <-> Kenny's language | converts letters to Kenny's language from Southpark (whitespace is also handled)
-`tomtom` | text <-> tom-tom encoded text | similar to `morse`, using slashes and backslashes
-`url` | text <-> URL encoded text | aka URL encoding
-`xor` | text <-> XOR(N) ciphertext | XOR with a single byte (N belongs to [1,255])
-`whitespace` | text <-> whitespaces and tabs | replaces bits with whitespaces and tabs
+#### BaseXX
 
-A few variants are also implemented.
+- [X] `ascii85`: classical ASCII85 (Python3 only)
+- [X] `baseN`: see [base encodings](https://python-codext.readthedocs.io/en/latest/enc/base.html) (incl base32, 36, 45, 58, 62, 63, 64, 91, 100, 122)
+- [X] `base-genericN`: see [base encodings](https://python-codext.readthedocs.io/en/latest/enc/base.html) ; supports any possible base
 
-**Codec** | **Conversions** | **Comment**
-:---: | :---: | ---
-`baudot-spaced` | text <-> Baudot code groups of bits | groups of 5 bits are whitespace-separated
-`baudot-tape` | text <-> Baudot code tape | outputs a string that looks like a perforated tape
-`bcd-extended0` | text <-> BCD-extended text | encodes characters from their (zero-left-padded) ordinals using prefix bits `0000`
-`bcd-extended1` | text <-> BCD-extended text | encodes characters from their (zero-left-padded) ordinals using prefix bits `1111`
-`manchester-inverted` | text <-> manchester encoded text | XORes each bit of the input with `10`
-`octal-spaced` | text <-> octal digits (whitespace-separated) | dummy octal conversion
-`ordinal-spaced` | text <-> ordinal digits (whitespace-separated) | dummy character ordinals conversion
-`southpark-icase` | text <-> Kenny's language | same as `southpark` but case insensitive
-`whitespace_after_before` | text <-> lines of whitespaces[letter]whitespaces | encodes characters as new characters with whitespaces before and after according to an equation described in the codec name (e.g. "`whitespace+2*after-3*before`")
+#### Binary
+
+- [X] `baudot`: supports CCITT-1, CCITT-2, EU/FR, ITA1, ITA2, MTK-2 (Python3 only), UK, ...
+- [X] `baudot-spaced`: variant of `baudot` ; groups of 5 bits are whitespace-separated
+- [X] `baudot-tape`: variant of `baudot` ; outputs a string that looks like a perforated tape
+- [X] `bcd`: _Binary Coded Decimal_, encodes characters from their (zero-left-padded) ordinals
+- [X] `bcd-extended0`: variant of `bcd` ; encodes characters from their (zero-left-padded) ordinals using prefix bits `0000`
+- [X] `bcd-extended1`: variant of `bcd` ; encodes characters from their (zero-left-padded) ordinals using prefix bits `1111`
+- [X] `excess3`: uses Excess-3 (aka Stibitz code) binary encoding to convert characters from their ordinals
+- [X] `gray`: aka reflected binary code
+- [X] `manchester`: XORes each bit of the input with `01`
+- [X] `manchester-inverted`: variant of `manchester` ; XORes each bit of the input with `10`
+- [X] `rotateN`: rotates characters by the specified number of bits (*N* belongs to [1, 7] ; Python 3 only)
+
+#### Common
+
+- [X] `a1z26`: keeps words whitespace-separated and uses a custom character separator
+- [X] `cases`: set of case-related encodings (including camel-, kebab-, lower-, pascal-, upper-, snake- and swap-case, slugify, capitalize, title)
+- [X] `dummy`: set of simple encodings (including reverse and word-reverse)
+- [X] `octal`: dummy octal conversion (converts to 3-digits groups)
+- [X] `octal-spaced`: variant of `octal` ; dummy octal conversion, handling whitespace separators
+- [X] `ordinal`: dummy character ordinals conversion (converts to 3-digits groups)
+- [X] `ordinal-spaced`: variant of `ordinal` ; dummy character ordinals conversion, handling whitespace separators
+
+#### Compression
+
+- [X] `gzip`: standard Gzip compression/decompression
+- [X] `lz77`: compresses the given data with the algorithm of Lempel and Ziv of 1977
+- [X] `lz78`: compresses the given data with the algorithm of Lempel and Ziv of 1978
+- [X] `pkzip_deflate`: standard Zip-deflate compression/decompression
+- [X] `pkzip_bzip2`: standard BZip2 compression/decompression
+- [X] `pkzip_lzma`: standard LZMA compression/decompression
+
+#### Cryptography
+
+- [X] `affine`: aka Affine Cipher
+- [X] `atbash`: aka Atbash Cipher
+- [X] `bacon`: aka Baconian Cipher
+- [X] `barbie-N`: aka Barbie Typewriter (*N* belongs to [1, 4])
+- [X] `citrix`: aka Citrix CTX1 passord encoding
+- [X] `rotN`: aka Caesar cipher (*N* belongs to [1,25])
+- [X] `scytaleN`: encrypts using the number of letters on the rod (*N* belongs to [1,[)
+- [X] `shiftN`: shift ordinals (*N* belongs to [1,255])
+- [X] `xorN`: XOR with a single byte (*N* belongs to [1,255])
+
+#### Languages
+
+- [X] `braille`: well-known braille language (Python 3 only)
+- [X] `ipsum`: aka lorem ipsum
+- [X] `leetspeak`: based on minimalistic elite speaking rules
+- [X] `morse`: uses whitespace as a separator
+- [X] `navajo`: only handles letters (not full words from the Navajo dictionary)
+- [X] `radio`: aka NATO or radio phonetic alphabet
+- [X] `southpark`: converts letters to Kenny's language from Southpark (whitespace is also handled)
+- [X] `southpark-icase`: case insensitive variant of `southpark`
+- [X] `tomtom`: similar to `morse`, using slashes and backslashes
+
+#### Others
+
+- [X] `dna`: implements the 8 rules of DNA sequences (N belongs to [1,8])
+- [X] `html`: implements entities according to [this reference](https://dev.w3.org/html5/html-author/charref)
+- [X] `letter-indices`: encodes consonants and/or vowels with their corresponding indices
+- [X] `markdown`: unidirectional encoding from Markdown to HTML
+- [X] `url`: aka URL encoding
+
+#### Steganography
+
+- [X] `klopf`: aka Klopf code ; Polybius square with trivial alphabetical distribution
+- [X] `resistor`: aka resistor color codes
+- [X] `sms`: also called _T9 code_ ; uses "`-`" as a separator for encoding, "`-`" or "`_`" or whitespace for decoding
+- [X] `whitespace`: replaces bits with whitespaces and tabs
+- [X] `whitespace_after_before`: variant of `whitespace` ; encodes characters as new characters with whitespaces before and after according to an equation described in the codec name (e.g. "`whitespace+2*after-3*before`")
 
 
 ## :clap:  Supporters
