@@ -2,7 +2,7 @@ site_name: "Codext - Extension of native codecs for Python"
 repo_url: https://github.com/dhondta/python-codext
 site_author: dhondta
 docs_dir: docs
-pages:
+nav:
   - Introduction: index.md
   - Features: features.md
   - Encodings: encodings.md

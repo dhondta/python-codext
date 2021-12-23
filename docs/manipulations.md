@@ -1,3 +1,5 @@
+# String manipulations
+
 `codext` also defines multiple dummy string manipulation codecs, essentially for use with the CLI tool and for the sake of simplicity.
 
 -----
