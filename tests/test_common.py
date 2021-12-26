@@ -242,7 +242,8 @@ class TestCommon(TestCase):
         self.assertIsNone(codext.remove("VALID-MACRO"))
         self.assertIsNone(codext.add_macro("VALID-MACRO", "gzip", "base64"))
         self.assertIsNone(codext.remove("VALID-MACRO"))
-        self.assertIsNone(codext.add_macro("VALID-MACRO", "lzma", "base64"))
-        self.assertIsNone(codext.remove("VALID-MACRO"))
+        if PY3:
+            self.assertIsNone(codext.add_macro("VALID-MACRO", "lzma", "base64"))
+            self.assertIsNone(codext.remove("VALID-MACRO"))
         self.assertRaises(ValueError, codext.add_macro, "SHALL-FAIL", "base26", "sms", "letter-indices")
 

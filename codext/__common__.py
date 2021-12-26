@@ -273,7 +273,7 @@ def add(ename, encode=None, decode=None, pattern=None, text=True, add_to_codecs=
             CODECS_CATEGORIES.append(cat)
         ci.parameters['category'] = kwargs.get('category', cat)
         ci.parameters['examples'] = kwargs.get('examples', glob.get('__examples__'))
-        ci.parameters['guess'] = kwargs.get('guess', glob.get('__guess__', [ename]))
+        ci.parameters['guess'] = kwargs.get('guess', glob.get('__guess__', [ename])) or []
         ci.parameters['module'] = kwargs.get('module', glob.get('__name__'))
         ci.parameters.setdefault("scoring", {})
         for attr in ["bonus_func", "entropy", "len_charset", "penalty", "printables_rate", "padding_char"]:
