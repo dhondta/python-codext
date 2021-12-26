@@ -96,6 +96,30 @@ class ManualTestCase(TestCase):
         self.assertEqual(codecs.decode(STR, "reverse_words"), "siht si a tset")
         self.assertEqual(codecs.decode(STR.split()[0], "reverse"), codecs.decode(STR.split()[0], "reverse-words"))
     
+    def test_codec_hash_functions(self):
+        STR = b"This is a test string!"
+        for h in ["md5", "sha1", "sha224", "sha256", "sha384", "sha512"]:
+            self.assertIsNotNone(codecs.encode(STR, h))
+            self.assertRaises(NotImplementedError, codecs.decode, STR, h)
+        if PY3:
+            self.assertEqual(len(codecs.encode(STR, "blake2b_64")), 128)
+            self.assertRaises(LookupError, codecs.encode, STR, "blake2b_0")
+            self.assertRaises(LookupError, codecs.encode, STR, "blake2b-65")
+            self.assertRaises(NotImplementedError, codecs.decode, STR, "blake2b")
+            self.assertEqual(len(codecs.encode(STR, "blake2s_32")), 64)
+            self.assertRaises(LookupError, codecs.encode, STR, "blake2s_0")
+            self.assertRaises(LookupError, codecs.encode, STR, "blake2s-33")
+            self.assertRaises(NotImplementedError, codecs.decode, STR, "blake2s")
+            self.assertIsNotNone(codecs.encode(STR, "shake128"))
+            self.assertRaises(LookupError, codecs.encode, STR, "shake128_0")
+            self.assertRaises(NotImplementedError, codecs.decode, STR, "shake128")
+            self.assertIsNotNone(codecs.encode(STR, "shake256"))
+            self.assertRaises(LookupError, codecs.encode, STR, "shake256-0")
+            self.assertRaises(NotImplementedError, codecs.decode, STR, "shake256")
+            for h in ["sha3_224", "sha3_256", "sha3_384", "sha3_512"]:
+                self.assertIsNotNone(codecs.encode(STR, h))
+                self.assertRaises(NotImplementedError, codecs.decode, STR, h)
+    
     def test_codec_markdown(self):
         HTM = "<h1>Test title</h1>\n\n<p>Test paragraph</p>\n"
         MD  = "# Test title\n\nTest paragraph"
