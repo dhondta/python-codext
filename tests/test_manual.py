@@ -10,6 +10,7 @@ from unittest import TestCase
 
 from codext.__common__ import *
 from codext.binary.baudot import _check_alphabet
+from codext.hashing.checksums import CRC
 
 
 class ComplementaryTestCase(TestCase):
@@ -98,7 +99,7 @@ class ManualTestCase(TestCase):
     
     def test_codec_hash_functions(self):
         STR = b"This is a test string!"
-        for h in ["md5", "sha1", "sha224", "sha256", "sha384", "sha512"]:
+        for h in ["adler32", "md5", "sha1", "sha224", "sha256", "sha384", "sha512"]:
             self.assertIsNotNone(codecs.encode(STR, h))
             self.assertRaises(NotImplementedError, codecs.decode, STR, h)
         if PY3:
@@ -119,6 +120,20 @@ class ManualTestCase(TestCase):
             for h in ["sha3_224", "sha3_256", "sha3_384", "sha3_512"]:
                 self.assertIsNotNone(codecs.encode(STR, h))
                 self.assertRaises(NotImplementedError, codecs.decode, STR, h)
+            if UNIX:
+                import crypt
+                METHODS = [x[7:].lower() for x in crypt.__dict__ if x.startswith("METHOD_")]
+                for m in METHODS:
+                    h = "crypt-" + m
+                    self.assertIsNotNone(codecs.encode(STR, h))
+                    self.assertRaises(NotImplementedError, codecs.decode, STR, h)
+        # CRC checks
+        STR = "123456789"
+        for n, variants in CRC.items():
+            for name, params in variants.items():
+                enc = ("crc%d-%s" % (n, name) if isinstance(n, int) else "crc-%s" % name).rstrip("-")
+                print(enc)
+                self.assertEqual(codecs.encode(STR, enc), "%0{}x".format(round((n or 16)/4+.5)) % params[5])
     
     def test_codec_markdown(self):
         HTM = "<h1>Test title</h1>\n\n<p>Test paragraph</p>\n"

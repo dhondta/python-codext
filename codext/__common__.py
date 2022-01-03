@@ -12,6 +12,7 @@ from importlib import import_module
 from inspect import currentframe
 from itertools import chain, product
 from math import log
+from platform import system
 from random import randint
 from six import binary_type, string_types, text_type, BytesIO
 from string import *
@@ -33,7 +34,8 @@ except ImportError:  # Python 3
 __all__ = ["add", "add_macro", "add_map", "b", "clear", "codecs", "decode", "encode", "ensure_str", "examples", "guess",
            "isb", "generate_strings_from_regex", "get_alphabet_from_mask", "handle_error", "is_native",
            "list_categories", "list_encodings", "list_macros", "lookup", "maketrans", "os", "rank", "re", "register",
-           "remove", "reset", "s2i", "search", "stopfunc", "BytesIO", "MASKS", "PY3", "_input", "_stripl", "CodecMacro"]
+           "remove", "reset", "s2i", "search", "stopfunc", "BytesIO", "_input", "_stripl", "CodecMacro",
+           "DARWIN", "LINUX", "MASKS", "PY3", "UNIX", "WINDOWS"]
 CODECS_REGISTRY = None
 CODECS_CATEGORIES = ["native", "custom"]
 MASKS = {
@@ -47,12 +49,18 @@ MASKS = {
     's': " ",
     'u': ascii_uppercase,
 }
-PY3 = sys.version[0] == "3"
+
 __codecs_registry = []
 
 MACROS = {}
 PERS_MACROS = {}
 PERS_MACROS_FILE = os.path.expanduser("~/.codext-macros.json")
+
+DARWIN = system() == "Darwin"
+LINUX = system() == "Linux"
+PY3 = sys.version[0] == "3"
+UNIX = DARWIN or LINUX
+WINDOWS = system() == "Windows"
 
 
 entropy = lambda s: -sum([p * log(p, 2) for p in [float(s.count(c)) / len(s) for c in set(s)]])

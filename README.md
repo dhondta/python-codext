@@ -250,6 +250,8 @@ o
 - [X] `pkzip_bzip2`: standard BZip2 compression/decompression
 - [X] `pkzip_lzma`: standard LZMA compression/decompression
 
+> :warning: Compression functions are of course definitely **NOT** encoding functions ; they are implemented for leveraging the `.encode(...)` API from `codecs`.
+
 #### Cryptography
 
 - [X] `affine`: aka Affine Cipher
@@ -261,6 +263,19 @@ o
 - [X] `scytaleN`: encrypts using the number of letters on the rod (*N* belongs to [1,[)
 - [X] `shiftN`: shift ordinals (*N* belongs to [1,255])
 - [X] `xorN`: XOR with a single byte (*N* belongs to [1,255])
+
+> :warning: Crypto functions are of course definitely **NOT** encoding functions ; they are implemented for leveraging the `.encode(...)` API from `codecs`.
+
+#### Hashing
+
+- [X] `blake`: includes BLAKE2b and BLAKE2s (Python 3 only ; relies on `hashlib`)
+- [X] `checksums`: includes Adler32 and CRC32 (relies on `zlib`)
+- [X] `crypt`: Unix's crypt hash for passwords (Python 3 and Unix only ; relies on `crypt`)
+- [X] `md`: aka Message Digest ; includes MD4 and MD5 (relies on `hashlib`)
+- [X] `sha`: aka Secure Hash Algorithms ; includes SHA1, 224, 256, 384, 512 (Python2/3) but also SHA3-224, -256, -384 and -512 (Python 3 only ; relies on `hashlib`)
+- [X] `shake`: aka SHAKE hashing (Python 3 only ; relies on `hashlib`)
+
+> :warning: Hash functions are of course definitely **NOT** encoding functions ; they are implemented for convenience with the `.encode(...)` API from `codecs` and useful for chaning codecs.
 
 #### Languages
 
