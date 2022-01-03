@@ -99,7 +99,7 @@ class ManualTestCase(TestCase):
     
     def test_codec_hash_functions(self):
         STR = b"This is a test string!"
-        for h in ["adler32", "md5", "sha1", "sha224", "sha256", "sha384", "sha512"]:
+        for h in ["adler32", "md2", "md4", "md5", "sha1", "sha224", "sha256", "sha384", "sha512"]:
             self.assertIsNotNone(codecs.encode(STR, h))
             self.assertRaises(NotImplementedError, codecs.decode, STR, h)
         if PY3:
