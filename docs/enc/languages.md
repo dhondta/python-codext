@@ -1,3 +1,5 @@
+## Languages
+
 `codext` also adds some common languages for encoding.
 
 -----

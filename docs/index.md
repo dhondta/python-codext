@@ -2,7 +2,7 @@
 
 Codext, contraction of "*codecs*" and "*extension*", is a tiny library that gathers a few additional encodings for use with [`codecs`](https://docs.python.org/3/library/codecs.html). While imported, it registers new encodings to a proxy codecs registry for making the encodings available from the `codecs.(decode|encode|open)` calls.
 
-## Setup
+### Setup
 
 This library is available on [PyPi](https://pypi.python.org/pypi/codext/) and can be simply installed using Pip:
 

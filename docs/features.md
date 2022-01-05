@@ -1,3 +1,5 @@
+## Features
+
 Basically, the `codecs` library provides a series of functions from the built-in `_codecs` library which maintains a registry of search functions (a simple list) that maps ancodings to the right de/encode functions by returning a `CodecInfo` object once first matched.
 
 `codext` hooks `codecs`'s functions to insert its own proxy registry between the function calls and the native registry so that new encodings can be added or replace existing ones while using `code[cs|xt].open`. Indeed, as the proxy registry is called first, the first possible match occurs in a custom codec, while if not existing, the native registry is used.
@@ -11,9 +13,13 @@ Basically, the `codecs` library provides a series of functions from the built-in
     
     This difference allows to keep encodings added from `codext` removable while these added from `codecs` are not. This is the consequence from the fact that there is no unregister function in the native `_codecs` library.
 
+!!! warning "Lossy conversion"
+    
+    Some encodings are lossy, meaning that it is not always possible to decode back to the exact start string. This should be considered especially when chaining codecs.
+
 -----
 
-## Add a custom encoding
+### Add a custom encoding
 
 New codecs can be added easily using the new function `add`.
 
@@ -85,7 +91,7 @@ In this second example, we can see that:
 
 -----
 
-## Add a custom map encoding
+### Add a custom map encoding
 
 New codecs using encoding maps can be added easily using the new function `add_map`.
 
@@ -161,7 +167,7 @@ In this second example, we can see that:
 
 -----
 
-## Add a macro
+### Add a macro
 
 **Macros** are chains of encodings. It is possible to define own macros with this feature. It works by giving the precedence to user's macros saved in `~/.codext-macros.json` then using embedded macros from the `codext` package.
 
@@ -186,7 +192,7 @@ Here is an example of adding a macro (and verifying it was indeed added):
 
 -----
 
-## List codecs
+### List codecs
 
 Codecs can be listed with the `list` function, either the whole codecs or only some categories.
 
@@ -224,7 +230,7 @@ Codecs can be listed with the `list` function, either the whole codecs or only s
 
 -----
 
-## Search for encodings
+### Search for encodings
 
 Natively, `codecs` provides a `lookup` function that allows to get the `CodecInfo` object for the desired encoding. This performs a lookup in the registry based on an exact match. Sometimes, it can be useful to search for available encodings based on a regular expression. Therefore, a `search` function is added by `codext` to allow to get a list of encoding names matching the input regex.
 
@@ -250,7 +256,7 @@ Also, `codext` provides an `examples` function to get some examples of valid enc
 
 -----
 
-## Remove a custom encoding or macro
+### Remove a custom encoding or macro
 
 New codecs can be removed easily using the new function `remove`, which will only remove every codec matching the given encoding name in the proxy codecs registry and NOT in the native one.
 
@@ -281,7 +287,7 @@ Removing a macro works exactly the same way as for a codec.
 
 -----
 
-## Remove or restore `codext` encodings and macros
+### Remove or restore `codext` encodings and macros
 
 It can be useful while playing with encodings and/or macros e.g. from Idle to be able to remove or restore `codext`'s encodings and macros. This can be achieved using respectively the new `clear` and `reset` functions.
 
@@ -302,7 +308,7 @@ LookupError: unknown encoding: bin
 
 -----
 
-## Multi-rounds encoding
+### Multi-rounds encoding
 
 It is possible to use multiple times the same encoding through the following convention: `encoding[X]`
 
@@ -324,7 +330,7 @@ Another example using 5-rounds base58:
 
 -----
 
-## Guess-decode an arbitrary input
+### Guess-decode an arbitrary input
 
 This is done by trying encodings using the breadth-first tree search algorithm. It stops when a given condition (by default, all characters must be printable), in the form of a function applied to the decoded string at the current depth, is met. It returns two results: the decoded string and a tuple with the related encoding names in order of application. The following parameters can be entered:
 
@@ -401,7 +407,7 @@ When multiple results are expected, `stop` and `show` arguments can be used resp
 
 -----
 
-## Hooked `codecs` functions
+### Hooked `codecs` functions
 
 In order to select the right de/encoding function and avoid any conflict, the native `codecs` library registers search functions (using the `register(search_function)` function), called in order of registration while searching for a codec.
 

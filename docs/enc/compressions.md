@@ -1,3 +1,5 @@
+## Compressions
+
 `codext` provides a few common compression codecs.
 
 -----

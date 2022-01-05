@@ -1,4 +1,4 @@
-# String tranformations
+## String tranformations
 
 `codext` also defines multiple dummy string manipulation/transformation codecs, essentially for use with the CLI tool and for the sake of simplicity.
 

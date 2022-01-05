@@ -1,3 +1,5 @@
+## How To Create Your Codec
+
 The purpose of this section is to provide a tutorial for creating new codecs accordingly.
 
 As explained in [this section](./features.html), `codext` provides the possibility to add new codecs in two ways:
@@ -19,7 +21,7 @@ The remainder of this section explains how to successfully create a new codec an
 
 -----
 
-## Generic arguments
+### Generic arguments
 
 Whatever solution is chosen, the following arguments shall be considered:
 
@@ -47,7 +49,7 @@ Whatever solution is chosen, the following arguments shall be considered:
 
 -----
 
-## Which add function ?
+### Which `add` function ?
 
 At this point, it is necessary to determine what kind of codec you want. If it is a simple map of characters, you should definitely use [`add_map`](https://github.com/dhondta/python-codext/blob/master/codext/__common__.py#L160). If it is more complex and cannot be handled using [`add_map`](https://github.com/dhondta/python-codext/blob/master/codext/__common__.py#L160)'s options, then you should use [`add`](https://github.com/dhondta/python-codext/blob/master/codext/__common__.py#L56) and define the encode/decode functions yourself.
 
@@ -69,7 +71,7 @@ to [Case 2](#case-2-encoding-map).
 
 -----
 
-## Case 1: Generic encoding definition
+### Case 1: Generic encoding definition
 
 This uses: [`codext.add`](https://github.com/dhondta/python-codext/blob/master/codext/__common__.py#L56)
 
@@ -123,7 +125,7 @@ _handle_error(token, position)
 
 -----
 
-## Case 2: Encoding map
+### Case 2: Encoding map
 
 This uses: [`codext.add_map`](https://github.com/dhondta/python-codext/blob/master/codext/__common__.py#L160)
 
@@ -154,7 +156,7 @@ The following options shall be considered:
 
 -----
 
-## Self-generated tests
+### Self-generated tests
 
 In order to facilitate testing, a test suite can be automatically generated from a set of *examples*. This is defined in the `__examples__` dunder inside codec's source file (see [`sms`](https://github.com/dhondta/python-codext/blob/master/codext/stegano/sms.py) for an example). By default, the `add`/`add_map` function will get `__examples__` from the global scope but this behavior can be overridden by specifying the keyword-argument `examples` (e.g. `add(..., examples=__examples1__)` ; see [`ordinal`](https://github.com/dhondta/python-codext/blob/master/codext/common/ordinal.py) for an example).
 
@@ -228,7 +230,7 @@ __examples__ = {
 
 -----
 
-## Adding a new codec to `codext`
+### Adding a new codec to `codext`
 
 As a checklist when making a codec for addition in `codext`, please follow these steps:
 

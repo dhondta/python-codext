@@ -1,3 +1,5 @@
+## Hashing
+
 `codext` provides hash functions through the `.encode(...)` API for convenience (e.g. while chaining codecs with [the CLI tool](../cli.html)).
 
 -----

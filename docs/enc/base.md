@@ -1,3 +1,5 @@
+## Base
+
 `codext` defines a far broader set of Base-encodings than in the original library.
 
 -----

@@ -1,3 +1,5 @@
+## Cryptography
+
 `codext` also implements several simple cryptographic ciphers. But how does it relate to encoding while a key is required ? `codext` focuses on ciphers that have a weak key. With dynamically named encodings, it is then possible to define a bunch of encodings, one for each value of the key. For instance, Barbie Typewriter has a key with only 4 possible values. The `barbie` codec can then be `barbie-1`, ..., `barbie-4`.
 
 !!! note "Available masks"
