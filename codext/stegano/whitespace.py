@@ -51,14 +51,17 @@ def wsba_decode(p):
     eq = "ord(c)" + "".join({'-':"+",'+':"-"}.get(c, c) for c in p)
     def decode(text, errors="strict"):
         s = ""
-        for line in text.split("\n"):
-            if len(line.strip()) == 0:
+        for i, l in enumerate(text.split("\n")):
+            ll = len(l.strip())
+            if ll == 0:
                 continue
-            after = len(line) - len(line.rstrip(" "))
-            before = len(line) - len(line.lstrip(" "))
-            c = line[before]
+            if ll > 1:
+                s += handle_error("whitespace_after_before", errors, decode=True, item="line")(l, i)
+            after = len(l) - len(l.rstrip(" "))
+            before = len(l) - len(l.lstrip(" "))
+            c = l[before]
             s += chr(eval(eq))
-        return s, len(s)
+        return s, len(text)
     return decode
 
 
