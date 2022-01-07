@@ -13,7 +13,7 @@ from ..__common__ import *
 
 
 __examples__ = {
-    'enc-dec(ipsum|lorem-ipsum)': ["This is a test."],
+    'enc-dec(ipsum|lorem-ipsum)': ["This is a test !"],
     'enc(ipsum)':                 {'Bad test#': None},
 }
 
@@ -55,21 +55,23 @@ DICT = {
     'y': ['yata', 'yatum', 'yatus', 'ypra'],
     'z': ['zamia', 'zelosus', 'zerum', 'zonatus', 'zymus'],
 }
-SCHARS = ".,:;+=-*/\\ "
+SCHARS = "0123456789.,:;!?+=-*/\\"
 
 
 def ipsum_encode(text, errors="strict"):
-    s = ""
+    s, strip = "", False
     for i, c in enumerate(text):
         try:
-            if c in SCHARS:
-                s = s.rstrip(" ") + c + " "
+            if c == " " or c in SCHARS:
+                s += c
+                strip = False
             else:
                 w = random.choice(DICT[c.lower()])
                 s += (w.capitalize() if c.isupper() else w) + " "
+                strip = True
         except KeyError:
             s += handle_error("ipsum", errors, " ")(c, i)
-    return s[:-1], len(text)
+    return s[:-1] if strip else s, len(text)
 
 
 def ipsum_decode(text, errors="strict"):
@@ -82,12 +84,11 @@ def ipsum_decode(text, errors="strict"):
             s += w
         else:
             try:
-                DICT[w[0].lower()]
-                s += w[0]
+                if w.lower().strip(SCHARS) not in DICT[w[0].lower()]:
+                    raise KeyError
+                s += w[:len(w)-len(w.lstrip(SCHARS))] + w.strip(SCHARS)[0] + w[len(w.rstrip(SCHARS)):len(w)]
             except KeyError:
                 s += handle_error("ipsum", errors, decode=True, item="word")(w, i)
-            if w[-1] in SCHARS:
-                s += w[-1]
     return s, len(text)
 
 
