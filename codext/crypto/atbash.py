@@ -1,5 +1,5 @@
 # -*- coding: UTF-8 -*-
-"""Atbash Cipher Codec - atbash content encoding.
+"""Atbash Cipher Codec - atbash-based content encoding.
 
 This codec:
 - en/decodes strings from str to str

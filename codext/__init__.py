@@ -98,16 +98,19 @@ def main():
     guess.add_argument("encoding", nargs="*", help="list of known encodings to apply (default: none)")
     guess.add_argument("-c", "--codec-categories", nargs="*", help="codec categories to be included in the search ; "
                                                                    "format: string|tuple")
+    guess.add_argument("-d", "--min-depth", default=0, type=int, help="minimum codec search depth before triggering "
+                                                                "results (default: 0)")
+    guess.add_argument("-D", "--max-depth", default=5, type=int, help="maximum codec search depth (default: 5)")
     guess.add_argument("-e", "--exclude-codecs", nargs="*", help="codecs to be explicitely not used ; "
                                                                  "format: string|tuple")
-    guess.add_argument("-f", "--stop-function", default="text", help="result checking function (default: text) ; "
-                       "format: printables|text|flag|lang_[bigram]|[regex]")
-    guess.add_argument("--max-depth", default=5, type=int, help="maximum codec search depth (default: 5)")
-    guess.add_argument("--min-depth", default=0, type=int, help="minimum codec search depth before triggering results "
-                                                                "(default: 0)")
-    guess.add_argument("--extended", action="store_true",
+    guess.add_argument("-E", "--extended", action="store_true",
                        help="while using the scoring heuristic, also consider null scores (default: False)")
-    guess.add_argument("--no-heuristic", action="store_true", help="do not use the scoring heuristic (default: False)")
+    lng = "lang_%s" % LANG
+    def_func = lng if getattr(stopfunc, lng, None) else "text"
+    guess.add_argument("-f", "--stop-function", default=def_func, help="result checking function (default: %s) ; "
+                       "format: printables|text|flag|lang_[bigram]|[regex]" % def_func)
+    guess.add_argument("-H", "--heuristic", action="store_true", help="use the scoring heuristic for accelerating"
+                       " the search (default: False)")
     guess.add_argument("-s", "--do-not-stop", action="store_true",
                        help="do not stop if a valid output is found (default: False)")
     guess.add_argument("-v", "--verbose", action="store_true",
@@ -117,9 +120,9 @@ def main():
                                                        "format: string|tuple|list(strings|tuples)")
     rank.add_argument("-e", "--exclude-codecs", help="codecs to be explicitely not used ; "
                                                      "format: string|tuple|list(strings|tuples)")
-    rank.add_argument("-l", "--limit", type=int, default=10, help="limit the number of displayed results")
-    rank.add_argument("--extended", action="store_true",
+    rank.add_argument("-E", "--extended", action="store_true",
                       help="while using the scoring heuristic, also consider null scores (default: False)")
+    rank.add_argument("-l", "--limit", type=int, default=10, help="limit the number of displayed results")
     search = sparsers.add_parser("search", help="search for codecs")
     search.add_argument("pattern", nargs="+", help="encoding pattern to search")
     listi = sparsers.add_parser("list", help="list items")
@@ -198,7 +201,7 @@ def main():
                              args.encoding,
                              not args.do_not_stop,
                              True,  # show
-                             not args.no_heuristic,
+                             args.heuristic,
                              args.extended,
                              args.verbose)
             for i, o in enumerate(r.items()):

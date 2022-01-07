@@ -150,11 +150,6 @@ class TestCommon(TestCase):
         STR = "This is a test"
         self.assertEqual(STR, _l(codext.guess("VGhpcyBpcyBhIHRlc3Q=", "a test", max_depth=1)))
         self.assertEqual(STR, _l(codext.guess("CJG3Ix8bVcSRMLOqwDUg28aDsT7", "a test", found=["base62"])))
-        if hasattr(codext.stopfunc, "lang_en"):
-            f1, f2 = codext.stopfunc.lang_en, codext.stopfunc.lang_es
-            self.assertEqual(STR, _l(codext.guess("CJG3Ix8bVcSRMLOqwDUg28aDsT7", f1, found=["base62"])))
-            self.assertIsNotNone(_l(codext.guess("CJG3Ix8bVcSRMLOqwDUg28aDsT7", f1, max_depth=1)))
-            self.assertNotEqual(STR, _l(codext.guess("CJG3Ix8bVcSRMLOqwDUg28aDsT7", f2, found=["base62"], max_depth=1)))
         self.assertEqual(STR, _l(codext.guess("VGhpcyBpcyBhIHRlc3Q=", "a test", 0, 1, "base", scoring_heuristic=True,
                                               exclude=["base100"])))
         self.assertEqual(STR, _l(codext.guess("VGhpcyBpcyBhIHRlc3Q=", "a test", 0, 1, ["base", "crypto"])))

@@ -128,13 +128,13 @@ def base(charset, pattern, pow2=False, encode_template=base_encode, decode_templ
     if pow2 and nb != int(nb):
         raise BaseError("Bad charset ; {} is not a power of 2".format(n))
     
-    def encode(param=""):
+    def encode(param="", *args):
         a = _get_charset(charset, param)
         def _encode(input, errors="strict"):
             return encode_template(input, a, errors), len(input)
         return _encode
     
-    def decode(param=""):
+    def decode(param="", *args):
         a = _get_charset(charset, param)
         sl, sc = "\n" not in a, "\n" not in a and not "\r" in a
         def _decode(input, errors="strict"):
