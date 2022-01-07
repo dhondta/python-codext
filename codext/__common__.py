@@ -11,6 +11,7 @@ from functools import reduce, wraps
 from importlib import import_module
 from inspect import currentframe
 from itertools import chain, product
+from locale import getlocale
 from math import log
 from platform import system
 from random import randint
@@ -35,9 +36,10 @@ __all__ = ["add", "add_macro", "add_map", "b", "clear", "codecs", "decode", "enc
            "isb", "generate_strings_from_regex", "get_alphabet_from_mask", "handle_error", "is_native",
            "list_categories", "list_encodings", "list_macros", "lookup", "maketrans", "os", "rank", "re", "register",
            "remove", "reset", "s2i", "search", "stopfunc", "BytesIO", "_input", "_stripl", "CodecMacro",
-           "DARWIN", "LINUX", "MASKS", "PY3", "UNIX", "WINDOWS"]
+           "DARWIN", "LANG", "LINUX", "MASKS", "PY3", "UNIX", "WINDOWS"]
 CODECS_REGISTRY = None
 CODECS_CATEGORIES = ["native", "custom"]
+LANG = getlocale()[0][:2].lower()
 MASKS = {
     'a': printable,
     'b': "".join(chr(i) for i in range(256)),
@@ -62,6 +64,21 @@ PY3 = sys.version[0] == "3"
 UNIX = DARWIN or LINUX
 WINDOWS = system() == "Windows"
 
+LANG_BACKEND = None
+for lib in ["langid", "langdetect", "pycld2", "cld3", "textblob"]:
+    try:
+        globals()[lib] = __import__(lib)
+        LANG_BACKEND = lib
+        break
+    except ImportError:
+        pass
+CLD3_LANGUAGES = "af|am|ar|bg|bn|bs|ca|ce|co|cs|cy|da|de|el|en|eo|es|et|eu|fa|fi|fr|fy|ga|gd|gl|gu|ha|hi|hm|hr|ht|hu|" \
+                 "hy|id|ig|is|it|iw|ja|jv|ka|kk|km|kn|ko|ku|ky|la|lb|lo|lt|lv|mg|mi|mk|ml|mn|mr|ms|mt|my|ne|nl|no|ny|" \
+                 "pa|pl|ps|pt|ro|ru|sd|si|sk|sl|sm|sn|so|sq|sr|st|su|sv|sw|ta|te|tg|th|tr|uk|ur|uz|vi|xh|yi|yo|zh|zu" \
+                 .split("|")
+TEXTBLOB_LANGUAGES = "af|ar|az|be|bg|bn|ca|cs|cy|da|de|el|en|eo|es|et|eu|fa|fi|fr|ga|gl|gu|hi|hr|ht|hu|id|is|it|iw|" \
+                     "ja|ka|kn|ko|la|lt|lv|mk|ms|mt|nl|no|pl|pt|ro|ru|sk|sl|sq|sr|sv|sw|ta|te|th|tl|tr|uk|ur|vi|yi|zh" \
+                     .split("|")
 
 entropy = lambda s: -sum([p * log(p, 2) for p in [float(s.count(c)) / len(s) for c in set(s)]])
 
@@ -199,25 +216,31 @@ def add(ename, encode=None, decode=None, pattern=None, text=True, add_to_codecs=
         fenc, fdec, name = encode, decode, encoding
         # prepare CodecInfo input arguments
         if pattern:
-            m = re.match(pattern, encoding)
+            m, args, i = re.match(pattern, encoding), [], 1
             try:
-                g = m.group(1) or ""
-                if g.isdigit():
-                    g = int(g)
-                fenc = fenc(g) if fenc else fenc
-                fdec = fdec(g) if fdec else fdec
-            except AttributeError:
-                # this occurs when m is None or there is an error in fenc(g) or fdec(g), meaning no match
-                if m is not None:
-                    raise
-                return
+                while True:
+                    try:
+                        g = m.group(i) or ""
+                        if g.isdigit():
+                            g = int(g)
+                        args += [g]
+                        i += 1
+                    except AttributeError:
+                        # this occurs when m is None or there is an error in fenc(g) or fdec(g), meaning no match
+                        if m is not None:
+                            raise
+                        return
             except IndexError:
-                # this occurs while m is not None, but possibly no capture group that gives at least 1 group index ; in
-                #  this case, if fenc/fdec is a decorated function, execute it with no arg
-                if fenc and len(getfullargspec(fenc).args) == 1:
-                    fenc = fenc()
-                if fdec and len(getfullargspec(fdec).args) == 1:
-                    fdec = fdec()
+                # this occurs while m is not None, but possibly no capture group that gives at least 1 group index ;
+                #  in this case, if fenc/fdec is a decorated function, execute it with no arg
+                if len(args) == 0:
+                    if fenc and len(getfullargspec(fenc).args) == 1:
+                        fenc = fenc()
+                    if fdec and len(getfullargspec(fdec).args) == 1:
+                        fdec = fdec()
+                else:
+                    fenc = fenc(*args) if fenc else fenc
+                    fdec = fdec(*args) if fdec else fdec
         if fenc:
             fenc = fix_inout_formats(fenc)
         if fdec:
@@ -1056,31 +1079,54 @@ stopfunc = ModuleType("stopfunc", """
     - `printables`: checks that every output character is in the set of printables
 """)
 stopfunc.printables = lambda s: all(c in printable for c in ensure_str(s))
-stopfunc.regex      = lambda p: lambda s: re.search(p, ensure_str(s)) is not None
-stopfunc.text       = lambda s: stopfunc.printables(s) and entropy(s) < 4.6
+stopfunc.printables.__name__ = stopfunc.printables.__qualname__ = "printables"
+stopfunc.regex = lambda p: lambda s: re.search(p, ensure_str(s)) is not None
+stopfunc.regex.__name__ = stopfunc.regex.__qualname__ = "regex"
+stopfunc.text = lambda s: stopfunc.printables(s) and entropy(s) < 4.6
+stopfunc.text.__name__ = stopfunc.text.__qualname__ = "text"
+stopfunc.flag = lambda x: re.search(r"[Ff][Ll1][Aa4@][Gg96]", ensure_str(x)) is not None
+stopfunc.flag.__name__ = stopfunc.flag.__qualname__ = "flag"
+stopfunc.default = stopfunc.printables
+
+
+def _detect(text):
+    _lb, t = LANG_BACKEND, ensure_str(text)
+    if _lb is None:
+        raise ValueError("No language backend installed")
+    return langid.classify(t)[0] if _lb == "langid" else \
+           langdetect.detect(t) if _lb == "langdetect" else \
+           pycld2.detect(t)[2][0][1] if _lb == "pycld2" else \
+           cld3.get_language(t).language[:2] if _lb == "cld3" else \
+           textblob.TextBlob(t).detect_language()[:2]
+
 
 def _lang(lang):
     def _test(s):
         if not stopfunc.text(s):
             return False
         try:
-            return detect(ensure_str(s)) == lang
+            return _detect(ensure_str(s))[:2] == lang
         except:
             return False
     return _test
 
-try:
-    from langdetect import detect, PROFILES_DIRECTORY
-    for lang in [p.replace("-", "") for p in os.listdir(PROFILES_DIRECTORY)]:
-        setattr(stopfunc, "lang_%s" % lang, _lang(lang))
-except ImportError:
-    pass
-
-
-__flag = lambda x: re.search(r"[Ff][Ll1][Aa4@][Gg96]", x) is not None
-def _flag(x):
-    return __flag(ensure_str(x))
-stopfunc.flag = _flag
+if LANG_BACKEND:
+    _lb = LANG_BACKEND
+    if _lb == "langid":
+        langid.langid.load_model()
+    for lang in (
+        langid.langid.identifier.nb_classes if _lb == "langid" else \
+        [p.replace("-", "") for p in os.listdir(langdetect.PROFILES_DIRECTORY)] if _lb == "langdetect" else \
+        list(set(x[1][:2] for x in pycld2.LANGUAGES if x[0] in pycld2.DETECTED_LANGUAGES)) if _lb == "pycld2" else \
+        CLD3_LANGUAGES if _lb == "cld3" else \
+        TEXTBLOB_LANGUAGES if _lb == "textblob" else \
+        []):
+        n = "lang_%s" % lang
+        setattr(stopfunc, n, _lang(lang))
+        getattr(stopfunc, n).__name__ = getattr(stopfunc, n).__qualname__ = n
+    flng = "lang_%s" % LANG
+    if getattr(stopfunc, flng, None):
+        stopfunc.default = getattr(stopfunc, flng)        
 
 
 def __develop(encodings):
@@ -1140,7 +1186,7 @@ def __guess(prev_input, input, stop_func, depth, max_depth, min_depth, codec_cat
         if encoding in e:
             continue
         if debug:
-            print("[*] Depth %d/%d ; trying %s" % (depth+1, max_depth, encoding))
+            print("[*] Depth %0{}d/%d: %s".format(len(str(max_depth))) % (depth+1, max_depth, encoding))
         __guess(input, new_input, stop_func, depth+1, max_depth, min_depth, codec_categories, exclude, result,
                 found + (encoding, ), stop, show, scoring_heuristic, extended, debug)
 
@@ -1236,7 +1282,7 @@ def __score(prev_input, input, codec, heuristic=False, extended=False):
             yield s, new_input, encoding
 
 
-def guess(input, stop_func=stopfunc.printables, min_depth=0, max_depth=5, codec_categories=None, exclude=None, found=(),
+def guess(input, stop_func=stopfunc.default, min_depth=0, max_depth=5, codec_categories=None, exclude=None, found=(),
           stop=True, show=False, scoring_heuristic=False, extended=False, debug=False):
     """ Try decoding without the knowledge of the encoding(s). """
     if max_depth <= 0:
