@@ -109,8 +109,12 @@ def main():
     def_func = lng if getattr(stopfunc, lng, None) else "text"
     guess.add_argument("-f", "--stop-function", default=def_func, help="result checking function (default: %s) ; "
                        "format: printables|text|flag|lang_[bigram]|[regex]" % def_func)
-    guess.add_argument("-H", "--heuristic", action="store_true", help="use the scoring heuristic for accelerating"
-                       " the search (default: False)")
+    guess.add_argument("-H", "--no-heuristic", action="store_true", help="DO NOT use the scoring heuristic ; slows down"
+                       " the search but may be more accurate (default: False)")
+    if len(stopfunc.LANG_BACKENDS) == 0:
+        _lb = stopfunc.LANG_BACKEND
+        guess.add_argument("-l", "--lang-backend", default=_lb, choices=stopfunc.LANG_BACKENDS + ["none"],
+                           help="natural language detection backend (default: %s)" % _lb)
     guess.add_argument("-s", "--do-not-stop", action="store_true",
                        help="do not stop if a valid output is found (default: False)")
     guess.add_argument("-v", "--verbose", action="store_true",
@@ -201,7 +205,7 @@ def main():
                              args.encoding,
                              not args.do_not_stop,
                              True,  # show
-                             args.heuristic,
+                             not args.no_heuristic,
                              args.extended,
                              args.verbose)
             for i, o in enumerate(r.items()):

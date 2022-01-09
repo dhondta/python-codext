@@ -13,6 +13,7 @@ from inspect import currentframe
 from itertools import chain, product
 from locale import getlocale
 from math import log
+from pkgutil import iter_modules
 from platform import system
 from random import randint
 from six import binary_type, string_types, text_type, BytesIO
@@ -39,7 +40,10 @@ __all__ = ["add", "add_macro", "add_map", "b", "clear", "codecs", "decode", "enc
            "DARWIN", "LANG", "LINUX", "MASKS", "PY3", "UNIX", "WINDOWS"]
 CODECS_REGISTRY = None
 CODECS_CATEGORIES = ["native", "custom"]
-LANG = getlocale()[0][:2].lower()
+try:
+    LANG = getlocale()[0][:2].lower()
+except TypeError:
+    LANG = None
 MASKS = {
     'a': printable,
     'b': "".join(chr(i) for i in range(256)),
@@ -63,22 +67,6 @@ LINUX = system() == "Linux"
 PY3 = sys.version[0] == "3"
 UNIX = DARWIN or LINUX
 WINDOWS = system() == "Windows"
-
-LANG_BACKEND = None
-for lib in ["langid", "langdetect", "pycld2", "cld3", "textblob"]:
-    try:
-        globals()[lib] = __import__(lib)
-        LANG_BACKEND = lib
-        break
-    except ImportError:
-        pass
-CLD3_LANGUAGES = "af|am|ar|bg|bn|bs|ca|ce|co|cs|cy|da|de|el|en|eo|es|et|eu|fa|fi|fr|fy|ga|gd|gl|gu|ha|hi|hm|hr|ht|hu|" \
-                 "hy|id|ig|is|it|iw|ja|jv|ka|kk|km|kn|ko|ku|ky|la|lb|lo|lt|lv|mg|mi|mk|ml|mn|mr|ms|mt|my|ne|nl|no|ny|" \
-                 "pa|pl|ps|pt|ro|ru|sd|si|sk|sl|sm|sn|so|sq|sr|st|su|sv|sw|ta|te|tg|th|tr|uk|ur|uz|vi|xh|yi|yo|zh|zu" \
-                 .split("|")
-TEXTBLOB_LANGUAGES = "af|ar|az|be|bg|bn|ca|cs|cy|da|de|el|en|eo|es|et|eu|fa|fi|fr|ga|gl|gu|hi|hr|ht|hu|id|is|it|iw|" \
-                     "ja|ka|kn|ko|la|lt|lv|mk|ms|mt|nl|no|pl|pt|ro|ru|sk|sl|sq|sr|sv|sw|ta|te|th|tl|tr|uk|ur|vi|yi|zh" \
-                     .split("|")
 
 entropy = lambda s: -sum([p * log(p, 2) for p in [float(s.count(c)) / len(s) for c in set(s)]])
 
@@ -307,7 +295,8 @@ def add(ename, encode=None, decode=None, pattern=None, text=True, add_to_codecs=
         ci.parameters['guess'] = kwargs.get('guess', glob.get('__guess__', [ename])) or []
         ci.parameters['module'] = kwargs.get('module', glob.get('__name__'))
         ci.parameters.setdefault("scoring", {})
-        for attr in ["bonus_func", "entropy", "len_charset", "penalty", "printables_rate", "padding_char"]:
+        for attr in ["bonus_func", "entropy", "expansion_factor", "len_charset", "penalty", "printables_rate",
+                     "padding_char"]:
             a = kwargs.pop(attr, None)
             if a is not None:
                 ci.parameters['scoring'][attr] = a
@@ -1068,6 +1057,7 @@ def generate_strings_from_regex(regex, star_plus_max=STAR_PLUS_MAX, repeat_max=R
 
 
 # guess feature objects
+__module_exists = lambda n: n in [x[1] for x in iter_modules()]
 stopfunc = ModuleType("stopfunc", """
     Predefined stop functions
     ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1077,6 +1067,8 @@ stopfunc = ModuleType("stopfunc", """
     - `flag`:       searches for the pattern "[Ff][Ll1][Aa4@][Gg9]" (either UTF-8 or UTF-16)
     - `lang_**`:    checks if the given lang (any from the PROFILES_DIRECTORY of the langdetect module) is detected
     - `printables`: checks that every output character is in the set of printables
+    - `regex`:      takes one argument, the regular expression, for checking a string against the given pattern
+    - `text`:       checks for printables and an entropy less than 4.6 (empirically determined)
 """)
 stopfunc.printables = lambda s: all(c in printable for c in ensure_str(s))
 stopfunc.printables.__name__ = stopfunc.printables.__qualname__ = "printables"
@@ -1086,13 +1078,27 @@ stopfunc.text = lambda s: stopfunc.printables(s) and entropy(s) < 4.6
 stopfunc.text.__name__ = stopfunc.text.__qualname__ = "text"
 stopfunc.flag = lambda x: re.search(r"[Ff][Ll1][Aa4@][Gg96]", ensure_str(x)) is not None
 stopfunc.flag.__name__ = stopfunc.flag.__qualname__ = "flag"
-stopfunc.default = stopfunc.printables
+stopfunc.default = stopfunc.text
+
+stopfunc.LANG_BACKEND = None
+stopfunc.LANG_BACKENDS = [n for n in ["langid", "langdetect", "pycld2", "cld3", "textblob"] if __module_exists(n)]
+if len(stopfunc.LANG_BACKENDS) > 0:
+    stopfunc.LANG_BACKEND = stopfunc.LANG_BACKENDS[0]
+if "cld3" in stopfunc.LANG_BACKENDS:
+    stopfunc.CLD3_LANGUAGES = "af|am|ar|bg|bn|bs|ca|ce|co|cs|cy|da|de|el|en|eo|es|et|eu|fa|fi|fr|fy|ga|gd|gl|gu|ha|" \
+                              "hi|hm|hr|ht|hu|hy|id|ig|is|it|iw|ja|jv|ka|kk|km|kn|ko|ku|ky|la|lb|lo|lt|lv|mg|mi|mk|" \
+                              "ml|mn|mr|ms|mt|my|ne|nl|no|ny|pa|pl|ps|pt|ro|ru|sd|si|sk|sl|sm|sn|so|sq|sr|st|su|sv|" \
+                              "sw|ta|te|tg|th|tr|uk|ur|uz|vi|xh|yi|yo|zh|zu".split("|")
+if "textblob" in stopfunc.LANG_BACKENDS:
+    stopfunc.TEXTBLOB_LANGUAGES = "af|ar|az|be|bg|bn|ca|cs|cy|da|de|el|en|eo|es|et|eu|fa|fi|fr|ga|gl|gu|hi|hr|ht|hu|" \
+                                  "id|is|it|iw|ja|ka|kn|ko|la|lt|lv|mk|ms|mt|nl|no|pl|pt|ro|ru|sk|sl|sq|sr|sv|sw|ta|" \
+                                  "te|th|tl|tr|uk|ur|vi|yi|zh".split("|")
 
 
 def _detect(text):
-    _lb, t = LANG_BACKEND, ensure_str(text)
+    _lb, t = stopfunc.LANG_BACKEND, ensure_str(text)
     if _lb is None:
-        raise ValueError("No language backend installed")
+        raise ValueError("No language backend %s" % ["selected", "installed"][len(stopfunc.LANG_BACKENDS) == 0])
     return langid.classify(t)[0] if _lb == "langid" else \
            langdetect.detect(t) if _lb == "langdetect" else \
            pycld2.detect(t)[2][0][1] if _lb == "pycld2" else \
@@ -1110,23 +1116,42 @@ def _lang(lang):
             return False
     return _test
 
-if LANG_BACKEND:
-    _lb = LANG_BACKEND
-    if _lb == "langid":
-        langid.langid.load_model()
-    for lang in (
-        langid.langid.identifier.nb_classes if _lb == "langid" else \
-        [p.replace("-", "") for p in os.listdir(langdetect.PROFILES_DIRECTORY)] if _lb == "langdetect" else \
-        list(set(x[1][:2] for x in pycld2.LANGUAGES if x[0] in pycld2.DETECTED_LANGUAGES)) if _lb == "pycld2" else \
-        CLD3_LANGUAGES if _lb == "cld3" else \
-        TEXTBLOB_LANGUAGES if _lb == "textblob" else \
-        []):
-        n = "lang_%s" % lang
-        setattr(stopfunc, n, _lang(lang))
-        getattr(stopfunc, n).__name__ = getattr(stopfunc, n).__qualname__ = n
-    flng = "lang_%s" % LANG
-    if getattr(stopfunc, flng, None):
-        stopfunc.default = getattr(stopfunc, flng)        
+
+def _load_lang_backend(backend=None):
+    # import the requested backend library if not imported yet
+    if backend is None or backend in stopfunc.LANG_BACKENDS:
+        stopfunc.LANG_BACKEND = backend
+        if backend:
+            globals()[backend] = __import__(backend)
+    else:
+        raise ValueError("Unsupported language detection backend")
+    # remove language-related stop functions
+    for attr in dir(stopfunc):
+        if attr.startswith("_") or not isinstance(getattr(stopfunc, attr), FunctionType):
+            continue
+        if re.match(r"lang_[a-z]{2}$", attr):
+            delattr(stopfunc, attr)
+    # rebind applicable language-related stop functions
+    if stopfunc.LANG_BACKEND:
+        _lb = stopfunc.LANG_BACKEND
+        if _lb == "langid":
+            langid.langid.load_model()
+        for lang in (
+            langid.langid.identifier.nb_classes if _lb == "langid" else \
+            list(set(p[:2] for p in os.listdir(langdetect.PROFILES_DIRECTORY))) if _lb == "langdetect" else \
+            list(set(x[1][:2] for x in pycld2.LANGUAGES if x[0] in pycld2.DETECTED_LANGUAGES)) if _lb == "pycld2" else \
+            stopfunc.CLD3_LANGUAGES if _lb == "cld3" else \
+            stopfunc.TEXTBLOB_LANGUAGES if _lb == "textblob" else \
+            []):
+            n = "lang_%s" % lang
+            setattr(stopfunc, n, _lang(lang))
+            getattr(stopfunc, n).__name__ = getattr(stopfunc, n).__qualname__ = n
+        if LANG:
+            flng = "lang_%s" % LANG
+            if getattr(stopfunc, flng, None):
+                stopfunc.default = getattr(stopfunc, flng)        
+_load_lang_backend(stopfunc.LANG_BACKEND)
+stopfunc._reload_lang = _load_lang_backend
 
 
 def __develop(encodings):
@@ -1202,6 +1227,8 @@ def __rank(prev_input, input, codecs, heuristic=False, extended=False, yield_sco
 
 
 class _Text(object):
+    __slots__ = ["entropy", "lcharset", "len", "padding", "printables"]
+    
     def __init__(self, text, pad_char=None):
         self.len = len(text)
         self.lcharset = len(set(text))
@@ -1247,12 +1274,23 @@ def __score(prev_input, input, codec, heuristic=False, extended=False):
             elif not pad and obj.padding:
                 s -= .1  # it could arise a padding character is encountered while not being padding => small penalty
             # give a bonus when the rate of printable characters is greater or equal than expected and a penalty when
-            #  lower only for codecs that tolerate errors (otherwise, the printables rate can be biased)
+            #  lower only for codecs that DO NOT tolerate errors (otherwise, the printables rate can be biased)
             if not ci.parameters.get('no_error', False):
                 pr = sc.get('printables_rate', 0)
                 if isinstance(pr, type(lambda: None)):
                     pr = float(pr(obj.printables))
                 if obj.printables - pr <= .05:
+                    s += .1
+            expf = sc.get('expansion_factor')
+            if expf:
+                f = float(len(new_input)) / obj.len
+                if isinstance(expf, type(lambda: None)):
+                    expf = expf(f)
+                elif isinstance(expf, (int, float)):
+                    epxf = f - .1 <= expf <= f + .1
+                elif isinstance(expf, (tuple, list)) and len(expf) == 2:
+                    expf = f - expf[1] <= expf[0] <= expf[1] + .1
+                if expf:
                     s += .1
             # afterwards, if the input text has an entropy close to the expected one, give a bonus weighted on the
             #  number of input characters to take bad entropies of shorter strings into account
@@ -1265,7 +1303,7 @@ def __score(prev_input, input, codec, heuristic=False, extended=False):
                     entr = entr(obj.entropy)
             if entr is not None:
                 # use a quadratic heuristic to compute a weight for the entropy delta, aligned on (100w,.1) and (200w,1)
-                d_entr = min(4e-05 * obj.len**2 - .003 * obj.len, 1) * abs(entr - obj.entropy)
+                d_entr = min(4e-05 * obj.len**2 - .003 * obj.len, 1) * abs(entr - entropy(new_input))
                 if d_entr <= .5:
                     s += .5 - d_entr
             # finally, if relevant, apply a custom bonus (e.g. when a regex pattern is matched)
@@ -1283,7 +1321,7 @@ def __score(prev_input, input, codec, heuristic=False, extended=False):
 
 
 def guess(input, stop_func=stopfunc.default, min_depth=0, max_depth=5, codec_categories=None, exclude=None, found=(),
-          stop=True, show=False, scoring_heuristic=False, extended=False, debug=False):
+          stop=True, show=False, scoring_heuristic=True, extended=False, debug=False):
     """ Try decoding without the knowledge of the encoding(s). """
     if max_depth <= 0:
         raise ValueError("Depth must be a non-null positive integer")
@@ -1309,6 +1347,8 @@ codecs.guess = guess
 
 def rank(input, extended=False, limit=-1, codec_categories=None, exclude=None):
     """ Rank the most probable encodings based on the given input. """
+    if isinstance(codec_categories, string_types):
+        codec_categories = (codec_categories, )
     codecs = list_encodings(*(codec_categories or ()))
     for e in __develop(exclude):
         try:
