@@ -6,19 +6,17 @@ This codec:
 - encodes strings from bytes to bytes
 - encodes file content from str to bytes (write)
 """
-from markdown2 import markdown as md2html
-
 from ..__common__ import *
 
 
 __guess__ = []
 
 
-def markdown_encode(mdtext, errors="strict"):
-    return md2html(mdtext), len(mdtext)
-
-
-# note: the group is NOT captured so that the pattern is only used to match the name of the codec and not to dynamically
-#        bind to a parametrizable encode function
-add("markdown", markdown_encode, pattern=r"^(?:markdown|Markdown|md)$")
+try:
+    from markdown2 import markdown as md2html
+    # note: the group is NOT captured so that the pattern is only used to match the name of the codec and not to
+    #        dynamically bind to a parametrizable encode function
+    add("markdown", lambda md, error="strict": (md2html(md), len(md)), pattern=r"^(?:markdown|Markdown|md)$")
+except ImportError:
+    pass
 
