@@ -19,6 +19,5 @@ __examples__ = {
 ENCMAP = {k: v for k, v in zip("aabeliostzg", "@4831105729")}
 
 
-add_map("leet", ENCMAP, ignore_case="encode", no_error=True, pattern=r"(?:leet|1337|leetspeak)$",
-        entropy=lambda e: e, expansion_factor=1.)
+add_map("leet", ENCMAP, ignore_case="encode", no_error=True, pattern=r"(?:leet|1337|leetspeak)$", entropy=lambda e: e)
 

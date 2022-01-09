@@ -20,5 +20,6 @@ ENCMAP['J'] = "43"
 ENCMAP[' '] = " "
 
 
-add_map("klopf", ENCMAP, ignore_case="both", pattern=r"^(?:klopf(?:code)?)$", printables_rate=1.)
+add_map("klopf", ENCMAP, ignore_case="both", pattern=r"^(?:klopf(?:code)?)$", printables_rate=1.,
+        expansion_factor=(1.85, .15))
 

@@ -86,6 +86,6 @@ def letters_decode(letters):
     return decode
 
 
-add("letter-indices", letters_encode, letters_decode, printables_rate=1.,
+add("letter-indices", letters_encode, letters_decode, printables_rate=1., expansion_factor=None,
     pattern=r"^(consonants?|vowels?|consonants?[-_]vowels?)[-_]ind(?:ex|ices)$")
 

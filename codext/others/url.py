@@ -24,5 +24,6 @@ for i in range(256):
         ENCMAP[c] = "%{:02X}".format(i)
 
 
-add_map("url", ENCMAP, ignore_case="decode", no_error=True, pattern=r"^url(?:encode)?$", printables_rate=1.)
+add_map("url", ENCMAP, ignore_case="decode", no_error=True, pattern=r"^url(?:encode)?$", printables_rate=1.,
+        expansion_factor=(1.2, .2))
 

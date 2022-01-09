@@ -13,6 +13,39 @@ from ..__common__ import *
 from ..__info__ import __version__
 
 
+"""
+Curve fitting:
+
+>>> import matplotlib.pyplot as plt
+>>> import pandas as pd
+>>> import scipy.optimize
+>>> from statistics import mean
+>>> from tinyscript import random
+>>> x, y = [], []
+>>> for i in range(2, 256):
+	v = []
+	for j in range(16, 2048, 16):
+		s = random.randstr(j)
+		v.append(float(len(codext.encode(s, "base%d-generic" % i))) / len(s))
+	x.append(i)
+	y.append(mean(v))
+>>> data = pd.DataFrame({'base': x, 'expf': y})
+>>> def fit(x, y, func, params):
+	params, cv = scipy.optimize.curve_fit(func, x, y, params)
+	print(params)
+	y2 = func(x, *params)
+	plt.clf()
+	plt.plot(x, y, ".", color="blue", alpha=.3)
+	plt.plot(x, y2, color="red", linewidth=3.0)
+	plt.show()
+>>> fit(data['base'], data['expf'], lambda x, a, b, c, d: a / (x**b + c) + d, (1, 1, 1, 1))
+[ 0.02841434  0.00512664 -0.99999984  0.01543879]
+>>> fit(data['base'], data['expf'], lambda x, a, b, c, d: a / (x**b + c) + d, (.028, .005, -1, .015))
+[ 0.02827357  0.00510124 -0.99999984  0.01536941]
+"""
+EXPANSION_FACTOR = lambda base: 0.02827357 / (base**0.00510124-0.99999984) + 0.01536941
+
+
 class BaseError(ValueError):
     pass
 
@@ -144,6 +177,7 @@ def base(charset, pattern, pow2=False, encode_template=base_encode, decode_templ
     
     kwargs['len_charset'] = n
     kwargs['printables_rate'] = float(len([c for c in cs if c in printable])) / len(cs)
+    kwargs['expansion_factor'] = kwargs.pop('expansion_factor', (EXPANSION_FACTOR(n), .05))
     n = "base{}".format(n) if name is None else name
     kwargs['guess'] = kwargs.get('guess', [n])
     add(n, encode, decode, pattern, entropy=nb, **kwargs)
@@ -167,7 +201,8 @@ def base_generic():
     
     add("base", encode, decode, r"^base[-_]?([2-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(?:[-_]generic)?$",
         guess=["base%d-generic" % i for i in range(2, 255)], entropy=lambda e, n: log(int(n.split("-")[0][4:]), 2),
-        len_charset=lambda n: int(n.split("-")[0][4:]), printables_rate=1., category="base-generic", penalty=.4)
+        len_charset=lambda n: int(n.split("-")[0][4:]), printables_rate=1., category="base-generic", penalty=.4,
+        expansion_factor=lambda f, n: (EXPANSION_FACTOR(int(n.split("-")[0][4:])), .05))
 
 
 def main(n, ref=None, alt=None, inv=True):

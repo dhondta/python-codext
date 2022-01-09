@@ -35,5 +35,6 @@ ENCMAP = {
 }
 
 
-add_map("morse", ENCMAP, "#", " ", ignore_case="encode", pattern=r"^morse([-_]?.{3})?$", printables_rate=1.)
+add_map("morse", ENCMAP, "#", " ", ignore_case="encode", pattern=r"^morse([-_]?.{3})?$", printables_rate=1.,
+        expansion_factor=(2.8, .6))
 

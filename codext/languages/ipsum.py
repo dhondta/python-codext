@@ -92,5 +92,6 @@ def ipsum_decode(text, errors="strict"):
     return s, len(text)
 
 
-add("ipsum", ipsum_encode, ipsum_decode, pattern=r"^(?:lorem[-_]?)?ipsum$", printables_rate=1.)
+add("ipsum", ipsum_encode, ipsum_decode, pattern=r"^(?:lorem[-_]?)?ipsum$", printables_rate=1.,
+    expansion_factor=(6., .5))
 

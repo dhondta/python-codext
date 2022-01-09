@@ -22,5 +22,6 @@ ENCMAP = {
 }
 
 
-add_map("sms", ENCMAP, "?", "-_", ignore_case="encode", pattern=r"^(?:nokia(?:[-_]?3310)?|sms|t9)$", printables_rate=1.)
+add_map("sms", ENCMAP, "?", "-_", ignore_case="encode", pattern=r"^(?:nokia(?:[-_]?3310)?|sms|t9)$", printables_rate=1.,
+        expansion_factor=(2.9, .2))
 

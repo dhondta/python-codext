@@ -40,5 +40,5 @@ ENCMAP2 = {
 
 add_map("southpark", ENCMAP1, pattern=r"^(?:kenny|southpark)([-_].{6})?$", examples=__examples1__, guess=__guess1__)
 add_map("southpark-icase", ENCMAP2, ignore_case="both", pattern=r"^(?:kenny|southpark)[-_]icase([-_].{3})?$",
-        examples=__examples2__, guess=__guess2__, printables_rate=1.)
+        examples=__examples2__, guess=__guess2__, printables_rate=1., expansion_factor=3.)
 
