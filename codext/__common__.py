@@ -209,7 +209,7 @@ def add(ename, encode=None, decode=None, pattern=None, text=True, add_to_codecs=
                 while True:
                     try:
                         g = m.group(i) or ""
-                        if g.isdigit():
+                        if g.isdigit() and not g.startswith("0") and "".join(set(g)) != "01":
                             g = int(g)
                         args += [g]
                         i += 1
@@ -296,7 +296,7 @@ def add(ename, encode=None, decode=None, pattern=None, text=True, add_to_codecs=
         ci.parameters['module'] = kwargs.get('module', glob.get('__name__'))
         ci.parameters.setdefault("scoring", {})
         for attr in ["bonus_func", "entropy", "expansion_factor", "len_charset", "penalty", "printables_rate",
-                     "padding_char"]:
+                     "padding_char", "transitive"]:
             a = kwargs.pop(attr, None)
             if a is not None:
                 ci.parameters['scoring'][attr] = a
@@ -1205,7 +1205,8 @@ def __guess(prev_input, input, stop_func, depth, max_depth, min_depth, codec_cat
         return r if transform is None else transform(*r)
     # parse valid encodings, expanding included/excluded codecs
     c, e = expand(codec_categories, "codec_categories", list_encodings), __develop(expand(exclude, "exclude"))
-    for new_input, encoding in __rank(prev_input, input, c, scoring_heuristic, extended):
+    prev_enc = found[-1] if len(found) > 0 else ""
+    for new_input, encoding in __rank(prev_input, input, prev_enc, c, scoring_heuristic, extended):
         if len(result) > 0 and stop:
             return
         if encoding in e:
@@ -1216,11 +1217,11 @@ def __guess(prev_input, input, stop_func, depth, max_depth, min_depth, codec_cat
                 found + (encoding, ), stop, show, scoring_heuristic, extended, debug)
 
 
-def __rank(prev_input, input, codecs, heuristic=False, extended=False, yield_score=False):
+def __rank(prev_input, input, prev_encoding, codecs, heuristic=False, extended=False, yield_score=False):
     """ Filter valid encodings and rank them by relevance. """
     ranking = {}
     for codec in codecs:
-        for score, new_input, encoding in __score(prev_input, input, codec, heuristic, extended):
+        for score, new_input, encoding in __score(prev_input, input, prev_encoding, codec, heuristic, extended):
             ranking[encoding] = (score, new_input)
     for encoding, result in sorted(ranking.items(), key=lambda x: -x[1][0]):
         yield result if yield_score else result[1], encoding
@@ -1237,10 +1238,11 @@ class _Text(object):
         self.entropy = entropy(text)
 
 
-def __score(prev_input, input, codec, heuristic=False, extended=False):
+def __score(prev_input, input, prev_encoding, codec, heuristic=False, extended=False):
     """ Score relevant encodings given an input. """
     obj, ci = None, lookup(codec, False)  # NB: lookup(...) won't fail as the codec value comes from list_encodings(...)
     sc = ci.parameters.get('scoring', {})
+    no_error, transitive = ci.parameters.get('no_error', False), sc.get('transitive', False)
     for encoding in ci.parameters.get('guess', [codec]):
         # ignore encodings that fail to decode with their default errors handling value
         try:
@@ -1250,6 +1252,12 @@ def __score(prev_input, input, codec, heuristic=False, extended=False):
         # ignore encodings that give an output identical to the input (identity transformation) or to the previous input
         if len(new_input) == 0 or prev_input is not None and b(input) == b(new_input) or b(prev_input) == b(new_input):
             continue
+        # ignore encodings that transitively give the same output (identity transformation by chaining twice a same
+        #  codec (e.g. rot-15 is equivalent to rot-3 and rot-12 or rot-6 and rot-9)
+        if transitive and prev_encoding:
+            ci_prev = lookup(prev_encoding, False)
+            if ci_prev.parameters['name'] == ci.parameters['name']:
+                continue
         # compute input's characteristics only once and only if the control flow reaches this point
         pad = sc.get('padding_char')
         if obj is None:
@@ -1275,23 +1283,25 @@ def __score(prev_input, input, codec, heuristic=False, extended=False):
                 s -= .1  # it could arise a padding character is encountered while not being padding => small penalty
             # give a bonus when the rate of printable characters is greater or equal than expected and a penalty when
             #  lower only for codecs that DO NOT tolerate errors (otherwise, the printables rate can be biased)
-            if not ci.parameters.get('no_error', False):
+            if not no_error:
                 pr = sc.get('printables_rate', 0)
                 if isinstance(pr, type(lambda: None)):
                     pr = float(pr(obj.printables))
                 if obj.printables - pr <= .05:
                     s += .1
-            expf = sc.get('expansion_factor')
+            expf = sc.get('expansion_factor', 1.)
             if expf:
                 f = float(len(new_input)) / obj.len
                 if isinstance(expf, type(lambda: None)):
-                    expf = expf(f)
+                    try:  # this case allows to consider the current encoding name from the current codec
+                        expf = expf(f, encoding)
+                    except TypeError:
+                        expf = expf(f)
                 elif isinstance(expf, (int, float)):
                     epxf = f - .1 <= expf <= f + .1
                 elif isinstance(expf, (tuple, list)) and len(expf) == 2:
                     expf = f - expf[1] <= expf[0] <= expf[1] + .1
-                if expf:
-                    s += .1
+                s += .1
             # afterwards, if the input text has an entropy close to the expected one, give a bonus weighted on the
             #  number of input characters to take bad entropies of shorter strings into account
             entr = sc.get('entropy', {})
@@ -1355,7 +1365,7 @@ def rank(input, extended=False, limit=-1, codec_categories=None, exclude=None):
             codecs.remove(e)
         except ValueError:
             pass
-    r = list(__rank(None, input, codecs, True, extended, True))
+    r = list(__rank(None, input, "", codecs, True, extended, True))
     return r[:limit] if len(r) > 1 else r
 codecs.rank = rank
 

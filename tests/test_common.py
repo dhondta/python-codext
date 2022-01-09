@@ -196,7 +196,7 @@ class TestCommon(TestCase):
         b64 = codext.encode(txt, "base64")
         self.assertEqual(txt, _l(codext.guess(b64, "0123456789", max_depth=1, scoring_heuristic=True,
                                               codec_categories="base")))
-        self.assertRaises(ValueError, codext.stopfunc._reload_langs, "DOES_NOT_EXIST")
+        self.assertRaises(ValueError, codext.stopfunc._reload_lang, "DOES_NOT_EXIST")
     
     def test_rank_input(self):
         codext.add("test_codec", lambda x, e="strict": (x + "=", len(x)), lambda x, e="strict": (x[:-1], len(x)-1),

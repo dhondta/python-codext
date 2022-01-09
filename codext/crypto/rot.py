@@ -72,8 +72,9 @@ def prot_decode(n, i):
     return decode
 
 
-add("rot", rot_encode, rot_decode, r"(?:caesar|rot)[-_]?([1-9]|1[0-9]|2[0-5]|47)$", aliases=["caesar"],
-    entropy=lambda e: e, printables_rate=lambda pr: pr, examples=__examples1__, guess=__guess1__)
+add("rot", rot_encode, rot_decode, r"(?:caesar|rot)[-_]?([1-9]|1[0-9]|2[0-5]|47)$", aliases=["caesar"], penalty=.1,
+    entropy=lambda e: e, printables_rate=lambda pr: pr, transitive=True, examples=__examples1__, guess=__guess1__)
 add("progressive-rot", prot_encode, prot_decode, r"p(?:rog(?:ressive)?-)?(?:caesar|rot)[-_]?(n?)([1-9]|1[0-9]|2[0-5])$",
-    entropy=lambda e: e, printables_rate=lambda pr: pr, examples=__examples2__, guess=__guess2__)
+    penalty=.1, entropy=lambda e: e, printables_rate=lambda pr: pr, transitive=True, examples=__examples2__,
+    guess=__guess2__)
 

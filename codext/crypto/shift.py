@@ -29,5 +29,6 @@ def ord_shift_encode(i):
     return encode
 
 
-add("shift", ord_shift_encode, ord_shift_decode, r"shift[-_]?([1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])$")
+add("shift", ord_shift_encode, ord_shift_decode, r"shift[-_]?([1-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])$",
+    transitive=True)
 
