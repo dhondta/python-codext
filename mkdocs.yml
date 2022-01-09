@@ -5,6 +5,7 @@ docs_dir: docs
 nav:
   - Introduction: index.md
   - Features: features.md
+  - 'Guess mode': guessing.md
   - Encodings:
     - Base: enc/base.md
     - Binary: enc/binary.md
