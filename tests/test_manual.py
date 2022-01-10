@@ -96,6 +96,10 @@ class ManualTestCase(TestCase):
         self.assertEqual(codecs.decode(STR, "reverse"), "tset a si siht")
         self.assertEqual(codecs.decode(STR, "reverse_words"), "siht si a tset")
         self.assertEqual(codecs.decode(STR.split()[0], "reverse"), codecs.decode(STR.split()[0], "reverse-words"))
+        self.assertEqual(codecs.encode(STR, "replace-i1"), STR.replace("i", "1"))
+        self.assertEqual(codecs.decode(STR.replace("i", "1"), "replace-1i"), STR)
+        self.assertEqual(codecs.encode(STR, "substitute-this/that"), STR.replace("this", "that"))
+        self.assertEqual(codecs.decode(STR.replace("this", "that"), "substitute-that/this"), STR)
     
     def test_codec_hash_functions(self):
         STR = b"This is a test string!"

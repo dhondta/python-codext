@@ -20,7 +20,7 @@ These transformation functions are simple string transformations, including `str
 `title` | text <-> titled text |  | decoding "untitles" the text
 `uppercase` | text <-> uppercase text | `upper` | decoding is `lowercase`
 
-Of course, these "encodings" have no interest while using them in Python as the `str` methods can be called. It can be useful while using `codext` from the terminal (see [*CLI tool*](cli.html)).
+Of course, these transformations have no interest while using them in Python as the `str` methods can be called. It can be useful while using `codext` from the terminal (see [*CLI tool*](cli.html)).
 
 Some simple examples:
 
@@ -43,22 +43,25 @@ These transformation functions are simple string transformations.
 
 **Codec** | **Conversions** | **Aliases** | **Comment**
 :---: | :---: | --- | ---
+`replace` | text <-> text with single-char replaced |  | 
 `reverse` | text <-> reversed text |  | 
 `reverse-words` | text <-> reversed words |  | same as `reverse` but not on the whole text, only on the words (text split by whitespace)
+`strip-spaces` | text <-> all whitespaces stripped |  | 
+`substitute` | text <-> text with token substituted |  | 
 
-As in the previous section, these "encodings" have no interest while using them in Python but well while using `codext` from the terminal (see [*CLI tool*](cli.html)).
+As in the previous section, these transformations have no interest while using them in Python but well while using `codext` from the terminal (see [*CLI tool*](cli.html)).
 
 A simple example:
 
 ```sh
-$ echo -en "test string" | codext encode reverse-words | codext encode reverse
-string test
+$ echo -en "test string" | codext encode reverse-words | codext encode reverse replace-\ _
+string_test
 ```
 
 Or using encodings chaining:
 
 ```sh
-$ echo -en "test string" | codext encode reverse-words reverse
-string test
+$ echo -en "test string" | codext encode reverse-words reverse substitute-string/phrase
+phrase test
 ```
 

@@ -235,7 +235,7 @@ o
 
 - [X] `a1z26`: keeps words whitespace-separated and uses a custom character separator
 - [X] `cases`: set of case-related encodings (including camel-, kebab-, lower-, pascal-, upper-, snake- and swap-case, slugify, capitalize, title)
-- [X] `dummy`: set of simple encodings (including reverse and word-reverse)
+- [X] `dummy`: set of simple encodings (including replace, reverse, word-reverse, substite and strip-spaces)
 - [X] `octal`: dummy octal conversion (converts to 3-digits groups)
 - [X] `octal-spaced`: variant of `octal` ; dummy octal conversion, handling whitespace separators
 - [X] `ordinal`: dummy character ordinals conversion (converts to 3-digits groups)

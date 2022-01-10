@@ -968,7 +968,9 @@ def __gen_str_from_re(regex, star_plus_max, repeat_max, yield_max, parsed=False)
         if code in ["assert_not", "at"]:
             continue
         elif code == "any":
-            tokens.append(printable.replace("\n", ""))  # should be ord(x) with x belongs to [0, 256[
+            charset = list(printable.replace("\n", ""))
+            random.shuffle(charset)
+            tokens.append(charset)  # should be ord(x) with x belongs to [0, 256[
         elif code == "assert":
             tokens.append(list(__gen_str_from_re(value[1], star_plus_max, repeat_max, yield_max, True)))
         elif code == "branch":
@@ -977,10 +979,11 @@ def __gen_str_from_re(regex, star_plus_max, repeat_max, yield_max, parsed=False)
                 result += list(__gen_str_from_re(r, star_plus_max, repeat_max, yield_max, True)) or [""]
             tokens.append(result)
         elif code == "category":
-            charset = CATEGORIES[value[9:]]
+            charset = list(CATEGORIES[value[9:]])
             if negate:
                 negate = False
                 charset = list(set(printable).difference(charset))
+            random.shuffle(charset)
             tokens.append(charset)
         elif code == "groupref":
             tokens.extend(__groups[value])
@@ -1015,7 +1018,9 @@ def __gen_str_from_re(regex, star_plus_max, repeat_max, yield_max, parsed=False)
         elif code == "negate":
             negate = True
         elif code == "not_literal":
-            tokens.append(printable.replace(chr(value), ""))
+            charset = list(printable.replace(chr(value), ""))
+            random.shuffle(charset)
+            tokens.append(charset)
         elif code == "range":
             tokens.append("".join(chr(i) for i in range(value[0], value[1] + 1)))
         elif code == "subpattern":
