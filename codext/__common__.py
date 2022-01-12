@@ -960,7 +960,7 @@ def __gen_str_from_re(regex, star_plus_max, repeat_max, yield_max, parsed=False)
         return
     __groups = {}
     tokens = []
-    negate = False
+    negate, last_rand = False, None
     for state in (regex if parsed else re.sre_parse.parse(b(getattr(regex, "pattern", regex)))):
         code = getattr(state[0], "name", state[0]).lower()
         value = getattr(state[1], "name", state[1])
@@ -969,7 +969,9 @@ def __gen_str_from_re(regex, star_plus_max, repeat_max, yield_max, parsed=False)
             continue
         elif code == "any":
             charset = list(printable.replace("\n", ""))
-            random.shuffle(charset)
+            while charset[0] == last_rand and len(charset) > 1:
+                random.shuffle(charset)
+            last_rand = charset[0]
             tokens.append(charset)  # should be ord(x) with x belongs to [0, 256[
         elif code == "assert":
             tokens.append(list(__gen_str_from_re(value[1], star_plus_max, repeat_max, yield_max, True)))
@@ -983,7 +985,9 @@ def __gen_str_from_re(regex, star_plus_max, repeat_max, yield_max, parsed=False)
             if negate:
                 negate = False
                 charset = list(set(printable).difference(charset))
-            random.shuffle(charset)
+            while charset[0] == last_rand and len(charset) > 1:
+                random.shuffle(charset)
+            last_rand = charset[0]
             tokens.append(charset)
         elif code == "groupref":
             tokens.extend(__groups[value])
@@ -1019,7 +1023,9 @@ def __gen_str_from_re(regex, star_plus_max, repeat_max, yield_max, parsed=False)
             negate = True
         elif code == "not_literal":
             charset = list(printable.replace(chr(value), ""))
-            random.shuffle(charset)
+            while charset[0] == last_rand and len(charset) > 1:
+                random.shuffle(charset)
+            last_rand = charset[0]
             tokens.append(charset)
         elif code == "range":
             tokens.append("".join(chr(i) for i in range(value[0], value[1] + 1)))
