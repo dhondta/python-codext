@@ -261,9 +261,9 @@ def crc_checksum(n=""):
     return _crc
 
 
-add("adler32", lambda data, error="strict": (adler32(b(data)) & 0xffffffff, len(data)))
-add("crca", crc_checksum(), pattern=_pattern())
+add("adler32", lambda data, error="strict": (adler32(b(data)) & 0xffffffff, len(data)), guess=None)
+add("crca", crc_checksum(), pattern=_pattern(), guess=None)
 for i in CRC.keys():
     if isinstance(i, int):
-        add("crc%d" % i, crc_checksum(i), pattern=_pattern(i))
+        add("crc%d" % i, crc_checksum(i), pattern=_pattern(i), guess=None)
 

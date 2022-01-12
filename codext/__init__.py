@@ -108,7 +108,10 @@ def main():
     lng = "lang_%s" % LANG
     def_func = lng if getattr(stopfunc, lng, None) else "text"
     guess.add_argument("-f", "--stop-function", default=def_func, help="result checking function (default: %s) ; "
-                       "format: printables|text|flag|lang_[bigram]|[regex]" % def_func)
+                       "format: printables|text|flag|lang_[bigram]|[regex]\nNB: [regex] is case-sensitive ; add -i to "
+                       "force it as case-insensitive or add '(?i)' in front of the expression" % def_func)
+    guess.add_argument("-i", "--case-insensitive", dest="icase", action="store_true",
+                       help="while using the regex stop function, set it as case-insensitive (default: False)")
     guess.add_argument("-H", "--no-heuristic", action="store_true", help="DO NOT use the scoring heuristic ; slows down"
                        " the search but may be more accurate (default: False)")
     if len(stopfunc.LANG_BACKENDS) == 0:
@@ -197,7 +200,7 @@ def main():
                 print(ensure_str(c or "Could not %scode :-(" % ["en", "de"][args.command == "decode"]), end="")
         elif args.command == "guess":
             r = codecs.guess(c,
-                             getattr(stopfunc, args.stop_function, args.stop_function),
+                             getattr(stopfunc, args.stop_function, ["", "(?i)"][args.icase] + args.stop_function),
                              args.min_depth,
                              args.max_depth,
                              args.codec_categories,
