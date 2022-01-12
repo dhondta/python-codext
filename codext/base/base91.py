@@ -114,6 +114,6 @@ def base91_decode(mode):
 
 
 add("base91", base91_encode, base91_decode, r"^base[-_]?91((?:|[-_]alt(?:ernate)?)(?:|[-_]inv(?:erted)?)?)$",
-    entropy=6.5)
+    entropy=6.5, expansion_factor=1.231)
 main = main(91, "<http://base91.sourceforge.net/>")
 

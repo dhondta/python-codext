@@ -83,6 +83,6 @@ def base45_decode(mode):
     return decode
 
 
-add("base45", base45_encode, base45_decode, r"^base[-_]?45(|[-_]inv(?:erted)?)$")
+add("base45", base45_encode, base45_decode, r"^base[-_]?45(|[-_]inv(?:erted)?)$", expansion_factor=1.5)
 main = main(45, "<https://datatracker.ietf.org/doc/html/draft-faltstrom-base45-04.txt>")
 

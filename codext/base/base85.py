@@ -45,6 +45,6 @@ if PY3:
         return base64.b85decode(b(input)), len(input)
 
 
-add("base85", base85_encode, base85_decode, r"^base[-_]?85$", entropy=7.05)
+add("base85", base85_encode, base85_decode, r"^base[-_]?85$", entropy=7.05, expansion_factor=1.25)
 main = main(85, "RFC 1924")
 

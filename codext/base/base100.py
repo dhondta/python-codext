@@ -51,6 +51,6 @@ if PY3:
         return bytes(r), len(input)
     
     
-add("base100", base100_encode, base100_decode, r"^(?:base[-_]?100|emoji)$")
+add("base100", base100_encode, base100_decode, r"^(?:base[-_]?100|emoji)$", expansion_factor=1.)
 main = main(100, "<https://github.com/AdamNiederer/base100>")
 

@@ -101,6 +101,6 @@ if PY3:
         return "".join(map(chr, r)), len(input)
 
 
-add("base122", base122_encode, base122_decode, r"^base[-_]?122$")
+add("base122", base122_encode, base122_decode, r"^base[-_]?122$", expansion_factor=1.085)
 main = main(122, "<http://blog.kevinalbs.com/base122>")
 

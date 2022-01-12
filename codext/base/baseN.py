@@ -13,17 +13,17 @@ from ._base2n import base2n
 
 
 B2 = {r'': "01", r'[-_]inv(erted)?': "10"}
-base2n(B2, r"^(?:base[-_]?2|bin)(|[-_]inv(?:erted)?|[-_](?!.*(.).*\2)[a-zA-Z0-9]{2})$")
+base2n(B2, r"^(?:base[-_]?2|bin)(|[-_]inv(?:erted)?|[-_](?!.*(.).*\2)[a-zA-Z0-9]{2})$", expansion_factor=8.)
 main2 = main(2)
 
 
 B3 = {r'': "123", r'[-_]inv(erted)?': "321"}
-base(B3, r"^base[-_]?3(|[-_]inv(?:erted)?|[-_](?!.*(.).*\2)[a-zA-Z0-9]{3})$")
+base(B3, r"^base[-_]?3(|[-_]inv(?:erted)?|[-_](?!.*(.).*\2)[a-zA-Z0-9]{3})$", expansion_factor=5.)
 main3 = main(3)
 
 
 B4 = {r'': "1234", r'[-_]inv(erted)?': "4321"}
-base2n(B4, r"^base[-_]?4(|[-_]inv(?:erted)?|[-_](?!.*(.).*\2)[a-zA-Z0-9]{4})$")
+base2n(B4, r"^base[-_]?4(|[-_]inv(?:erted)?|[-_](?!.*(.).*\2)[a-zA-Z0-9]{4})$", expansion_factor=4.)
 main4 = main(4)
 
 
@@ -33,12 +33,12 @@ main8 = main(8)
 
 
 B16 = {'': digits + "ABCDEF", 'inv': "ABCDEF" + digits}
-base2n(B16, r"^(?:base[-_]?16|hex)(|[-_]inv(?:erted)?)$")
+base2n(B16, r"^(?:base[-_]?16|hex)(|[-_]inv(?:erted)?)$", expansion_factor=2.)
 main16 = main(16, "RFC 4648")
 
 
 B26 = {'': upper, 'inv': lower}
-base(B26, r"^(?:base[-_]?26|hex)(|[-_]inv(?:erted)?)$")
+base(B26, r"^base[-_]?26(|[-_]inv(?:erted)?)$")
 main26 = main(26)
 
 

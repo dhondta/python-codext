@@ -24,5 +24,5 @@ if PY3:
     def ascii85_decode(input, errors='strict'):
         return base64.a85decode(b(input)), len(input)
 
-    add("ascii85", ascii85_encode, ascii85_decode, r"^ascii[-_]?85$", entropy=6.36)
+    add("ascii85", ascii85_encode, ascii85_decode, r"^ascii[-_]?85$", entropy=6.36, expansion_factor=1.25)
 
