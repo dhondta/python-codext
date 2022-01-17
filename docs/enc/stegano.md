@@ -38,6 +38,23 @@ This uses the [electronic color code](https://en.wikipedia.org/wiki/Electronic_c
 
 -----
 
+### Rick Cipher
+
+This converts letters to words from Rick Astley's famous song "*Never gonna give you up*".
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`rick` | text <-> words from Risk's song | `rick-astley`, `rick_cipher`, `rick-astley-cipher` | case-insensitive while encoding
+
+```python
+>>> codext.encode("Test String", "rick")
+'TELL UP gonna TELL + gonna TELL NEVer You AROUND Gonna'
+>>> codext.decode("TELL UP gonna TELL + gonna TELL NEVer You AROUND Gonna", "rick")
+'TEST STRING'
+```
+
+-----
+
 ### SMS (T9)
 
 This codec implements the SMS encoding, also caled T9, that is the conversion from characters to their corresponding phone keystrokes.

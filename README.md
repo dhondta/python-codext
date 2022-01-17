@@ -301,6 +301,7 @@ o
 
 - [X] `klopf`: aka Klopf code ; Polybius square with trivial alphabetical distribution
 - [X] `resistor`: aka resistor color codes
+- [X] `rick`: aka Rick cipher (in reference to Rick Astley's song "*Never gonna give you up*")
 - [X] `sms`: also called _T9 code_ ; uses "`-`" as a separator for encoding, "`-`" or "`_`" or whitespace for decoding
 - [X] `whitespace`: replaces bits with whitespaces and tabs
 - [X] `whitespace_after_before`: variant of `whitespace` ; encodes characters as new characters with whitespaces before and after according to an equation described in the codec name (e.g. "`whitespace+2*after-3*before`")
