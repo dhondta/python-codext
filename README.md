@@ -12,7 +12,7 @@
 [![DOI](https://zenodo.org/badge/236679865.svg)](https://zenodo.org/badge/latestdoi/236679865)
 [![License](https://img.shields.io/pypi/l/codext.svg)](https://pypi.python.org/pypi/codext/)
 
-This library extends the native [`codecs`](https://docs.python.org/3/library/codecs.html) library (namely for adding new custom encodings and character mappings) and provides a myriad of new encodings (static or parametrized, like `rot` or `xor`), hence its named combining *CODecs EXTension*.
+[**CodExt**](https://github.com/dhondta/python-codext) is a (Python2-3 compatible) library that extends the native [`codecs`](https://docs.python.org/3/library/codecs.html) library (namely for adding new custom encodings and character mappings) and provides **120+ new codecs**, hence its name combining *CODecs EXTension*. It also features a **guess mode** for decoding multiple layers of encoding and **CLI tools** for convenience.
 
 ```sh
 $ pip install codext
@@ -281,6 +281,7 @@ o
 
 - [X] `braille`: well-known braille language (Python 3 only)
 - [X] `ipsum`: aka lorem ipsum
+- [X] `galactic`: aka galactic alphabet or Minecraft enchantment language (Python 3 only)
 - [X] `leetspeak`: based on minimalistic elite speaking rules
 - [X] `morse`: uses whitespace as a separator
 - [X] `navajo`: only handles letters (not full words from the Navajo dictionary)

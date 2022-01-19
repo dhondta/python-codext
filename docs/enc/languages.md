@@ -23,6 +23,23 @@ It supports letters, digits and some special characters.
 
 -----
 
+### Galactic
+
+This implements the [Minecraft's enchanting table](https://www.thegamer.com/minecraft-enchantment-table-language-guide/) using resembling Unicode characters.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`galactic` | text <-> Minecraft enchantment symbols | `galactic-alphabet`, `minecraft_enchantment`, `minecraft-enchanting-language` | Python 3 only
+
+```python
+>>> codext.encode("this is a test", "galactic")
+'ℸ₸╎߆ ╎߆ ᒋ ℸᒷ߆ℸ'
+>>> codext.decode("ℸ₸╎߆ ╎߆ ᒋ ℸᒷ߆ℸ", "galactic")
+'this is a test'
+```
+
+-----
+
 ### Ipsum
 
 This implements a codec that uses lorem ipsum words. It selects random words per letter and keeps the following punctuations: "`.,:;+=-*/\\`".
