@@ -7,7 +7,7 @@ import random
 import re
 import sys
 from encodings.aliases import aliases as ALIASES
-from functools import reduce, wraps
+from functools import reduce, update_wrapper, wraps
 from importlib import import_module
 from inspect import currentframe
 from itertools import chain, product
@@ -39,8 +39,11 @@ __all__ = ["add", "add_macro", "add_map", "b", "clear", "codecs", "decode", "enc
            "remove", "reset", "s2i", "search", "stopfunc", "BytesIO", "_input", "_stripl", "CodecMacro",
            "DARWIN", "LANG", "LINUX", "MASKS", "PY3", "UNIX", "WINDOWS"]
 CODECS_REGISTRY = None
+CODECS_OVERWRITTEN = []
 CODECS_CATEGORIES = ["native", "custom"]
-LANG = getlocale()[0][:2].lower() if getlocale() else None
+LANG = getlocale()
+if LANG:
+    LANG = (LANG[0] or "")[:2].lower()
 MASKS = {
     'a': printable,
     'b': "".join(chr(i) for i in range(256)),
@@ -142,6 +145,20 @@ class CodecMacro(tuple):
         return "<codext.CodecMacro object for encoding %s at %#x>" % (self.name, id(self))
 
 
+# inspired from: https://stackoverflow.com/questions/10875442/possible-to-change-a-functions-repr-in-python
+class Repr(object):
+    def __init__(self, name, func):
+        self.__name = name
+        self.__func = func
+        update_wrapper(self, func)
+    
+    def __call__(self, *args, **kwargs):
+        return self.__func(*args, **kwargs)
+    
+    def __repr__(self):
+        return "<search-function %s at 0x%x>" % (self.__name, id(self))
+
+
 def __stdin_pipe():
     """ Stdin pipe read function. """
     try:
@@ -173,6 +190,12 @@ def _stripl(s, st_lines, st_crlf):
     return s
 
 
+def _with_repr(name):
+    def _wrapper(f):
+        return Repr(name, f)
+    return _wrapper
+
+
 def add(ename, encode=None, decode=None, pattern=None, text=True, add_to_codecs=False, **kwargs):
     """ This adds a new codec to the codecs module setting its encode and/or decode functions, eventually dynamically
          naming the encoding with a pattern and with file handling.
@@ -195,6 +218,7 @@ def add(ename, encode=None, decode=None, pattern=None, text=True, add_to_codecs=
         raise ValueError("At least one en/decoding function must be defined")
     glob = currentframe().f_back.f_globals
     # search function for the new encoding
+    @_with_repr(ename)
     def getregentry(encoding):
         if encoding != ename and not (pattern and re.match(pattern, encoding)):
             return
@@ -304,6 +328,7 @@ def add(ename, encode=None, decode=None, pattern=None, text=True, add_to_codecs=
         getregentry.__aliases__ = list(map(lambda n: re.sub(r"[\s\-]", "_", n), kwargs['aliases']))
     getregentry.__pattern__ = pattern
     register(getregentry, add_to_codecs)
+    return getregentry
 
 
 def add_macro(mname, *encodings):
@@ -500,7 +525,7 @@ def add_map(ename, encmap, repl_char="?", sep="", ignore_case=None, no_error=Fal
                             return __get_value(token_inv_case, position, True)
                         return error_func(token, position)
                     if isinstance(result, list):
-                        result = random.choice(result)
+                        result = result[0]
                     return result + lsep
                 
                 # if a separator is defined, rely on it by splitting the input text
@@ -567,7 +592,7 @@ def add_map(ename, encmap, repl_char="?", sep="", ignore_case=None, no_error=Fal
         kwargs['repl_minlen_b'] = max(1, min(map(len, map(b, set(smapdict.values()) - {''}))))
     except:
         pass
-    add(ename, __generic_code(), __generic_code(True), **kwargs)
+    return add(ename, __generic_code(), __generic_code(True), **kwargs)
 codecs.add_map = add_map
 
 
@@ -651,17 +676,15 @@ def list_encodings(*categories):
     if (len(categories) == 0 or "native" in categories) and "native" not in exclude:
         for a in set(ALIASES.values()):
             try:
-                __orig_lookup(a)
+                ci = __orig_lookup(a)
             except LookupError:
                 continue
-            enc.append(a)
-    for search_function in __codecs_registry:
+            if lookup(a) is ci:
+                enc.append(ci.name)
+    for search_function in CODECS_OVERWRITTEN + __codecs_registry:
         name = search_function.__name__.replace("_", "-")
         p = search_function.__pattern__
-        if p is None:
-            ci = search_function(name)
-        else:
-            ci = search_function(generate_string_from_regex(p))
+        ci = search_function(name) if p is None else search_function(generate_string_from_regex(p))
         c = "other" if ci is None else ci.parameters['category']
         if (len(categories) == 0 or c in categories) and c not in exclude:
             enc.append(name)
@@ -834,8 +857,9 @@ __orig_lookup   = _codecs.lookup
 __orig_register = _codecs.register
 
 
-def __add(ename, encode=None, decode=None, pattern=None, text=True, add_to_codecs=True):
-    add(ename, encode, decode, pattern, text, add_to_codecs)
+def __add(ename, encode=None, decode=None, pattern=None, text=True, **kwargs):
+    kwargs.pop('add_to_codecs', None)
+    return add(ename, encode, decode, pattern, text, True, **kwargs)
 __add.__doc__ = add.__doc__
 codecs.add = __add
 
@@ -862,19 +886,19 @@ codecs.encode = encode
 def lookup(encoding, macro=True):
     """ Hooked lookup function for searching first for codecs in the local registry of this module. """
     # first, try to match the given encoding with codecs' search functions
-    for search_function in __codecs_registry:
+    for search_function in CODECS_OVERWRITTEN + __codecs_registry:
         codecinfo = search_function(encoding)
         if codecinfo is not None:
             return codecinfo
     # then, if a codec name was given, generate an encoding name from its pattern and get the CodecInfo
-    for search_function in __codecs_registry:
+    for search_function in CODECS_OVERWRITTEN + __codecs_registry:
         if search_function.__name__.replace("_", "-") == encoding or \
            encoding in getattr(search_function, "__aliases__", []):
             codecinfo = search_function(generate_string_from_regex(search_function.__pattern__))
             if codecinfo is not None:
                 return codecinfo
+    # finally, get a CodecInfo with the original lookup function and refine it with a dictionary of parameters
     try:
-        # finally, get a CodecInfo with the original lookup function and refine it with a dictionary of parameters
         ci = __orig_lookup(encoding)
         ci.parameters = {'category': "native", 'module': "codecs", 'name': ALIASES.get(ci.name, ci.name)}
         return ci
@@ -898,14 +922,19 @@ def register(search_function, add_to_codecs=False):
                                  to remove the codec later
     """
     if search_function not in __codecs_registry:
-        __codecs_registry.append(search_function)
+        try:
+            __orig_lookup(search_function.__name__)
+            l = CODECS_OVERWRITTEN
+        except LookupError:
+            l = __codecs_registry
+        l.append(search_function)
     if add_to_codecs:
         __orig_register(search_function)
 
 
-def __register(search_function, add_to_codecs=True):
+def __register(search_function):
     """ Same as register(...), but with add_to_codecs set by default to True. """
-    register(search_function, add_to_codecs)
+    register(search_function, True)
 codecs.register = __register
 
 

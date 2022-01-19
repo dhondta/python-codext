@@ -3,6 +3,7 @@
 
 """
 from __future__ import print_function
+from _codecs import lookup as orig_lookup
 from ast import literal_eval
 from six import binary_type, text_type
 
@@ -24,6 +25,12 @@ list = list_encodings  # not included in __all__ because of shadow name
 
 
 reset()
+
+
+# overwritten native codec
+add("uu", lambda i, e="strict": orig_lookup("uu").encode(b(i), e),
+          lambda i, e="strict": orig_lookup("uu").decode(b(i), e),
+          pattern=r"^uu(?:[-_]encode|codec)?$", add_to_codecs=True, category="native")
 
 
 def __literal_eval(o):

@@ -8,7 +8,7 @@ import codext
 import json
 import random
 import sys
-from codext.__common__ import PERS_MACROS, PERS_MACROS_FILE
+from codext.__common__ import CODECS_OVERWRITTEN, PERS_MACROS, PERS_MACROS_FILE
 from six import b, binary_type, text_type
 from unittest import TestCase
 
@@ -56,17 +56,17 @@ class TestCommon(TestCase):
         self.assertRaises(ValueError, codext.add, "test")
         self.assertRaises(ValueError, codext.add, "test", "BAD")
         self.assertRaises(ValueError, codext.add, "test", lambda: None, "BAD")
-        self.assertIsNone(codext.add("dummy", dummy_encode, dummy_decode))
+        self.assertIsNotNone(codext.add("dummy", dummy_encode, dummy_decode))
         self.assertEqual(codext.encode("test", "dummy"), "test")
         ci = codext.lookup("dummy")
         for k in ["add_to_codecs", "category", "examples", "name", "pattern", "text"]:
             self.assertIn(k, ci.parameters.keys())
-        self.assertIsNone(codext.add("dummy_errored", None, dummy_errored_decode, r"dummy_errored(\d+)$"))
+        self.assertIsNotNone(codext.add("dummy_errored", None, dummy_errored_decode, r"dummy_errored(\d+)$"))
         self.assertRaises(AttributeError, codext.lookup, "dummy_errored1")
 
     def test_add_map_codec(self):
         ENCMAP = [{'a': "A", 'b': "B", 'c': "C"}, {'d': "D", 'e': "E", 'f': "F"}, {'g': "G", 'h': "H", 'i': "I"}]
-        self.assertIsNone(codext.add_map("dummy2", ENCMAP, pattern=r"^dummy2(?:[-_]?(\d))?$"))
+        self.assertIsNotNone(codext.add_map("dummy2", ENCMAP, pattern=r"^dummy2(?:[-_]?(\d))?$"))
         self.assertRaises(ValueError, codext.add_map, "dummy2", "BAD_ENCMAP")
         self.assertEqual(codext.encode("abc", "dummy2"), "ABC")
         self.assertEqual(codext.encode("abc", "dummy2-1"), "ABC")
@@ -74,7 +74,7 @@ class TestCommon(TestCase):
         self.assertEqual(codext.encode("ghi", "dummy2-3"), "GHI")
         self.assertRaises(LookupError, codext.encode, "test", "dummy2-4")
         ENCMAP = {'': {'a': "A", 'b': "B"}, r'bad': {'a': "B", 'b': "A"}}
-        self.assertIsNone(codext.add_map("dummy3", ENCMAP, pattern=r"^dummy3([-_]inverted)?$"))
+        self.assertIsNotNone(codext.add_map("dummy3", ENCMAP, pattern=r"^dummy3([-_]inverted)?$"))
         self.assertRaises(LookupError, codext.encode, "test", "dummy3_inverted")
         self.assertRaises(ValueError, codext.add_map, "dummy2", ENCMAP, ignore_case="BAD")
         self.assertRaises(ValueError, codext.add_map, "dummy2", ENCMAP, intype="BAD")
@@ -98,13 +98,13 @@ class TestCommon(TestCase):
         self.assertFalse(codext.is_native("base64"))
     
     def test_remove_codec(self):
-        self.assertIsNone(codext.add("dummy", dummy_encode, dummy_decode))
+        self.assertIsNotNone(codext.add("dummy", dummy_encode, dummy_decode))
         self.assertEqual(codext.encode("test", "dummy"), "test")
         self.assertIsNone(codext.remove("dummy"))
         self.assertRaises(LookupError, codext.encode, "test", "dummy")
         # special case, when adding a new codec also to the native codecs registry, then it won't be possible to remove
         #  it afterwards
-        self.assertIsNone(codecs.add("dummy2", dummy_encode, dummy_decode))
+        self.assertIsNotNone(codecs.add("dummy2", dummy_encode, dummy_decode))
         self.assertEqual(codecs.encode("test", "dummy2"), "test")
         self.assertIsNone(codecs.remove("dummy2"))
         self.assertEqual(codecs.encode("test", "dummy2"), "test")
@@ -122,6 +122,7 @@ class TestCommon(TestCase):
         self.assertIsNone(codext.reset())
         self.assertIsNotNone(codext.encode("test", "morse"))
         self.assertRaises(LookupError, codext.encode, "test", "dummy")
+        self.assertTrue(len(CODECS_OVERWRITTEN) > 0)
     
     def test_search_codecs(self):
         self.assertIsNotNone(codext.search("morse"))
