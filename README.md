@@ -288,8 +288,8 @@ o
 - [X] `radio`: aka NATO or radio phonetic alphabet
 - [X] `southpark`: converts letters to Kenny's language from Southpark (whitespace is also handled)
 - [X] `southpark-icase`: case insensitive variant of `southpark`
+- [X] `tap`: converts text to tap/knock code, commonly used by prisoners
 - [X] `tomtom`: similar to `morse`, using slashes and backslashes
-- [X] `tap` : converts tap/knock code commonly used by prisoners
 
 #### Others
 

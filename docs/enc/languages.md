@@ -166,6 +166,23 @@ This encodes text according to Kenny's language in Southpark.
 
 -----
 
+### Tap
+
+This codec implements the [tap/knock code](https://en.wikipedia.org/wiki/Tap_code) commonly used by prisoners. It uses 25 letters, "*k*" is encoded to the same token than "*c*".  
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`tap` | text <-> tap/knock encoded text | `knock`, `tap-code` | uses a large Unicode whitespace as a token separator ; Python 3 only
+
+```python
+>>> codext.encode("this is a test", "tap")
+'.... ....⠀.. ...⠀.. ....⠀.... ...⠀ ⠀.. ....⠀.... ...⠀ ⠀. .⠀ ⠀.... ....⠀. .....⠀.... ...⠀.... ....'
+>>> codext.decode(".... ....⠀.. ...⠀.. ....⠀.... ...⠀ ⠀.. ....⠀.... ...⠀ ⠀. .⠀ ⠀.... ....⠀. .....⠀.... ...⠀.... ....", "knock")
+'this is a test'
+```
+
+-----
+
 ### Tom-Tom
 
 This codec is similar to morse. It converts text into slashes and backslashes.
@@ -179,21 +196,4 @@ This codec is similar to morse. It converts text into slashes and backslashes.
 '\\\\/\\ /\\\\ /\\\\\\ \\/\\ | /\\\\\\ \\/\\ | / | \\\\/\\ /\\ \\/\\ \\\\/\\'
 >>> codext.decode("\\\\/\\ /\\\\ /\\\\\\ \\/\\ | /\\\\\\ \\/\\ | / | \\\\/\\ /\\ \\/\\ \\\\/\\", "tomtom")
 'THIS IS A TEST'
-```
-
------
-
-### Tap
-
-Converts tap/knock code [commonly used by prisoners](https://en.wikipedia.org/wiki/Tap_code). Uses 25 letters, 'k' codes as 'c'.  
-
-**Codec** | **Conversions** | **Aliases** | **Comment**
-:---: | :---: | --- | ---
-`tap` | text <-> tap/knock encoded text | `tap` | uses '&nbsp; &nbsp;' (double space) as a separator for letters. No spaces between words after decoding. 
-
-```python
->>> codext.encode("this is a test", "tap")
-'.... ....  .. ...  .. ....  .... ...  .. ....  .... ...  . .  .... ....  . .....  .... ...  .... ....'
->>> codext.decode(".... ....  .. ...  .. ....  .... ...  .. ....  .... ...  . .  .... ....  . .....  .... ...  .... ....", "tap")
-'thisisatest'
 ```
