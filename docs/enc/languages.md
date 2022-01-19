@@ -172,7 +172,7 @@ Converts tap/knock code [commonly used by prisoners](https://en.wikipedia.org/wi
 
 **Codec** | **Conversions** | **Aliases** | **Comment**
 :---: | :---: | --- | ---
-`tap` | text <-> tap/knock encoded text | `tap` | uses "`  `" (double space) as a separator for letters. No spaces between words after decoding. 
+`tap` | text <-> tap/knock encoded text | `tap` | uses '&nbsp; &nbsp;' (double space) as a separator for letters. No spaces between words after decoding. 
 
 ```python
 >>> codext.encode("this is a test", "tap")
