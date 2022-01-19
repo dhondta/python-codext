@@ -181,3 +181,19 @@ This codec is similar to morse. It converts text into slashes and backslashes.
 'THIS IS A TEST'
 ```
 
+-----
+
+### Tap
+
+Converts tap/knock code [commonly used by prisoners](https://en.wikipedia.org/wiki/Tap_code). Uses 25 letters, 'k' codes as 'c'.  
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`tap` | text <-> tap/knock encoded text | `tap` | uses '&nbsp; &nbsp;' (double space) as a separator for letters. No spaces between words after decoding. 
+
+```python
+>>> codext.encode("this is a test", "tap")
+'.... ....  .. ...  .. ....  .... ...  .. ....  .... ...  . .  .... ....  . .....  .... ...  .... ....'
+>>> codext.decode(".... ....  .. ...  .. ....  .... ...  .. ....  .... ...  . .  .... ....  . .....  .... ...  .... ....", "tap")
+'thisisatest'
+```
