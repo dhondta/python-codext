@@ -90,6 +90,8 @@ class TestCommon(TestCase):
         self.assertTrue(len(codext.list("non-native")) > 0)
         self.assertTrue(len(codext.list("native", "non-native", "crypto", "base")) > 0)
         self.assertTrue(len(codext.list("native", "language", "crypto")) > 0)
+        self.assertTrue(len(codext.list("~crypto")) > 0)
+        self.assertEqual(set(codext.list("~native")), set(codext.list("non-native")))
         self.assertEqual(set(codext.list()), set(codext.list("native") + codext.list("non-native")))
         self.assertRaises(ValueError, codext.list, "BAD_CATEGORY")
         self.assertTrue(codext.is_native("base64_codec"))

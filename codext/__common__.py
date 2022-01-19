@@ -6,7 +6,7 @@ import os
 import random
 import re
 import sys
-from encodings.aliases import aliases
+from encodings.aliases import aliases as ALIASES
 from functools import reduce, wraps
 from importlib import import_module
 from inspect import currentframe
@@ -40,10 +40,7 @@ __all__ = ["add", "add_macro", "add_map", "b", "clear", "codecs", "decode", "enc
            "DARWIN", "LANG", "LINUX", "MASKS", "PY3", "UNIX", "WINDOWS"]
 CODECS_REGISTRY = None
 CODECS_CATEGORIES = ["native", "custom"]
-try:
-    LANG = getlocale()[0][:2].lower()
-except TypeError:
-    LANG = None
+LANG = getlocale()[0][:2].lower() if getlocale() else None
 MASKS = {
     'a': printable,
     'b': "".join(chr(i) for i in range(256)),
@@ -601,7 +598,7 @@ def examples(encoding, number=10):
                         except LookupError:
                             pass
                     i += 1
-        for alias, codec in aliases.items():
+        for alias, codec in ALIASES.items():
             if name == codec:
                 if codec not in e:
                     e.append(codec)
@@ -634,7 +631,7 @@ def list_encodings(*categories):
     # first, determine the list of valid categories
     valid_categories = list_categories()
     # then, if "non-native" is in the input list, extend the list with the whole categories but "native"
-    categories = list(categories)
+    categories, exclude = list(categories), []
     for c in categories[:]:
         if c == "non-native":
             for c in valid_categories:
@@ -642,11 +639,17 @@ def list_encodings(*categories):
                     continue
                 categories.append(c)
             categories.remove("non-native")
-            break
+        if c.startswith("~"):
+            exclude.append(c[1:])
+            categories.remove(c)
+            try:
+                categories.remove(c[1:])
+            except ValueError:
+                pass
     # now, filter codecs according to the input list of categories
     enc = []
-    if len(categories) == 0 or "native" in categories:
-        for a in set(aliases.values()):
+    if (len(categories) == 0 or "native" in categories) and "native" not in exclude:
+        for a in set(ALIASES.values()):
             try:
                 __orig_lookup(a)
             except LookupError:
@@ -660,7 +663,7 @@ def list_encodings(*categories):
         else:
             ci = search_function(generate_string_from_regex(p))
         c = "other" if ci is None else ci.parameters['category']
-        if len(categories) == 0 or c in categories:
+        if (len(categories) == 0 or c in categories) and c not in exclude:
             enc.append(name)
     for category in categories:
         if category not in valid_categories:
@@ -873,7 +876,7 @@ def lookup(encoding, macro=True):
     try:
         # finally, get a CodecInfo with the original lookup function and refine it with a dictionary of parameters
         ci = __orig_lookup(encoding)
-        ci.parameters = {'category': "native", 'module': "codecs", 'name': aliases.get(ci.name, ci.name)}
+        ci.parameters = {'category': "native", 'module': "codecs", 'name': ALIASES.get(ci.name, ci.name)}
         return ci
     except LookupError:
         if not macro:
@@ -932,7 +935,7 @@ def search(encoding_regex):
             if c >= 3:
                 matches.append(n)
                 break
-    for s, n in aliases.items():
+    for s, n in ALIASES.items():
         if re.search(encoding_regex, s) or re.search(encoding_regex, n):
             matches.append(n)
             break

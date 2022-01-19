@@ -10,6 +10,7 @@ exclude_lines =
     if.*?__name__.*?==.*?.__main__.:
     def main\(\)\:
     def __stdin_pipe\(\)\:
+    for line in __stdin_pipe\(\)\:
     def __literal_eval\(o\)\:
     def __print_tabular\(lst, space\=4\)\:
     except ImportError:
