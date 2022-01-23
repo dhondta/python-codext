@@ -14,14 +14,20 @@ from ..__common__ import *
 
 
 __examples__ = {
-    'enc(rail-5-3)': {'this is a test' : 'it sss etiath '},
-    'dec(rail-7-4)': {'a  stiet shsti': 'this is a test'}
+    'enc(rail-5-3|rail_5_3)': {'this is a test' : 'it sss etiath '},
+    'enc(railup-5-3|railup_5_3)' :{'this is a test': 'h tiats e ssit'},
+    'dec(rail-7-4|rail_7_4)': {'a  stiet shsti': 'this is a test'}
 }
 
 
 
-def __buildf(text, rails, offset = 0) : 
-    l, rail, dr = len(text), offset, 1
+def __buildf(text, rails, offset = 0, up = 0) : 
+    l, rail = len(text), offset
+    if up != '' :
+        dr = -1
+        rail = rails - offset - 1
+    else : 
+        dr = 1
     f = [["#"] * l for i in range(rails)]
     for x in range(l) : 
         f[rail][x] = text[x]
@@ -30,16 +36,12 @@ def __buildf(text, rails, offset = 0) :
         elif rail <= 0:
             dr = 1
         rail += dr
-    for elem in f : 
-        print(elem)
     return f
 
-def railfence_encode(rails, offset = 0) :  
+def railfence_encode(up = 0, rails = 3, offset = 0) :  
     def encode(text, errors="strict") : 
-        print(len(text))
-
         c,l = '', len(text)
-        f = __buildf(text,rails,offset)
+        f = __buildf(text,rails,offset, up)
         for r in range(rails) : 
             for x in range(l) :
                 if f[r][x] != '#' : 
@@ -47,9 +49,9 @@ def railfence_encode(rails, offset = 0) :
         return c, l
     return encode
 
-def railfence_decode(rails, offset = 0) : 
+def railfence_decode(up = 0,rails = 3, offset = 0) : 
     def decode(text, errors = 'strict') : 
-        f = __buildf("x" * len(text), rails, offset)
+        f = __buildf("x" * len(text), rails, offset, up)
         plain, i = '', 0
         ra, l = range(rails), range(len(text))
 
@@ -69,7 +71,4 @@ def railfence_decode(rails, offset = 0) :
 
     return decode
 
-add("rail", railfence_encode, railfence_decode, r"rail-(\d+)\-(\d+)$")
-
-#rail-(\d+)\-(\d+)
-#rail-(\d+)(\-*(\d+))
+add("rail", railfence_encode, railfence_decode, r"rail(up)?[-_](\d+)[-_](\d+)$")
