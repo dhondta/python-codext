@@ -28,7 +28,9 @@ def __buildf(text, rails, offset = 0, up = 0) :
         rail = rails - offset - 1
     else : 
         dr = 1
+
     f = [["#"] * l for i in range(rails)]
+
     for x in range(l) : 
         f[rail][x] = text[x]
         if rail >= rails - 1:
@@ -41,7 +43,7 @@ def __buildf(text, rails, offset = 0, up = 0) :
 def railfence_encode(rails = 3, offset = 0, up = 0) :  
     def encode(text, errors="strict") : 
         c,l = '', len(text)
-        f = __buildf(text,rails,offset, up)
+        f = __buildf(text, rails, offset, up)
         for r in range(rails) : 
             for x in range(l) :
                 if f[r][x] != '#' : 
