@@ -14,7 +14,8 @@ from ..__common__ import *
 
 
 __examples__ = {
-    'enc(rail-5-3)': "it sss etiath "
+    'enc(rail-5-3)': {'this is a test' : 'it sss etiath '},
+    'dec(rail-7-4)': {'a  stiet shsti': 'this is a test'}
 }
 
 
