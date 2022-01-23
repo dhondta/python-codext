@@ -128,6 +128,23 @@ This implements the Citrix CTX1 password encoding algorithm.
 
 -----
 
+### Rail Fence Cipher
+
+This implements the Rail Fence encoding algorithm.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`rail` | text <-> rail fence ciphertext, X rails and Y offset | `rail-X-Y`, `rail_X_Y`| The encoding fence is built from the top. Careful to trailing whitespaces. 
+`railup` | text <-> rail fence ciphertext, X rails and Y offset  | `railup-X-Y`, `railup_X_Y`| The encoding fence is built from the bottom. Inverted compaired to the `rail` codec.
+
+```python
+>>> codext.encode("this is a test", "rail-5-3")
+'it sss etiath '
+>>> codext.decode("it sss etiath ", "rail-5-3")
+'this is a test'
+```
+
+-----
 ### ROT N
 
 This is a dynamic encoding, that is, it can be called with an integer to define the ROT offset. Encoding will apply a positive offset, decoding will apply a negative one.
