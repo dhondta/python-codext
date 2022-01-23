@@ -15,7 +15,7 @@ from ..__common__ import *
 
 __examples__ = {
     'enc(rail-5-3|rail_5_3)': {'this is a test' : 'it sss etiath '},
-    'enc(railup-5-3|railup_5_3)' :{'this is a test': 'h tiats e ssit'},
+    'enc(rail-5-3-up|rail_5_3-up)' :{'this is a test': 'h tiats e ssit'},
     'dec(rail-7-4|rail_7_4)': {'a  stiet shsti': 'this is a test'}
 }
 
@@ -38,7 +38,7 @@ def __buildf(text, rails, offset = 0, up = 0) :
         rail += dr
     return f
 
-def railfence_encode(up = 0, rails = 3, offset = 0) :  
+def railfence_encode(rails = 3, offset = 0, up = 0) :  
     def encode(text, errors="strict") : 
         c,l = '', len(text)
         f = __buildf(text,rails,offset, up)
@@ -49,7 +49,7 @@ def railfence_encode(up = 0, rails = 3, offset = 0) :
         return c, l
     return encode
 
-def railfence_decode(up = 0,rails = 3, offset = 0) : 
+def railfence_decode(rails = 3, offset = 0, up = 0) : 
     def decode(text, errors = 'strict') : 
         f = __buildf("x" * len(text), rails, offset, up)
         plain, i = '', 0
@@ -71,4 +71,4 @@ def railfence_decode(up = 0,rails = 3, offset = 0) :
 
     return decode
 
-add("rail", railfence_encode, railfence_decode, r"rail(up)?[-_](\d+)[-_](\d+)$")
+add("rail", railfence_encode, railfence_decode, r"rail[-_](\d+)[-_](\d+)[-_]?(up)?$")

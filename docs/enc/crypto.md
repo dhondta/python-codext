@@ -134,9 +134,7 @@ This implements the Rail Fence encoding algorithm.
 
 **Codec** | **Conversions** | **Aliases** | **Comment**
 :---: | :---: | --- | ---
-`rail` | text <-> rail fence ciphertext, X rails and Y offset | `rail-X-Y`, `rail_X_Y`| The encoding fence is built from the top. Careful to trailing whitespaces. 
-`railup` | text <-> rail fence ciphertext, X rails and Y offset  | `railup-X-Y`, `railup_X_Y`| The encoding fence is built from the bottom. Inverted compaired to the `rail` codec.
-
+`rail` | text <-> rail fence ciphertext, X rails and Y offset | `rail-X-Y`, `rail_X_Y`, `rail-X-Y-up`| The encoding fence is built from the top. Careful to trailing whitespaces. The `up` flag is used to build the fence from the bottom to the top.
 ```python
 >>> codext.encode("this is a test", "rail-5-3")
 'it sss etiath '
