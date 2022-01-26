@@ -130,15 +130,18 @@ This implements the Citrix CTX1 password encoding algorithm.
 
 ### Rail Fence Cipher
 
-This implements the Rail Fence encoding algorithm.
+This implements the Rail Fence encoding algorithm, using 3 rails and offset 0 as the default parameters. The encoding fence is built from the top ; the `up` flag can be used to build the fence from the bottom. Note that trying parameters that do not fit the input length will trigger a `ValueError` mentioning the bad value.
 
 **Codec** | **Conversions** | **Aliases** | **Comment**
 :---: | :---: | --- | ---
-`rail` | text <-> rail fence ciphertext, X rails and Y offset | `rail-X-Y`, `rail_X_Y`, `rail-X-Y-up`| The encoding fence is built from the top. Careful to trailing whitespaces. The `up` flag is used to build the fence from the bottom to the top.
+`rail` | text <-> rail fence ciphertext, X rails and Y offset | `rail-X-Y`, `rail_X_Y`, `rail-X-Y-up`, `zigzag`, ... | 
+
 ```python
+>>> codext.encode("this is a test", "zigzag")
+'t ashsi  etist'
 >>> codext.encode("this is a test", "rail-5-3")
 'it sss etiath '
->>> codext.decode("it sss etiath ", "rail-5-3")
+>>> codext.decode("it sss etiath ", "zigzag_5-3")
 'this is a test'
 ```
 

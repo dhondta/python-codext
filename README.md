@@ -259,7 +259,7 @@ o
 - [X] `bacon`: aka Baconian Cipher
 - [X] `barbie-N`: aka Barbie Typewriter (*N* belongs to [1, 4])
 - [X] `citrix`: aka Citrix CTX1 password encoding
-- [X] `rail`: aka Rail Fence Cipher 
+- [X] `railfence`: aka Rail Fence Cipher 
 - [X] `rotN`: aka Caesar cipher (*N* belongs to [1,25])
 - [X] `scytaleN`: encrypts using the number of letters on the rod (*N* belongs to [1,[)
 - [X] `shiftN`: shift ordinals (*N* belongs to [1,255])
