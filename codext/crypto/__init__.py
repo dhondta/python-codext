@@ -4,6 +4,7 @@ from .atbash import *
 from .bacon import *
 from .barbie import *
 from .citrix import *
+from .railfence import *
 from .rot import *
 from .scytale import *
 from .shift import *
