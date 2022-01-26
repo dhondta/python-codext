@@ -37,7 +37,7 @@ __all__ = ["add", "add_macro", "add_map", "b", "clear", "codecs", "decode", "enc
            "isb", "generate_strings_from_regex", "get_alphabet_from_mask", "handle_error", "is_native",
            "list_categories", "list_encodings", "list_macros", "lookup", "maketrans", "os", "rank", "re", "register",
            "remove", "reset", "s2i", "search", "stopfunc", "BytesIO", "_input", "_stripl", "CodecMacro",
-           "DARWIN", "LANG", "LINUX", "MASKS", "PY3", "UNIX", "WINDOWS"]
+           "ParameterError", "DARWIN", "LANG", "LINUX", "MASKS", "PY3", "UNIX", "WINDOWS"]
 CODECS_REGISTRY = None
 CODECS_OVERWRITTEN = []
 CODECS_CATEGORIES = ["native", "custom"]
@@ -144,6 +144,9 @@ class CodecMacro(tuple):
     def __repr__(self):
         return "<codext.CodecMacro object for encoding %s at %#x>" % (self.name, id(self))
 
+
+class ParameterError(ValueError):
+    __module__ = Exception.__module__
 
 # inspired from: https://stackoverflow.com/questions/10875442/possible-to-change-a-functions-repr-in-python
 class Repr(object):
@@ -908,7 +911,9 @@ def lookup(encoding, macro=True):
     try:
         return CodecMacro(encoding)
     except LookupError:
-        raise LookupError("unknown encoding: %s" % encoding)
+        e = LookupError("unknown encoding: %s" % encoding)
+        e.__cause__ = e  # stop exception chaining
+        raise e
 codecs.lookup = lookup
 
 
