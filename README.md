@@ -213,9 +213,10 @@ o
 
 #### BaseXX
 
-- [X] `ascii85`: classical ASCII85 (Python3 only)
-- [X] `baseN`: see [base encodings](https://python-codext.readthedocs.io/en/latest/enc/base.html) (incl base32, 36, 45, 58, 62, 63, 64, 91, 100, 122)
+- [X] `baseN`: see [base encodings](https://python-codext.readthedocs.io/en/latest/enc/base.html) (incl [z]base32, 36, 45, 58, 62, 63, 64, [z]85, 91, 100, 122)
 - [X] `base-genericN`: see [base encodings](https://python-codext.readthedocs.io/en/latest/enc/base.html) ; supports any possible base
+
+This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `base85` codec.
 
 #### Binary
 
@@ -302,6 +303,7 @@ o
 
 #### Steganography
 
+- [X] `hexagram`: uses Base64 and encodes the result to a charset of [I Ching hexagrams](https://en.wikipedia.org/wiki/Hexagram_%28I_Ching%29) (as implemented [here](https://github.com/qntm/hexagram-encode))
 - [X] `klopf`: aka Klopf code ; Polybius square with trivial alphabetical distribution
 - [X] `resistor`: aka resistor color codes
 - [X] `rick`: aka Rick cipher (in reference to Rick Astley's song "*Never gonna give you up*")

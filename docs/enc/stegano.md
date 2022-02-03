@@ -4,6 +4,23 @@
 
 -----
 
+### Hexagrams (I Ching)
+
+This uses Base64 and then encodes output characters to [I Ching Hexagrams](https://en.wikipedia.org/wiki/Hexagram_%28I_Ching%29) such that implemented [here](https://github.com/qntm/hexagram-encode).
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`hexagram` | text <-> hexagrams-encoded Base64 | `hexagrams`, `i-ching-hexagrams`, `iching` | Python3 only
+
+```python
+>>> codext.encode("this is a test", "hexagram")
+'䷰䷭䷚䷔䷞䷺䷗䷔䷞䷺䷗䷚䷏䷊䷂䷕䷞䷈䷇☯'
+>>> codext.decode("䷰䷭䷚䷔䷞䷺䷗䷔䷞䷺䷗䷚䷏䷊䷂䷕䷞䷈䷇☯", "iching")
+'this is a test'
+```
+
+-----
+
 ### Klopf Code
 
 This is a Polybius code with the trivial alphabetical distribution ("A" -> (1,1), "B" -> (2,1), ...). This can be tested [here](https://gc.de/gc/klopfcode/).
