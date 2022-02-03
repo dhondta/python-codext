@@ -251,7 +251,8 @@ Full documentation at: <https://python-codext.readthedocs.io/en/latest/enc/base.
         c, f = _input(args.file), [encode, decode][args.decode]
         c = c.rstrip("\r\n") if isinstance(c, str) else c.rstrip(b"\r\n")
         try:
-            c = f(c, "base" + base + ["", "-inv"][args.invert], ["strict", "ignore"][args.ignore_garbage])
+            c = f(c, "base" + base + ["", "-inv"][getattr(args, "invert", False)],
+                  ["strict", "ignore"][args.ignore_garbage])
         except Exception as err:
             print("%sbase%s: invalid input" % (getattr(err, "output", ""), base))
             return 1

@@ -28,10 +28,6 @@ __chr = lambda c: chr(c) if isinstance(c, int) else c
 __ord = lambda c: ord(c) if not isinstance(c, int) else c
 
 
-class Base45DecodeError(ValueError):
-    pass
-
-
 def base45_encode(mode):
     mode = mode.replace("inverted", "inv").replace("_", "-").lstrip("-")
     b45 = B45[['inv', ''][mode == ""]]
@@ -57,7 +53,7 @@ def base45_decode(mode):
     b45 = {c: i for i, c in enumerate(B45[['inv', ''][mode == ""]])}
     def decode(text, errors="strict"):
         t, s, err = b(text), "", "'base45' codec can't decode character '%s' in position %d"
-        ehandler = handle_error("base45", errors, Base45DecodeError, decode=True)
+        ehandler = handle_error("base45", errors, decode=True)
         for i in range(0, len(text), 3):
             try:
                 n = b45[__chr(t[i])]

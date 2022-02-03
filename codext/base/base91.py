@@ -26,10 +26,6 @@ __chr = lambda c: chr(c) if isinstance(c, int) else c
 __ord = lambda c: ord(c) if not isinstance(c, int) else c
 
 
-class Base91DecodeError(ValueError):
-    pass
-
-
 def base91_encode(mode):
     mode = mode.replace("alternate", "alt").replace("inverted", "inv").replace("_", "-").lstrip("-")
     b91 = B91[mode if mode in B91.keys() else ""]
@@ -79,7 +75,7 @@ def base91_decode(mode):
     b91 = {c: i for i, c in enumerate(B91[mode if mode in B91.keys() else ""])}
     def decode(text, errors="strict"):
         t, s, bits, alt = b(text), "", "", mode.startswith("alt")
-        ehandler = handle_error("base91", errors, Base91DecodeError, decode=True)
+        ehandler = handle_error("base91", errors, decode=True)
         for i in range(0, len(t), 2):
             try:
                 n = b91[__chr(t[i])] * [1, 91][alt]
