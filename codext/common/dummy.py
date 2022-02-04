@@ -11,11 +11,11 @@ These codecs:
 """
 import re
 
-from ..__common__ import add
+from ..__common__ import *
 
 
 def replace(pair, *args):
-    def code(input, error="strict"):
+    def code(input, errors="strict"):
         return input.replace(pair[0], pair[1]), len(input)
     return code
 add("replace", replace, replace, r"^replace[-_]?((?!.*(.).*\2)..)$", guess=None)
@@ -26,7 +26,7 @@ add("replace", replace, replace, r"^replace[-_]?((?!.*(.).*\2)..)$", guess=None)
 
 
 def substitute(token, replacement):
-    def code(input, error="strict"):
+    def code(input, errors="strict"):
         return input.replace(token, replacement), len(input)
     return code
 add("substitute", substitute, substitute, r"^substitute[-_]?(.*?)/(.*?)$", guess=None)

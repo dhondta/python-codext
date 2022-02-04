@@ -19,17 +19,14 @@ from random import randint
 from six import binary_type, string_types, text_type, BytesIO
 from string import *
 from types import FunctionType, ModuleType
-try: # Python3
-    from importlib import reload
-except ImportError:
-    pass
-try:  # Python3
-    from inspect import getfullargspec
-except ImportError:
-    from inspect import getargspec as getfullargspec
 try:                 # Python 2
+    import __builtin__ as builtins
+    from inspect import getargspec as getfullargspec
     from string import maketrans
 except ImportError:  # Python 3
+    import builtins
+    from importlib import reload
+    from inspect import getfullargspec
     maketrans = str.maketrans
 
 
@@ -37,7 +34,7 @@ __all__ = ["add", "add_macro", "add_map", "b", "clear", "codecs", "decode", "enc
            "isb", "generate_strings_from_regex", "get_alphabet_from_mask", "handle_error", "is_native",
            "list_categories", "list_encodings", "list_macros", "lookup", "maketrans", "os", "rank", "re", "register",
            "remove", "reset", "s2i", "search", "stopfunc", "BytesIO", "_input", "_stripl", "CodecMacro",
-           "ParameterError", "DARWIN", "LANG", "LINUX", "MASKS", "PY3", "UNIX", "WINDOWS"]
+           "DARWIN", "LANG", "LINUX", "MASKS", "PY3", "UNIX", "WINDOWS"]
 CODECS_REGISTRY = None
 CODECS_OVERWRITTEN = []
 CODECS_CATEGORIES = ["native", "custom"]
@@ -75,6 +72,7 @@ iss = lambda s: isinstance(s, string_types)
 fix = lambda x, ref: b(x) if isb(ref) else ensure_str(x) if iss(ref) else x
 
 s2i = lambda s: int(codecs.encode(s, "base16"), 16)
+exc_name = lambda e: "".join(t.capitalize() for t in re.split(r"[-_+]", e))
 
 
 class CodecMacro(tuple):
@@ -145,9 +143,6 @@ class CodecMacro(tuple):
         return "<codext.CodecMacro object for encoding %s at %#x>" % (self.name, id(self))
 
 
-class ParameterError(ValueError):
-    __module__ = Exception.__module__
-
 # inspired from: https://stackoverflow.com/questions/10875442/possible-to-change-a-functions-repr-in-python
 class Repr(object):
     def __init__(self, name, func):
@@ -185,6 +180,14 @@ def _input(infile):
     return c
 
 
+def _set_exc(name, etype="ValueError"):
+    if not hasattr(builtins, name):
+        exec("class %s(%s): __module__ = 'builtins'" % (name, etype))
+        setattr(builtins, name, locals()[name])
+_set_exc("InputSizeLimitError")
+_set_exc("ParameterError")
+
+
 def _stripl(s, st_lines, st_crlf):
     if st_crlf:
         s = s.replace(b"\r\n", b"") if isb(s) else s.replace("\r\n", "")
@@ -213,12 +216,18 @@ def add(ename, encode=None, decode=None, pattern=None, text=True, add_to_codecs=
                                 to remove the codec later
     """
     remove(ename)
-    if encode and not isinstance(encode, FunctionType):
-        raise ValueError("Bad 'encode' function")
-    if decode and not isinstance(decode, FunctionType):
-        raise ValueError("Bad 'decode' function")
+    if encode:
+        if not isinstance(encode, FunctionType):
+            raise ValueError("Bad 'encode' function")
+        _set_exc("%sEncodeError" % exc_name(ename))  # create the custom encode exception as a builtin
+    if decode:
+        if not isinstance(decode, FunctionType):
+            raise ValueError("Bad 'decode' function")
+        _set_exc("%sDecodeError" % exc_name(ename))  # create the custom decode exception as a builtin
     if not encode and not decode:
         raise ValueError("At least one en/decoding function must be defined")
+    for exc in kwargs.get('extra_exceptions', []):
+        _set_exc(exc)  # create additional custom exceptions as builtins
     glob = currentframe().f_back.f_globals
     # search function for the new encoding
     @_with_repr(ename)
@@ -516,7 +525,8 @@ def add_map(ename, encmap, repl_char="?", sep="", ignore_case=None, no_error=Fal
                         text = "".join(str(ord(c)).zfill(3) for c in text)
                 r = ""
                 lsep = "" if decode else sep if len(sep) <= 1 else sep[0]
-                error_func = handle_error(ename, errors, lsep, repl_char, rminlen, decode)
+                kind = ["character", "token"][tmaxlen > 1]
+                error_func = handle_error(ename, errors, lsep, repl_char, rminlen, decode, kind)
                 
                 # get the value from the mapping dictionary, trying the token with its inverted case if relevant
                 def __get_value(token, position, case_changed=False):
@@ -722,6 +732,11 @@ def remove(name):
             json.dump(PERS_MACROS, f, indent=2)
     except KeyError:
         pass
+    for s in ["En", "De"]:
+        try:
+            delattr(builtins, "%s%scodeError" % (name.capitalize(), s))
+        except AttributeError:
+            pass
 codecs.remove = remove
 
 
@@ -815,7 +830,7 @@ def get_alphabet_from_mask(mask):
 
 
 # generic error handling function
-def handle_error(ename, errors, sep="", repl_char="?", repl_minlen=1, decode=False, item="position"):
+def handle_error(ename, errors, sep="", repl_char="?", repl_minlen=1, decode=False, kind="character", item="position"):
     """ This shortcut function allows to handle error modes given some tuning parameters.
     
     :param ename:       encoding name
@@ -826,13 +841,9 @@ def handle_error(ename, errors, sep="", repl_char="?", repl_minlen=1, decode=Fal
     :param decode:      whether we are encoding or decoding
     :param item:        position item description (for describing the error ; e.g. "group" or "token")
     """
-    name = "".join(t.capitalize() for t in re.split(r"[-_+]", ename))
-    # dynamically make dedicated exception classes bound to the related codec module
-    exc = "%s%scodeError" % (name, ["En", "De"][decode])
-    glob = {'__name__': "__main__"}
-    exec("class %s(ValueError): pass" % exc, glob)
-    
-    def _handle_error(token, position, output=""):
+    exc = "%s%scodeError" % (exc_name(ename), ["En", "De"][decode])
+     
+    def _handle_error(token, position, output="", eename=None):
         """ This handles an encoding/decoding error according to the selected handling mode.
         
         :param token:    input token to be encoded/decoded
@@ -840,9 +851,11 @@ def handle_error(ename, errors, sep="", repl_char="?", repl_minlen=1, decode=Fal
         :param output:   output, as decoded up to the position of the error
         """
         if errors == "strict":
-            msg = "'{}' codec can't {}code character '{}' in {} {}"
-            err = glob[exc](msg.format(ename, ["en", "de"][decode], token, item, position))
+            msg = "'%s' codec can't %scode %s '%s' in %s %d"
+            token = token[:7] + "..." if len(token) > 10 else token
+            err = getattr(builtins, exc)(msg % (eename or ename, ["en", "de"][decode], kind, token, item, position))
             err.output = output
+            err.__cause__ = err
             raise err
         elif errors == "leave":
             return token + sep

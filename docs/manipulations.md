@@ -16,7 +16,7 @@ These transformation functions are simple string transformations, including `str
 `pascalcase` | text --> pascal-case text | `pascal` | no decoding
 `slugify` | text --> slug | `slug`, `kebab`, `kebabcase` | no decoding
 `snakecase` | text --> snake-case text | `snake` | no decoding
-`swapcase` | text <-> case-swapped text | `swap` | 
+`swapcase` | text <-> case-swapped text | `swap`, `invert`, `invertcase` | 
 `title` | text <-> titled text |  | decoding "untitles" the text
 `uppercase` | text <-> uppercase text | `upper` | decoding is `lowercase`
 
