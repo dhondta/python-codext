@@ -7,30 +7,31 @@ This codec:
 - decodes file content to str (read)
 - encodes file content from str to bytes (write)
 """
-from ._base import digits, lower, main, upper
+from ._base import _get_charset, digits, lower, main, upper
 from ..__common__ import *
 
 
 __examples__ = {
     'enc(base45|base-45|base_45)': {'this is a test!': "AWE+EDH44.OEOCC7WE QEX0"},
+    'enc(base45-inv|base_45_inv)': {'this is a test!': "K6O+ONREE.YOYMMH6O 0O7A"},
     'dec(base45)':                 {'BAD STRING\00': None, 'AWE+EDH44.OEOCC7WE QEX000': None},
 }
 __guess__ = ["base45", "base45-inv"]
 
 
 B45 = {
-    '':    digits + upper + " $%*+-./:",
-    'inv': upper + digits + " $%*+-./:",
+    '':                   digits + upper + " $%*+-./:",
+    '[-_]inv(?:erted)?$': upper + digits + " $%*+-./:",
 }
 
 
-__chr = lambda c: chr(c) if isinstance(c, int) else c
+__chr = lambda c: chr(c >> 8) + chr(c & 0xff) if isinstance(c, int) and 256 <= c <= 65535 else \
+                  chr(c) if isinstance(c, int) else c
 __ord = lambda c: ord(c) if not isinstance(c, int) else c
 
 
 def base45_encode(mode):
-    mode = mode.replace("inverted", "inv").replace("_", "-").lstrip("-")
-    b45 = B45[['inv', ''][mode == ""]]
+    b45 = _get_charset(B45, mode)
     def encode(text, errors="strict"):
         t, s = b(text), ""
         for i in range(0, len(text), 2):
@@ -50,9 +51,9 @@ def base45_encode(mode):
 
 def base45_decode(mode):
     mode = mode.replace("inverted", "inv").replace("_", "-").lstrip("-")
-    b45 = {c: i for i, c in enumerate(B45[['inv', ''][mode == ""]])}
+    b45 = {c: i for i, c in enumerate(_get_charset(B45, mode))}
     def decode(text, errors="strict"):
-        t, s, err = b(text), "", "'base45' codec can't decode character '%s' in position %d"
+        t, s = b(text), ""
         ehandler = handle_error("base45", errors, decode=True)
         for i in range(0, len(text), 3):
             try:

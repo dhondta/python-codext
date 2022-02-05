@@ -125,13 +125,17 @@ Note that for `base64`, it overwrites the native `base64_codec` to also support 
 
 -----
 
-### Ascii85
+### Base85
 
-This encoding relies on the `base64` library and is only supported in Python 3.
+This encoding implements various different versions of Base85.
 
 **Codec** | **Conversions** | **Aliases** | **Comment**
 :---: | :---: | --- | ---
-`ascii85` | text <-> ascii85 | none | Python 3 only
+`base85` | text <-> ascii85 | `ascii85` | 
+`base85` | text <-> z85 | `z85`, `base85-zeromq` | 
+`base85` | text <-> base85-ipv6 | `base85-ipv6`, `base85-rfc1924` | 
+`base85` | text <-> base85-adobe | `base85-adobe` | 
+`base85` | text <-> base85-btoa | `base85-btoa`, `base85-xbtoa` | 
 
 ```python
 >>> codext.encode("this is a test", "ascii85")

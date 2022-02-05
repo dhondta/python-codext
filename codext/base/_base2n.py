@@ -5,23 +5,16 @@
 from math import ceil, log
 
 from ..__common__ import *
-from ._base import base, _get_charset, BaseError
+from ..__common__ import _set_exc
+from ._base import base, _get_charset
 
 
 _bin = lambda x: bin(x if isinstance(x, int) else ord(x))
 
 
 # base en/decoding functions for N a power of 2
-class Base2NError(BaseError):
-    pass
-
-
-class Base2NDecodeError(BaseError):
-    pass
-
-
-class Base2NEncodeError(BaseError):
-    pass
+_set_exc("Base2NDecodeError")
+_set_exc("Base2NEncodeError")
 
 
 def base2n(charset, pattern=None, name=None, **kwargs):
@@ -35,13 +28,12 @@ def base2n(charset, pattern=None, name=None, **kwargs):
     base(charset, pattern, True, base2n_encode, base2n_decode, name, **kwargs)
 
 
-def base2n_encode(string, charset, errors="strict", exc=Base2NEncodeError):
+def base2n_encode(string, charset, errors="strict"):
     """ 8-bits characters to base-N encoding for N a power of 2.
     
     :param string:  string to be decoded
     :param charset: base-N characters set
     :param errors:  errors handling marker
-    :param exc:     exception to be raised in case of error
     """
     bs, r, n = "", "", len(charset)
     # find the number of bits for the given character set and the quantum
@@ -66,13 +58,12 @@ def base2n_encode(string, charset, errors="strict", exc=Base2NEncodeError):
     return r + int(l / nb_out - len(r)) * "="
 
 
-def base2n_decode(string, charset, errors="strict", exc=Base2NDecodeError):
+def base2n_decode(string, charset, errors="strict"):
     """ Base-N to 8-bits characters decoding for N a power of 2.
     
     :param string:  string to be decoded
     :param charset: base-N characters set
     :param errors:  errors handling marker
-    :param exc:     exception to be raised in case of error
     """
     bs, r, n = "", "", len(charset)
     # particular case: for hex, ensure the right case in the charset ; not that this way, if mixed cases are used, it
@@ -95,7 +86,9 @@ def base2n_decode(string, charset, errors="strict", exc=Base2NDecodeError):
                 bs += ("{:0>%d}" % nb_in).format(_bin(charset.index(c))[2:])
             except ValueError:
                 if errors == "strict":
-                    raise exc("'base' codec can't decode character '{}' in position {}".format(c, i))
+                    e = Base2NDecodeError("'base%d' codec can't decode character '%s' in position %d" % (n, c, i))
+                    e.__cause__ = e  # block exceptions chaining
+                    raise e
                 elif errors == "replace":
                     bs += "0" * nb_in
                 elif errors == "ignore":

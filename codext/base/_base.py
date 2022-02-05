@@ -10,9 +10,13 @@ from textwrap import wrap
 from types import FunctionType, MethodType
 
 from ..__common__ import *
+from ..__common__ import _set_exc
 from ..__info__ import __version__
 
 
+_set_exc("BaseError")
+_set_exc("BaseEncodeError")
+_set_exc("BaseDecodeError")
 """
 Curve fitting:
 
@@ -44,18 +48,7 @@ Curve fitting:
 [ 0.02827357  0.00510124 -0.99999984  0.01536941]
 """
 EXPANSION_FACTOR = lambda base: 0.02827357 / (base**0.00510124-0.99999984) + 0.01536941
-
-
-class BaseError(ValueError):
-    pass
-
-
-class BaseDecodeError(BaseError):
-    pass
-
-
-class BaseEncodeError(BaseError):
-    pass
+SIZE_LIMIT = 1024 * 1024 * 1024
 
 
 def _generate_charset(n):
@@ -95,14 +88,19 @@ def _get_charset(charset, p=""):
         except KeyError:
             pass
         # or handle [p]arameter as a pattern
-        default, n = None, None
+        default, n, best = None, None, None
         for pattern, cset in charset.items():
             n = len(cset)
-            if pattern == "":
+            if re.match(pattern, ""):
                 default = cset
                 continue
-            if re.match(pattern, p):
-                return cset
+            m = re.match(pattern, p)
+            if m:  # find the longest match from the patterns
+                s, e = m.span()
+                if e - s > len(best or ""):
+                    best = pattern
+        if best:
+            return charset[best]
         # special case: the given [p]arameter can be the charset itself if it has the right length
         p = re.sub(r"^[-_]+", "", p)
         if len(p) == n:
@@ -110,7 +108,7 @@ def _get_charset(charset, p=""):
         # or simply rely on key ''
         if default is not None:
             return default
-    raise ValueError("Bad charset descriptor")
+    raise ValueError("Bad charset descriptor ('%s')" % p)
 
 
 # generic base en/decoding functions
@@ -123,6 +121,12 @@ def base_encode(input, charset, errors="strict", exc=BaseEncodeError):
     :param exc:     exception to be raised in case of error
     """
     i, n, r = input if isinstance(input, integer_types) else s2i(input), len(charset), ""
+    if n == 1:
+        if i > SIZE_LIMIT:
+            raise InputSizeLimitError("Input exceeded size limit")
+        return i * charset[0]
+    if n == 10:
+        return str(i) if charset == digits else "".join(charset[int(x)] for x in str(i))
     while i > 0:
         i, c = divmod(i, n)
         r = charset[c] + r
@@ -138,11 +142,15 @@ def base_decode(input, charset, errors="strict", exc=BaseDecodeError):
     :param exc:     exception to be raised in case of error
     """
     i, n, dec = 0, len(charset), lambda n: base_encode(n, [chr(x) for x in range(256)], errors, exc)
+    if n == 1:
+        return i2s(len(input))
+    if n == 10:
+        return i2s(int(input)) if charset == digits else "".join(str(charset.index(c)) for c in input)
     for k, c in enumerate(input):
         try:
             i = i * n + charset.index(c)
         except ValueError:
-            handle_error("base", errors, exc, decode=True)(c, k, dec(i))
+            handle_error("base", errors, exc, decode=True)(c, k, dec(i), "base%d" % n)
     return dec(i)
 
 
@@ -162,15 +170,19 @@ def base(charset, pattern, pow2=False, encode_template=base_encode, decode_templ
         raise BaseError("Bad charset ; {} is not a power of 2".format(n))
     
     def encode(param="", *args):
-        a = _get_charset(charset, param)
+        a = _get_charset(charset, args[0] if len(args) > 0 and args[0] else param)
         def _encode(input, errors="strict"):
+            if len(input) == 0:
+                return "", 0
             return encode_template(input, a, errors), len(input)
         return _encode
     
     def decode(param="", *args):
-        a = _get_charset(charset, param)
+        a = _get_charset(charset, args[0] if len(args) > 0 and args[0] else param)
         sl, sc = "\n" not in a, "\n" not in a and not "\r" in a
         def _decode(input, errors="strict"):
+            if len(input) == 0:
+                return "", 0
             input = _stripl(input, sc, sl)
             return decode_template(input, a, errors), len(input)
         return _decode
@@ -205,10 +217,14 @@ def base_generic():
         expansion_factor=lambda f, n: (EXPANSION_FACTOR(int(n.split("-")[0][4:])), .05))
 
 
-def main(n, ref=None, alt=None, inv=True):
+def main(n, ref=None, alt=None, inv=True, swap=True):
     base = str(n) + ("-" + alt.lstrip("-") if alt else "")
     src = "The data are encoded as described for the base%(base)s alphabet in %(reference)s.\n" % \
           {'base': base, 'reference': "\n" + ref if len(ref) > 20 else ref} if ref else ""
+    text = "%(source)sWhen decoding, the input may contain newlines in addition to the bytes of the formal base" \
+           "%(base)s alphabet.  Use --ignore-garbage to attempt to recover from any other non-alphabet bytes in the" \
+           " encoded stream." % {'base': base, 'source': src}
+    text = "\n".join(x for x in wrap(text, 74))
     descr = """Usage: base%(base)s [OPTION]... [FILE]
 Base%(base)s encode or decode FILE, or standard input, to standard output.
 
@@ -217,20 +233,19 @@ With no FILE, or when FILE is -, read standard input.
 Mandatory arguments to long options are mandatory for short options too.
   -d, --decode          decode data
   -i, --ignore-garbage  when decoding, ignore non-alphabet characters
-%(inv)s  -w, --wrap=COLS       wrap encoded lines after COLS character (default 76).
+%(inv)s%(swap)s  -w, --wrap=COLS       wrap encoded lines after COLS character (default 76).
                           Use 0 to disable line wrapping
 
       --help     display this help and exit
       --version  output version information and exit
 
-%(source)sWhen decoding, the input may contain newlines in addition to the bytes of
-the formal base%(base)s alphabet.  Use --ignore-garbage to attempt to recover
-from any other non-alphabet bytes in the encoded stream.
+%(text)s
 
 Report base%(base)s translation bugs to <https://github.com/dhondta/python-codext/issues/new>
 Full documentation at: <https://python-codext.readthedocs.io/en/latest/enc/base.html>
-""" % {'base': base, 'source': src,
-       'inv': ["", "  -I, --invert          invert charsets from the base alphabet (e.g. lower- and uppercase)\n"][inv]}
+""" % {'base': base, 'text': text,
+       'inv': ["", "  -I, --invert          invert charsets from the base alphabet (e.g. digits and letters)\n"][inv],
+       'swap': ["", "  -s, --swapcase        swap the case\n"][swap]}
     
     def _main():
         p = ArgumentParser(description=descr, formatter_class=RawTextHelpFormatter, add_help=False)
@@ -240,6 +255,8 @@ Full documentation at: <https://python-codext.readthedocs.io/en/latest/enc/base.
         p.add_argument("-i", "--ignore-garbage", action="store_true")
         if inv:
             p.add_argument("-I", "--invert", action="store_true")
+        if swap:
+            p.add_argument("-s", "--swapcase", action="store_true")
         p.add_argument("-w", "--wrap", type=int, default=76)
         p.add_argument("--help", action="help")
         p.add_argument("--version", action="version")
@@ -249,14 +266,19 @@ Full documentation at: <https://python-codext.readthedocs.io/en/latest/enc/base.
             args.wrap = 0
         args.invert = getattr(args, "invert", False)
         c, f = _input(args.file), [encode, decode][args.decode]
-        c = c.rstrip("\r\n") if isinstance(c, str) else c.rstrip(b"\r\n")
+        if swap and args.decode:
+            c = codecs.decode(c, "swapcase")
+        c = b(c).rstrip(b"\r\n")
         try:
             c = f(c, "base" + base + ["", "-inv"][getattr(args, "invert", False)],
                   ["strict", "ignore"][args.ignore_garbage])
         except Exception as err:
             print("%sbase%s: invalid input" % (getattr(err, "output", ""), base))
             return 1
-        for l in (wrap(ensure_str(c), args.wrap) if args.wrap > 0 else [ensure_str(c)]):
+        c = ensure_str(c)
+        if swap and not args.decode:
+            c = codecs.encode(c, "swapcase")
+        for l in (wrap(c, args.wrap) if args.wrap > 0 else [c]):
             print(l)
         return 0
     return _main

@@ -16,17 +16,17 @@ from ..__common__ import *
 # no __examples__ ; handled manually in tests/test_base.py
 
 
-def base100_encode(input, errors='strict'):
+def base100_encode(input, errors="strict"):
     raise NotImplementedError
 
 
-def base100_decode(input, errors='strict'):
+def base100_decode(input, errors="strict"):
     raise NotImplementedError
 
 
 if PY3:
     class Base100DecodeError(ValueError):
-        pass
+        __module__ = "builtins"
     
     def base100_encode(input, errors="strict"):
         input = b(input)

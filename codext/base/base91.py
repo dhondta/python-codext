@@ -7,7 +7,7 @@ This codec:
 - decodes file content to str (read)
 - encodes file content from str to bytes (write)
 """
-from ._base import digits, lower, main, upper
+from ._base import _get_charset, digits, lower, main, upper
 from ..__common__ import *
 
 # no __examples__ ; handled manually in tests/test_base.py
@@ -15,10 +15,10 @@ __guess__ = ["base91", "base91-inv", "base91-alt", "base91-alt-inv"]
 
 
 B91 = {
-    '':        upper + lower + digits + "!#$%&()*+,./:;<=>?@[]^_`{|}~\"",
-    'inv':     lower + upper + digits + "!#$%&()*+,./:;<=>?@[]^_`{|}~\"",
-    'alt':     "!#$%&'()*+,-./" + digits + ":;<=>?@" + upper + "[\\]^_" + lower + "{|}",
-    'alt-inv': "!#$%&'()*+,-./" + digits + ":;<=>?@" + lower + "[\\]^_" + upper + "{|}",
+    r'':                                 upper + lower + digits + "!#$%&()*+,./:;<=>?@[]^_`{|}~\"",
+    r'[-_]inv(erted)?$':                 digits + upper + lower + "!#$%&()*+,./:;<=>?@[]^_`{|}~\"",
+    r'[-_]alt(ernate)?$':                "!#$%&'()*+,-./" + digits + ":;<=>?@" + upper + "[\\]^_" + lower + "{|}",
+    r'[-_]alt(ernate)?[-_]inv(erted)?$': "!#$%&'()*+,-./" + upper + ":;<=>?@" + lower + "[\\]^_" + digits + "{|}",
 }
 
 
@@ -27,11 +27,10 @@ __ord = lambda c: ord(c) if not isinstance(c, int) else c
 
 
 def base91_encode(mode):
-    mode = mode.replace("alternate", "alt").replace("inverted", "inv").replace("_", "-").lstrip("-")
-    b91 = B91[mode if mode in B91.keys() else ""]
+    b91 = _get_charset(B91, mode)
     def encode(text, errors="strict"):
         t, s, bits = b(text), "", ""
-        if mode.startswith("alt"):
+        if re.search(r'[-_]alt(ernate)?$', mode):
             while len(bits) < 13 and t:
                 bits += "{:08b}".format(__ord(t[0]))
                 t = t[1:]
@@ -71,10 +70,9 @@ def base91_encode(mode):
 
 
 def base91_decode(mode):
-    mode = mode.replace("alternate", "alt").replace("inverted", "inv").replace("_", "-").lstrip("-")
-    b91 = {c: i for i, c in enumerate(B91[mode if mode in B91.keys() else ""])}
+    b91 = {c: i for i, c in enumerate(_get_charset(B91, mode))}
     def decode(text, errors="strict"):
-        t, s, bits, alt = b(text), "", "", mode.startswith("alt")
+        t, s, bits, alt = b(text), "", "", re.search(r'[-_]alt(ernate)?$', mode) is not None
         ehandler = handle_error("base91", errors, decode=True)
         for i in range(0, len(t), 2):
             try:

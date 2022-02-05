@@ -37,6 +37,13 @@ class TestCodecsBase(TestCase):
         self.assertIsNone(base({'': "01234"}, r"^base5(test)?$"))
         self.assertIsNotNone(codecs.encode(STR, "base5test"))
         self.assertRaises(ValueError, base, {'': "01234"}, "base5-test", pow2=True)
+        self.assertEqual("", codecs.decode("", "base5test"))
+    
+    def test_codec_base1(self):
+        C = "A"
+        for i in range(3):
+            self.assertIsNotNone(codecs.encode(i * C, "base1"))
+        self.assertRaises(ValueError, codecs.encode, 4 * C, "unary")
     
     def test_codec_base2(self):
         STR = "test"
@@ -127,18 +134,15 @@ class TestCodecsBase(TestCase):
         self.assertRaises(ValueError, codecs.decode, B16_3, "hex")
     
     def test_codec_base32(self):
-        B32 = "ORUGS4ZANFZSAYJAORSXG5A="
-        self.assertEqual(codecs.encode(STR, "base32"), B32)
-        self.assertEqual(codecs.encode(b(STR), "base32"), b(B32))
-        self.assertEqual(codecs.decode(B32, "base32"), STR)
-        self.assertEqual(codecs.decode(b(B32), "base32"), b(STR))
-        B32 = "qtwg1h3ypf31yajyqt1zg7y="
-        self.assertEqual(codecs.encode(STR, "zbase32"), B32)
-        self.assertEqual(codecs.encode(b(STR), "z-base-32"), b(B32))
-        self.assertEqual(codecs.decode(B32, "z_base_32"), STR)
-        self.assertEqual(codecs.decode(b(B32), "zbase32"), b(STR))
-        self.assertRaises(ValueError, codecs.decode, B32.rstrip("="), "zbase32")
-        self.assertRaises(ValueError, codecs.decode, B32.rstrip("="), "zbase32", "BAD")
+        for b32, enc in zip(["ORUGS4ZANFZSAYJAORSXG5A=", "qtwg1h3ypf31yajyqt1zg7y=", "EHK6ISP0D5PI0O90EHIN6T0=",
+                             "fjn6kwt0e5tk0s90fjkr6x0=", "EHM6JWS0D5SJ0R90EHJQ6X0="],
+                            ["base32", "zbase32", "base32-hex", "geohash", "crockford"]):
+            self.assertEqual(codecs.encode(STR, enc), b32)
+            self.assertEqual(codecs.encode(b(STR), enc), b(b32))
+            self.assertEqual(codecs.decode(b32, enc), STR)
+            self.assertEqual(codecs.decode(b(b32), enc), b(STR))
+            self.assertRaises(ValueError, codecs.decode, b32.rstrip("="), enc)
+            self.assertRaises(ValueError, codecs.decode, b32.rstrip("="), enc, "BAD")
     
     def test_codec_base36(self):
         B36 = "4WMHTK6UZL044O91NKCEB8"
@@ -170,58 +174,32 @@ class TestCodecsBase(TestCase):
         self.assertEqual(codecs.encode(STR, "base58-url"), B58)
     
     def test_codec_base62(self):
-        B62 = "CsoB4HQ5gmgMyCenF7E"
-        self.assertEqual(codecs.encode(STR, "base62"), B62)
-        self.assertEqual(codecs.encode(b(STR), "base62"), b(B62))
-        self.assertEqual(codecs.decode(B62, "base62"), STR)
-        self.assertEqual(codecs.decode(b(B62), "base62"), b(STR))
-        B62 = "cSOb4hq5GMGmYcENf7e"
-        self.assertEqual(codecs.encode(STR, "base62-inv"), B62)
-        self.assertEqual(codecs.decode(B62, "base62-inv"), STR)
+        for b62, enc in zip(["CsoB4HQ5gmgMyCenF7E", "M2yLERaFqwqW8MoxPHO"], ["base62", "base62-inv"]):
+            self.assertEqual(codecs.encode(STR, enc), b62)
+            self.assertEqual(codecs.encode(b(STR), enc), b(b62))
+            self.assertEqual(codecs.decode(b62, enc), STR)
+            self.assertEqual(codecs.decode(b(b62), enc), b(STR))
     
     def test_codec_base64(self):
-        B64 = "dGhpcyBpcyBhIHRlc3Q="
-        self.assertEqual(codecs.encode(STR, "base64"), B64)
-        self.assertEqual(codecs.encode(b(STR), "base64"), b(B64))
-        self.assertEqual(codecs.decode(B64, "base64"), STR)
-        self.assertEqual(codecs.decode(b(B64), "base64"), b(STR))
-        B64 = "DgHPCYbPCYbHihrLC3q="
-        self.assertEqual(codecs.encode(STR, "base64-inv"), B64)
-        self.assertEqual(codecs.decode(B64, "base64-inv"), STR)
-    
-    def test_codec_base85(self):
-        if PY3:
-            B85 = "bZBXFAZc?TVIXv6b94"
-            self.assertEqual(codecs.encode(STR, "base85"), B85)
-            self.assertEqual(codecs.encode(b(STR), "base85"), b(B85))
-            self.assertEqual(codecs.decode(B85, "base85"), STR)
-            self.assertEqual(codecs.decode(b(B85), "base85"), b(STR))
+        for b64, enc in zip(["dGhpcyBpcyBhIHRlc3Q=", "T6XfSo1fSo1X87HbStG="], ["base64", "base64-inv"]):
+            self.assertEqual(codecs.encode(STR, enc), b64)
+            self.assertEqual(codecs.encode(b(STR), enc), b(b64))
+            self.assertEqual(codecs.decode(b64, enc), STR)
+            self.assertEqual(codecs.decode(b(b64), enc), b(STR))
     
     def test_codec_base91(self):
-        B91 = ",X,<:WRT%yxth90oZB"
-        self.assertEqual(codecs.encode(STR, "base91"), B91)
-        self.assertEqual(codecs.encode(b(STR), "base91"), b(B91))
-        self.assertEqual(codecs.decode(B91, "base91"), STR)
-        self.assertEqual(codecs.decode(b(B91), "base91"), b(STR))
-        B91 = ",x,<:wrt%YXTH90Ozb"
-        self.assertEqual(codecs.encode(STR, "base91-inv"), B91)
-        self.assertEqual(codecs.decode(B91, "base91-inv"), STR)
+        for b91, enc in zip([",X,<:WRT%yxth90oZB", ",N,<:MHJ%onjXzqeP1", "Jx&[jv4S3Wg>,71@Jk", "yJy^\\IDFsdc?Tof:L#"],
+                            ["base91", "base91-inv", "base91-alt", "base91-alt-inv"]):
+            self.assertEqual(codecs.encode(STR, enc), b91)
+            self.assertEqual(codecs.encode(b(STR), enc), b(b91))
+            self.assertEqual(codecs.decode(b91, enc), STR)
+            self.assertEqual(codecs.decode(b(b91), enc), b(STR))
         self.assertIsNotNone(codecs.encode("\x00\x00", "base91"))
         self.assertIsNotNone(codecs.decode("abc", "base91"))
         self.assertIsNotNone(codecs.decode("AD", "base91"))
         self.assertRaises(ValueError, codecs.decode, "\xff", "base91")
         self.assertRaises(ValueError, codecs.decode, "a\xff", "base91")
-        B91A = "Jx&[jv4S3Wg>,71@Jk"
-        self.assertEqual(codecs.encode(STR, "base91-alt"), B91A)
-        self.assertEqual(codecs.encode(b(STR), "base91-alt"), b(B91A))
-        self.assertEqual(codecs.decode(B91A, "base91_alt"), STR)
-        self.assertEqual(codecs.decode(b(B91A), "base91_alt"), b(STR))
-        B91A = "jX&[JV4s3wG>,71@jK"
-        self.assertEqual(codecs.encode(STR, "base91-alt-inv"), B91A)
-        self.assertEqual(codecs.decode(B91A, "base91_alt_inv"), STR)
         self.assertIsNotNone(codecs.encode("\x00\x00", "base91-alt"))
-        self.assertIsNotNone(codecs.decode("abc", "base91-alt"))
-        self.assertIsNotNone(codecs.decode("AD", "base91_alt"))
     
     def test_codec_base100(self):
         if PY3:

@@ -211,14 +211,33 @@ o
 
 ## :page_with_curl: List of codecs
 
-#### BaseXX
+#### [BaseXX](https://python-codext.readthedocs.io/en/latest/enc/base.html)
 
-- [X] `baseN`: see [base encodings](https://python-codext.readthedocs.io/en/latest/enc/base.html) (incl [z]base32, 36, 45, 58, 62, 63, 64, [z]85, 91, 100, 122)
+- [X] `base1`: useless, but for the sake of completeness
+- [X] `base2`: simple conversion to binary (with a variant with a reversed alphabet)
+- [X] `base3`: conversion to ternary (with a variant with a reversed alphabet)
+- [X] `base4`: conversion to quarternary (with a variant with a reversed alphabet)
+- [X] `base8`: simple conversion to octal (with a variant with a reversed alphabet)
+- [X] `base10`: simple conversion to decimal
+- [X] `base16`: simple conversion to hexadecimal (with a variant holding an alphabet with digits and letters inverted)
+- [X] `base26`: conversion to alphabet letters
+- [X] `base32`: classical conversion according to the RFC4648 with all its variants ([zbase32](https://philzimmermann.com/docs/human-oriented-base-32-encoding.txt), extended hexadecimal, [geohash](https://en.wikipedia.org/wiki/Geohash), [Crockford](https://www.crockford.com/base32.html))
+- [X] `base36`: [Base36](https://en.wikipedia.org/wiki/Base36) conversion to letters and digits (with a variant inverting both groups)
+- [X] `base45`: [Base45](https://datatracker.ietf.org/doc/html/draft-faltstrom-base45-04.txt) DRAFT algorithm (with a variant inverting letters and digits)
+- [X] `base58`: multiple versions of [Base58](https://en.bitcoinwiki.org/wiki/Base58) (bitcoin, flickr, ripple)
+- [X] `base62`: [Base62](https://en.wikipedia.org/wiki/Base62) conversion to lower- and uppercase letters and digits (with a variant with letters and digits inverted)
+- [X] `base63`: similar to `base62` with the "`_`" added
+- [X] `base64`: classical conversion according to RFC4648 with its variant URL (or *file*) (it also holds a variant with letters and digits inverted)
+- [X] `base67`: custom conversion using some more special characters (also with a variant with letters and digits inverted)
+- [X] `base85`: all variants of Base85 ([Ascii85](https://fr.wikipedia.org/wiki/Ascii85), [z85](https://rfc.zeromq.org/spec/32), [Adobe](https://dencode.com/string/ascii85), [(x)btoa](https://dencode.com/string/ascii85), [RFC1924](https://datatracker.ietf.org/doc/html/rfc1924), [XML](https://datatracker.ietf.org/doc/html/draft-kwiatkowski-base85-for-xml-00))
+- [X] `base91`: [Base91](http://base91.sourceforge.net) custom conversion
+- [X] `base100` (or *emoji*): [Base100](https://github.com/AdamNiederer/base100) custom conversion
+- [X] `base122`: [Base100](http://blog.kevinalbs.com/base122) custom conversion
 - [X] `base-genericN`: see [base encodings](https://python-codext.readthedocs.io/en/latest/enc/base.html) ; supports any possible base
 
 This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `base85` codec.
 
-#### Binary
+#### [Binary](https://python-codext.readthedocs.io/en/latest/enc/binary.html)
 
 - [X] `baudot`: supports CCITT-1, CCITT-2, EU/FR, ITA1, ITA2, MTK-2 (Python3 only), UK, ...
 - [X] `baudot-spaced`: variant of `baudot` ; groups of 5 bits are whitespace-separated
@@ -232,17 +251,17 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 - [X] `manchester-inverted`: variant of `manchester` ; XORes each bit of the input with `10`
 - [X] `rotateN`: rotates characters by the specified number of bits (*N* belongs to [1, 7] ; Python 3 only)
 
-#### Common
+#### [Common](https://python-codext.readthedocs.io/en/latest/enc/common.html)
 
 - [X] `a1z26`: keeps words whitespace-separated and uses a custom character separator
 - [X] `cases`: set of case-related encodings (including camel-, kebab-, lower-, pascal-, upper-, snake- and swap-case, slugify, capitalize, title)
-- [X] `dummy`: set of simple encodings (including replace, reverse, word-reverse, substite and strip-spaces)
+- [X] `dummy`: set of simple encodings (including integer, replace, reverse, word-reverse, substite and strip-spaces)
 - [X] `octal`: dummy octal conversion (converts to 3-digits groups)
 - [X] `octal-spaced`: variant of `octal` ; dummy octal conversion, handling whitespace separators
 - [X] `ordinal`: dummy character ordinals conversion (converts to 3-digits groups)
 - [X] `ordinal-spaced`: variant of `ordinal` ; dummy character ordinals conversion, handling whitespace separators
 
-#### Compression
+#### [Compression](https://python-codext.readthedocs.io/en/latest/enc/compressions.html)
 
 - [X] `gzip`: standard Gzip compression/decompression
 - [X] `lz77`: compresses the given data with the algorithm of Lempel and Ziv of 1977
@@ -253,7 +272,7 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 
 > :warning: Compression functions are of course definitely **NOT** encoding functions ; they are implemented for leveraging the `.encode(...)` API from `codecs`.
 
-#### Cryptography
+#### [Cryptography](https://python-codext.readthedocs.io/en/latest/enc/crypto.html)
 
 - [X] `affine`: aka Affine Cipher
 - [X] `atbash`: aka Atbash Cipher
@@ -268,7 +287,7 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 
 > :warning: Crypto functions are of course definitely **NOT** encoding functions ; they are implemented for leveraging the `.encode(...)` API from `codecs`.
 
-#### Hashing
+#### [Hashing](https://python-codext.readthedocs.io/en/latest/enc/hashing.html)
 
 - [X] `blake`: includes BLAKE2b and BLAKE2s (Python 3 only ; relies on `hashlib`)
 - [X] `checksums`: includes Adler32 and CRC32 (relies on `zlib`)
@@ -279,7 +298,7 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 
 > :warning: Hash functions are of course definitely **NOT** encoding functions ; they are implemented for convenience with the `.encode(...)` API from `codecs` and useful for chaning codecs.
 
-#### Languages
+#### [Languages](https://python-codext.readthedocs.io/en/latest/enc/languages.html)
 
 - [X] `braille`: well-known braille language (Python 3 only)
 - [X] `ipsum`: aka lorem ipsum
@@ -293,7 +312,7 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 - [X] `tap`: converts text to tap/knock code, commonly used by prisoners
 - [X] `tomtom`: similar to `morse`, using slashes and backslashes
 
-#### Others
+#### [Others](https://python-codext.readthedocs.io/en/latest/enc/others.html)
 
 - [X] `dna`: implements the 8 rules of DNA sequences (N belongs to [1,8])
 - [X] `html`: implements entities according to [this reference](https://dev.w3.org/html5/html-author/charref)
@@ -301,7 +320,7 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 - [X] `markdown`: unidirectional encoding from Markdown to HTML
 - [X] `url`: aka URL encoding
 
-#### Steganography
+#### [Steganography](https://python-codext.readthedocs.io/en/latest/enc/stegano.html)
 
 - [X] `hexagram`: uses Base64 and encodes the result to a charset of [I Ching hexagrams](https://en.wikipedia.org/wiki/Hexagram_%28I_Ching%29) (as implemented [here](https://github.com/qntm/hexagram-encode))
 - [X] `klopf`: aka Klopf code ; Polybius square with trivial alphabetical distribution
