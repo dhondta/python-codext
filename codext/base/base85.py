@@ -177,9 +177,9 @@ def base85_decode(mode):
 add("base85", base85_encode, base85_decode, expansion_factor=lambda f, ename: f if "xbtoa" in ename else 1.25,
     pattern=r"^(base[-_]?85(?:|[-_](?:adobe|x?btoa|ipv6|rfc1924|xml|z(?:eromq)?))|z85|ascii85)$",
     extra_exceptions=["Base85ValueError"])
-main85        = main(85, None, "ascii")
+main85        = main(85, None)
 main85adobe   = main(85, None, "adobe")
-main85btoa    = main(85, None, "btoa")
+main85xbtoa   = main(85, None, "xbtoa", wrap=False)
 main85rfc1924 = main(85, "RFC 1924", "ipv6")
 main85xml     = main(85, "<https://datatracker.ietf.org/doc/html/draft-kwiatkowski-base85-for-xml-00>", "xml")
 main85zeromq  = main(85, "<https://rfc.zeromq.org/spec/32/>", "zeromq")

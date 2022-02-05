@@ -55,7 +55,7 @@ main26 = main(26, inv=False)
 
 B32 = {
     r'':                                upper + "234567",
-    r'[-_]?z(?:base32)$':               "ybndrfg8ejkmcpqxot1uwisza345h769",
+    r'[-_]?z(?:base32)?$':              "ybndrfg8ejkmcpqxot1uwisza345h769",
     r'[-_]inv(erted)?$':                "234567" + upper,
     r'(?:[-_](ext(ended)?)?)?[-_]hex$': digits + upper[:22],
     r'[-_]?crockford':                  digits + "ABCDEFGHJKMNPQRSTVWXYZ",
@@ -67,7 +67,7 @@ base2n(B32, r"^(?:base[-_]?32(|[-_]inv(?:erted)?|(?:[-_]ext(?:ended)?)?[-_]hex|[
 main32 = main(32, "RFC 4648")
 main32hex = main(32, "RFC 4648", "hex", False)
 main32geo = main(32, "<https://en.wikipedia.org/wiki/Geohash>", "geohash", False)
-main32geo = main(32, "<https://www.crockford.com/base32.html>", "crockford", False)
+main32crk = main(32, "<https://www.crockford.com/base32.html>", "crockford", False)
 mainz32 = main(32, "<https://philzimmermann.com/docs/human-oriented-base-32-encoding.txt>", "z", False)
 
 
@@ -106,7 +106,7 @@ B64 = {
 base2n(B64, r"^base[-_]?64(|[-_]inv(?:erted)?|[-_]?(?:file|url)(?:safe)?)$", padding_char="=",
        guess=["base64", "base64-inv", "base64-url"])
 main64 = main(64, "RFC 4648")
-main64url = main(64, "RFC 4648 / Base64URL", "url")
+main64url = main(64, "RFC 4648 / Base64URL", "url", False)
 
 
 B67 = {

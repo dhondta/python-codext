@@ -52,5 +52,5 @@ if PY3:
     
     
 add("base100", base100_encode, base100_decode, r"^(?:base[-_]?100|emoji)$", expansion_factor=1.)
-main = main(100, "<https://github.com/AdamNiederer/base100>")
+main100 = main(100, "<https://github.com/AdamNiederer/base100>")
 

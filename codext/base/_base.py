@@ -6,7 +6,7 @@ from argparse import ArgumentParser, RawTextHelpFormatter
 from math import log
 from six import integer_types, string_types
 from string import ascii_lowercase as lower, ascii_uppercase as upper, digits, printable
-from textwrap import wrap
+from textwrap import wrap as wraptext
 from types import FunctionType, MethodType
 
 from ..__common__ import *
@@ -217,14 +217,14 @@ def base_generic():
         expansion_factor=lambda f, n: (EXPANSION_FACTOR(int(n.split("-")[0][4:])), .05))
 
 
-def main(n, ref=None, alt=None, inv=True, swap=True):
+def main(n, ref=None, alt=None, inv=True, swap=True, wrap=True):
     base = str(n) + ("-" + alt.lstrip("-") if alt else "")
     src = "The data are encoded as described for the base%(base)s alphabet in %(reference)s.\n" % \
           {'base': base, 'reference': "\n" + ref if len(ref) > 20 else ref} if ref else ""
     text = "%(source)sWhen decoding, the input may contain newlines in addition to the bytes of the formal base" \
            "%(base)s alphabet.  Use --ignore-garbage to attempt to recover from any other non-alphabet bytes in the" \
            " encoded stream." % {'base': base, 'source': src}
-    text = "\n".join(x for x in wrap(text, 74))
+    text = "\n".join(x for x in wraptext(text, 74))
     descr = """Usage: base%(base)s [OPTION]... [FILE]
 Base%(base)s encode or decode FILE, or standard input, to standard output.
 
@@ -233,8 +233,7 @@ With no FILE, or when FILE is -, read standard input.
 Mandatory arguments to long options are mandatory for short options too.
   -d, --decode          decode data
   -i, --ignore-garbage  when decoding, ignore non-alphabet characters
-%(inv)s%(swap)s  -w, --wrap=COLS       wrap encoded lines after COLS character (default 76).
-                          Use 0 to disable line wrapping
+%(inv)s%(swap)s%(wrap)s
 
       --help     display this help and exit
       --version  output version information and exit
@@ -245,7 +244,9 @@ Report base%(base)s translation bugs to <https://github.com/dhondta/python-codex
 Full documentation at: <https://python-codext.readthedocs.io/en/latest/enc/base.html>
 """ % {'base': base, 'text': text,
        'inv': ["", "  -I, --invert          invert charsets from the base alphabet (e.g. digits and letters)\n"][inv],
-       'swap': ["", "  -s, --swapcase        swap the case\n"][swap]}
+       'swap': ["", "  -s, --swapcase        swap the case\n"][swap],
+       'wrap': ["", "  -w, --wrap=COLS       wrap encoded lines after COLS character (default 76).\n"+ 26 * " " + \
+                    "Use 0 to disable line wrapping"][wrap]}
     
     def _main():
         p = ArgumentParser(description=descr, formatter_class=RawTextHelpFormatter, add_help=False)
@@ -257,7 +258,8 @@ Full documentation at: <https://python-codext.readthedocs.io/en/latest/enc/base.
             p.add_argument("-I", "--invert", action="store_true")
         if swap:
             p.add_argument("-s", "--swapcase", action="store_true")
-        p.add_argument("-w", "--wrap", type=int, default=76)
+        if wrap:
+            p.add_argument("-w", "--wrap", type=int, default=76)
         p.add_argument("--help", action="help")
         p.add_argument("--version", action="version")
         p.version = "CodExt " + __version__
@@ -266,7 +268,7 @@ Full documentation at: <https://python-codext.readthedocs.io/en/latest/enc/base.
             args.wrap = 0
         args.invert = getattr(args, "invert", False)
         c, f = _input(args.file), [encode, decode][args.decode]
-        if swap and args.decode:
+        if swap and args.swapcase and args.decode:
             c = codecs.decode(c, "swapcase")
         c = b(c).rstrip(b"\r\n")
         try:
@@ -276,9 +278,9 @@ Full documentation at: <https://python-codext.readthedocs.io/en/latest/enc/base.
             print("%sbase%s: invalid input" % (getattr(err, "output", ""), base))
             return 1
         c = ensure_str(c)
-        if swap and not args.decode:
+        if swap and args.swapcase and not args.decode:
             c = codecs.encode(c, "swapcase")
-        for l in (wrap(c, args.wrap) if args.wrap > 0 else [c]):
+        for l in (wraptext(c, args.wrap) if args.wrap > 0 else [c]) if wrap else c.split("\n"):
             print(l)
         return 0
     return _main

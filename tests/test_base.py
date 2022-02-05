@@ -181,7 +181,7 @@ class TestCodecsBase(TestCase):
             self.assertEqual(codecs.decode(b(b62), enc), b(STR))
     
     def test_codec_base64(self):
-        for b64, enc in zip(["dGhpcyBpcyBhIHRlc3Q=", "T6XfSo1fSo1X87HbStG="], ["base64", "base64-inv"]):
+        for b64, enc in zip(["dGhpcyBpcyBhIHRlc3QK", "T6XfSo1fSo1X87HbStG="], ["base64", "base64-inv"]):
             self.assertEqual(codecs.encode(STR, enc), b64)
             self.assertEqual(codecs.encode(b(STR), enc), b(b64))
             self.assertEqual(codecs.decode(b64, enc), STR)
