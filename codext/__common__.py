@@ -19,19 +19,26 @@ from random import randint
 from six import binary_type, string_types, text_type, BytesIO
 from string import *
 from types import FunctionType, ModuleType
-try:                 # Python 2
+try:  # Python2
     import __builtin__ as builtins
-    from inspect import getargspec as getfullargspec
-    from string import maketrans
-except ImportError:  # Python 3
+except ImportError:
     import builtins
-    from importlib import reload
+try:  # Python2
     from inspect import getfullargspec
+except ImportError:
+    from inspect import getargspec as getfullargspec
+try:  # Python2
+    from string import maketrans
+except ImportError:
     maketrans = str.maketrans
+try:  # Python3
+    from importlib import reload
+except ImportError:
+    pass
 
 
 __all__ = ["add", "add_macro", "add_map", "b", "clear", "codecs", "decode", "encode", "ensure_str", "examples", "guess",
-           "isb", "generate_strings_from_regex", "get_alphabet_from_mask", "handle_error", "is_native",
+           "isb", "generate_strings_from_regex", "get_alphabet_from_mask", "handle_error", "i2s", "is_native",
            "list_categories", "list_encodings", "list_macros", "lookup", "maketrans", "os", "rank", "re", "register",
            "remove", "reset", "s2i", "search", "stopfunc", "BytesIO", "_input", "_stripl", "CodecMacro",
            "DARWIN", "LANG", "LINUX", "MASKS", "PY3", "UNIX", "WINDOWS"]
@@ -73,6 +80,11 @@ fix = lambda x, ref: b(x) if isb(ref) else ensure_str(x) if iss(ref) else x
 
 s2i = lambda s: int(codecs.encode(s, "base16"), 16)
 exc_name = lambda e: "".join(t.capitalize() for t in re.split(r"[-_+]", e))
+
+
+def i2s(input):
+    h = hex(input)[2:].rstrip("eL")
+    return codecs.decode(h.zfill(len(h) + len(h) % 2), "hex")
 
 
 class CodecMacro(tuple):
@@ -170,11 +182,11 @@ def __stdin_pipe():
 
 def _input(infile):
     # handle input file or stdin
+    c = b("")
     if infile:
         with open(infile, 'rb') as f:
             c = f.read()
     else:
-        c = b("")
         for line in __stdin_pipe():
             c += line
     return c

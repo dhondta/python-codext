@@ -28,7 +28,7 @@ add("lowercase", lowercase, uppercase, r"^lower(?:case)?$")
 
 slugify = lambda i, e="strict", d="-": (re.sub(r"[^0-9a-z]+", d, i.lower()).strip(d), len(i))
 add("slugify", lambda i, e="strict": slugify(i, e), None, r"^(?:slug(?:ify)?|kebab(?:[-_]?case)?)$")
-add("snakecase", lambda i, e="strict": slugify(i, e, "_"), None, r"^snake(?:[-_]?case)$")
+add("snakecase", lambda i, e="strict": slugify(i, e, "_"), None, r"^snake(?:[-_]?case)?$")
 
 swapcase = lambda i, e="strict": (i.swapcase(), len(i))
 add("swapcase", swapcase, swapcase, r"^(?:swap(?:[-_]?case)?|invert(?:case)?)$")

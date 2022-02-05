@@ -108,7 +108,9 @@ def make_test(**params):
                                 with codecs.open(tfile, 'wb', encoding=ename) as f:
                                     f.write(b(s1))
                                 with codecs.open(tfile, 'rb', encoding=ename) as f:
-                                    s = f.read() if PY3 else f.read().rstrip("\x00")
+                                    s = f.read()
+                                if not PY3 and re.search("[^\x00]\x00$", s):
+                                    s = s[:-1]
                                 self.assertEqual(b(icdec(f2(s2, ename))), b(icdec(s)))
                                 os.remove(tfile)
     return _template

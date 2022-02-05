@@ -123,6 +123,7 @@ class TestCommon(TestCase):
         self.assertIsNotNone(codext.encode("test", "morse"))
         self.assertRaises(LookupError, codext.encode, "test", "dummy")
         self.assertTrue(len(CODECS_OVERWRITTEN) > 0)
+        self.assertIsNotNone(str(CODECS_OVERWRITTEN[0]))
     
     def test_search_codecs(self):
         self.assertIsNotNone(codext.search("morse"))

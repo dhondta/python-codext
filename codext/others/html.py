@@ -287,5 +287,6 @@ def htmlentity_decode(text, errors="strict"):
     return s, len(text)
 
 
-add("html", htmlentity_encode, htmlentity_decode, r"^html(?:[-_]?entit(?:y|ies))?$")
+add("html", htmlentity_encode, htmlentity_decode, r"^html(?:[-_]?entit(?:y|ies))?$",
+    extra_exceptions=["HtmlEntityDecodeError"])
 
