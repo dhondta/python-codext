@@ -50,7 +50,6 @@ def base45_encode(mode):
 
 
 def base45_decode(mode):
-    mode = mode.replace("inverted", "inv").replace("_", "-").lstrip("-")
     b45 = {c: i for i, c in enumerate(_get_charset(B45, mode))}
     def decode(text, errors="strict"):
         t, s = b(text), ""
