@@ -26,7 +26,7 @@ Check the [documentation](https://python-codext.readthedocs.io/en/latest/howto.h
 
 <p align="center"><img src="https://raw.githubusercontent.com/dhondta/python-codext/master/docs/demos/using-codext.gif" alt="Using CodExt from the command line"></p>
 <p align="center"><img src="https://raw.githubusercontent.com/dhondta/python-codext/master/docs/demos/using-bases.gif" alt="Using base tools from the command line"></p>
-<p align="center"><img src="https://raw.githubusercontent.com/dhondta/python-codext/master/docs/demos/using-debase.gif" alt="Using the debase command line tool"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/dhondta/python-codext/master/docs/demos/using-unbase.gif" alt="Using the unbase command line tool"></p>
 
 ## :computer: Usage (main CLI tool) <a href="https://twitter.com/intent/tweet?text=CodExt%20-%20Encode%2Fdecode%20anything.%0D%0APython%20tool%20for%20encoding%20and%20decoding%20almost%20anything,%20including%20a%20guess%20feature%20based%20on%20AI.%0D%0Ahttps%3a%2f%2fgithub%2ecom%2fdhondta%2fpython-codext%0D%0A&hashtags=python,encodings,codecs,cryptography,morse,base,stegano,steganography,ctftools"><img src="https://img.shields.io/badge/Tweet%20(codext)--lightgrey?logo=twitter&style=social" alt="Tweet on codext" height="20"/></a>
 
@@ -80,7 +80,7 @@ $ codext list macros
 example-macro
 ```
 
-## :computer: Usage (base CLI tool) <a href="https://twitter.com/intent/tweet?text=Debase%20-%20Decode%20any%20multi-layer%20base-encoded%20string.%0D%0APython%20tool%20for%20decoding%20any%20base-encoded%20string,%20even%20when%20encoded%20with%20multiple%20layers.%0D%0Ahttps%3a%2f%2fgithub%2ecom%2fdhondta%2fpython-codext%0D%0A&hashtags=python,base,encodings,codecs,cryptography,stegano,steganography,ctftools"><img src="https://img.shields.io/badge/Tweet%20(debase)--lightgrey?logo=twitter&style=social" alt="Tweet on debase" height="20"/></a>
+## :computer: Usage (base CLI tool) <a href="https://twitter.com/intent/tweet?text=UnBase%20-%20Decode%20any%20multi-layer%20base-encoded%20string.%0D%0APython%20tool%20for%20decoding%20any%20base-encoded%20string,%20even%20when%20encoded%20with%20multiple%20layers.%0D%0Ahttps%3a%2f%2fgithub%2ecom%2fdhondta%2fpython-codext%0D%0A&hashtags=python,base,encodings,codecs,cryptography,stegano,steganography,ctftools"><img src="https://img.shields.io/badge/Tweet%20(unbase)--lightgrey?logo=twitter&style=social" alt="Tweet on unbase" height="20"/></a>
 
 ```session
 $ echo "Test string !" | base122
@@ -100,10 +100,10 @@ Test string !
 ```
 
 ```session
-$ echo "Test string !" | base91 | base85 | base36 | base58-flickr | debase -m 3
+$ echo "Test string !" | base91 | base85 | base36 | base58-flickr | unbase -m 3
 Test string !
 
-$ echo "Test string !" | base91 | base85 | base36 | base58-flickr | debase -f Test
+$ echo "Test string !" | base91 | base85 | base36 | base58-flickr | unbase -f Test
 Test string !
 ```
 
