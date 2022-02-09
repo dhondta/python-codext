@@ -1154,7 +1154,7 @@ stopfunc.flag.__name__ = stopfunc.flag.__qualname__ = "flag"
 stopfunc.default = stopfunc.text
 
 stopfunc.LANG_BACKEND = None
-stopfunc.LANG_BACKENDS = [n for n in ["langid", "langdetect", "pycld2", "cld3", "textblob"] if __module_exists(n)]
+stopfunc.LANG_BACKENDS = [n for n in ["pycld2", "langdetect", "langid", "cld3", "textblob"] if __module_exists(n)]
 if len(stopfunc.LANG_BACKENDS) > 0:
     stopfunc.LANG_BACKEND = stopfunc.LANG_BACKENDS[0]
 if "cld3" in stopfunc.LANG_BACKENDS:
@@ -1223,7 +1223,6 @@ def _load_lang_backend(backend=None):
             flng = "lang_%s" % LANG
             if getattr(stopfunc, flng, None):
                 stopfunc.default = getattr(stopfunc, flng)        
-_load_lang_backend(stopfunc.LANG_BACKEND)
 stopfunc._reload_lang = _load_lang_backend
 
 
@@ -1244,10 +1243,12 @@ def __develop(encodings):
 
 
 def __guess(prev_input, input, stop_func, depth, max_depth, min_depth, codec_categories, exclude, result, found=(),
-            stop=True, show=False, scoring_heuristic=False, extended=False, debug=False):
+            stop=True, show=False, scoring_heuristic=False, extended=False, debug=False, regex=False):
     """ Perform a breadth-first tree search using a ranking logic to select and prune the list of codecs. """
     if depth > min_depth and stop_func(input):
-        if not stop and show and found not in result:
+        if regex:
+            stop = True
+        if not stop and (show or debug) and found not in result:
             s = repr(input)
             s = s[2:-1] if s.startswith("b'") and s.endswith("'") else s
             s = "[+] %s: %s" % (", ".join(found), s)
@@ -1287,7 +1288,7 @@ def __guess(prev_input, input, stop_func, depth, max_depth, min_depth, codec_cat
         if debug:
             print("[*] Depth %0{}d/%d: %s".format(len(str(max_depth))) % (depth+1, max_depth, encoding))
         __guess(input, new_input, stop_func, depth+1, max_depth, min_depth, codec_categories, exclude, result,
-                found + (encoding, ), stop, show, scoring_heuristic, extended, debug)
+                found + (encoding, ), stop, show, scoring_heuristic, extended, debug, regex)
 
 
 def __rank(prev_input, input, prev_encoding, codecs, heuristic=False, extended=False, yield_score=False):
@@ -1374,7 +1375,7 @@ def __score(prev_input, input, prev_encoding, codec, heuristic=False, extended=F
                     epxf = f - .1 <= expf <= f + .1
                 elif isinstance(expf, (tuple, list)) and len(expf) == 2:
                     expf = f - expf[1] <= expf[0] <= expf[1] + .1
-                s += .1
+                s += [-1., .1][expf]
             # afterwards, if the input text has an entropy close to the expected one, give a bonus weighted on the
             #  number of input characters to take bad entropies of shorter strings into account
             entr = sc.get('entropy', {})
@@ -1408,18 +1409,22 @@ def guess(input, stop_func=stopfunc.default, min_depth=0, max_depth=5, codec_cat
     """ Try decoding without the knowledge of the encoding(s). """
     if max_depth <= 0:
         raise ValueError("Depth must be a non-null positive integer")
+    if min_depth > max_depth:
+        raise ValueError("Min depth shall be less than or equal to the max depth")
     if len(found) > 0:
         for encoding in found:
             input = decode(input, encoding)
+    regex = False
     if isinstance(stop_func, string_types):
         stop_func = stopfunc.regex(stop_func)
+        regex = True
     result = {}
     if len(input) > 0:
         try:
             # breadth-first search
             for d in range(max_depth):
                 __guess("", input, stop_func, 0, d+1, min_depth, codec_categories, exclude, result, tuple(found), stop,
-                        show, scoring_heuristic, extended, debug)
+                        show, scoring_heuristic, extended, debug, regex)
                 if stop and len(result) > 0:
                     return result
         except KeyboardInterrupt:

@@ -121,7 +121,7 @@ def main():
                        help="while using the regex stop function, set it as case-insensitive (default: False)")
     guess.add_argument("-H", "--no-heuristic", action="store_true", help="DO NOT use the scoring heuristic ; slows down"
                        " the search but may be more accurate (default: False)")
-    if len(stopfunc.LANG_BACKENDS) == 0:
+    if len(stopfunc.LANG_BACKENDS) > 0:
         _lb = stopfunc.LANG_BACKEND
         guess.add_argument("-l", "--lang-backend", default=_lb, choices=stopfunc.LANG_BACKENDS + ["none"],
                            help="natural language detection backend (default: %s)" % _lb)
@@ -206,8 +206,12 @@ def main():
             else:
                 print(ensure_str(c or "Could not %scode :-(" % ["en", "de"][args.command == "decode"]), end="")
         elif args.command == "guess":
+            s, lb = args.stop_function, args.lang_backend
+            if re.match(r"lang_[a-z]{2}$", s) and lb != "none" and \
+               all(re.match(r"lang_[a-z]{2}$", x) is None for x in dir(stopfunc)):
+                stopfunc._reload_lang(lb)
             r = codecs.guess(c,
-                             getattr(stopfunc, args.stop_function, ["", "(?i)"][args.icase] + args.stop_function),
+                             getattr(stopfunc, s, ["", "(?i)"][args.icase] + s),
                              args.min_depth,
                              args.max_depth,
                              args.codec_categories,
