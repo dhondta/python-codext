@@ -315,10 +315,8 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 #### [Others](https://python-codext.readthedocs.io/en/latest/enc/others.html)
 
 - [X] `dna`: implements the 8 rules of DNA sequences (N belongs to [1,8])
-- [X] `html`: implements entities according to [this reference](https://dev.w3.org/html5/html-author/charref)
 - [X] `letter-indices`: encodes consonants and/or vowels with their corresponding indices
 - [X] `markdown`: unidirectional encoding from Markdown to HTML
-- [X] `url`: aka URL encoding
 
 #### [Steganography](https://python-codext.readthedocs.io/en/latest/enc/stegano.html)
 
@@ -329,6 +327,11 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 - [X] `sms`: also called _T9 code_ ; uses "`-`" as a separator for encoding, "`-`" or "`_`" or whitespace for decoding
 - [X] `whitespace`: replaces bits with whitespaces and tabs
 - [X] `whitespace_after_before`: variant of `whitespace` ; encodes characters as new characters with whitespaces before and after according to an equation described in the codec name (e.g. "`whitespace+2*after-3*before`")
+
+#### [Web](https://python-codext.readthedocs.io/en/latest/enc/web.html)
+
+- [X] `html`: implements entities according to [this reference](https://dev.w3.org/html5/html-author/charref)
+- [X] `url`: aka URL encoding
 
 
 ## :clap:  Supporters
