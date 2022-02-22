@@ -30,7 +30,7 @@ __examples3__ = {
 }
 __guess1__ = ["rot-%d" % i for i in range(1, 26)] + ["rot-47"]
 __guess2__ = ["progressive-rot-%d" % i for i in range(1, 26)] + ["progressive-rot-n%d" % i for i in range(1, 26)]
-__guess3__ = ["alternative-rot-%d" % i for i in range(1, 26)]
+__guess3__ = ["alternative-rot-%d" % i for i in range(1, 26) if i != 13]
 
 
 ROT47 = "!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~"
@@ -90,7 +90,8 @@ def prot_decode(n, i):
     return decode
 
 
-add("alternative-rot", arot_encode, arot_decode, r"a(?:lt(?:ernative)?-)?(?:caesar|rot)[-_]?([1-9]|1[0-9]|2[0-5])$",
+# note: alternative-rot-13 is equivalent to rot-13, therefore excluded from the regex
+add("alternative-rot", arot_encode, arot_decode, r"a(?:lt(?:ernative)?-)?(?:caesar|rot)[-_]?([1-9]|1[0-24-9]|2[0-5])$",
     penalty=.2, entropy=lambda e: e, printables_rate=lambda pr: pr, transitive=True, examples=__examples3__,
     guess=__guess3__)
 add("rot", rot_encode, rot_decode, r"(?:caesar|rot)[-_]?([1-9]|1[0-9]|2[0-5]|47)$", aliases=["caesar"], penalty=.2,
