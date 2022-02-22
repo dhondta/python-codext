@@ -1303,9 +1303,13 @@ class _Text(object):
     __slots__ = ["entropy", "lcharset", "len", "padding", "printables"]
     
     def __init__(self, text, pad_char=None):
+        c = text[-1]
+        last_char = c if isinstance(c, int) else ord(c)
+        self.padding = pad_char is not None and last_char == ord(pad_char)
+        if self.padding:
+            text = text.rstrip(pad_char)
         self.len = len(text)
         self.lcharset = len(set(text))
-        self.padding = pad_char is not None and text[-1] in [pad_char, b(pad_char)]
         self.printables = float(len([c for c in text if (chr(c) if isinstance(c, int) else c) in printable])) / self.len
         self.entropy = entropy(text)
 
@@ -1363,16 +1367,16 @@ def __score(prev_input, input, prev_encoding, codec, heuristic=False, extended=F
                     s += .1
             expf = sc.get('expansion_factor', 1.)
             if expf:
-                f = float(len(new_input)) / obj.len
+                f = obj.len / float(len(new_input))  # expansion while encoding => at decoding: 1/f
                 if isinstance(expf, type(lambda: None)):
                     try:  # this case allows to consider the current encoding name from the current codec
                         expf = expf(f, encoding)
                     except TypeError:
                         expf = expf(f)
                 if isinstance(expf, (int, float)):
-                    expf = (f - .1 <= expf <= f + .1)
+                    expf = (1/f - .1 <= 1/expf <= 1/f + .1)
                 elif isinstance(expf, (tuple, list)) and len(expf) == 2:
-                    expf = f - expf[1] <= expf[0] <= expf[1] + .1
+                    expf = 1/f - expf[1] <= 1/expf[0] <= 1/f + expf[1]
                 s += [-1., .1][expf]
             # afterwards, if the input text has an entropy close to the expected one, give a bonus weighted on the
             #  number of input characters to take bad entropies of shorter strings into account

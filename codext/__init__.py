@@ -88,7 +88,7 @@ def main():
         "echo -en \"test\" | codext encode base64 gzip | codext guess gzip -c base",
     ])
     parser = argparse.ArgumentParser(description=descr, epilog=examples, formatter_class=argparse.RawTextHelpFormatter)
-    sparsers = parser.add_subparsers(dest="command", help="command to be executed")
+    sparsers = parser.add_subparsers(dest="command", required=True, help="command to be executed")
     parser.add_argument("-i", "--input-file", dest="infile", help="input file (if none, take stdin as input)")
     parser.add_argument("-o", "--output-file", dest="outfile", help="output file (if none, display result to stdout)")
     parser.add_argument("-s", "--strip-newlines", action="store_true", dest="strip",
@@ -140,7 +140,7 @@ def main():
     search = sparsers.add_parser("search", help="search for codecs")
     search.add_argument("pattern", nargs="+", help="encoding pattern to search")
     listi = sparsers.add_parser("list", help="list items")
-    lsparsers = listi.add_subparsers(dest="type", help="type of item to be listed")
+    lsparsers = listi.add_subparsers(dest="type", required=True, help="type of item to be listed")
     liste = lsparsers.add_parser("encodings", help="list encodings")
     liste.add_argument("category", nargs="*", help="selected categories")
     listm = lsparsers.add_parser("macros", help="list macros")
