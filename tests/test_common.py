@@ -150,7 +150,7 @@ class TestCommon(TestCase):
         self.assertIsNone(codext.stopfunc._reload_lang())
         _l = lambda d: list(d.items())[0][1] if len(d) > 0 else None
         codext.add("test_codec", lambda x, e="strict": (x + "=", len(x)), lambda x, e="strict": (x[:-1], len(x)-1),
-                   "test", no_error=True, bonus_func=lambda *a: True, penalty=-.5)
+                   "test", padding_char="=", no_error=True, bonus_func=lambda *a: True, penalty=-.5)
         self.assertIn("test-codec", codext.list_encodings("test"))
         self.assertEqual(codext.decode("TEST=", "test"), "TEST")
         self.assertEqual(list(codext.guess("TEST=", codext.stopfunc.text, codec_categories="test", max_depth=2,
@@ -204,7 +204,7 @@ class TestCommon(TestCase):
     
     def test_rank_input(self):
         codext.add("test_codec", lambda x, e="strict": (x + "=", len(x)), lambda x, e="strict": (x[:-1], len(x)-1),
-                   "test", no_error=True, bonus_func=lambda *a: True, penalty=-.5)
+                   "test", padding_char="=", no_error=True, bonus_func=lambda *a: True, penalty=-.5)
         STR = "This is a test string !"
         ENC = codext.encode(STR, "base64")
         self.assertTrue(len(codext.rank(ENC)) > 20)

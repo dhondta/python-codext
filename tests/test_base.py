@@ -44,6 +44,7 @@ class TestCodecsBase(TestCase):
         for i in range(3):
             self.assertIsNotNone(codecs.encode(i * C, "base1"))
         self.assertRaises(ValueError, codecs.encode, 4 * C, "unary")
+        self.assertEqual(codecs.decode("AAAAA", "base1"), "\x05")
     
     def test_codec_base2(self):
         STR = "test"
@@ -181,7 +182,7 @@ class TestCodecsBase(TestCase):
             self.assertEqual(codecs.decode(b(b62), enc), b(STR))
     
     def test_codec_base64(self):
-        for b64, enc in zip(["dGhpcyBpcyBhIHRlc3QK", "T6XfSo1fSo1X87HbStG="], ["base64", "base64-inv"]):
+        for b64, enc in zip(["dGhpcyBpcyBhIHRlc3Q=", "T6XfSo1fSo1X87HbStG="], ["base64", "base64-inv"]):
             self.assertEqual(codecs.encode(STR, enc), b64)
             self.assertEqual(codecs.encode(b(STR), enc), b(b64))
             self.assertEqual(codecs.decode(b64, enc), STR)
@@ -224,11 +225,12 @@ class TestCodecsBase(TestCase):
         tfile = "test-base-main.txt"
         with open(tfile, 'w') as f:
             f.write("This is a long test string for the sake of causing line wrapping based on default parameters.")
-        sys.argv = [tmp[0], tfile]
-        for m in main32, main64url:
-            self.assertEqual(m(), 0)
-        sys.argv = [tmp[0], tfile, "-d"]
-        self.assertEqual(main2(), 1)
+        for swap_arg in [[], ["-s"]]:
+            sys.argv = [tmp[0], tfile] + swap_arg
+            for m in main32, main64url:
+                self.assertEqual(m(), 0)
+            sys.argv = [tmp[0], tfile, "-d"] + swap_arg
+            self.assertEqual(main2(), 1)
         os.remove(tfile)
         sys.argv[:] = tmp
 
