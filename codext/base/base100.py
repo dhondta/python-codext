@@ -37,7 +37,7 @@ if PY3:
         return bytes(r), len(input)
     
     def base100_decode(input, errors="strict"):
-        input = b(input)
+        input = b(_stripl(input, True, True))
         if errors == "ignore":
             input = input.replace(b"\n", "")
         if len(input) % 4 != 0:

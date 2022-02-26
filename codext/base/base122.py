@@ -98,9 +98,9 @@ if PY3:
                 currB, bob = _get_7bits(currB, bob, input[i] & 127, r)
             else:
                 currB, bob = _get_7bits(currB, bob, input[i], r)
-        return "".join(map(chr, r)), len(input)
+        return "".join(map(chr, r)).rstrip("\0"), len(input)
 
 
 add("base122", base122_encode, base122_decode, r"^base[-_]?122$", expansion_factor=1.085)
-main122 = main(122, "<http://blog.kevinalbs.com/base122>")
+main122 = main(122, "<http://blog.kevinalbs.com/base122>", wrap=False)
 

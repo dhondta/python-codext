@@ -82,7 +82,7 @@ B58 = {
     r'[-_]?(fl|flickr|short[-]?url|url)$': "123456789abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ",
 }
 base(B58, r"^base[-_]?58(|[-_](bc|bitcoin|rp|ripple|fl|flickr|short[-]?url|url))$",
-     guess=["base58", "base58-ripple", "base58-flickr"])
+     guess=["base58-bitcoin", "base58-ripple", "base58-flickr"])
 main58bc = main(58, "<https://en.bitcoinwiki.org/wiki/Base58>", "bitcoin")
 main58rp = main(58, "<https://en.bitcoinwiki.org/wiki/Base58>", "ripple")
 main58fl = main(58, "<https://en.bitcoinwiki.org/wiki/Base58>", "flickr")
@@ -119,7 +119,7 @@ main67 = main(67)
 
 B128 = {r'': "".join(chr(i) for i in range(128))}
 base(B128, r"^base[-_]?128$", padding_char="=")
-main128 = main(128, None, False)
+main128 = main(128, None, False, wrap=False)
 
 
 # generic base encodings, to be added after all others as they have the precedence

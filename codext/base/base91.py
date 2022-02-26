@@ -72,7 +72,7 @@ def base91_encode(mode):
 def base91_decode(mode):
     b91 = {c: i for i, c in enumerate(_get_charset(B91, mode))}
     def decode(text, errors="strict"):
-        t, s, bits, alt = b(text), "", "", re.search(r'[-_]alt(ernate)?$', mode) is not None
+        t, s, bits, alt = b(_stripl(text, True, True)), "", "", re.search(r'[-_]alt(ernate)?$', mode) is not None
         ehandler = handle_error("base91", errors, decode=True)
         for i in range(0, len(t), 2):
             try:
@@ -103,7 +103,7 @@ def base91_decode(mode):
                 bits = bits[8:]
         elif not alt and len(bits) > 0 and not set(bits) == {"0"}:
             s += chr(int(bits, 2))
-        return s, len(t)
+        return s.rstrip("\0"), len(t)
     return decode
 
 
