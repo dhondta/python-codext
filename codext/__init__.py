@@ -180,7 +180,8 @@ def main():
     remm = sparsers.add_parser("remove-macro", help="remove a macro from the registry")
     remm.add_argument("name", help="macro's name")
     args = parser.parse_args()
-    args.include, args.exclude = __format_list(args.include), __format_list(args.exclude, False)
+    if args.command in ["guess", "rank"]:
+        args.include, args.exclude = __format_list(args.include), __format_list(args.exclude, False)
     try:
         # if a search pattern is given, only handle it
         if args.command == "search":
