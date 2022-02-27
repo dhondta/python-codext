@@ -19,7 +19,7 @@ Decode multi-layer base encoded FILE, or standard input, to standard output.
 With no FILE, or when FILE is -, read standard input.
 
 Optional arguments:
-  -e, --extended        also consider generic base codecs while guess-decoding
+  -E, --extended        also consider generic base codecs while guess-decoding
   -f, --stop-function   set the result chceking function (default: text)
                          format: printables|text|flag|lang_[bigram]
   -M, --max-depth       maximum codec search depth (default: 5)
@@ -36,28 +36,23 @@ Full documentation at: <https://python-codext.readthedocs.io/en/latest/enc/base.
 """
     parser = ArgumentParser(description=descr, formatter_class=RawTextHelpFormatter, add_help=False)
     parser.format_help = MethodType(lambda s: s.description, parser)
+    group = parser.add_mutually_exclusive_group()
     parser.add_argument("file", nargs="?")
-    parser.add_argument("-e", "--extended", action="store_true")
-    parser.add_argument("-f", "--stop-function", default="text")
+    parser.add_argument("-E", "--extended", action="store_true")
+    group.add_argument("-f", "--stop-function", default="text")
     parser.add_argument("-M", "--max-depth", type=int, default=10)
     parser.add_argument("-m", "--min-depth", type=int, default=0)
-    parser.add_argument("-p", "--pattern")
+    group.add_argument("-p", "--pattern")
     parser.add_argument("-s", "--show", action="store_true")
     parser.add_argument("--help", action="help")
     parser.add_argument("--version", action="version")
     parser.add_argument("--verbose", action="store_true")
     parser.version = "CodExt " + __version__
     args = parser.parse_args()
-    excl, s = [["base%d-generic" % i for i in range(2, 256)], []][args.extended], args.stop_function
-    if re.match(r"lang_[a-z]{2}$", s) and all(re.match(r"lang_[a-z]{2}$", x) is None for x in dir(stopfunc)):
-        stopfunc._reload_lang(stopfunc.LANG_BACKEND)
-    #TODO: validate args.stop_function
-    #TODO: make --stop-function and --pattern mutually exclusive
-    sfunc = getattr(stopfunc, s, s)
-    c = _input(args.file)
+    c, e = _input(args.file), [["base%d-generic" % i for i in range(2, 256)], []][args.extended]
     c = c.rstrip("\r\n") if isinstance(c, str) else c.rstrip(b"\r\n")
-    r = codecs.guess(c, sfunc, 0, args.max_depth, exclude=tuple(excl), codec_categories="base",
-                     stop=False, show=args.verbose, scoring_heuristic=False, debug=args.verbose)
+    r = codecs.guess(c, stopfunc._validate(args.stop_function), 0, args.max_depth, "base", tuple(e), stop=False,
+                     show=args.verbose, debug=args.verbose)
     if len(r) == 0:
         print("Could not decode :-(")
         return 0
