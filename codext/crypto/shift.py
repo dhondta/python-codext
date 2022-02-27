@@ -19,12 +19,12 @@ __guess__ = ["shift-%d" % i for i in range(1, 256)]
 
 
 def ord_shift_decode(i):
-    return ord_shift_encode(-i)
+    return ord_shift_encode(-int(i))
 
 
 def ord_shift_encode(i):
     def encode(text, errors="strict"):
-        r = "".join(chr((ord(c) + i) % 256) for c in text)
+        r = "".join(chr((ord(c) + int(i)) % 256) for c in text)
         return r, len(r)
     return encode
 
