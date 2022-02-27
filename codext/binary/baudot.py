@@ -10,9 +10,9 @@ This codec:
 from ..__common__ import *
 
 
-__CODES = ["ccitt1", "ccitt2", "eu", "ita1", "ita2", "ita2_us", "murray", "uk"]
+__CODES = ["ccitt1", "ccitt2", "eu", "ita1", "ita2", "ita2_us"]
 if PY3:
-    __CODES.extend(["ita2_meteo", "mtk2"])
+    __CODES.extend(["ita2_meteo", "mtk2", "murray", "uk"])
 __guess__     = ["baudot%s-{}-{}".format(x, y) for x in __CODES for y in ["lsb", "msb"]]
 __examples1__ = {
     'enc(baudot-BAD_ALPHABET)': None,
@@ -51,7 +51,7 @@ if PY3:
 
 
 PATTERN = r"^baudot%s([-_](?:ccitt1|ccitt2|eu|fr|ita1|ita2|ita2[-_](?:us" + (r"|meteo" if PY3 else r"") + r")" + \
-          (r"|mtk2" if PY3 else r"") + r"|murray|uk|us_tty)(?:[-_](?:lsb|msb))?)?$"
+          (r"|mtk2|murray|uk" if PY3 else r"") + r"|us_tty)(?:[-_](?:lsb|msb))?)?$"
 # reserved character
 RES_CHR = "\xff"
 
@@ -116,20 +116,22 @@ if PY3:
         "\x003\n- '87\r\xff4Ю,Э:(5+)2Щ6019?Ш\xff./=\xff",
     ]
 # Murray code ; NB: not all fractions are supported (source: https://en.wikipedia.org/wiki/Baudot_code)
-MURRAY = [
-    "00100", "11011",
-    " E\xffA\xffSIU\nDRJNFCKTZLWHYPQOBF\xffMXV\x7f", 
-    "\x003\xff\xff\xff'87\n²4\xff-\u215f(\xff5./2\xff6019?\xff\xff,£)*" if PY3 else \
-        "\x003\xff\xff\xff'87\n²4\xff-\u215f(\xff5./2\xff6019?\xff\xff,$)*",
-]
+if PY3:
+    MURRAY = [
+        "00100", "11011",
+        " E\xffA\xffSIU\nDRJNFCKTZLWHYPQOBF\xffMXV\x7f", 
+        "\x003\xff\xff\xff'87\n²4\xff-\u215f(\xff5./2\xff6019?\xff\xff,£)*" if PY3 else \
+            "\x003\xff\xff\xff'87\n²4\xff-\u215f(\xff5./2\xff6019?\xff\xff,$)*",
+    ]
 # English Baudot ; NB: not all fractions are supported (sources: https://fr.qwe.wiki/wiki/Baudot_code
 #                                                                https://en.wikipedia.org/wiki/Baudot_code)
-UK = [
-    "10000", "01000",
-    "\x00AE/YUIO\xffJGHBCFD -XZSTWV\x7fKMLRQNP", 
-    "\x0012\u215f34\xff5 67\xb989\xff0\xff.\xff:\xff²?'\x7f()=-/£+" if PY3 else \
-        "\x0012\xff34\xff5 67\xb989\xff0\xff.\xff:\xff²?'\x7f()=-/$+",
-]
+if PY3:
+    UK = [
+        "10000", "01000",
+        "\x00AE/YUIO\xffJGHBCFD -XZSTWV\x7fKMLRQNP", 
+        "\x0012\u215f34\xff5 67\xb989\xff0\xff.\xff:\xff²?'\x7f()=-/£+" if PY3 else \
+            "\x0012\xff34\xff5 67\xb989\xff0\xff.\xff:\xff²?'\x7f()=-/$+",
+    ]
 
 
 def _bits_from_tape(tape, trans={'*': "1", ' ': "0"}):
