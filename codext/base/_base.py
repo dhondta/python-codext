@@ -191,7 +191,11 @@ def base(charset, pattern, pow2=False, encode_template=base_encode, decode_templ
     kwargs['printables_rate'] = float(len([c for c in cs if c in printable])) / len(cs)
     kwargs['expansion_factor'] = kwargs.pop('expansion_factor', (EXPANSION_FACTOR(n), .05))
     n = "base{}".format(n) if name is None else name
-    kwargs['guess'] = kwargs.get('guess', [n])
+    try:
+        g = [n, n + "-inv"] if "[-_]inv(erted)?$" in charset.keys() else [n]
+    except AttributeError:
+        g = [n]
+    kwargs['guess'] = kwargs.get('guess', g)
     add(n, encode, decode, pattern, entropy=nb, **kwargs)
 
 
