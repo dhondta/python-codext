@@ -11,7 +11,7 @@ exclude_lines =
     def main\(\)\:
     def __stdin_pipe\(\)\:
     for line in __stdin_pipe\(\)\:
-    def __literal_eval\(o\)\:
+    def __format_list\(items, include\=True\)\:
     def __print_tabular\(lst, space\=4\)\:
     except ImportError:
     except NameError:
@@ -20,3 +20,8 @@ exclude_lines =
     if PY3
     def encode\(self, input, final\=False\)\:
     def decode\(self, input, final\=False\)\:
+    def _detect\(text\)\:
+    def _lang\(lang\)\:
+    if stopfunc\.LANG_BACKEND\:
+    def _validate\(stop_function, lang_backend\=\"none\"\)\:
+    except KeyboardInterrupt\:

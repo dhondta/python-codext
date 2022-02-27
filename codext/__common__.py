@@ -45,6 +45,7 @@ __all__ = ["add", "add_macro", "add_map", "b", "clear", "codecs", "decode", "enc
 CODECS_REGISTRY = None
 CODECS_OVERWRITTEN = []
 CODECS_CATEGORIES = ["native", "custom"]
+CODECS_CACHE = {}
 LANG = getlocale()
 if LANG:
     LANG = (LANG[0] or "")[:2].lower()
@@ -674,17 +675,16 @@ def list_categories():
     # particular category, hardcoded from base/_base.py
     c += ["base-generic"]
     return c
+list_categories()
 
 
 def list_encodings(*categories):
     """ Get a list of all codecs. """
-    # first, determine the list of valid categories
-    valid_categories = list_categories()
-    # then, if "non-native" is in the input list, extend the list with the whole categories but "native"
+    # if "non-native" is in the input list, extend the list with the whole categories but "native"
     categories, exclude = list(categories), []
     for c in categories[:]:
         if c == "non-native":
-            for c in valid_categories:
+            for c in CODECS_CATEGORIES:
                 if c == "native" or c in categories:
                     continue
                 categories.append(c)
@@ -714,7 +714,7 @@ def list_encodings(*categories):
         if (len(categories) == 0 or c in categories) and c not in exclude:
             enc.append(name)
     for category in categories:
-        if category not in valid_categories:
+        if category not in CODECS_CATEGORIES:
             raise ValueError("Category '%s' does not exist" % category)
     return sorted(list(set(enc)), key=_human_keys)
 
@@ -1226,23 +1226,22 @@ def _load_lang_backend(backend=None):
 stopfunc._reload_lang = _load_lang_backend
 
 
-def __develop(encodings):
-    """ Private method for developing the input list of encodings, trying to extend it with every encoding name. """
-    enc = []
-    for e in (encodings or []):
-        try:
-            ci = lookup(e, False)
-            g = ci.parameters['guess']
-        except:
-            g = [e]
-        if e in g:  # e.g. "rot-1" => ["rot-1", "rot-2", ...] ; only "rot-1" is to be selected
-            enc.append(e)
-        else:       # e.g. "rot"   => ["rot-1", "rot-2", ...] ; all the "rot-N" shall be selected
-            enc.extend(g)
-    return enc
+def _validate(stop_function, lang_backend="none"):
+    s, lb = stop_function, lang_backend
+    if isinstance(s, string_types):
+        if re.match(r"lang_[a-z]{2}$", s) and lb != "none" and \
+           all(re.match(r"lang_[a-z]{2}$", x) is None for x in dir(stopfunc)):
+            stopfunc._reload_lang(lb)
+        f = getattr(stopfunc, s, None)
+        if f:
+            return f
+    elif not isinstance(s, FunctionType):
+        raise ValueError("Bad stop function")
+    return s
+stopfunc._validate = _validate
 
 
-def __guess(prev_input, input, stop_func, depth, max_depth, min_depth, codec_categories, exclude, result, found=(),
+def __guess(prev_input, input, stop_func, depth, max_depth, min_depth, encodings, codecs, result, found=(),
             stop=True, show=False, scoring_heuristic=False, extended=False, debug=False):
     """ Perform a breadth-first tree search using a ranking logic to select and prune the list of codecs. """
     if depth > min_depth and stop_func(input):
@@ -1254,47 +1253,60 @@ def __guess(prev_input, input, stop_func, depth, max_depth, min_depth, codec_cat
         result[found] = input
     if depth >= max_depth or len(result) > 0 and stop:
         return
-    # compute included and excluded codecs for this depth
-    def expand(items, descr=None, transform=None):
-        items = items or []
-        # format 1: when string, take it as the only items at any depth
-        if isinstance(items, string_types):
-            r = (items, )
-        # format 2: when tuple, consider it as a list of items at any depth
-        elif isinstance(items, tuple):
-            r = items
-        # format 3: when list, consider it as the list of tuples of items with the order number corresponding to the
-        #            applicable depth
-        elif isinstance(items, list):
-            try:
-                r = items[depth] or ()
-                if isinstance(r, string_types):
-                    r = (r, )
-            except IndexError:
-                r = ()
-        else:
-            raise ValueError("Bad %sformat %s" % (["%s " % descr, ""][descr is None], items))
-        return r if transform is None else transform(*r)
-    # parse valid encodings, expanding included/excluded codecs
-    c, e = expand(codec_categories, "codec_categories", list_encodings), __develop(expand(exclude, "exclude"))
     prev_enc = found[-1] if len(found) > 0 else ""
-    for new_input, encoding in __rank(prev_input, input, prev_enc, c, scoring_heuristic, extended):
+    e = encodings.get(depth, encodings.get(-1, []))
+    for new_input, encoding in __rank(prev_input, input, prev_enc, e, codecs, scoring_heuristic, extended):
         if len(result) > 0 and stop:
             return
-        if encoding in e:
-            continue
         if debug:
             print("[*] Depth %0{}d/%d: %s".format(len(str(max_depth))) % (depth+1, max_depth, encoding))
-        __guess(input, new_input, stop_func, depth+1, max_depth, min_depth, codec_categories, exclude, result,
+        __guess(input, new_input, stop_func, depth+1, max_depth, min_depth, encodings, codecs, result,
                 found + (encoding, ), stop, show, scoring_heuristic, extended, debug)
 
 
-def __rank(prev_input, input, prev_encoding, codecs, heuristic=False, extended=False, yield_score=False):
+def __make_encodings_dict(include, exclude):
+    """ Process encodings inclusion and exclusion lists, listing categories and developping codecs' lists of possible
+         encoding names. It also creates a cache with the CodecInfo objects for improving performance. """
+    codecs = {}
+    def _develop(d, keep=True):
+        d = d or {}
+        for k, v in d.items():
+            l, cc = [], [e for e in v if e in CODECS_CATEGORIES]
+            for enc in (list_encodings(*cc) if len(cc) > 0 or keep else [] + \
+                        [e for e in v if e not in CODECS_CATEGORIES]):
+                try:
+                    g = lookup(enc, False).parameters['guess']
+                except:
+                    g = [enc]
+                if enc in g and not keep:  # e.g. "rot-1" => ["rot-1", "rot-2", ...] ; only "rot-1" is to be selected
+                    l.append(enc)
+                else:                      # e.g. "rot"   => ["rot-1", "rot-2", ...] ; all the "rot-N" shall be selected
+                    l.extend(g)
+            d[k] = l
+            if keep:
+                for e in l:
+                    # cache newly loaded CodecInfo objects
+                    ci = lookup(e, False)
+                    n = ci.name
+                    if n in CODECS_CACHE:
+                        ci = CODECS_CACHE[n]  # keep the cached object
+                    else:
+                        CODECS_CACHE[n] = ci  # cache the new object
+                    codecs[e] = ci
+        return d
+    exclude = _develop(exclude, False)
+    return {k: [x for x in v if x not in exclude.get(k, [])] for k, v in _develop(include).items()}, codecs
+
+
+def __rank(prev_input, input, prev_encoding, encodings, codecs, heuristic=False, extended=False, yield_score=False):
     """ Filter valid encodings and rank them by relevance. """
     ranking = {}
-    for codec in codecs:
-        for score, new_input, encoding in __score(prev_input, input, prev_encoding, codec, heuristic, extended):
-            ranking[encoding] = (score, new_input)
+    for encoding in encodings:
+        try:
+            score, new = __score(prev_input, input, prev_encoding, encoding, codecs.get(encoding), heuristic, extended)
+        except TypeError:
+            continue
+        ranking[encoding] = (score, new)
     for encoding, result in sorted(ranking.items(), key=lambda x: -x[1][0]):
         yield result if yield_score else result[1], encoding
 
@@ -1304,7 +1316,7 @@ class _Text(object):
     
     def __init__(self, text, pad_char=None):
         c = text[-1]
-        last_char = c if isinstance(c, int) else ord(c)
+        pad_char, last_char = (b(pad_char), c) if isinstance(c, int) else (pad_char, ord(c))
         self.padding = pad_char is not None and last_char == ord(pad_char)
         if self.padding:
             text = text.rstrip(pad_char)
@@ -1314,136 +1326,182 @@ class _Text(object):
         self.entropy = entropy(text)
 
 
-def __score(prev_input, input, prev_encoding, codec, heuristic=False, extended=False):
+def __score(prev_input, input, prev_encoding, encoding, codec, heuristic=False, extended=False):
     """ Score relevant encodings given an input. """
-    obj, ci = None, lookup(codec, False)  # NB: lookup(...) won't fail as the codec value comes from list_encodings(...)
-    sc = ci.parameters.get('scoring', {})
-    no_error, transitive = ci.parameters.get('no_error', False), sc.get('transitive', False)
-    for encoding in ci.parameters.get('guess', [codec]):
-        # ignore encodings that fail to decode with their default errors handling value
-        try:
-            new_input = decode(input, encoding)
-        except:
-            continue
-        # ignore encodings that give an output identical to the input (identity transformation) or to the previous input
-        if len(new_input) == 0 or prev_input is not None and b(input) == b(new_input) or b(prev_input) == b(new_input):
-            continue
-        # ignore encodings that transitively give the same output (identity transformation by chaining twice a same
-        #  codec (e.g. rot-15 is equivalent to rot-3 and rot-12 or rot-6 and rot-9)
-        if transitive and prev_encoding:
-            ci_prev = lookup(prev_encoding, False)
-            if ci_prev.parameters['name'] == ci.parameters['name']:
-                continue
-        # compute input's characteristics only once and only if the control flow reaches this point
-        pad = sc.get('padding_char')
-        if obj is None:
-            obj = _Text(input, pad)
-        if heuristic:
-            # from here, the goal (e.g. if the input is Base32) is to rank candidate encodings (e.g. multiple base
-            #  codecs) so that we can put the right one as early as possible and eventually exclude bad candidates
-            s = -sc.get('penalty', .0)
-            # first, apply a bonus if the length of input text's charset is exactly the same as encoding's charset ;
-            #  on the contrary, if the length of input text's charset is strictly greater, give a penalty
-            lcs = sc.get('len_charset', 256)
-            if isinstance(lcs, type(lambda: None)):
-                lcs = int(lcs(encoding))
-            if (pad and obj.padding and lcs + 1 >= obj.lcharset) or lcs >= obj.lcharset:
-                s += max(.0, round(.6 * (.99 ** (lcs - obj.lcharset)), 5) - .1)
-            elif (pad and obj.padding and lcs + 1 < obj.lcharset) or lcs < obj.lcharset:
-                s -= .2  # this can occur for encodings with no_error set to True
-            # then, take padding into account, giving a bonus if padding is to be encountered and effectively present,
-            #  or a penalty when it should not be encountered but it is present
-            if pad and obj.padding:
-                s += .2  # when padding is encountered while it is legitimate, it could be a good indication => bonus
-            elif not pad and obj.padding:
-                s -= .1  # it could arise a padding character is encountered while not being padding => small penalty
-            # give a bonus when the rate of printable characters is greater or equal than expected and a penalty when
-            #  lower only for codecs that DO NOT tolerate errors (otherwise, the printables rate can be biased)
-            if not no_error:
-                pr = sc.get('printables_rate', 0)
-                if isinstance(pr, type(lambda: None)):
-                    pr = float(pr(obj.printables))
-                if obj.printables - pr <= .05:
-                    s += .1
-            expf = sc.get('expansion_factor', 1.)
-            if expf:
-                f = obj.len / float(len(new_input))  # expansion while encoding => at decoding: 1/f
-                if isinstance(expf, type(lambda: None)):
-                    try:  # this case allows to consider the current encoding name from the current codec
-                        expf = expf(f, encoding)
-                    except TypeError:
-                        expf = expf(f)
-                if isinstance(expf, (int, float)):
-                    expf = (1/f - .1 <= 1/expf <= 1/f + .1)
-                elif isinstance(expf, (tuple, list)) and len(expf) == 2:
-                    expf = 1/f - expf[1] <= 1/expf[0] <= 1/f + expf[1]
-                s += [-1., .1][expf]
-            # afterwards, if the input text has an entropy close to the expected one, give a bonus weighted on the
-            #  number of input characters to take bad entropies of shorter strings into account
-            entr = sc.get('entropy', {})
-            entr = entr.get(encoding, entr.get('default')) if isinstance(entr, dict) else entr
-            if isinstance(entr, type(lambda: None)):
+    obj = None
+    sc = codec.parameters.get('scoring', {})
+    no_error, transitive = codec.parameters.get('no_error', False), sc.get('transitive', False)
+    # ignore encodings that fail to decode with their default errors handling value
+    try:
+        new_input = decode(input, encoding)
+    except:
+        return
+    # ignore encodings that give an output identical to the input (identity transformation) or to the previous input
+    if len(new_input) == 0 or prev_input is not None and b(input) == b(new_input) or b(prev_input) == b(new_input):
+        return
+    # ignore encodings that transitively give the same output (identity transformation by chaining twice a same
+    #  codec (e.g. rot-15 is equivalent to rot-3 and rot-12 or rot-6 and rot-9)
+    if transitive and prev_encoding:
+        ci_prev = lookup(prev_encoding, False)
+        if ci_prev.parameters['name'] == codec.parameters['name']:
+            return
+    # compute input's characteristics only once and only if the control flow reaches this point
+    pad = sc.get('padding_char')
+    if obj is None:
+        obj = _Text(input, pad)
+    if heuristic:
+        # from here, the goal (e.g. if the input is Base32) is to rank candidate encodings (e.g. multiple base
+        #  codecs) so that we can put the right one as early as possible and eventually exclude bad candidates
+        s = -sc.get('penalty', .0)
+        # first, apply a bonus if the length of input text's charset is exactly the same as encoding's charset ;
+        #  on the contrary, if the length of input text's charset is strictly greater, give a penalty
+        lcs = sc.get('len_charset', 256)
+        if isinstance(lcs, type(lambda: None)):
+            lcs = int(lcs(encoding))
+        if (pad and obj.padding and lcs + 1 >= obj.lcharset) or lcs >= obj.lcharset:
+            s += max(.0, round(.6 * (.99 ** (lcs - obj.lcharset)), 5) - .1)
+        elif (pad and obj.padding and lcs + 1 < obj.lcharset) or lcs < obj.lcharset:
+            s -= .2  # this can occur for encodings with no_error set to True
+        # then, take padding into account, giving a bonus if padding is to be encountered and effectively present,
+        #  or a penalty when it should not be encountered but it is present
+        if pad and obj.padding:
+            s += .2  # when padding is encountered while it is legitimate, it could be a good indication => bonus
+        elif not pad and obj.padding:
+            s -= .1  # it could arise a padding character is encountered while not being padding => small penalty
+        # give a bonus when the rate of printable characters is greater or equal than expected and a penalty when
+        #  lower only for codecs that DO NOT tolerate errors (otherwise, the printables rate can be biased)
+        if not no_error:
+            pr = sc.get('printables_rate', 0)
+            if isinstance(pr, type(lambda: None)):
+                pr = float(pr(obj.printables))
+            if obj.printables - pr <= .05:
+                s += .1
+        expf = sc.get('expansion_factor', 1.)
+        if expf:
+            f = obj.len / float(len(new_input))  # expansion while encoding => at decoding: 1/f
+            if isinstance(expf, type(lambda: None)):
                 try:  # this case allows to consider the current encoding name from the current codec
-                    entr = entr(obj.entropy, encoding)
+                    expf = expf(f, encoding)
                 except TypeError:
-                    entr = entr(obj.entropy)
-            if entr is not None:
-                # use a quadratic heuristic to compute a weight for the entropy delta, aligned on (100w,.1) and (200w,1)
-                d_entr = min(4e-05 * obj.len**2 - .003 * obj.len, 1) * abs(entr - entropy(new_input))
-                if d_entr <= .5:
-                    s += .5 - d_entr
-            # finally, if relevant, apply a custom bonus (e.g. when a regex pattern is matched)
-            bonus = sc.get('bonus_func')
-            if bonus is not None:
-                if isinstance(bonus, type(lambda: None)):
-                    bonus = bonus(obj, ci, encoding)
-                if bonus:
-                    s += .2
-        else:
-            s = 1.
-        # exclude negative (and eventually null) scores as they are (hopefully) not relevant
-        if extended and s >= .0 or not extended and s > .0:
-            yield s, new_input, encoding
+                    expf = expf(f)
+            if isinstance(expf, (int, float)):
+                expf = (1/f - .1 <= 1/expf <= 1/f + .1)
+            elif isinstance(expf, (tuple, list)) and len(expf) == 2:
+                expf = 1/f - expf[1] <= 1/expf[0] <= 1/f + expf[1]
+            s += [-1., .1][expf]
+        # afterwards, if the input text has an entropy close to the expected one, give a bonus weighted on the
+        #  number of input characters to take bad entropies of shorter strings into account
+        entr = sc.get('entropy', {})
+        entr = entr.get(encoding, entr.get('default')) if isinstance(entr, dict) else entr
+        if isinstance(entr, type(lambda: None)):
+            try:  # this case allows to consider the current encoding name from the current codec
+                entr = entr(obj.entropy, encoding)
+            except TypeError:
+                entr = entr(obj.entropy)
+        if entr is not None:
+            # use a quadratic heuristic to compute a weight for the entropy delta, aligned on (100w,.1) and (200w,1)
+            d_entr = min(4e-05 * obj.len**2 - .003 * obj.len, 1) * abs(entr - entropy(new_input))
+            if d_entr <= .5:
+                s += .5 - d_entr
+        # finally, if relevant, apply a custom bonus (e.g. when a regex pattern is matched)
+        bonus = sc.get('bonus_func')
+        if bonus is not None:
+            if isinstance(bonus, type(lambda: None)):
+                bonus = bonus(obj, codec, encoding)
+            if bonus:
+                s += .2
+    else:
+        s = 1.
+    # exclude negative (and eventually null) scores as they are (hopefully) not relevant
+    if extended and s >= .0 or not extended and s > .0:
+        return s, new_input
 
 
-def guess(input, stop_func=stopfunc.default, min_depth=0, max_depth=5, codec_categories=None, exclude=None, found=(),
+def guess(input, stop_func=stopfunc.default, min_depth=0, max_depth=5, include=None, exclude=None, found=(),
           stop=True, show=False, scoring_heuristic=True, extended=False, debug=False):
-    """ Try decoding without the knowledge of the encoding(s). """
+    """ Try decoding without the knowledge of the encoding(s).
+    
+    :param input:             input text to be guessed
+    :param stop_func:         function defining the stop condition
+    :param min_depth:         minimum search depth
+    :param max_depth:         maximum search depth
+    ;param include:           inclusion item OR list with category, codec or encoding names OR dictionary with lists per
+                               depth (nothing means include every encoding)
+    :param exclude:           exclusion item OR list with category, codec or encoding names OR dictionary with lists per
+                               depth (nothing means exclude no encoding)
+    :param found:             tuple of already found encodings
+    :param stop:              whether to stop or not when a valid solution is found
+    :param show:              whether to immediately show once a solution is found
+    :param scoring_heuristic: whether to apply the scoring heuristic during the search (if disabled, all scores are 1.,
+                               meaning that every non-failing encoding will be considered with no order of precedence)
+    :param extended:          whether to also consider null scores with the heuristic
+    :param debug:             whether to show each attempt at each depth during computation
+    """
+    if len(input) == 0:
+        return ""
+    # check for min and max depths
     if max_depth <= 0:
         raise ValueError("Depth must be a non-null positive integer")
     if min_depth > max_depth:
         raise ValueError("Min depth shall be less than or equal to the max depth")
+    # take the tuple of found encodings into account
     if len(found) > 0:
         for encoding in found:
             input = decode(input, encoding)
+    # handle the stop function as a regex if a string was given
     if isinstance(stop_func, string_types):
         stop_func = stopfunc.regex(stop_func)
+    # reformat include and exclude arguments ; supported formats:
+    for n, l in zip(["inc", "exc"], [include, exclude]):
+        if l is None:
+            if n == "inc":
+                include = l = {-1: CODECS_CATEGORIES}
+            else:
+                exclude = l = {}
+        #  "category" OR "enc_name" OR whatever => means a single item for all depths
+        if isinstance(l, string_types):
+            if n == "inc":
+                include = l = {-1: [l]}
+            else:
+                exclude = l = {-1: [l]}
+        #  ["enc_name1", "enc_name2", ...] => means for all depths
+        if isinstance(l, (list, tuple)):
+            if n == "inc":
+                include = l = {-1: l}
+            else:
+                exclude = l = {-1: l}
+        #  {-1: [...], 2: [...], ...}      => means prefedined depths with their lists of in-/excluded encodings
+        if not isinstance(l, dict) or not all(isinstance(k, int) for k in l.keys()):
+            raise ValueError("Include argument shall be a list or a dictionary with integer keys")
+    # precompute encodings lists per depth and cache the related CodecInfo objects
+    encodings, codecs = __make_encodings_dict(include, exclude)
     result = {}
-    if len(input) > 0:
-        try:
-            # breadth-first search
-            for d in range(max_depth):
-                __guess("", input, stop_func, 0, d+1, min_depth, codec_categories, exclude, result, tuple(found), stop,
-                        show, scoring_heuristic, extended, debug)
-                if stop and len(result) > 0:
-                    return result
-        except KeyboardInterrupt:
-            pass
+    try:
+        # breadth-first search
+        for d in range(max_depth):
+            __guess("", input, stop_func, 0, d+1, min_depth, encodings, codecs, result, tuple(found), stop, show,
+                    scoring_heuristic, extended, debug)
+            if stop and len(result) > 0:
+                break
+    except KeyboardInterrupt:
+        pass
+    CODECS_CACHE = {}
     return result
 codecs.guess = guess
 
 
-def rank(input, extended=False, limit=-1, codec_categories=None, exclude=None):
-    """ Rank the most probable encodings based on the given input. """
-    if isinstance(codec_categories, string_types):
-        codec_categories = (codec_categories, )
-    codecs = list_encodings(*(codec_categories or ()))
-    for e in __develop(exclude):
-        try:
-            codecs.remove(e)
-        except ValueError:
-            pass
-    r = list(__rank(None, input, "", codecs, True, extended, True))
+def rank(input, extended=False, limit=-1, include=None, exclude=None):
+    """ Rank the most probable encodings based on the given input.
+    
+    :param input:    input text to be evaluated
+    :param extended: whether to consider null scores too (NB: negative scores are not output !)
+    :param limit:    number of encodings to be returned (-1 means all of them)
+    :param include:  inclusion list with category, codec or encoding names (nothing means include every encoding)
+    :param exclude:  exclusion list with category, codec or encoding names (nothing means exclude no encoding)
+    """
+    encodings, codecs = __make_encodings_dict({0: include or CODECS_CATEGORIES}, {0: exclude or []})
+    r = list(__rank(None, input, "", encodings[0], codecs, True, extended, True))
+    CODECS_CACHE = {}
     return r[:limit] if len(r) > 1 else r
 codecs.rank = rank
 
