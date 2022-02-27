@@ -33,12 +33,23 @@ add("uu", lambda i, e="strict": orig_lookup("uu").encode(b(i), e),
           pattern=r"^uu(?:[-_]encode|codec)?$", add_to_codecs=True, category="native")
 
 
-def __literal_eval(o):
-    """ Non-failing ast.literal_eval alias function. """
-    try:
-        return literal_eval(str(o))
-    except ValueError:
-        return literal_eval("'" + str(o) + "'")
+def __format_list(items, include=True):
+    if items is None:
+        return
+    d = {-1: list_encodings() if include else []}
+    for n, i in enumerate(items):
+        try:
+            depth, i = i.split(":")
+            depth = int(depth.strip().replace("~", "-"))
+            if depth < 0:
+                depth = -1
+        except ValueError:
+            if n == 0:
+                d[-1] = []
+            depth = -1
+        d.setdefault(depth, [])
+        d[depth].append(i.strip())
+    return d
 
 
 def __print_tabular(lst, space=4):
@@ -70,6 +81,19 @@ def __print_tabular(lst, space=4):
 
 def main():
     import argparse, os
+
+    class _CustomFormatter(argparse.RawTextHelpFormatter):
+        def __init__(self, prog, **kwargs):
+            kwargs['max_help_position'] = 32
+            super(_CustomFormatter, self).__init__(prog, **kwargs)
+        
+        def _format_action_invocation(self, action):
+            if not action.option_strings:
+                metavar, = self._metavar_formatter(action, action.dest)(1)
+                return metavar
+            else:
+                return ", ".join(action.option_strings)
+    
     descr = "Codecs Extension (CodExt) {}\n\nAuthor   : {} ({})\nCopyright: {}\nLicense  : {}\nSource   : {}\n" \
             "\nThis tool allows to encode/decode input strings/files with an extended set of codecs.\n\n" \
             .format(__version__, __author__, __email__, __copyright__, __license__, __source__)
@@ -87,62 +111,68 @@ def main():
         "echo -en \"test\" | codext encode base64 gzip | codext guess",
         "echo -en \"test\" | codext encode base64 gzip | codext guess gzip -c base",
     ])
-    parser = argparse.ArgumentParser(description=descr, epilog=examples, formatter_class=argparse.RawTextHelpFormatter)
-    sparsers = parser.add_subparsers(dest="command", required=True, help="command to be executed")
+    kw = {'formatter_class': _CustomFormatter}
+    parser = argparse.ArgumentParser(description=descr, epilog=examples, **kw)
+    kw2 = {'required': True} if PY3 else {}
+    sparsers = parser.add_subparsers(dest="command", help="command to be executed", **kw2)
     parser.add_argument("-i", "--input-file", dest="infile", help="input file (if none, take stdin as input)")
     parser.add_argument("-o", "--output-file", dest="outfile", help="output file (if none, display result to stdout)")
     parser.add_argument("-s", "--strip-newlines", action="store_true", dest="strip",
                         help="strip newlines from input (default: False)")
-    encode = sparsers.add_parser("encode", help="encode input using the specified codecs")
+    encode = sparsers.add_parser("encode", help="encode input using the specified codecs", **kw)
     encode.add_argument("encoding", nargs="+", help="list of encodings to apply")
     encode.add_argument("-e", "--errors", default="strict", choices=["ignore", "leave", "replace", "strict"],
                         help="error handling (default: strict)")
-    decode = sparsers.add_parser("decode", help="decode input using the specified codecs")
+    decode = sparsers.add_parser("decode", help="decode input using the specified codecs", **kw)
     decode.add_argument("encoding", nargs="+", help="list of encodings to apply")
     decode.add_argument("-e", "--errors", default="strict", choices=["ignore", "leave", "replace", "strict"],
                         help="error handling (default: strict)")
-    guess = sparsers.add_parser("guess", help="try guessing the decoding codecs")
+    guess = sparsers.add_parser("guess", help="try guessing the decoding codecs", **kw)
     guess.add_argument("encoding", nargs="*", help="list of known encodings to apply (default: none)")
-    guess.add_argument("-c", "--codec-categories", nargs="*", help="codec categories to be included in the search ; "
-                                                                   "format: string|tuple")
-    guess.add_argument("-d", "--min-depth", default=0, type=int, help="minimum codec search depth before triggering "
-                                                                "results (default: 0)")
-    guess.add_argument("-D", "--max-depth", default=5, type=int, help="maximum codec search depth (default: 5)")
-    guess.add_argument("-e", "--exclude-codecs", nargs="*", help="codecs to be explicitely not used ; "
-                                                                 "format: string|tuple")
+    guess.add_argument("-e", "--exclude", nargs="*", action="extend", metavar="CAT|COD|ENC",
+                       help="categories, codecs and encodings to be explicitely not used ;\n "
+                            "format: [category|codec|encoding] OR depth:[category|codec|encoding]")
     guess.add_argument("-E", "--extended", action="store_true",
                        help="while using the scoring heuristic, also consider null scores (default: False)")
     lng = "lang_%s" % LANG
     def_func = lng if getattr(stopfunc, lng, None) else "text"
-    guess.add_argument("-f", "--stop-function", default=def_func, help="result checking function (default: %s) ; "
-                       "format: printables|text|flag|lang_[bigram]|[regex]\nNB: [regex] is case-sensitive ; add -i to "
-                       "force it as case-insensitive or add '(?i)' in front of the expression" % def_func)
-    guess.add_argument("-i", "--case-insensitive", dest="icase", action="store_true",
-                       help="while using the regex stop function, set it as case-insensitive (default: False)")
+    guess.add_argument("-f", "--stop-function", default=def_func, metavar="FUNC", help="result checking function "
+                       "(default: %s) ; format: printables|text|flag|lang_[bigram]|[regex]\nNB: [regex] is case-"
+                       "sensitive ; add -i to force it as case-insensitive or add '(?i)' in front of the expression"
+                       % def_func)
     guess.add_argument("-H", "--no-heuristic", action="store_true", help="DO NOT use the scoring heuristic ; slows down"
                        " the search but may be more accurate (default: False)")
+    guess.add_argument("-i", "--include", nargs="*", action="extend", metavar="CAT|COD|ENC",
+                       help="categories, codecs and encodings to be explicitely used ;\n "
+                            "format: [category|codec|encoding] OR depth:[category|codec|encoding]")
+    guess.add_argument("-I", "--case-insensitive", dest="icase", action="store_true",
+                       help="while using the regex stop function, set it as case-insensitive (default: False)")
     if len(stopfunc.LANG_BACKENDS) > 0:
         _lb = stopfunc.LANG_BACKEND
         guess.add_argument("-l", "--lang-backend", default=_lb, choices=stopfunc.LANG_BACKENDS + ["none"],
                            help="natural language detection backend (default: %s)" % _lb)
+    guess.add_argument("-m", "--min-depth", default=0, type=int, metavar="INT",
+                       help="minimum codec search depth before triggering results (default: 0)")
+    guess.add_argument("-M", "--max-depth", default=5, type=int, metavar="INT",
+                       help="maximum codec search depth (default: 5)")
     guess.add_argument("-s", "--do-not-stop", action="store_true",
                        help="do not stop if a valid output is found (default: False)")
     guess.add_argument("-v", "--verbose", action="store_true",
                        help="show guessing information and steps (default: False)")
-    rank = sparsers.add_parser("rank", help="rank the most probable encodings based on the given input")
-    rank.add_argument("-c", "--codec-categories", help="codec categories to be included in the search ; "
-                                                       "format: string|tuple|list(strings|tuples)")
-    rank.add_argument("-e", "--exclude-codecs", help="codecs to be explicitely not used ; "
-                                                     "format: string|tuple|list(strings|tuples)")
+    rank = sparsers.add_parser("rank", help="rank the most probable encodings based on the given input", **kw)
+    rank.add_argument("-c", "--codec-categories", nargs="*", action="extend", metavar="CATEGORY",
+                      help="codec categories to be included in the search ; format: string|tuple|list(strings|tuples)")
+    rank.add_argument("-e", "--exclude-codecs", nargs="*", action="extend", metavar="CODEC",
+                      help="codecs to be explicitely not used ; format: string|tuple|list(strings|tuples)")
     rank.add_argument("-E", "--extended", action="store_true",
                       help="while using the scoring heuristic, also consider null scores (default: False)")
     rank.add_argument("-l", "--limit", type=int, default=10, help="limit the number of displayed results")
     search = sparsers.add_parser("search", help="search for codecs")
     search.add_argument("pattern", nargs="+", help="encoding pattern to search")
     listi = sparsers.add_parser("list", help="list items")
-    lsparsers = listi.add_subparsers(dest="type", required=True, help="type of item to be listed")
+    lsparsers = listi.add_subparsers(dest="type", help="type of item to be listed", **kw2)
     liste = lsparsers.add_parser("encodings", help="list encodings")
-    liste.add_argument("category", nargs="*", help="selected categories")
+    liste.add_argument("category", nargs="+", help="selected categories")
     listm = lsparsers.add_parser("macros", help="list macros")
     addm = sparsers.add_parser("add-macro", help="add a macro to the registry")
     addm.add_argument("name", help="macro's name")
@@ -150,15 +180,7 @@ def main():
     remm = sparsers.add_parser("remove-macro", help="remove a macro from the registry")
     remm.add_argument("name", help="macro's name")
     args = parser.parse_args()
-    try:
-        args.codec_categories = _lst(map(__literal_eval, args.codec_categories))
-    except (AttributeError, TypeError):
-        pass
-    try:
-        args.exclude_codecs = _lst(map(__literal_eval, args.exclude_codecs))
-    except (AttributeError, TypeError):
-        pass
-    #print(args.codec_categories, args.exclude_codecs)
+    args.include, args.exclude = __format_list(args.include), __format_list(args.exclude, False)
     try:
         # if a search pattern is given, only handle it
         if args.command == "search":
@@ -211,17 +233,9 @@ def main():
                all(re.match(r"lang_[a-z]{2}$", x) is None for x in dir(stopfunc)):
                 stopfunc._reload_lang(lb)
             r = codecs.guess(c,
-                             getattr(stopfunc, s, ["", "(?i)"][args.icase] + s),
-                             args.min_depth,
-                             args.max_depth,
-                             args.codec_categories,
-                             args.exclude_codecs,
-                             args.encoding,
-                             not args.do_not_stop,
-                             True,  # show
-                             not args.no_heuristic,
-                             args.extended,
-                             args.verbose)
+                             getattr(stopfunc, s, ["", "(?i)"][args.icase] + s), args.min_depth, args.max_depth,
+                             args.include, args.exclude, args.encoding, not args.do_not_stop, True,  # show
+                             not args.no_heuristic, args.extended, args.verbose)
             for i, o in enumerate(r.items()):
                 e, out = o
                 if len(e) > 0:
@@ -238,6 +252,7 @@ def main():
                 s = "[+] %.5f: %s" % (i[0], e)
                 print(s if len(s) <= 80 else s[:77] + "...")
     except Exception as e:
+        raise e
         m = str(e)
         print("codext: " + m[0].lower() + m[1:])
 
