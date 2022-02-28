@@ -1333,7 +1333,7 @@ def __score(prev_input, input, prev_encoding, encoding, codec, heuristic=False, 
     no_error, transitive = codec.parameters.get('no_error', False), sc.get('transitive', False)
     # ignore encodings that fail to decode with their default errors handling value
     try:
-        new_input = decode(input, encoding)
+        new_input = codec.decode(input)[0]
     except:
         return
     # ignore encodings that give an output identical to the input (identity transformation) or to the previous input
