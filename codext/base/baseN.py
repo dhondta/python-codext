@@ -39,8 +39,13 @@ main8 = main(8)
 
 
 B10 = {r'': "0123456789"}
-base(B10, r"^(?:base[-_]?10|int(?:eger)?)$")
+base(B10, r"^(?:base[-_]?10|int(?:eger)?|dec(?:imal)?)$")
 main10 = main(10)
+
+
+B11 = {r'': "0123456789a", r'[-_]inv(erted)?$': "a0123456789"}
+base(B11, r"^base[-_]?11(|[-_]inv(?:erted)?)$")
+main11 = main(11)
 
 
 B16 = {'': digits + "ABCDEF", '[-_]inv(erted)?$': "ABCDEF" + digits}

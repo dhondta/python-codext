@@ -12,12 +12,12 @@ Common base encodings with N a power of 2:
 
 **Codec** | **Conversions** | **Aliases** | **Comment**
 :---: | :---: | --- | ---
-`base2` | text <-> Base2 encoded text | `(base[-_]?2|bin)-inv(erted)?` | 
-`base4` | text <-> Base4 encoded text | `base[-_]?4-inv(erted)` | charset: `1234`
-`base8` | text <-> Base8 encoded text | `base[-_]?8-inv(erted)` | charset: `abcdefgh`
+`base2` | text <-> Base2 encoded text | `(base[-_]?2|bin)-inv(erted)?` | Dynamic charset parameter `[-_]...`, amongst letters and digits (e.g. `_AB`)
+`base4` | text <-> Base4 encoded text | `base[-_]?4-inv(erted)` | Dynamic charset parameter `[-_]...`, amongst letters and digits (e.g. `_6VC9`)
+`base8` | text <-> Base8 encoded text | `base[-_]?8-inv(erted)` | Charset: `abcdefgh` ; Dynamic charset parameter `[-_]...`, amongst letters and digits (e.g. `_A5c96T7x`)
 `base16` | text <-> Base16 encoded text | `base[-_]?16-inv(erted)` | 
-`base32` | text <-> Base32 encoded text | `base[-_]?32-inv(erted)` | 
-`zbase32` | text <-> ZBase32 encoded text | `z[-_]?base[-_]?32` | human-oriented Base32
+`base32` | text <-> Base32 encoded text | `base[-_]?32-inv(erted)`, `base32-crockford`, `base32_geohash`, ... | Also supports Base32 Crockford, Geohash and Hex
+`zbase32` | text <-> ZBase32 encoded text | `z[-_]?base[-_]?32` | Human-oriented Base32
 `base64` | text <-> Base64 encoded text | `base[-_]?64-inv(erted)` | 
 
 !!! note "Aliases"
@@ -62,10 +62,12 @@ Note that for `base64`, it overwrites the native `base64_codec` to also support 
 
 **Codec** | **Conversions** | **Aliases** | **Comment**
 :---: | :---: | --- | ---
-`base3` | text <-> Base3 encoded text | `base[-_]?36(|[-_]inv(erted)?)` | 
+`base3` | text <-> Base3 encoded text | `base[-_]?3(|[-_]inv(erted)?)` | Dynamic charset parameter `[-_]...`, amongst letters and digits (e.g. `_C2Z`)
+`base10` | text <-> Base10 encoded text | `base[-_]?10|int(?:eger)?|dec(?:imal)?` | 
+`base11` | text <-> Base11 encoded text | `base[-_]?11(|[-_]inv(erted)?)` | 
 `base36` | text <-> Base36 encoded text | `base[-_]?36(|[-_]inv(erted)?)` | 
 `base45` | text <-> Base45 encoded text | `base[-_]?45(|[-_]inv(erted)?)` | 
-`base58` | text <-> Base58 encoded text | `base[-_]?58(|[-_](bc|bitcoin|rp|ripple|fl|flickr|short[-]?url|url))` | supports Bitcoin, Ripple and short URL
+`base58` | text <-> Base58 encoded text | `base[-_]?58(|[-_](bc|bitcoin|rp|ripple|fl|flickr|short[-]?url|url))` | Supports Bitcoin, Ripple and short URL
 `base62` | text <-> Base62 encoded text | `base[-_]?62(|[-_]inv(erted)?)` | 
 `base63` | text <-> Base63 encoded text | `base[-_]?63(|[-_]inv(erted)?)` | 
 `base91` | text <-> Base91 encoded text | `base[-_]?91(|[-_]inv(erted)?)` | 
@@ -131,11 +133,7 @@ This encoding implements various different versions of Base85.
 
 **Codec** | **Conversions** | **Aliases** | **Comment**
 :---: | :---: | --- | ---
-`base85` | text <-> ascii85 | `ascii85` | 
-`base85` | text <-> z85 | `z85`, `base85-zeromq` | 
-`base85` | text <-> base85-ipv6 | `base85-ipv6`, `base85-rfc1924` | 
-`base85` | text <-> base85-adobe | `base85-adobe` | 
-`base85` | text <-> base85-btoa | `base85-btoa`, `base85-xbtoa` | 
+`base85` | text <-> ascii85 | `(base[-_]?85(?:|[-_](?:adobe|x?btoa|ipv6|rfc1924|xml|z(?:eromq)?))|z85|ascii85)` | 
 
 ```python
 >>> codext.encode("this is a test", "ascii85")
@@ -156,16 +154,9 @@ This encoding implements various different versions of Base85.
 
 **Codec** | **Conversions** | **Aliases** | **Comment**
 :---: | :---: | --- | ---
-`base85` | text <-> Base85 encoded text | `base[-_]?85` | Python 3 only (relies on `base64` module)
 `base100` | text <-> Base100 encoded text | `base[-_]?100|emoji` | Python 3 only
 `base122` | text <-> Base122 encoded text | `base[-_]?122` | Python 3 only
-
-```python
->>> codecs.encode("this is a test", "base85")
-'bZBXFAZc?TVIXv6b94'
->>> codecs.decode("bZBXFAZc?TVIXv6b94", "base85")
-'this is a test'
-```
+`base128` | text <-> Base128 encoded text | `base[-_]?128` | Relies on the ASCII charset
 
 ```python
 >>> codecs.encode("this is a test", "base100")
