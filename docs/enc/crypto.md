@@ -152,9 +152,8 @@ This is a dynamic encoding, that is, it can be called with an integer to define 
 
 **Codec** | **Conversions** | **Aliases** | **Comment**
 :---: | :---: | --- | ---
-`rot` | text <-> rot(1) ciphertext | `rot1`, `rot-1`, `rot_1`, `caesar1` | 
-`rot` | text <-> rot(X) ciphertext | ... | 
-`rot` | text <-> rot(25) ciphertext | `rot25`, `rot-25`, `rot_25`, `caesar25` | 
+`rot` | text <-> rot(1) ciphertext | `rot1`, `rot-1`, `rot_25`, `caesar13` | Dynamic ROT parameter ; belongs to [1, 26[
+`rot47` | text <-> rot47 ciphertext |  | 
 
 ```python
 >>> codext.encode("this is a test", "rot-15")
@@ -173,9 +172,7 @@ This is a dynamic encoding, that is, it can be called with an integer to define 
 
 **Codec** | **Conversions** | **Aliases** | **Comment**
 :---: | :---: | --- | ---
-`shift` | text <-> shift(1) ciphertext | `shift1`, `shift-1`, `shift_1` | 
-`shift` | text <-> shift(X) ciphertext | ... | 
-`shift` | text <-> shift(255) ciphertext | `shift255`, `shift-255`, `shift_255` | 
+`shift` | text <-> shift(1) ciphertext | `shift1`, `shift-158`, `shift_255` | Dynamic shift parameter ; belongs to [1, 256[
 
 ```python
 >>> codext.encode("this is a test", "shift-3")
@@ -194,9 +191,7 @@ This is a dynamic encoding, that is, it can be called with an integer to define 
 
 **Codec** | **Conversions** | **Aliases** | **Comment**
 :---: | :---: | --- | ---
-`xor` | text <-> XOR(1) ciphertext | `XOR1`, `xor1`, `xor-1`, `xor_1` | 
-`xor` | text <-> XOR(X) ciphertext | ... | 
-`xor` | text <-> XOR(255) ciphertext | `XOR255`, `xor255`, `xor-255`, `xor_255` | 
+`xor` | text <-> XOR(1) ciphertext | `XOR1`, `xor22`, `xor-158`, `xor_255` | Dynamic XOR parameter ; belongs to [1, 256[
 
 ```python
 >>> codext.encode("this is a test", "xor-10")

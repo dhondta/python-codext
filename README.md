@@ -219,6 +219,7 @@ o
 - [X] `base4`: conversion to quarternary (with a variant with a reversed alphabet)
 - [X] `base8`: simple conversion to octal (with a variant with a reversed alphabet)
 - [X] `base10`: simple conversion to decimal
+- [X] `base11`: conversion to digits with a "*a*"
 - [X] `base16`: simple conversion to hexadecimal (with a variant holding an alphabet with digits and letters inverted)
 - [X] `base26`: conversion to alphabet letters
 - [X] `base32`: classical conversion according to the RFC4648 with all its variants ([zbase32](https://philzimmermann.com/docs/human-oriented-base-32-encoding.txt), extended hexadecimal, [geohash](https://en.wikipedia.org/wiki/Geohash), [Crockford](https://www.crockford.com/base32.html))
