@@ -1312,9 +1312,10 @@ def __rank(prev_input, input, prev_encoding, encodings, codecs, heuristic=False,
 
 
 class _Text(object):
-    __slots__ = ["entropy", "lcharset", "len", "padding", "printables"]
+    __slots__ = ["entropy", "lcharset", "len", "padding", "printables", "text"]
     
     def __init__(self, text, pad_char=None):
+        self.text = text
         c = text[-1]
         pad_char, last_char = (b(pad_char), c) if isinstance(c, int) else (pad_char, ord(c))
         self.padding = pad_char is not None and last_char == ord(pad_char)
