@@ -154,12 +154,14 @@ def main():
     guess.add_argument("-v", "--verbose", action="store_true",
                        help="show guessing information and steps (default: False)")
     rank = sparsers.add_parser("rank", help="rank the most probable encodings based on the given input", **kw)
-    rank.add_argument("-c", "--codec-categories", nargs="*", action="extend", metavar="CATEGORY",
-                      help="codec categories to be included in the search ; format: string|tuple|list(strings|tuples)")
-    rank.add_argument("-e", "--exclude-codecs", nargs="*", action="extend", metavar="CODEC",
-                      help="codecs to be explicitely not used ; format: string|tuple|list(strings|tuples)")
+    rank.add_argument("-e", "--exclude", nargs="*", action="extend", metavar="CAT|COD|ENC",
+                      help="categories, codecs and encodings to be explicitely not used ;\n "
+                           "format: [category|codec|encoding] OR depth:[category|codec|encoding]")
     rank.add_argument("-E", "--extended", action="store_true",
                       help="while using the scoring heuristic, also consider null scores (default: False)")
+    rank.add_argument("-i", "--include", nargs="*", action="extend", metavar="CAT|COD|ENC",
+                      help="categories, codecs and encodings to be explicitely used ;\n "
+                           "format: [category|codec|encoding] OR depth:[category|codec|encoding]")
     rank.add_argument("-l", "--limit", type=int, default=10, help="limit the number of displayed results")
     search = sparsers.add_parser("search", help="search for codecs")
     search.add_argument("pattern", nargs="+", help="encoding pattern to search")
@@ -243,7 +245,7 @@ def main():
             if len(r) == 0:
                 print("Could not decode :-(")
         elif args.command == "rank":
-            for i, e in codecs.rank(c, args.extended, args.limit, args.codec_categories, args.exclude_codecs):
+            for i, e in codecs.rank(c, args.extended, args.limit, args.include, args.exclude):
                 s = "[+] %.5f: %s" % (i[0], e)
                 print(s if len(s) <= 80 else s[:77] + "...")
     except Exception as e:
