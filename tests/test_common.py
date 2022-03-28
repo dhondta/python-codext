@@ -151,7 +151,7 @@ class TestCommon(TestCase):
         self.assertIsNotNone(codext.stopfunc._validate("flag"))
         _l = lambda d: list(d.items())[0][1] if len(d) > 0 else None
         codext.add("test_codec", lambda x, e="strict": (x + "=", len(x)), lambda x, e="strict": (x[:-1], len(x)-1),
-                   "test", padding_char="=", no_error=True, bonus_func=lambda *a: True, penalty=-.5)
+                   "^test(?:_codec)?$", padding_char="=", no_error=True, bonus_func=lambda *a: True, penalty=-.5)
         self.assertIn("test-codec", codext.list_encodings("test"))
         self.assertEqual(codext.decode("TEST=", "test"), "TEST")
         self.assertEqual(list(codext.guess("TEST=", codext.stopfunc.text, include="test", max_depth=2,
@@ -203,13 +203,15 @@ class TestCommon(TestCase):
         self.assertRaises(ValueError, codext.stopfunc._reload_lang, "DOES_NOT_EXIST")
     
     def test_rank_input(self):
+        codext.remove("test_codec")
+        self.assertRaises(LookupError, codext.encode, "TEST", "test")
         codext.add("test_codec", lambda x, e="strict": (x + "=", len(x)), lambda x, e="strict": (x[:-1], len(x)-1),
-                   "test", padding_char="=", no_error=True, bonus_func=lambda *a: True, penalty=-.5)
+                   "^test(?:_codec)?$", padding_char="=", no_error=True, penalty=1.)
         STR = "This is a test string !"
         ENC = codext.encode(STR, "base64")
         self.assertTrue(len(codext.rank(ENC)) > 20)
         self.assertEqual(len(codext.rank(ENC, limit=20)), 20)
-        self.assertEqual(codext.rank(ENC, exclude=["rot"])[0][1], "base64")
+        self.assertIn(codext.rank(ENC, exclude=["rot"])[0][1], ["base64", "base64-url"])
         self.assertEqual(codext.rank(ENC, include="base")[0][0][1], STR)
         self.assertEqual(codext.rank(ENC, include=["base"])[0][0][1], STR)
         self.assertIsNotNone(codext.rank(ENC, include=["base"], exclude=["does_not_exist"])[0][0][1], STR)
