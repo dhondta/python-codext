@@ -70,5 +70,5 @@ def lz77_decompress(input, errors="strict"):
     return out, len(out)
 
 
-add("lz77", lz77_compress, lz77_decompress, entropy=7.9)
+add("lz77", lz77_compress, lz77_decompress)
 

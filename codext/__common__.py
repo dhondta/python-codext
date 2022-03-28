@@ -1402,8 +1402,8 @@ def __score(prev_input, input, prev_encoding, encoding, codec, heuristic=False, 
             except TypeError:
                 entr = entr(obj.entropy)
         if entr is not None:
-            # use a quadratic heuristic to compute a weight for the entropy delta, aligned on (100w,.1) and (200w,1)
-            d_entr = min(5.958194e-06 * obj.len**2 - .002381 * obj.len, 1) * abs(entr - entropy(new_input))
+            # use a quadratic heuristic to compute a weight for the entropy delta, aligned on (256,.2) and (512,1)
+            d_entr = min(3.04575e-06 * obj.len**2 + .000394 * obj.len, 1) * abs(entr - entropy(new_input))
             if d_entr <= .5:
                 s += .5 - d_entr
         # finally, if relevant, apply a custom bonus (e.g. when a regex pattern is matched)
