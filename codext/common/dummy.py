@@ -35,7 +35,11 @@ add("substitute", substitute, substitute, r"^substitute[-_]?(.*?)/(.*?)$", guess
 reverse = lambda i, e="strict": (i[::-1], len(i))
 add("reverse", reverse, reverse)
 
-word_reverse = lambda i, e="strict": (" ".join(w[::-1] for w in i.split()), len(i))
+_revl = lambda i, wd=False: "".join((" ".join(w[::-1] for w in l.split()) if wd else l[::-1]) \
+                                    if not re.match(r"(\r?\n)", l) else l for l in re.split(r"(\r?\n)", i))
+line_reverse = lambda i, e="strict": (_revl(i), len(i))
+add("reverse-lines", line_reverse, line_reverse, r"^reverse[-_]lines$")
+word_reverse = lambda i, e="strict": (_revl(i, True), len(i))
 add("reverse-words", word_reverse, word_reverse, r"^reverse[-_]words$")
 
 strip_spaces = lambda i, e="strict": (i.replace(" ", ""), len(i))
