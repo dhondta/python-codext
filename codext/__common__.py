@@ -1308,7 +1308,7 @@ def __rank(prev_input, input, prev_encoding, encodings, heuristic=False, extende
         t = __score(prev_input, input, prev_encoding, e, codec, heuristic, extended)
         if t:
             ranking[e] = t
-    for encoding, result in sorted(ranking.items(), key=lambda x: -x[1][0]):
+    for encoding, result in sorted(ranking.items(), key=lambda x: (-x[1][0], x[0])):
         yield result if yield_score else result[1], encoding
 
 
@@ -1403,7 +1403,7 @@ def __score(prev_input, input, prev_encoding, encoding, codec, heuristic=False, 
                 entr = entr(obj.entropy)
         if entr is not None:
             # use a quadratic heuristic to compute a weight for the entropy delta, aligned on (256,.2) and (512,1)
-            d_entr = min(3.04575e-06 * obj.len**2 + .000394 * obj.len, 1) * abs(entr - entropy(new_input))
+            d_entr = min(3.04575e-06 * obj.len**2 + .000394 * obj.len, 1) * abs(entr - obj.entropy)
             if d_entr <= .5:
                 s += .5 - d_entr
         # finally, if relevant, apply a custom bonus (e.g. when a regex pattern is matched)

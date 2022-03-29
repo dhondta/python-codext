@@ -211,7 +211,7 @@ class TestCommon(TestCase):
         ENC = codext.encode(STR, "base64")
         self.assertTrue(len(codext.rank(ENC)) > 20)
         self.assertEqual(len(codext.rank(ENC, limit=20)), 20)
-        self.assertIn(codext.rank(ENC, exclude=["rot"])[0][1], ["base64", "base64-url"])
+        self.assertIn(codext.rank(ENC, exclude=["rot"])[0][1], ["base64", "base64-url", "base64-inv"])
         self.assertEqual(codext.rank(ENC, include="base")[0][0][1], STR)
         self.assertEqual(codext.rank(ENC, include=["base"])[0][0][1], STR)
         self.assertIsNotNone(codext.rank(ENC, include=["base"], exclude=["does_not_exist"])[0][0][1], STR)
