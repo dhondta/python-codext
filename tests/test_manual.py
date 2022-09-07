@@ -100,6 +100,8 @@ class ManualTestCase(TestCase):
         self.assertEqual(codecs.decode(STR.replace("i", "1"), "replace-1i"), STR)
         self.assertEqual(codecs.encode(STR, "substitute-this/that"), STR.replace("this", "that"))
         self.assertEqual(codecs.decode(STR.replace("this", "that"), "substitute-that/this"), STR)
+        self.assertEqual(codecs.encode(STR, "tokenize-2"), "th is  i s  a  te st")
+        self.assertRaises(LookupError, codecs.encode, STR, "tokenize-200")
     
     def test_codec_hash_functions(self):
         STR = b"This is a test string!"

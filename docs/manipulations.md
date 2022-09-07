@@ -43,11 +43,12 @@ These transformation functions are simple string transformations.
 
 **Codec** | **Conversions** | **Aliases** | **Comment**
 :---: | :---: | --- | ---
-`replace` | text <-> text with single-char replaced |  | 
+`replace` | text <-> text with multi-chars replaced |  | parametrized with a _string_ and its _replacement_
 `reverse` | text <-> reversed text |  | 
 `reverse-words` | text <-> reversed words |  | same as `reverse` but not on the whole text, only on the words (text split by whitespace)
 `strip-spaces` | text <-> all whitespaces stripped |  | 
 `substitute` | text <-> text with token substituted |  | 
+`tokenize` | text <-> text split in tokens of length N |  | parametrized with _N_
 
 As in the previous section, these transformations have no interest while using them in Python but well while using `codext` from the terminal (see [*CLI tool*](cli.html)).
 
@@ -56,6 +57,13 @@ A simple example:
 ```sh
 $ echo -en "test string" | codext encode reverse-words | codext encode reverse replace-\ _
 string_test
+```
+
+Another example:
+
+```sh
+$ echo -en "3132333435" | codext encode tokenize-2
+31 32 33 34 35
 ```
 
 Or using encodings chaining:
