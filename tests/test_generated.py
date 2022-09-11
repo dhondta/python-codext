@@ -36,6 +36,11 @@ def make_test(**params):
                 for ename in m.groups():
                     if ename is None:
                         continue
+                    # buggy generated encoding names
+                    try:
+                        lookup(ename)
+                    except LookupError:
+                        continue
                     # erroneous encoding name test
                     if examples is None:
                         self.assertRaises(LookupError, f1, "test", ename)
@@ -72,11 +77,12 @@ def make_test(**params):
                     # examples validation tests
                     if k.startswith("enc-dec") and isinstance(examples, list):
                         for e in examples[:]:
-                            rd = re.match(r"\@random(?:\{(\d+(?:,(\d+))*?)\})?$", e)
+                            rd = re.match(r"\@(i?)random(?:\{(\d+(?:,(\d+))*?)\})?$", e)
                             if rd:
                                 examples.remove(e)
-                                for n in (rd.group(1) or "512").split(","):
-                                    examples.append("".join(chr(randint(0, 255)) for i in range(int(n))))
+                                for n in (rd.group(2) or "512").split(","):
+                                    s = "".join(chr(randint(0, 255)) for i in range(int(n)))
+                                    examples.append(s.lower() if rd.group(1) else s)
                         for s in [""] + examples:
                             self.assertEqual(icdec(f2(icenc(f1(s, ename)), ename)), icdec(s))
                             self.assertEqual(icdec(f2(icenc(f1(b(s), ename)), ename)), b(icdec(s)))

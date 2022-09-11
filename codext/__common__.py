@@ -109,10 +109,11 @@ class CodecMacro(tuple):
         for action, examples in (self.codecs[0].parameters.get('examples', {}) or {'enc-dec(': ["T3st str!"]}).items():
             if re.match(r"enc(-dec)?\(", action):
                 for e in (examples.keys() if action.startswith("enc(") else examples or []):
-                    rd = re.match(r"\@random(?:\{(\d+(?:,(\d+))*?)\})?$", e)
+                    rd = re.match(r"\@(i?)random(?:\{(\d+(?:,(\d+))*?)\})?$", e)
                     if rd:
-                        for n in (rd.group(1) or "512").split(","):
-                            self.encode("".join(chr(randint(0, 255)) for i in range(int(n))))
+                        for n in (rd.group(2) or "512").split(","):
+                            s = "".join(chr(randint(0, 255)) for i in range(int(n)))
+                            self.encode(s.lower() if rd.group(1) else s)
                         continue
                     self.encode(e)
         
@@ -1276,10 +1277,9 @@ def __make_encodings_dict(include, exclude):
     def _develop(d, keep=True):
         d = d or {}
         for k, v in d.items():
-            l, cc = [], [e for e in v if e in CODECS_CATEGORIES]
+            l, cc, sc = [], [e for e in v if e in CODECS_CATEGORIES], [e for e in v if e not in CODECS_CATEGORIES]
             # list from in-scope categories and then everything that is not a category
-            for enc in ((list_encodings(*cc) if len(cc) > 0 or keep else []) + \
-                        [e for e in v if e not in CODECS_CATEGORIES]):
+            for enc in ((list_encodings(*cc) if (len(cc) > 0 or keep) and len(sc) == 0 else []) + sc):
                 g = []
                 for e in (search(enc, False) or [enc]):
                     try:
@@ -1293,8 +1293,8 @@ def __make_encodings_dict(include, exclude):
                     l.extend(g)
             d[k] = list(set(l))
         return d
-    exclude = _develop(exclude, False)
-    return {k: [x for x in v if x not in exclude.get(k, [])] for k, v in _develop(include).items()}
+    _excl, _incl = _develop(exclude, False), _develop(include)
+    return {k: [x for x in v if x not in _excl.get(k, [])] for k, v in _incl.items()}
 
 
 def __rank(prev_input, input, prev_encoding, encodings, heuristic=False, extended=False, yield_score=False):
@@ -1304,7 +1304,10 @@ def __rank(prev_input, input, prev_encoding, encodings, heuristic=False, extende
         try:
             codec = CODECS_CACHE[e]
         except KeyError:
-            CODECS_CACHE[e] = codec = lookup(e, False)
+            try:
+                CODECS_CACHE[e] = codec = lookup(e, False)
+            except LookupError:
+                continue
         t = __score(prev_input, input, prev_encoding, e, codec, heuristic, extended)
         if t:
             ranking[e] = t
@@ -1321,7 +1324,7 @@ class _Text(object):
         pad_char, last_char = (chr(pad_char), chr(c)) if isinstance(c, int) else (pad_char, c)
         self.padding = pad_char is not None and last_char == pad_char
         if self.padding:
-            text = text.rstrip(pad_char)
+            text = text.rstrip(b(pad_char) if isinstance(text, bytes) else pad_char)
         self.len = len(self.text)
         self.lcharset = len(set(self.text))
         self.printables = float(len([c for c in self.text if c in printable])) / self.len
@@ -1501,7 +1504,8 @@ def rank(input, extended=False, limit=-1, include=None, exclude=None):
     :param include:  inclusion list with category, codec or encoding names (nothing means include every encoding)
     :param exclude:  exclusion list with category, codec or encoding names (nothing means exclude no encoding)
     """
-    encodings = __make_encodings_dict({-1: include or CODECS_CATEGORIES}, {-1: exclude or []})
+    encodings = __make_encodings_dict(include if isinstance(include, dict) else {-1: include or CODECS_CATEGORIES},
+                                      exclude if isinstance(exclude, dict) else {-1: exclude or []})
     r = list(__rank(None, input, "", encodings[-1], True, extended, True))
     return r[:limit] if len(r) > 1 else r
 codecs.rank = rank
