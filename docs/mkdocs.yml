@@ -1,0 +1,55 @@
+site_author: dhondta
+site_name: "Codext - Extension of native codecs for Python"
+repo_url: https://github.com/dhondta/python-codext
+copyright: Copyright &copy; 2021-2023 Alexandre D'Hondt
+docs_dir: pages
+nav:
+  - Introduction: index.md
+  - Features: features.md
+  - 'Guess mode': guessing.md
+  - Encodings:
+    - Base: enc/base.md
+    - Binary: enc/binary.md
+    - Common: enc/common.md
+    - Compressions: enc/compressions.md
+    - Cryptography: enc/crypto.md
+    - Hashing: enc/hashing.md
+    - Languages: enc/languages.md
+    - Others: enc/others.md
+    - Steganography: enc/stegano.md
+  - 'String manipulations': manipulations.md
+  - 'CLI tool': cli.md
+  - 'Create your codec': howto.md
+extra:
+  generator: false
+  social:
+    - icon: fontawesome/solid/paper-plane
+      link: mailto:alexandre.dhondt@gmail.com
+      name: Contact Alex
+    - icon: fontawesome/brands/github
+      link: https://github.com/dhondta
+      name: Alex on GitHub
+    - icon: fontawesome/brands/linkedin
+      link: https://www.linkedin.com/in/alexandre-d-2ab2aa14/
+      name: Alex on LinkedIn
+    - icon: fontawesome/brands/twitter
+      link: https://twitter.com/alex_dhondt
+      name: Alex on Twitter
+theme:
+  name: material
+  palette:
+    - scheme: default
+      toggle:
+        icon: material/brightness-7 
+        name: Switch to dark mode
+    - scheme: slate
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  logo: img/logo.png
+  favicon: img/icon.png
+use_directory_urls: false
+markdown_extensions:
+  - toc:
+      permalink: true
+  - admonition

@@ -1,13 +1,12 @@
-<p align="center"><img src="https://github.com/dhondta/python-codext/raw/master/docs/imgs/logo.png"></p>
+<p align="center"><img src="https://github.com/dhondta/python-codext/raw/main/docs/pages/img/logo.png"></p>
 <h1 align="center">CodExt <a href="https://twitter.com/intent/tweet?text=CodExt%20-%20Encoding%2Fdecoding%20anything.%0D%0APython%20library%20extending%20the%20native%20codecs%20library%20with%20many%20new%20encodings%20and%20providing%20CLI%20tools%20with%20a%20guess%20feature%20based%20on%20AI.%0D%0Ahttps%3a%2f%2fgithub%2ecom%2fdhondta%2fpython-codext%0D%0A&hashtags=python,programming,encodings,codecs,cryptography,morse,base,ctftools"><img src="https://img.shields.io/badge/Tweet--lightgrey?logo=twitter&style=social" alt="Tweet" height="20"/></a></h1>
 <h3 align="center">Encode/decode anything.</h3>
 
 [![PyPi](https://img.shields.io/pypi/v/codext.svg)](https://pypi.python.org/pypi/codext/)
 [![Read The Docs](https://readthedocs.org/projects/python-codext/badge/?version=latest)](https://python-codext.readthedocs.io/en/latest/?badge=latest)
-[![Build Status](https://travis-ci.com/dhondta/python-codext.svg?branch=master)](https://travis-ci.com/dhondta/python-codext)
-[![Coverage Status](https://coveralls.io/repos/github/dhondta/python-codext/badge.svg?branch=master)](https://coveralls.io/github/dhondta/python-codext?branch=master)
+[![Build Status](https://github.com/dhondta/python-codext/actions/workflows/python-package.yml/badge.svg)](https://github.com/dhondta/python-codext/actions/workflows/python-package.yml)
+[![Coverage Status](https://raw.githubusercontent.com/dhondta/python-codext/main/docs/coverage.svg)](#)
 [![Python Versions](https://img.shields.io/pypi/pyversions/codext.svg)](https://pypi.python.org/pypi/codext/)
-[![Requirements Status](https://requires.io/github/dhondta/python-codext/requirements.svg?branch=master)](https://requires.io/github/dhondta/python-codext/requirements/?branch=master)
 [![Known Vulnerabilities](https://snyk.io/test/github/dhondta/python-codext/badge.svg?targetFile=requirements.txt)](https://snyk.io/test/github/dhondta/python-codext?targetFile=requirements.txt)
 [![DOI](https://zenodo.org/badge/236679865.svg)](https://zenodo.org/badge/latestdoi/236679865)
 [![License](https://img.shields.io/pypi/l/codext.svg)](https://pypi.python.org/pypi/codext/)
@@ -20,13 +19,13 @@ $ pip install codext
 
 Want to contribute a new codec ?    |     Want to contribute a new macro ?
 :----------------------------------:|:------------------------------------:
-Check the [documentation](https://python-codext.readthedocs.io/en/latest/howto.html) first<br>Then [PR](https://github.com/dhondta/python-codext/pulls) your new codec | [PR](https://github.com/dhondta/python-codext/pulls) your updated version of [`macros.json`](https://github.com/dhondta/python-codext/blob/master/codext/macros.json)
+Check the [documentation](https://python-codext.readthedocs.io/en/latest/howto.html) first<br>Then [PR](https://github.com/dhondta/python-codext/pulls) your new codec | [PR](https://github.com/dhondta/python-codext/pulls) your updated version of [`macros.json`](https://github.com/dhondta/python-codext/blob/main/codext/macros.json)
 
 ## :mag: Demonstrations
 
-<p align="center"><img src="https://raw.githubusercontent.com/dhondta/python-codext/master/docs/demos/using-codext.gif" alt="Using CodExt from the command line"></p>
-<p align="center"><img src="https://raw.githubusercontent.com/dhondta/python-codext/master/docs/demos/using-bases.gif" alt="Using base tools from the command line"></p>
-<p align="center"><img src="https://raw.githubusercontent.com/dhondta/python-codext/master/docs/demos/using-unbase.gif" alt="Using the unbase command line tool"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/dhondta/python-codext/main/docs/pages/demos/using-codext.gif" alt="Using CodExt from the command line"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/dhondta/python-codext/main/docs/pages/demos/using-bases.gif" alt="Using base tools from the command line"></p>
+<p align="center"><img src="https://raw.githubusercontent.com/dhondta/python-codext/main/docs/pages/demos/using-unbase.gif" alt="Using the unbase command line tool"></p>
 
 ## :computer: Usage (main CLI tool) <a href="https://twitter.com/intent/tweet?text=CodExt%20-%20Encode%2Fdecode%20anything.%0D%0APython%20tool%20for%20encoding%20and%20decoding%20almost%20anything,%20including%20a%20guess%20feature%20based%20on%20AI.%0D%0Ahttps%3a%2f%2fgithub%2ecom%2fdhondta%2fpython-codext%0D%0A&hashtags=python,encodings,codecs,cryptography,morse,base,stegano,steganography,ctftools"><img src="https://img.shields.io/badge/Tweet%20(codext)--lightgrey?logo=twitter&style=social" alt="Tweet on codext" height="20"/></a>
 
