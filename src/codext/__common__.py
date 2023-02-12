@@ -35,6 +35,11 @@ try:  # Python3
     from importlib import reload
 except ImportError:
     pass
+try:  # from Python 3.11, it seems that 'sre_parse' is not bound to 're' anymore
+    re.sre_parse
+except AttributeError:
+    import sre_parse as __sre_parse
+    re.sre_parse = __sre_parse
 
 
 __all__ = ["add", "add_macro", "add_map", "b", "clear", "codecs", "decode", "encode", "ensure_str", "examples", "guess",
