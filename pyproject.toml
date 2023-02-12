@@ -1,0 +1,87 @@
+[build-system]
+requires = ["setuptools>=61.0", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.dynamic]
+version = {attr = "codext.__info__.__version__"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[project]
+name = "codext"
+authors = [
+  {name="Alexandre D'Hondt", email="alexandre.dhondt@gmail.com"},
+]
+description = "Library for producing ASCII arts from a text or an image"
+license = {file = "LICENSE"}
+keywords = ["python", "development", "programming", "ascii-art", "banner-generator", "quote-generator", "cowsay"]
+requires-python = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*,<4"
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+  "Programming Language :: Python :: 2",
+  "Programming Language :: Python :: 2.7",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.6",
+  "Programming Language :: Python :: 3.7",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = [
+  "markdown2==2.3.10; python_version=='2.7'",
+  "markdown2>=2.4.0; python_version>='3.6'",
+  "six",
+]
+dynamic = ["version"]
+
+[project.readme]
+file = "README.md"
+content-type = "text/markdown"
+
+[project.urls]
+documentation = "https://python-codext.readthedocs.io/en/latest/?badge=latest"
+homepage = "https://github.com/dhondta/python-codext"
+issues = "https://github.com/dhondta/python-codext/issues"
+repository = "https://github.com/dhondta/python-codext"
+
+[project.scripts]
+base1 = "codext.base.baseN:main1"
+base2 = "codext.base.baseN:main2"
+base3 = "codext.base.baseN:main3"
+base4 = "codext.base.baseN:main4"
+base8 = "codext.base.baseN:main8"
+base10 = "codext.base.baseN:main10"
+base16 = "codext.base.baseN:main16"
+base26 = "codext.base.baseN:main26"
+base32 = "codext.base.baseN:main32"
+base32-hex = "codext.base.baseN:main32hex"
+base32-geohash = "codext.base.baseN:main32geo"
+base32-crockford = "codext.base.baseN:main32crk"
+base32-z = "codext.base.baseN:mainz32"
+base36 = "codext.base.baseN:main36"
+base45 = "codext.base.base45:main"
+base58-bitcoin = "codext.base.baseN:main58bc"
+base58-ripple = "codext.base.baseN:main58rp"
+base58-flickr = "codext.base.baseN:main58fl"
+base62 = "codext.base.baseN:main62"
+base63 = "codext.base.baseN:main63"
+base64 = "codext.base.baseN:main64"
+base64-url = "codext.base.baseN:main64url"
+base67 = "codext.base.baseN:main67"
+base85 = "codext.base.base85:main85"
+base85-adobe = "codext.base.base85:main85adobe"
+base85-xbtoa = "codext.base.base85:main85xbtoa"
+base85-ipv6 = "codext.base.base85:main85rfc1924"
+base85-xml = "codext.base.base85:main85xml"
+base85-zeromq = "codext.base.base85:main85zeromq"
+base91 = "codext.base.base91:main91"
+base100 = "codext.base.base100:main100"
+base122 = "codext.base.base122:main122"
+codext = "codext.__init__:main"
+unbase = "codext.base.__init__:main"
