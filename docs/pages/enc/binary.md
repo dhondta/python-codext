@@ -1,5 +1,3 @@
-## Binary
-
 `codext` also adds common binary encodings. For instance, the Manchester code, that encodes digits, is applied to the ordinals of the input text and the resulting binary stream is converted back to characters.
 
 -----

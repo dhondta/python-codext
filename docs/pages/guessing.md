@@ -1,5 +1,3 @@
-## Guess Mode
-
 For decoding multiple layers of codecs, `codext` features a guess mode relying on an Artificial Intelligence algorithm, the Breadth-First tree Search (BFS). For many cases, the default parameters are sufficient for guess-decoding things. But it may require parameters tuning.
 
 -----

@@ -7,22 +7,18 @@ This codec:
 - decodes file content to str (read)
 - encodes file content from str to bytes (write)
 """
-import re
-from six import unichr
-
 from ..__common__ import *
 
 
 __examples__ = {
     'enc(html_entities|html-entity)': {'<This\tis\na test>': "&lt;This&Tab;is&NewLine;a test&gt;"},
+    'enc(html)':                      {'\u1234': "&1234;"},
     'dec(html|html_entity)':          {'&DoesNotExist;': None},
     'dec(html_entities|html-entity)': {
         '&lt;This&Tab;is&NewLine;a test&gt;': "<This\tis\na test>",
         '&lt;This&Tab;is&NewLine;a&nbsp;test&gt;': "<This\tis\na test>",
     },
 }
-if PY3:
-    __examples__['enc(html)'] = {'\u1234': "&1234;"}
 
 
 # source: https://dev.w3.org/html5/html-author/charref
@@ -271,7 +267,7 @@ def htmlentity_decode(text, errors="strict"):
         m = re.match(r"&(?:(?:[A-Za-z][A-Za-z0-9]{1,6}){1,4}|[0-9]{4});", text[i:i+30])
         if m:
             entity = m.group()
-            c = unichr(int(entity[1:5], 16)) if entity[1:5].isdigit() and len(entity) == 6 else \
+            c = chr(int(entity[1:5], 16)) if entity[1:5].isdigit() and len(entity) == 6 else \
                 " " if entity == "&nbsp;" else None
             if c:
                 s += c

@@ -1,5 +1,3 @@
-## CLI Tool
-
 `codext` has a Command-Line Interface tool.
 
 -----

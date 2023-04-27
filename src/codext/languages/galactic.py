@@ -29,7 +29,6 @@ ENCMAP = {
 }
 
 
-if PY3:
-    add_map("galactic", ENCMAP, ignore_case="encode", printables_rate=0.,
-            pattern=r"^(?:galactic(?:[-_]alphabet)?|minecraft(?:[-_](?:enchantment|enchanting[-_]language))?)$")
+add_map("galactic", ENCMAP, ignore_case="encode", printables_rate=0.,
+        pattern=r"^(?:galactic(?:[-_]alphabet)?|minecraft(?:[-_](?:enchantment|enchanting[-_]language))?)$")
 

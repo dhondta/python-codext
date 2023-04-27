@@ -8,10 +8,10 @@ These codecs:
 - transform strings from bytes to bytes
 - transform file content from str to bytes (write)
 """
-from ..__common__ import add, ensure_str, PY3, UNIX
+from ..__common__ import add, ensure_str, UNIX
 
 
-if PY3 and UNIX:
+if UNIX:
     import crypt
     
     METHODS = [x[7:].lower() for x in crypt.__dict__ if x.startswith("METHOD_")]

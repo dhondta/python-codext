@@ -34,6 +34,5 @@ ENCMAP = {
 }
 
 
-if PY3:
-    add_map("tap", ENCMAP, ignore_case="both", sep="⠀", pattern=r"^(?:tap|knock)(?:[-_]code)?(|inv)$")
+add_map("tap", ENCMAP, ignore_case="both", sep="⠀", pattern=r"^(?:tap|knock)(?:[-_]code)?(|inv)$")
 

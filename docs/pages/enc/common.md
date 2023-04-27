@@ -1,5 +1,3 @@
-## Common
-
 `codext` also provides some very common encodings, for the sake of simplicity (e.g. while chaining codecs with [the CLI tool](../cli.html)).
 
 -----

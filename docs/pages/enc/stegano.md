@@ -1,5 +1,3 @@
-## Steganography
-
 `codext` defines a few steganography-related encodings. While encoding is not really steganography (that is, concealing data within data), the following codecs are worth creating this category as they relate to converting data into something that could mislead the unaware reader.
 
 -----

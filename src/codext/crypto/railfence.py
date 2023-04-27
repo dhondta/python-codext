@@ -45,9 +45,9 @@ def __build(text, rails, offset, up):
 
 def __check(length, rails, offset):
     if rails > length:
-        raise ParameterError("Bad parameter for encoding 'railfence': rails=%d (should be >%d)" % (rails, length))
+        raise ParameterError("Bad parameter for encoding 'railfence': rails=%d (should be <= %d)" % (rails, length))
     if offset > rails:
-        raise ParameterError("Bad parameter for encoding 'railfence': offset=%d (should be >%d)" % (offset, rails))
+        raise ParameterError("Bad parameter for encoding 'railfence': offset=%d (should be <= %d)" % (offset, rails))
 
 
 def railfence_encode(rails, offset, up):

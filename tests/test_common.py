@@ -3,17 +3,13 @@
 """Codecs added assets' tests.
 
 """
-import codecs
 import codext
 import json
 import random
 import sys
+from codext.__common__ import *
 from codext.__common__ import CODECS_OVERWRITTEN, PERS_MACROS, PERS_MACROS_FILE
-from six import b, binary_type, text_type
 from unittest import TestCase
-
-
-PY3 = sys.version[0] == "3"
 
 
 def dummy_encode(input, errors="strict"):
@@ -29,18 +25,6 @@ def dummy_errored_decode(useless):
     def decode(input, errors="strict"):
         return input, len(input)
     return decode
-
-
-def ensure_str(s, encoding='utf-8', errors='strict'):
-    """ Similar to six.ensure_str. Adapted here to avoid messing up with six version errors. """
-    if not PY3 and isinstance(s, text_type):
-        return s.encode(encoding, errors)
-    elif PY3 and isinstance(s, binary_type):
-        try:
-            return s.decode(encoding, errors)
-        except:
-            return s.decode("latin-1")
-    return s
 
 
 def getregentry(encoding):
@@ -138,8 +122,6 @@ class TestCommon(TestCase):
         self.assertIsNotNone(list(codext.generate_strings_from_regex(r"[^a]")))
     
     def test_encode_multiple_rounds(self):
-        if PY3:
-            self.assertRaises(TypeError, codext.encode, b"test", "utf-8[2]")
         s = "test"
         for i in range(3):
             s = codext.encode(s, "morse")
@@ -249,8 +231,7 @@ class TestCommon(TestCase):
         self.assertIsNone(codext.remove("VALID-MACRO"))
         self.assertIsNone(codext.add_macro("VALID-MACRO", "gzip", "base64"))
         self.assertIsNone(codext.remove("VALID-MACRO"))
-        if PY3:
-            self.assertIsNone(codext.add_macro("VALID-MACRO", "lzma", "base64"))
-            self.assertIsNone(codext.remove("VALID-MACRO"))
+        self.assertIsNone(codext.add_macro("VALID-MACRO", "lzma", "base64"))
+        self.assertIsNone(codext.remove("VALID-MACRO"))
         self.assertRaises(ValueError, codext.add_macro, "SHALL-FAIL", "base26", "sms", "letter-indices")
 

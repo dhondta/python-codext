@@ -10,9 +10,7 @@ This codec:
 from ..__common__ import *
 
 
-__CODES = ["ccitt1", "ccitt2", "eu", "ita1", "ita2", "ita2_us"]
-if PY3:
-    __CODES.extend(["ita2_meteo", "mtk2", "murray", "uk"])
+__CODES = ["ccitt1", "ccitt2", "eu", "ita1", "ita2", "ita2_meteo", "ita2_us", "mtk2", "murray", "uk"]
 __guess__     = ["baudot%s-{}-{}".format(x, y) for x in __CODES for y in ["lsb", "msb"]]
 __examples1__ = {
     'enc(baudot-BAD_ALPHABET)': None,
@@ -22,6 +20,8 @@ __examples1__ = {
     'enc(baudot-ita2-us)':      {'TEST 1234': "10000000010010110000001001101110111100110000101010"},
     'enc(baudot)':              {'\x01\x02':  None},
     'enc(baudot_ccitt1-lsb)':   {'TEST ':     None},
+    'enc(baudot_ccitt1_lsb)':   {'TEST1234':  "101010001010001101010100000100000100000100101"},
+    'enc(baudot-fr)':           {'TEST 1234': "10101000101010010101100000100000001000100010000101"},
 }
 __examples2__ = {
     'enc(baudot_spaced-BAD_ALPHABET)': None,
@@ -29,6 +29,8 @@ __examples2__ = {
     'enc(baudot_spaced-ita1)':         {'TEST 1234': "10101 00010 10100 10101 10000 01000 00001 00010 00100 00101"},
     'enc(baudot-spaced_ita2_msb)':     {'TEST 1234': "10000 00001 00101 10000 00100 11011 10111 10011 00001 01010"},
     'enc(baudot_spaced-ita2-us)':      {'TEST 1234': "10000 00001 00101 10000 00100 11011 10111 10011 00001 01010"},
+    'enc(baudot-spaced_ccitt1_lsb)':   {'TEST1234':  "10101 00010 10001 10101 01000 00100 00010 00001 00101"},
+    'enc(baudot_spaced-fr)':           {'TEST 1234': "10101 00010 10100 10101 10000 01000 00001 00010 00100 00101"},
 }
 __examples3__ = {
     'enc(baudot_tape-BAD_ALPHABET)': None,
@@ -39,19 +41,10 @@ __examples3__ = {
     'dec(baudot-tape_ita2-us)':    {'***.**\nBAD_TAPE\n': None},
     'dec(baudot_tape-ccitt1_lsb)': {'***.**\n   .* \n*  . *\n*  .  \n': None},
 }
-if PY3:
-    __examples1__.update({
-        'enc(baudot_ccitt1_lsb)': {'TEST1234':  "101010001010001101010100000100000100000100101"},
-        'enc(baudot-fr)':         {'TEST 1234': "10101000101010010101100000100000001000100010000101"},
-    })
-    __examples2__.update({
-        'enc(baudot-spaced_ccitt1_lsb)': {'TEST1234':  "10101 00010 10001 10101 01000 00100 00010 00001 00101"},
-        'enc(baudot_spaced-fr)':         {'TEST 1234': "10101 00010 10100 10101 10000 01000 00001 00010 00100 00101"},
-    })
 
 
-PATTERN = r"^baudot%s([-_](?:ccitt1|ccitt2|eu|fr|ita1|ita2|ita2[-_](?:us" + (r"|meteo" if PY3 else r"") + r")" + \
-          (r"|mtk2|murray|uk" if PY3 else r"") + r"|us_tty)(?:[-_](?:lsb|msb))?)?$"
+PATTERN = r"^baudot%s([-_](?:ccitt1|ccitt2|eu|fr|ita1|ita2|ita2[-_](?:us|meteo)|mtk2|murray|uk|us_tty)" + \
+          r"(?:[-_](?:lsb|msb))?)?$"
 # reserved character
 RES_CHR = "\xff"
 
@@ -64,8 +57,7 @@ RES_CHR = "\xff"
 CCITT1 = [
     "00001", "00010",
     "\x00\xff\xff\xffA-JKEXGM/ZHLYSBRUTCQIWFNOVDP",
-    "\x00\xff\xff\xff1.6(2\xff7)\xff:\xff=3\xff8-4\xff9/\xff?\xff£5'0+" if PY3 else \
-        "\x00\xff\xff\xff1.6(2\xff7)\xff:\xff=3\xff8-4\xff9/\xff?\xff$5'0+",
+    "\x00\xff\xff\xff1.6(2\xff7)\xff:\xff=3\xff8-4\xff9/\xff?\xff£5'0+",
 ]
 # CCITT-2 revised Baudot code (source: http://rabbit.eng.miami.edu/info/baudot.html)
 CCITT2 = [
@@ -77,8 +69,8 @@ CCITT2 = [
 #                                             https://en.wikipedia.org/wiki/Baudot_code)
 BAUDOT = EU = FR = [
     "10000", "01000",
-    "\x00AEÉYUIO\xffJGHBCFD \nXZSTWV\x7fKMLRQNP" if PY3 else "\x00AEeYUIO\xffJGHBCFD \nXZSTWV\x7fKMLRQNP",
-    "\x0012&34°5 67h89f0\xff.,:;!?'\x7f()=-/\u2116%" if PY3 else "\x0012&34o5 67h89f0\xff.,:;!?'\x7f()=-/\xff%",
+    "\x00AEÉYUIO\xffJGHBCFD \nXZSTWV\x7fKMLRQNP",
+    "\x0012&34°5 67h89f0\xff.,:;!?'\x7f()=-/\u2116%",
 ]
 # International Telegraphic Alphabet 1 (sources: https://fr.qwe.wiki/wiki/Baudot_code
 #                                                https://en.wikipedia.org/wiki/Baudot_code)
@@ -102,36 +94,30 @@ ITA2_US = US_TTY = [
     "\x003\n- \x0787\r$4',!:(5\")2#6019?&\xff./;\xff",
 ]
 # International Telegraphic Alphabet 2 - Meteo version (source: https://en.wikipedia.org/wiki/Baudot_code)
-if PY3:
-    ITA2_METEO = [
-        "11111", "11011",
-        "\x00E\nA SIU\rDRJNFCKTZLWHYPQOBG\xffMXV\xff",
-        "-3\n\u2191 \x0787\r\u21974\u2199\u29b7\u2192\u25ef\u21905+\u21962\u21936019\u2295\u2198\xff./\u29b6\xff",
-    ]
+ITA2_METEO = [
+    "11111", "11011",
+    "\x00E\nA SIU\rDRJNFCKTZLWHYPQOBG\xffMXV\xff",
+    "-3\n\u2191 \x0787\r\u21974\u2199\u29b7\u2192\u25ef\u21905+\u21962\u21936019\u2295\u2198\xff./\u29b6\xff",
+]
 # Russian MTK-2 alphabet (source: https://fr.qwe.wiki/wiki/Baudot_code)
-if PY3:
-    MTK2 = [
-        "11111", "11011",
-        "\x00Е\n\xff СИУ\r\xffРЙНФЦКТЗЛВХЫПЯОБГ\xffМЬЖ\xff",
-        "\x003\n- '87\r\xff4Ю,Э:(5+)2Щ6019?Ш\xff./=\xff",
-    ]
+MTK2 = [
+    "11111", "11011",
+    "\x00Е\n\xff СИУ\r\xffРЙНФЦКТЗЛВХЫПЯОБГ\xffМЬЖ\xff",
+    "\x003\n- '87\r\xff4Ю,Э:(5+)2Щ6019?Ш\xff./=\xff",
+]
 # Murray code ; NB: not all fractions are supported (source: https://en.wikipedia.org/wiki/Baudot_code)
-if PY3:
-    MURRAY = [
-        "00100", "11011",
-        " E\xffA\xffSIU\nDRJNFCKTZLWHYPQOBF\xffMXV\x7f", 
-        "\x003\xff\xff\xff'87\n²4\xff-\u215f(\xff5./2\xff6019?\xff\xff,£)*" if PY3 else \
-            "\x003\xff\xff\xff'87\n²4\xff-\u215f(\xff5./2\xff6019?\xff\xff,$)*",
-    ]
+MURRAY = [
+    "00100", "11011",
+    " E\xffA\xffSIU\nDRJNFCKTZLWHYPQOBF\xffMXV\x7f", 
+    "\x003\xff\xff\xff'87\n²4\xff-\u215f(\xff5./2\xff6019?\xff\xff,£)*",
+]
 # English Baudot ; NB: not all fractions are supported (sources: https://fr.qwe.wiki/wiki/Baudot_code
 #                                                                https://en.wikipedia.org/wiki/Baudot_code)
-if PY3:
-    UK = [
-        "10000", "01000",
-        "\x00AE/YUIO\xffJGHBCFD -XZSTWV\x7fKMLRQNP", 
-        "\x0012\u215f34\xff5 67\xb989\xff0\xff.\xff:\xff²?'\x7f()=-/£+" if PY3 else \
-            "\x0012\xff34\xff5 67\xb989\xff0\xff.\xff:\xff²?'\x7f()=-/$+",
-    ]
+UK = [
+    "10000", "01000",
+    "\x00AE/YUIO\xffJGHBCFD -XZSTWV\x7fKMLRQNP", 
+    "\x0012\u215f34\xff5 67\xb989\xff0\xff.\xff:\xff²?'\x7f()=-/£+",
+]
 
 
 def _bits_from_tape(tape, trans={'*': "1", ' ': "0"}):

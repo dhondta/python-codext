@@ -8,9 +8,7 @@ These codecs:
 - transform strings from bytes to bytes
 - transform file content from str to bytes (write)
 """
-import hashlib
-
-from ..__common__ import add, b
+from ..__common__ import *
 
 
 MD2_TABLE = [41, 46, 67, 201, 162, 216, 124, 1, 61, 54, 84, 161, 236, 240, 6, 19, 98, 167, 5, 243, 192, 199, 115, 140,

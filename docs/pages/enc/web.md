@@ -1,5 +1,3 @@
-## Web
-
 `codext` implements some common Web-related encodings.
 
 -----

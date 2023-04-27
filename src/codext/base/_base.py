@@ -4,7 +4,6 @@
 """
 from argparse import ArgumentParser, RawTextHelpFormatter
 from math import log
-from six import integer_types, string_types
 from string import ascii_lowercase as lower, ascii_uppercase as upper, digits, printable
 from textwrap import wrap as wraptext
 from types import FunctionType, MethodType
@@ -74,7 +73,7 @@ def _get_charset(charset, p=""):
     if isinstance(charset, FunctionType):
         return charset(p)
     # case 2: charset is a string, so return it
-    elif isinstance(charset, string_types):
+    elif isinstance(charset, str):
         return charset
     # case 3: charset is a dict with keys '' and 'inv', typically for a charset using lowercase and uppercase characters
     #          that can be inverted
@@ -120,7 +119,7 @@ def base_encode(input, charset, errors="strict", exc=BaseEncodeError):
     :param errors:  errors handling marker
     :param exc:     exception to be raised in case of error
     """
-    i, n, r = input if isinstance(input, integer_types) else s2i(input), len(charset), ""
+    i, n, r = input if isinstance(input, int) else s2i(input), len(charset), ""
     if n == 1:
         if i > SIZE_LIMIT:
             raise InputSizeLimitError("Input exceeded size limit")

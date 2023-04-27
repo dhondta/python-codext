@@ -1,5 +1,3 @@
-## String tranformations
-
 `codext` also defines multiple dummy string manipulation/transformation codecs, essentially for use with the CLI tool and for the sake of simplicity.
 
 -----
@@ -14,6 +12,7 @@ These transformation functions are simple string transformations, including `str
 `capitalize` | text <-> capitalized text |  | decoding "uncapitalizes" the text
 `lowercase` | text <-> lowercase text | `lower` | decoding is `uppercase`
 `pascalcase` | text --> pascal-case text | `pascal` | no decoding
+`screamingsnakecase` | text --> screaming-snake-case text | `screaming-snake`, `screaming_snake_case` | no decoding
 `slugify` | text --> slug | `slug`, `kebab`, `kebabcase` | no decoding
 `snakecase` | text --> snake-case text | `snake` | no decoding
 `swapcase` | text <-> case-swapped text | `swap`, `invert`, `invertcase` | 

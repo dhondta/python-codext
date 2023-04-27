@@ -1,5 +1,3 @@
-## How To Create Your Codec
-
 The purpose of this section is to provide a tutorial for creating new codecs accordingly.
 
 As explained in [this section](./features.html), `codext` provides the possibility to add new codecs in two ways:

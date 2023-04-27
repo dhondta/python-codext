@@ -27,11 +27,12 @@ add("uppercase", uppercase, lowercase, r"^upper(?:case)?$", penalty=.2)
 add("lowercase", lowercase, uppercase, r"^lower(?:case)?$", penalty=.2)
 
 slugify = lambda i, e="strict", d="-": (re.sub(r"[^0-9a-z]+", d, i.lower()).strip(d), len(i))
-add("slugify", lambda i, e="strict": slugify(i, e), None, r"^(?:slug(?:ify)?|kebab(?:[-_]?case)?)$")
+add("slugify", lambda i, e="strict": slugify(i, e), None, r"^(?:slug(?:ify)?|(?:dash|kebab)(?:[-_]?case)?)$")
 add("snakecase", lambda i, e="strict": slugify(i, e, "_"), None, r"^snake(?:[-_]?case)?$")
+add("screamingsnakecase", lambda i, e="strict": slugify(i, e, "_").upper(), None, r"^screaming[-_]snake(?:[-_]?case)?$")
 
 swapcase = lambda i, e="strict": (i.swapcase(), len(i))
-add("swapcase", swapcase, swapcase, r"^(?:swap(?:[-_]?case)?|invert(?:case)?)$", penalty=.2)
+add("swapcase", swapcase, swapcase, r"^(?:(?:flip|swap)(?:[-_]?case)?|invert(?:case)?)$", penalty=.2)
 
 title = lambda i, e="strict": (i.title(), len(i))
 untitle = lambda i, e="strict": (" ".join(w[0].lower() + w[1:] if len(w) > 0 else "" for w in i.split()), len(i))

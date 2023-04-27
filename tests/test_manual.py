@@ -3,10 +3,8 @@
 """Manual codec tests.
 
 """
-import hashlib
 import os
 import random
-from six import binary_type, string_types
 from unittest import TestCase
 
 from codext.__common__ import *
@@ -109,31 +107,30 @@ class ManualTestCase(TestCase):
         for h in ["adler32", "md2", "md5", "sha1", "sha224", "sha256", "sha384", "sha512"]:
             self.assertIsNotNone(codecs.encode(STR, h))
             self.assertRaises(NotImplementedError, codecs.decode, STR, h)
-        if PY3:
-            self.assertEqual(len(codecs.encode(STR, "blake2b_64")), 128)
-            self.assertRaises(LookupError, codecs.encode, STR, "blake2b_0")
-            self.assertRaises(LookupError, codecs.encode, STR, "blake2b-65")
-            self.assertRaises(NotImplementedError, codecs.decode, STR, "blake2b")
-            self.assertEqual(len(codecs.encode(STR, "blake2s_32")), 64)
-            self.assertRaises(LookupError, codecs.encode, STR, "blake2s_0")
-            self.assertRaises(LookupError, codecs.encode, STR, "blake2s-33")
-            self.assertRaises(NotImplementedError, codecs.decode, STR, "blake2s")
-            self.assertIsNotNone(codecs.encode(STR, "shake128"))
-            self.assertRaises(LookupError, codecs.encode, STR, "shake128_0")
-            self.assertRaises(NotImplementedError, codecs.decode, STR, "shake128")
-            self.assertIsNotNone(codecs.encode(STR, "shake256"))
-            self.assertRaises(LookupError, codecs.encode, STR, "shake256-0")
-            self.assertRaises(NotImplementedError, codecs.decode, STR, "shake256")
-            for h in ["sha3_224", "sha3_256", "sha3_384", "sha3_512"]:
+        self.assertEqual(len(codecs.encode(STR, "blake2b_64")), 128)
+        self.assertRaises(LookupError, codecs.encode, STR, "blake2b_0")
+        self.assertRaises(LookupError, codecs.encode, STR, "blake2b-65")
+        self.assertRaises(NotImplementedError, codecs.decode, STR, "blake2b")
+        self.assertEqual(len(codecs.encode(STR, "blake2s_32")), 64)
+        self.assertRaises(LookupError, codecs.encode, STR, "blake2s_0")
+        self.assertRaises(LookupError, codecs.encode, STR, "blake2s-33")
+        self.assertRaises(NotImplementedError, codecs.decode, STR, "blake2s")
+        self.assertIsNotNone(codecs.encode(STR, "shake128"))
+        self.assertRaises(LookupError, codecs.encode, STR, "shake128_0")
+        self.assertRaises(NotImplementedError, codecs.decode, STR, "shake128")
+        self.assertIsNotNone(codecs.encode(STR, "shake256"))
+        self.assertRaises(LookupError, codecs.encode, STR, "shake256-0")
+        self.assertRaises(NotImplementedError, codecs.decode, STR, "shake256")
+        for h in ["sha3_224", "sha3_256", "sha3_384", "sha3_512"]:
+            self.assertIsNotNone(codecs.encode(STR, h))
+            self.assertRaises(NotImplementedError, codecs.decode, STR, h)
+        if UNIX:
+            import crypt
+            METHODS = [x[7:].lower() for x in crypt.__dict__ if x.startswith("METHOD_")]
+            for m in METHODS:
+                h = "crypt-" + m
                 self.assertIsNotNone(codecs.encode(STR, h))
                 self.assertRaises(NotImplementedError, codecs.decode, STR, h)
-            if UNIX:
-                import crypt
-                METHODS = [x[7:].lower() for x in crypt.__dict__ if x.startswith("METHOD_")]
-                for m in METHODS:
-                    h = "crypt-" + m
-                    self.assertIsNotNone(codecs.encode(STR, h))
-                    self.assertRaises(NotImplementedError, codecs.decode, STR, h)
         # CRC checks
         STR = "123456789"
         for n, variants in CRC.items():
@@ -146,8 +143,7 @@ class ManualTestCase(TestCase):
         HTM = "<h1>Test title</h1>\n\n<p>Test paragraph</p>\n"
         MD  = "# Test title\n\nTest paragraph"
         TFILE = "test-codec-markdown.html"
-        self.assertTrue(isinstance(codecs.encode(MD, "markdown"), string_types))
-        self.assertTrue(not PY3 or isinstance(codecs.encode(b(MD), "markdown"), binary_type))
+        self.assertTrue(isinstance(codecs.encode(MD, "markdown"), str))
         self.assertEqual(codecs.encode(MD, "markdown"), HTM)
         self.assertRaises(NotImplementedError, codecs.decode, MD, "markdown")
         with codecs.open(TFILE, 'w', encoding="markdown") as f:

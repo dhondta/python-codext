@@ -17,7 +17,7 @@ __examples__ = {
     'dec(uu-encode)':   {'.=&AI<R!I<R!A(\'1E<W0 ': "this is a test", '.=&AI<R!I<R!A(\'1E<W0`': "this is a test"},
     'dec(uu-codec)':    {'begin 666 -\n.=&AI<R!I<R!A(\'1E<W0`': None, '.=&AI<R!I<R!A(\'1E<W0`\n\n\n`\nend': None},
     'dec(uu_codec)':    {'begin 777 test.txt\n.=&AI<R!I<R!A(\'1E<W0`\n\n\n`\nend': "this is a test"},
-    'enc-dec(uu)':      ["@random{512,1024,2048}"],
+    'enc-dec(uu)':      ["begin 666 -\n.=&AI<R!I<R!A(\'1E<W0`", "@random{512,1024,2048}"],
 }
 
 

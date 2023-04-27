@@ -2,11 +2,6 @@
 """Codecs extension module.
 
 """
-from __future__ import print_function
-from _codecs import lookup as orig_lookup
-from ast import literal_eval
-from six import binary_type, text_type
-
 from .__common__ import *
 from .__info__ import __author__, __copyright__, __email__, __license__, __source__, __version__
 
@@ -25,6 +20,14 @@ list = list_encodings  # not included in __all__ because of shadow name
 
 
 reset()
+
+
+# populate codext with attributes from codecs that were not modified
+for attr in codecs.__all__:
+    if attr in __all__:
+        continue
+    locals()[attr] = getattr(codecs, attr)
+    __all__.append(attr)
 
 
 def __format_list(items, include=True):
@@ -107,8 +110,7 @@ def main():
     ])
     kw = {'formatter_class': _CustomFormatter}
     parser = argparse.ArgumentParser(description=descr, epilog=examples, **kw)
-    kw2 = {'required': True} if PY3 else {}
-    sparsers = parser.add_subparsers(dest="command", help="command to be executed", **kw2)
+    sparsers = parser.add_subparsers(dest="command", help="command to be executed", required=True)
     parser.add_argument("-i", "--input-file", dest="infile", help="input file (if none, take stdin as input)")
     parser.add_argument("-o", "--output-file", dest="outfile", help="output file (if none, display result to stdout)")
     parser.add_argument("-s", "--strip-newlines", action="store_true", dest="strip",
@@ -166,7 +168,7 @@ def main():
     search = sparsers.add_parser("search", help="search for codecs")
     search.add_argument("pattern", nargs="+", help="encoding pattern to search")
     listi = sparsers.add_parser("list", help="list items")
-    lsparsers = listi.add_subparsers(dest="type", help="type of item to be listed", **kw2)
+    lsparsers = listi.add_subparsers(dest="type", help="type of item to be listed", required=True)
     liste = lsparsers.add_parser("encodings", help="list encodings")
     liste.add_argument("category", nargs="+", help="selected categories")
     listm = lsparsers.add_parser("macros", help="list macros")

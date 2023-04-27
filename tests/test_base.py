@@ -3,7 +3,6 @@
 """Base codecs tests.
 
 """
-import os
 import sys
 from unittest import TestCase
 
@@ -203,14 +202,14 @@ class TestCodecsBase(TestCase):
         self.assertIsNotNone(codecs.encode("\x00\x00", "base91-alt"))
     
     def test_codec_base100(self):
-        if PY3:
-            B100 = "\U0001f46b\U0001f45f\U0001f460\U0001f46a\U0001f417\U0001f460\U0001f46a\U0001f417\U0001f458" \
-                   "\U0001f417\U0001f46b\U0001f45c\U0001f46a\U0001f46b"
-            self.assertEqual(codecs.encode(STR, "base100"), B100)
-            self.assertEqual(codecs.encode(b(STR), "base100"), b(B100))
-            self.assertEqual(codecs.decode(B100, "base100"), STR)
-            self.assertEqual(codecs.decode(b(B100), "base100"), b(STR))
-            self.assertRaises(ValueError, codecs.decode, b(B100)[1:], "base100")
+        B100 = "\U0001f46b\U0001f45f\U0001f460\U0001f46a\U0001f417\U0001f460\U0001f46a\U0001f417\U0001f458\U0001f417" \
+               "\U0001f46b\U0001f45c\U0001f46a\U0001f46b"
+        self.assertEqual(codecs.encode(STR, "base100"), B100)
+        self.assertEqual(codecs.encode(b(STR), "base100"), b(B100))
+        self.assertEqual(codecs.decode(B100, "base100"), STR)
+        self.assertEqual(codecs.decode(b(B100), "base100"), b(STR))
+        self.assertRaises(ValueError, codecs.decode, b(B100)[1:], "base100")
+        self.assertIsNotNone(codecs.decode(b(B100) + b"\n", "base100", "ignore"))
     
     def test_codec_base_generic(self):
         for n in range(2, 255):

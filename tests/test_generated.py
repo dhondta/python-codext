@@ -3,8 +3,6 @@
 """Automatically generated codec tests.
 
 """
-import os
-import re
 from itertools import chain
 from random import randint
 from string import printable
@@ -29,11 +27,15 @@ def make_test(**params):
         # now execute tests relying on the given examples
         for k, examples in params['examples'].items():
             # multiple encoding names can be given, e.g. 'enc(morse|morse-AB|...)'
-            m = re.match(r"(?:dec|enc|enc-dec)\((.*?)(?:\|(.*?))*\)", k)
+            m = re.match(r"(?:dec|enc|enc-dec)\((.*?)(?:\|(.*?))*\)(\*)?", k)
             if m:
                 f1 = getattr(codecs, ["decode", "encode"][k.startswith("enc")])
                 f2 = getattr(codecs, ["encode", "decode"][k.startswith("enc")])
                 for ename in m.groups():
+                    #FIXME
+                    if ename == "*":
+                        # ignore mode only
+                        continue
                     if ename is None:
                         continue
                     # buggy generated encoding names
@@ -75,6 +77,10 @@ def make_test(**params):
                                     self.assertEqual(f1(c1 + c2, ename, "replace"), f1(c1, ename) + sep + \
                                                      params.get('repl_minlen', 1) * params['repl_char'])
                     # examples validation tests
+                    incr_f1 = codecs.getincrementalencoder(ename)().encode
+                    incr_f2 = codecs.getincrementaldecoder(ename)().decode
+                    # - "enc-dec" tests (uses a list of values that shall remain the same after encoding and decoding,
+                    #    no matter what the encoded value is
                     if k.startswith("enc-dec") and isinstance(examples, list):
                         for e in examples[:]:
                             rd = re.match(r"\@(i?)random(?:\{(\d+(?:,(\d+))*?)\})?$", e)
@@ -86,13 +92,20 @@ def make_test(**params):
                         for s in [""] + examples:
                             self.assertEqual(icdec(f2(icenc(f1(s, ename)), ename)), icdec(s))
                             self.assertEqual(icdec(f2(icenc(f1(b(s), ename)), ename)), b(icdec(s)))
+                            # important note: with respect to the original design,
+                            #  IncrementalEncoder(...).encode(...) gives bytes
+                            #  IncrementalDecoder(...).encode(...) gives str
+                            self.assertEqual(icdec(incr_f2(icenc(incr_f1(s, ename)), ename)), icdec(s))
+                            self.assertEqual(icdec(incr_f2(icenc(incr_f1(b(s), ename)), ename)), icdec(s))
                             # file tests
                             with codecs.open(tfile, 'wb', encoding=ename) as f:
                                 f.write(b(s))
                             with codecs.open(tfile, 'rb', encoding=ename) as f:
-                                s2 = f.read() if PY3 else f.read().rstrip("\x00")
+                                s2 = f.read()
                             self.assertEqual(b(icdec(s2)), b(icdec(s)))
                             os.remove(tfile)
+                    # - "enc" and "dec" tests (uses a dictionary with the value to be encoded and the expected encoded
+                    #    value)
                     else:
                         for s1, s2 in examples.items():
                             # willingly erroneous tests
@@ -102,11 +115,19 @@ def make_test(**params):
                             # raw text tests
                             self.assertEqual(icenc(f1(s1, ename)), icenc(s2))
                             self.assertEqual(b(icenc(f1(s1, ename))), b(icenc(s2)))
+                            # important note: with respect to the original design,
+                            #  IncrementalEncoder(...).encode(...) gives bytes
+                            #self.assertEqual(icenc(incr_f1(s1, ename)), b(icenc(s2)))
+                            #self.assertEqual(icenc(incr_f1(b(s1), ename)), b(icenc(s2)))
                             self.assertIsNotNone(f1(s1, ename, "replace"))
                             self.assertIsNotNone(f1(s1, ename, "ignore"))
                             if dec:
                                 self.assertEqual(icdec(f2(s2, ename)), icdec(s1))
                                 self.assertEqual(b(icdec(f2(s2, ename))), b(icdec(s1)))
+                                # important note: with respect to the original design,
+                                #  IncrementalDecoder(...).encode(...) gives str
+                                #self.assertEqual(icdec(incr_f2(s2, ename)), icdec(s1))
+                                #self.assertEqual(icdec(incr_f2(b(s2), ename)), icdec(s1))
                                 self.assertIsNotNone(f2(s2, ename, "replace"))
                                 self.assertIsNotNone(f2(s2, ename, "ignore"))
                             if k.startswith("enc"):
@@ -115,8 +136,6 @@ def make_test(**params):
                                     f.write(b(s1))
                                 with codecs.open(tfile, 'rb', encoding=ename) as f:
                                     s = f.read()
-                                if not PY3 and re.search("[^\x00]\x00$", s):
-                                    s = s[:-1]
                                 self.assertEqual(b(icdec(f2(s2, ename))), b(icdec(s)))
                                 os.remove(tfile)
     return _template

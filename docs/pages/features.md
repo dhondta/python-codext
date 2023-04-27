@@ -1,5 +1,3 @@
-## Features
-
 Basically, the `codecs` library provides a series of functions from the built-in `_codecs` library which maintains a registry of search functions (a simple list) that maps ancodings to the right de/encode functions by returning a `CodecInfo` object once first matched.
 
 `codext` hooks `codecs`'s functions to insert its own proxy registry between the function calls and the native registry so that new encodings can be added or replace existing ones while using `code[cs|xt].open`. Indeed, as the proxy registry is called first, the first possible match occurs in a custom codec, while if not existing, the native registry is used.

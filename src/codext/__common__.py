@@ -1,22 +1,24 @@
 # -*- coding: UTF-8 -*-
 import _codecs
 import codecs
+import hashlib
 import json
 import os
 import random
 import re
+import sre_parse
 import sys
 from encodings.aliases import aliases as ALIASES
 from functools import reduce, update_wrapper, wraps
 from importlib import import_module
 from inspect import currentframe
+from io import BytesIO
 from itertools import chain, product
 from locale import getlocale
 from math import log
 from pkgutil import iter_modules
 from platform import system
 from random import randint
-from six import binary_type, string_types, text_type, BytesIO
 from string import *
 from types import FunctionType, ModuleType
 try:  # Python2
@@ -35,18 +37,16 @@ try:  # Python3
     from importlib import reload
 except ImportError:
     pass
-try:  # from Python 3.11, it seems that 'sre_parse' is not bound to 're' anymore
-    re.sre_parse
-except AttributeError:
-    import sre_parse as __sre_parse
-    re.sre_parse = __sre_parse
+
+# from Python 3.11, it seems that 'sre_parse' is not bound to 're' anymore
+re.sre_parse = sre_parse
 
 
 __all__ = ["add", "add_macro", "add_map", "b", "clear", "codecs", "decode", "encode", "ensure_str", "examples", "guess",
-           "isb", "generate_strings_from_regex", "get_alphabet_from_mask", "handle_error", "i2s", "is_native",
-           "list_categories", "list_encodings", "list_macros", "lookup", "maketrans", "os", "rank", "re", "register",
-           "remove", "reset", "s2i", "search", "stopfunc", "BytesIO", "_input", "_stripl", "CodecMacro",
-           "DARWIN", "LANG", "LINUX", "MASKS", "PY3", "UNIX", "WINDOWS"]
+           "isb", "generate_strings_from_regex", "get_alphabet_from_mask", "handle_error", "hashlib", "i2s",
+           "is_native", "list_categories", "list_encodings", "list_macros", "lookup", "maketrans", "os", "rank", "re",
+           "register", "remove", "reset", "s2i", "search", "stopfunc", "BytesIO", "_input", "_stripl", "CodecMacro",
+           "DARWIN", "LANG", "LINUX", "MASKS", "UNIX", "WINDOWS"]
 CODECS_REGISTRY = None
 CODECS_OVERWRITTEN = []
 CODECS_CATEGORIES = ["native", "custom"]
@@ -74,14 +74,13 @@ PERS_MACROS_FILE = os.path.expanduser("~/.codext-macros.json")
 
 DARWIN = system() == "Darwin"
 LINUX = system() == "Linux"
-PY3 = sys.version[0] == "3"
 UNIX = DARWIN or LINUX
 WINDOWS = system() == "Windows"
 
 entropy = lambda s: -sum([p * log(p, 2) for p in [float(s.count(c)) / len(s) for c in set(s)]])
 
-isb = lambda s: isinstance(s, binary_type)
-iss = lambda s: isinstance(s, string_types)
+isb = lambda s: isinstance(s, bytes)
+iss = lambda s: isinstance(s, str)
 fix = lambda x, ref: b(x) if isb(ref) else ensure_str(x) if iss(ref) else x
 
 s2i = lambda s: int(codecs.encode(s, "base16"), 16)
@@ -791,23 +790,20 @@ codecs.reset = reset
 # conversion functions
 def b(s):
     """ Non-crashing bytes conversion function. """
-    if PY3:
-        try:
-            return s.encode("latin-1")
-        except:
-            pass
-        try:
-            return s.encode("utf-8")
-        except:
-            pass
+    try:
+        return s.encode("latin-1")
+    except:
+        pass
+    try:
+        return s.encode("utf-8")
+    except:
+        pass
     return s
 
 
 def ensure_str(s, encoding='utf-8', errors='strict'):
-    """ Similar to six.ensure_str. Adapted here to avoid messing up with six version errors. """
-    if not PY3 and isinstance(s, text_type):
-        return s.encode(encoding, errors)
-    elif PY3 and isinstance(s, binary_type):
+    """ Dummy str conversion function. """
+    if isinstance(s, bytes):
         try:
             return s.decode(encoding, errors)
         except:
@@ -917,7 +913,14 @@ def encode(obj, encoding='utf-8', errors='strict'):
         encoding = re.sub(r"\[(\d+)\]$", "", encoding)
     ci = lookup(encoding)
     for i in range(n):
-        obj = ci.encode(obj, errors)[0]
+        try:
+            obj = ci.encode(obj, errors)[0]
+        except (AttributeError, TypeError) as e:  # occurs for encodings that require str as input while 'obj' is bytes
+            if str(e) not in ["'bytes' object has no attribute 'encode'",
+                              "ord() expected string of length 1, but int found"] or \
+               encoding in ["latin-1", "utf-8"]:  # encodings considered when using b(...)
+                raise
+            obj = ci.encode(ensure_str(obj), errors)[0]
     return obj
 codecs.encode = encode
 
@@ -1240,7 +1243,7 @@ stopfunc._reload_lang = _load_lang_backend
 
 def _validate(stop_function, lang_backend="none"):
     s, lb = stop_function, lang_backend
-    if isinstance(s, string_types):
+    if isinstance(s, str):
         if re.match(r"lang_[a-z]{2}$", s) and lb != "none" and \
            all(re.match(r"lang_[a-z]{2}$", x) is None for x in dir(stopfunc)):
             stopfunc._reload_lang(lb)
@@ -1460,7 +1463,7 @@ def guess(input, stop_func=stopfunc.default, min_depth=0, max_depth=5, include=N
         for encoding in found:
             input = decode(input, encoding)
     # handle the stop function as a regex if a string was given
-    if isinstance(stop_func, string_types):
+    if isinstance(stop_func, str):
         stop_func = stopfunc.regex(stop_func)
     # reformat include and exclude arguments ; supported formats:
     for n, l in zip(["inc", "exc"], [include, exclude]):
@@ -1470,7 +1473,7 @@ def guess(input, stop_func=stopfunc.default, min_depth=0, max_depth=5, include=N
             else:
                 exclude = l = {}
         #  "category" OR "enc_name" OR whatever => means a single item for all depths
-        if isinstance(l, string_types):
+        if isinstance(l, str):
             if n == "inc":
                 include = l = {-1: [l]}
             else:

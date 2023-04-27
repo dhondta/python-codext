@@ -10,7 +10,6 @@ This codec:
 - encodes file content from str to bytes (write)
 """
 import base64
-from six import integer_types
 
 from ._base import _get_charset, digits, lower, main, upper
 from ..__common__ import *
