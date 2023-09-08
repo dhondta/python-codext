@@ -227,7 +227,7 @@ def main():
             else:
                 print(ensure_str(c or "Could not %scode :-(" % ["en", "de"][args.command == "decode"]), end="")
         elif args.command == "guess":
-            s, lb = args.stop_function, args.lang_backend
+            s, lb = args.stop_function, getattr(args, "lang_backend", "none")
             if re.match(r"lang_[a-z]{2}$", s) and lb != "none" and \
                all(re.match(r"lang_[a-z]{2}$", x) is None for x in dir(stopfunc)):
                 stopfunc._reload_lang(lb)
