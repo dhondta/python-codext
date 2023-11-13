@@ -32,7 +32,6 @@ def make_test(**params):
                 f1 = getattr(codecs, ["decode", "encode"][k.startswith("enc")])
                 f2 = getattr(codecs, ["encode", "decode"][k.startswith("enc")])
                 for ename in m.groups():
-                    #FIXME
                     if ename == "*":
                         # ignore mode only
                         continue

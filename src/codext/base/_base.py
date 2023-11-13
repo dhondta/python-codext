@@ -5,6 +5,7 @@
 from argparse import ArgumentParser, RawTextHelpFormatter
 from math import log
 from string import ascii_lowercase as lower, ascii_uppercase as upper, digits, printable
+from sys import stdout
 from textwrap import wrap as wraptext
 from types import FunctionType, MethodType
 
@@ -280,8 +281,11 @@ Full documentation at: <https://python-codext.readthedocs.io/en/latest/enc/base.
         except Exception as err:
             print("%sbase%s: invalid input" % (getattr(err, "output", ""), base))
             return 1
+        if args.decode:
+            stdout.buffer.write(c)
+            return 0
         c = ensure_str(c)
-        if swap and args.swapcase and not args.decode:
+        if swap and args.swapcase:
             c = codecs.encode(c, "swapcase")
         for l in (wraptext(c, args.wrap) if args.wrap > 0 else [c]) if wrap else c.split("\n"):
             print(l)

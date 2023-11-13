@@ -104,9 +104,9 @@ class CodecMacro(tuple):
             try:
                 self.codecs = MACROS[name]
             except KeyError:
-                raise LookupError("unknown macro: %s" % name)
+                raise LookupError(f"unknown macro: {name}")
         if not isinstance(self.codecs, (tuple, list)):
-            raise ValueError("bad macro list: %s" % str(self.codecs))
+            raise ValueError(f"bad macro list: {self.codecs}")
         self.codecs = [lookup(e, False) for e in self.codecs]  # lookup(e, False)
         self.parameters = {'name': name, 'category': "macro"}  #             ^  means that macros won't be nestable
         # test examples to check that the chain of encodings works
@@ -158,7 +158,7 @@ class CodecMacro(tuple):
         return input, l
     
     def __repr__(self):
-        return "<codext.CodecMacro object for encoding %s at %#x>" % (self.name, id(self))
+        return f"<codext.CodecMacro object for encoding {self.name} at {id(self):#x}>"
 
 
 # inspired from: https://stackoverflow.com/questions/10875442/possible-to-change-a-functions-repr-in-python
@@ -172,7 +172,7 @@ class Repr(object):
         return self.__func(*args, **kwargs)
     
     def __repr__(self):
-        return "<search-function %s at 0x%x>" % (self.__name, id(self))
+        return f"<search-function {self.__name} at {id(self):#x}>"
 
 
 def __stdin_pipe():
@@ -200,7 +200,7 @@ def _input(infile):
 
 def _set_exc(name, etype="ValueError"):
     if not hasattr(builtins, name):
-        exec("class %s(%s): __module__ = 'builtins'" % (name, etype))
+        exec(f"class {name}({etype}): __module__ = 'builtins'")
         setattr(builtins, name, locals()[name])
 _set_exc("InputSizeLimitError")
 _set_exc("ParameterError")
@@ -237,11 +237,11 @@ def add(ename, encode=None, decode=None, pattern=None, text=True, add_to_codecs=
     if encode:
         if not isinstance(encode, FunctionType):
             raise ValueError("Bad 'encode' function")
-        _set_exc("%sEncodeError" % exc_name(ename))  # create the custom encode exception as a builtin
+        _set_exc(f"{exc_name(ename)}EncodeError")  # create the custom encode exception as a builtin
     if decode:
         if not isinstance(decode, FunctionType):
             raise ValueError("Bad 'decode' function")
-        _set_exc("%sDecodeError" % exc_name(ename))  # create the custom decode exception as a builtin
+        _set_exc(f"{exc_name(ename)}DecodeError")  # create the custom decode exception as a builtin
     if not encode and not decode:
         raise ValueError("At least one en/decoding function must be defined")
     for exc in kwargs.get('extra_exceptions', []):
@@ -375,7 +375,7 @@ def add_macro(mname, *encodings):
         raise ValueError("Macro name already exists")
     try:
         ci = lookup(mname, False)
-        raise ValueError("Macro name clashes with codec '%s'" % ci.name)
+        raise ValueError(f"Macro name clashes with codec '{ci.name}'")
     except LookupError:
         pass
     try:
@@ -463,7 +463,7 @@ def add_map(ename, encmap, repl_char="?", sep="", ignore_case=None, no_error=Fal
                        isinstance(mapdict, dict) and p in mapdict.keys():
                         smapdict = {k: v for k, v in mapdict[p].items()}
                     else:
-                        raise LookupError("Bad parameter for encoding '{}': '{}'".format(ename, p))
+                        raise LookupError(f"Bad parameter for encoding '{ename}': '{p}'")
                 # case 3: dictionary of regex-selected encoding mappings
                 elif isinstance(mapdict, dict) and isinstance(list(mapdict.values())[0], dict):
                     tmp = None
@@ -474,7 +474,7 @@ def add_map(ename, encmap, repl_char="?", sep="", ignore_case=None, no_error=Fal
                             tmp = d
                             break
                     if tmp is None:
-                        raise LookupError("Bad parameter for encoding '{}': '{}'".format(ename, p))
+                        raise LookupError(f"Bad parameter for encoding '{ename}': '{p}'")
                     smapdict = tmp
                 # case 4: encoding characters translation
                 else:
@@ -494,7 +494,7 @@ def add_map(ename, encmap, repl_char="?", sep="", ignore_case=None, no_error=Fal
                         for k, v in smapdict.items():
                             smapdict[k] = [x.translate(t) for x in v] if isinstance(v, list) else v.translate(t)
                     else:
-                        raise LookupError("Bad parameter for encoding '{}': '{}'".format(ename, p))
+                        raise LookupError(f"Bad parameter for encoding '{ename}': '{p}'")
             if ignore_case is not None:
                 cases = ["upper", "lower"]
                 case_d = cases[any(c in str(list(smapdict.values())) for c in "abcdefghijklmnopqrstuvwxyz")]
@@ -538,7 +538,7 @@ def add_map(ename, encmap, repl_char="?", sep="", ignore_case=None, no_error=Fal
                 text = ensure_str(text)
                 if not decode:
                     if intype == "bin":
-                        text = "".join("{:0>8}".format(bin(ord(c))[2:]) for c in text)
+                        text = "".join(f"{bin(ord(c))[2:]:0>8}" for c in text)
                     elif intype == "ord":
                         text = "".join(str(ord(c)).zfill(3) for c in text)
                 r = ""
@@ -720,7 +720,7 @@ def list_encodings(*categories):
             enc.append(name)
     for category in categories:
         if category not in CODECS_CATEGORIES:
-            raise ValueError("Category '%s' does not exist" % category)
+            raise ValueError(f"Category '{category}' does not exist")
     return sorted(list(set(enc)), key=_human_keys)
 
 
@@ -755,7 +755,7 @@ def remove(name):
         pass
     for s in ["En", "De"]:
         try:
-            delattr(builtins, "%s%scodeError" % (name.capitalize(), s))
+            delattr(builtins, f"{name.capitalize()}{s}codeError")
         except AttributeError:
             pass
 codecs.remove = remove
@@ -801,7 +801,7 @@ def b(s):
     return s
 
 
-def ensure_str(s, encoding='utf-8', errors='strict'):
+def ensure_str(s, encoding="utf-8", errors='strict'):
     """ Dummy str conversion function. """
     if isinstance(s, bytes):
         try:
@@ -859,7 +859,7 @@ def handle_error(ename, errors, sep="", repl_char="?", repl_minlen=1, decode=Fal
     :param decode:      whether we are encoding or decoding
     :param item:        position item description (for describing the error ; e.g. "group" or "token")
     """
-    exc = "%s%scodeError" % (exc_name(ename), ["En", "De"][decode])
+    exc = f"{exc_name(ename)}{['En','De'][decode]}codeError"
      
     def _handle_error(token, position, output="", eename=None):
         """ This handles an encoding/decoding error according to the selected handling mode.
@@ -883,7 +883,7 @@ def handle_error(ename, errors, sep="", repl_char="?", repl_minlen=1, decode=Fal
         elif errors == "ignore":
             return ""
         else:
-            raise ValueError("Unsupported error handling '{}'".format(errors))
+            raise ValueError(f"Unsupported error handling '{errors}'")
     return _handle_error
 
 
@@ -950,7 +950,7 @@ def lookup(encoding, macro=True):
     try:
         return CodecMacro(encoding)
     except LookupError:
-        e = LookupError("unknown encoding: %s" % encoding)
+        e = LookupError(f"unknown encoding: {encoding}")
         e.__cause__ = e  # stop exception chaining
         raise e
 codecs.lookup = lookup
@@ -1112,7 +1112,7 @@ def __gen_str_from_re(regex, star_plus_max, repeat_max, yield_max, parsed=False)
                 __groups[value[0]] = result
             tokens.append(result)
         else:
-            raise NotImplementedError("Unhandled code '{}'".format(code))
+            raise NotImplementedError(f"Unhandled code '{code}'")
     if len(tokens) == 0:
         tokens = [""]
     i = 0
@@ -1231,11 +1231,11 @@ def _load_lang_backend(backend=None):
             stopfunc.CLD3_LANGUAGES if _lb == "cld3" else \
             stopfunc.TEXTBLOB_LANGUAGES if _lb == "textblob" else \
             []):
-            n = "lang_%s" % lang
+            n = f"lang_{lang}"
             setattr(stopfunc, n, _lang(lang))
             getattr(stopfunc, n).__name__ = getattr(stopfunc, n).__qualname__ = n
         if LANG:
-            flng = "lang_%s" % LANG
+            flng = f"lang_{LANG}"
             if getattr(stopfunc, flng, None):
                 stopfunc.default = getattr(stopfunc, flng)        
 stopfunc._reload_lang = _load_lang_backend
@@ -1263,7 +1263,7 @@ def __guess(prev_input, input, stop_func, depth, max_depth, min_depth, encodings
         if not stop and (show or debug) and found not in result:
             s = repr(input)
             s = s[2:-1] if s.startswith("b'") and s.endswith("'") else s
-            s = "[+] %s: %s" % (", ".join(found), s)
+            s = "[+] {', '.join(found)}: {s}"
             print(s if len(s) <= 80 else s[:77] + "...")
         result[found] = input
     if depth >= max_depth or len(result) > 0 and stop:
@@ -1274,7 +1274,7 @@ def __guess(prev_input, input, stop_func, depth, max_depth, min_depth, encodings
         if len(result) > 0 and stop:
             return
         if debug:
-            print("[*] Depth %0{}d/%d: %s".format(len(str(max_depth))) % (depth+1, max_depth, encoding))
+            print(f"[*] Depth %0{len(str(max_depth))}d/%d: {encoding}" % (depth+1, max_depth))
         __guess(input, new_input, stop_func, depth+1, max_depth, min_depth, encodings, result, found + (encoding, ),
                 stop, show, scoring_heuristic, extended, debug)
 
