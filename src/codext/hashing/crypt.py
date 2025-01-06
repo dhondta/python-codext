@@ -12,7 +12,10 @@ from ..__common__ import add, ensure_str, UNIX
 
 
 if UNIX:
-    import crypt
+    try:
+        import crypt
+    except ImportError:
+        import crypt_r as crypt
     
     METHODS = [x[7:].lower() for x in crypt.__dict__ if x.startswith("METHOD_")]
     

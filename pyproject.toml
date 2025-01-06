@@ -26,6 +26,7 @@ classifiers = [
   "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 dependencies = [
+  "crypt-r; python_version >= '3.13'",
   "markdown2>=2.4.0",
 ]
 dynamic = ["version"]
