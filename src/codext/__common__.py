@@ -200,8 +200,9 @@ def _input(infile):
 
 def _set_exc(name, etype="ValueError"):
     if not hasattr(builtins, name):
-        exec(f"class {name}({etype}): __module__ = 'builtins'")
-        setattr(builtins, name, locals()[name])
+        ns = {}
+        exec(f"class {name}({etype}): __module__ = 'builtins'", {}, ns)
+        setattr(builtins, name, ns[name])
 _set_exc("InputSizeLimitError")
 _set_exc("ParameterError")
 
