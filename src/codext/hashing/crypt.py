@@ -15,7 +15,7 @@ if UNIX:
     try:
         import crypt
     except ImportError:
-        import crypt_r as crypt
+        import legacycrypt as crypt
     
     METHODS = [x[7:].lower() for x in crypt.__dict__ if x.startswith("METHOD_")]
     
