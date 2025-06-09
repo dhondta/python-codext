@@ -19,7 +19,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
-        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
     steps:
     - uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
@@ -77,3 +77,30 @@ jobs:
       with:
         github_token: ${{ secrets.github_token }}
         branch: ${{ github.ref }}
+  deploy:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+    - name: Check for version change
+      uses: dorny/paths-filter@v2
+      id: filter
+      with:
+        filters: |
+          version:
+            - '**/VERSION.txt'
+    - if: steps.filter.outputs.version == 'true'
+      name: Cleanup README
+      run: |
+        sed -ri 's/^(##*)\s*:.*:\s*/\1 /g' README.md
+        awk '{if (match($0,"## Supporters")) exit; print}' README.md > README
+        mv -f README README.md
+    - run: python3 -m pip install --upgrade build && python3 -m build
+    - name: Upload ${{ env.package }} to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        password: ${{ secrets.PYPI_API_TOKEN }}
+        verbose: true
+        verify_metadata: false

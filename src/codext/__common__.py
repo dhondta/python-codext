@@ -370,7 +370,7 @@ def add_macro(mname, *encodings):
     :param mname:     macro name
     :param encodings: encoding names of the encodings to be chained with the macro
     """
-    global PERS_MACROS
+    global PERS_MACROS  # noqa: F824
     # check for name clash with alreday existing macros and codecs
     if mname in MACROS or mname in PERS_MACROS:
         raise ValueError("Macro name already exists")
@@ -630,7 +630,7 @@ codecs.add_map = add_map
 
 def clear():
     """ Clear codext's local registry of search functions. """
-    global __codecs_registry, MACROS, PERS_MACROS
+    global __codecs_registry, MACROS, PERS_MACROS  # noqa: F824
     __codecs_registry, MACROS, PERS_MACROS = [], {}, {}
 codecs.clear = clear
 
@@ -733,7 +733,7 @@ def list_macros():
 def remove(name):
     """ Remove all search functions matching the input encoding name from codext's local registry or any macro with the
          given name. """
-    global __codecs_registry, MACROS, PERS_MACROS
+    global __codecs_registry, MACROS, PERS_MACROS  # noqa: F824
     tbr = []
     for search_function in __codecs_registry:
         if search_function(name) is not None:
@@ -764,7 +764,7 @@ codecs.remove = remove
 
 def reset():
     """ Reset codext's local registry of search functions and macros. """
-    global __codecs_registry, CODECS_REGISTRY, MACROS, PERS_MACROS
+    global __codecs_registry, CODECS_REGISTRY, MACROS, PERS_MACROS  # noqa: F824
     clear()
     d = os.path.dirname(__file__)
     for pkg in sorted(os.listdir(d)):

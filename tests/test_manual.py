@@ -125,7 +125,10 @@ class ManualTestCase(TestCase):
             self.assertIsNotNone(codecs.encode(STR, h))
             self.assertRaises(NotImplementedError, codecs.decode, STR, h)
         if UNIX:
-            import crypt
+            try:
+                import crypt
+            except ImportError:
+                import legacycrypt as crypt
             METHODS = [x[7:].lower() for x in crypt.__dict__ if x.startswith("METHOD_")]
             for m in METHODS:
                 h = "crypt-" + m
