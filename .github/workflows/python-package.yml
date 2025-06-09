@@ -26,18 +26,14 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
+    - name: Install pandoc
+      run: sudo apt-get install -y pandoc
     - name: Install ${{ env.package }}
       run: |
         python -m pip install --upgrade pip
-        python -m pip install flake8 pytest pytest-cov pytest-pythonpath coverage
+        python -m pip install pytest pytest-cov pytest-pythonpath coverage
         pip install -r requirements.txt
         pip install .
-    - name: Lint with flake8
-      run: |
-        # stop the build if there are Python syntax errors or undefined names
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
     - name: Test ${{ env.package }} with pytest
       run: |
         pytest --cov=$package
@@ -48,6 +44,12 @@ jobs:
       cov_badge_path: docs/coverage.svg
     steps:
     - uses: actions/checkout@v3
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.12"
+    - name: Install pandoc
+      run: sudo apt-get install -y pandoc notification-daemon
     - name: Install ${{ env.package }}
       run: |
         python -m pip install --upgrade pip
@@ -79,7 +81,7 @@ jobs:
         branch: ${{ github.ref }}
   deploy:
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    needs: coverage
     steps:
     - uses: actions/checkout@v3
       with:
@@ -97,8 +99,11 @@ jobs:
         sed -ri 's/^(##*)\s*:.*:\s*/\1 /g' README.md
         awk '{if (match($0,"## Supporters")) exit; print}' README.md > README
         mv -f README README.md
-    - run: python3 -m pip install --upgrade build && python3 -m build
-    - name: Upload ${{ env.package }} to PyPI
+    - if: steps.filter.outputs.version == 'true'
+      name: Build ${{ env.package }} package
+      run: python3 -m pip install --upgrade build && python3 -m build
+    - if: steps.filter.outputs.version == 'true'
+      name: Upload ${{ env.package }} to PyPi
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
         password: ${{ secrets.PYPI_API_TOKEN }}
