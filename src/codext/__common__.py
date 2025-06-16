@@ -261,7 +261,7 @@ def add(ename, encode=None, decode=None, pattern=None, text=True, add_to_codecs=
                 while True:
                     try:
                         g = m.group(i) or ""
-                        if g.isdigit() and not g.startswith("0") and "".join(set(g)) != "01":
+                        if g.isdigit() and not g.startswith("0") and (re.match(r"10+", g) or "".join(set(g)) != "01"):
                             g = int(g)
                         args += [g]
                         i += 1
