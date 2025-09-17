@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=61.0", "setuptools-scm"]
+requires = ["setuptools>=80.0.0", "setuptools-scm"]
 build-backend = "setuptools.build_meta"
 
 [tool.setuptools.dynamic]
@@ -27,7 +27,7 @@ classifiers = [
 ]
 dependencies = [
   "legacycrypt; python_version >= '3.13'",
-  "markdown2>=2.4.0",
+  "markdown2>=2.5.4",
 ]
 dynamic = ["version"]
 
