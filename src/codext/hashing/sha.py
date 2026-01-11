@@ -1,5 +1,5 @@
 # -*- coding: UTF-8 -*-
-"""Case Codecs - string hashing with Secure Hash Algorithms.
+"""SHA Hashing Codecs - string hashing with Secure Hash Algorithms.
 
 These are codecs for hashing strings, for use with other codecs in encoding chains.
 

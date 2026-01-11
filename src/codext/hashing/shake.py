@@ -1,5 +1,5 @@
 # -*- coding: UTF-8 -*-
-"""Case Codecs - string hashing with SHAKE.
+"""Shake Hashing Codecs - string hashing with SHAKE.
 
 These are codecs for hashing strings, for use with other codecs in encoding chains.
 

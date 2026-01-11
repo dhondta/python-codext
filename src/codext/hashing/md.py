@@ -1,5 +1,5 @@
 # -*- coding: UTF-8 -*-
-"""Case Codecs - string hashing with Message Digest (MD).
+"""MD Hashing Codecs - string hashing with Message Digest (MD).
 
 These are codecs for hashing strings, for use with other codecs in encoding chains.
 
@@ -56,4 +56,3 @@ add("md2", lambda s, error="strict": (md2(s), len(s)), guess=None)
 add("md5", lambda s, error="strict": (hashlib.new("md5", b(s)).hexdigest(), len(s)), guess=None)
 if "md4" in hashlib.algorithms_available:
     add("md4", lambda s, error="strict": (hashlib.new("md4", b(s)).hexdigest(), len(s)), guess=None)
-

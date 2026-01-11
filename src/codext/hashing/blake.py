@@ -1,5 +1,5 @@
 # -*- coding: UTF-8 -*-
-"""Case Codecs - string hashing with blake.
+"""Blake2 Codecs - string hashing with blake.
 
 These are codecs for hashing strings, for use with other codecs in encoding chains.
 

@@ -3,6 +3,7 @@ from .blake import *
 from .checksums import *
 from .crypt import *
 from .md import *
+from .mmh3 import *
 from .sha import *
 from .shake import *
 

@@ -1,5 +1,5 @@
 # -*- coding: UTF-8 -*-
-"""Case Codecs - string hashing with Unix's Crypt.
+"""Crypt Hashing Codec - string hashing with Unix's Crypt.
 
 These are codecs for hashing strings, for use with other codecs in encoding chains.
 

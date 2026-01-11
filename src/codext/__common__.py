@@ -6,7 +6,6 @@ import json
 import os
 import random
 import re
-import sre_parse
 import sys
 from encodings.aliases import aliases as ALIASES
 from functools import reduce, update_wrapper, wraps
@@ -37,8 +36,12 @@ try:  # Python3
     from importlib import reload
 except ImportError:
     pass
+try:
+    import re._parser as sre_parse
+except ImportError:
+    import sre_parse
 
-# from Python 3.11, it seems that 'sre_parse' is not bound to 're' anymore
+# from Python 3.11, 'sre_parse' is bound as '_parser' ; monkey-patch it for backward-compatibility
 re.sre_parse = sre_parse
 
 
@@ -870,10 +873,9 @@ def handle_error(ename, errors, sep="", repl_char="?", repl_minlen=1, decode=Fal
         :param output:   output, as decoded up to the position of the error
         """
         if errors == "strict":
-            msg = "'%s' codec can't %scode %s '%s' in %s %d"
-            token = ensure_str(token)
-            token = token[:7] + "..." if len(token) > 10 else token
-            err = getattr(builtins, exc)(msg % (eename or ename, ["en", "de"][decode], kind, token, item, position))
+            token = f"{token[:7]}..." if len(token := ensure_str(token)) > 10 else token
+            err = getattr(builtins, exc)(f"'{eename or ename}' codec can't {['en','de'][decode]}code {kind} '{token}' "
+                                         f"in {item} {position}")
             err.output = output
             err.__cause__ = err
             raise err
@@ -1264,8 +1266,8 @@ def __guess(prev_input, input, stop_func, depth, max_depth, min_depth, encodings
         if not stop and (show or debug) and found not in result:
             s = repr(input)
             s = s[2:-1] if s.startswith("b'") and s.endswith("'") else s
-            s = "[+] {', '.join(found)}: {s}"
-            print(s if len(s) <= 80 else s[:77] + "...")
+            s = f"[+] {', '.join(found)}: {s}"
+            print(s if len(s) <= 80 else f"{s[:77]}...")
         result[found] = input
     if depth >= max_depth or len(result) > 0 and stop:
         return
@@ -1275,7 +1277,7 @@ def __guess(prev_input, input, stop_func, depth, max_depth, min_depth, encodings
         if len(result) > 0 and stop:
             return
         if debug:
-            print(f"[*] Depth %0{len(str(max_depth))}d/%d: {encoding}" % (depth+1, max_depth))
+            print(f"[*] Depth {depth+1:0{len(str(max_depth))}}/{max_depth}: {encoding}")
         __guess(input, new_input, stop_func, depth+1, max_depth, min_depth, encodings, result, found + (encoding, ),
                 stop, show, scoring_heuristic, extended, debug)
 

@@ -1,2 +1,2 @@
-markdown2>=2.5.4
 legacycrypt; python_version >= '3.13'
+markdown2>=2.5.4

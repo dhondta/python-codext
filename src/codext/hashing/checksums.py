@@ -1,5 +1,5 @@
 # -*- coding: UTF-8 -*-
-"""Case Codecs - string common checksums.
+"""Checksum Codecs - string common checksums.
 
 These are codecs for hashing strings, for use with other codecs in encoding chains.
 
