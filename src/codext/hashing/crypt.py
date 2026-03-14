@@ -15,18 +15,22 @@ if UNIX:
     try:
         import crypt
     except ImportError:
-        import legacycrypt as crypt
+        try:
+            import legacycrypt as crypt
+        except ImportError:
+            crypt = None
     
-    METHODS = [x[7:].lower() for x in crypt.__dict__ if x.startswith("METHOD_")]
-    
-    def crypt_hash(method):
-        method = (method or "").lstrip("-_") or "blowfish"
-        if method not in METHODS:
-            raise NotImplementedError("method '%s' is not implemented" % method)
-        def _encode(input, error="strict"):
-            m = getattr(crypt, "METHOD_" + method.upper())
-            return crypt.crypt(ensure_str(input), crypt.mksalt(m)), len(input)
-        return _encode
-    
-    add("crypt", crypt_hash, pattern=r"^crypt(|[-_](?:%s))$" % "|".join(METHODS), guess=None)
+    if crypt is not None:
+        METHODS = [x[7:].lower() for x in crypt.__dict__ if x.startswith("METHOD_")]
+        
+        def crypt_hash(method):
+            method = (method or "").lstrip("-_") or "blowfish"
+            if method not in METHODS:
+                raise NotImplementedError("method '%s' is not implemented" % method)
+            def _encode(input, error="strict"):
+                m = getattr(crypt, "METHOD_" + method.upper())
+                return crypt.crypt(ensure_str(input), crypt.mksalt(m)), len(input)
+            return _encode
+        
+        add("crypt", crypt_hash, pattern=r"^crypt(|[-_](?:%s))$" % "|".join(METHODS), guess=None)
 
