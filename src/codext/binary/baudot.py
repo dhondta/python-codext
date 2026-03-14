@@ -102,7 +102,7 @@ ITA2_METEO = [
 # Russian MTK-2 alphabet (source: https://fr.qwe.wiki/wiki/Baudot_code)
 MTK2 = [
     "11111", "11011",
-    "\x00Е\n\xff СИУ\r\xffРЙНФЦКТЗЛВХЫПЯОБГ\xffМЬЖ\xff",
+    "\x00Е\nA СИУ\r\xffРЙНФЦКТЗЛВХЫПЯОБГ\xffМЬЖ\xff",
     "\x003\n- '87\r\xff4Ю,Э:(5+)2Щ6019?Ш\xff./=\xff",
 ]
 # Murray code ; NB: not all fractions are supported (source: https://en.wikipedia.org/wiki/Baudot_code)
