@@ -128,8 +128,12 @@ class ManualTestCase(TestCase):
             try:
                 import crypt
             except ImportError:
-                import legacycrypt as crypt
-            METHODS = [x[7:].lower() for x in crypt.__dict__ if x.startswith("METHOD_")]
+                try:
+                    import legacycrypt as crypt
+                except ImportError:
+                    crypt = None
+            METHODS = [x[7:].lower() for x in crypt.__dict__ if x.startswith("METHOD_")] \
+                      if crypt is not None else []
             for m in METHODS:
                 h = "crypt-" + m
                 self.assertIsNotNone(codecs.encode(STR, h))
