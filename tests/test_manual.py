@@ -173,3 +173,58 @@ class ManualTestCase(TestCase):
         self.assertRaises(ValueError, codecs.encode, "this is a test", "whitespace-after-before")
         self.assertIn("\x00", codecs.encode("this is a test", "whitespace-after-before", "replace"))
 
+    def test_codec_vigenere(self):
+        STR = "attack at dawn"
+        ENC = "lxfopv ef rnhr"
+        self.assertEqual(codecs.encode(STR, "vigenere-lemon"), ENC)
+        self.assertEqual(codecs.encode(b(STR), "vigenere-lemon"), b(ENC))
+        self.assertEqual(codecs.decode(ENC, "vigenere-lemon"), STR)
+        self.assertEqual(codecs.decode(b(ENC), "vigenere-lemon"), b(STR))
+        # test with uppercase input
+        STR2 = "Attack At Dawn"
+        ENC2 = "Lxfopv Ef Rnhr"
+        self.assertEqual(codecs.encode(STR2, "vigenere-lemon"), ENC2)
+        self.assertEqual(codecs.decode(ENC2, "vigenere-lemon"), STR2)
+        # key case should not matter
+        self.assertEqual(codecs.encode(STR, "vigenere-LEMON"), ENC)
+        self.assertEqual(codecs.encode(STR, "vigenere-Lemon"), ENC)
+        # test roundtrip with another key
+        self.assertEqual(codecs.decode(codecs.encode(STR, "vigenere-key"), "vigenere-key"), STR)
+
+    def test_codec_polybius(self):
+        STR = "this is a test"
+        ENC = "44 23 24 43 / 24 43 / 11 / 44 15 43 44"
+        self.assertEqual(codecs.encode(STR, "polybius"), ENC)
+        self.assertEqual(codecs.encode(b(STR), "polybius"), b(ENC))
+        self.assertEqual(codecs.decode(ENC, "polybius"), STR)
+        self.assertEqual(codecs.decode(b(ENC), "polybius"), b(STR))
+        # test alias
+        self.assertEqual(codecs.encode(STR, "polybius-square"), ENC)
+        # I and J share the same code
+        self.assertEqual(codecs.encode("i", "polybius"), codecs.encode("j", "polybius"))
+        # test uppercase input
+        self.assertEqual(codecs.encode("THIS", "polybius"), codecs.encode("this", "polybius"))
+
+    def test_codec_multitap(self):
+        STR = "this is a test"
+        ENC = "8-44-444-7777 / 444-7777 / 2 / 8-33-7777-8"
+        self.assertEqual(codecs.encode(STR, "multitap"), ENC)
+        self.assertEqual(codecs.encode(b(STR), "multitap"), b(ENC))
+        self.assertEqual(codecs.decode(ENC, "multitap"), STR)
+        self.assertEqual(codecs.decode(b(ENC), "multitap"), b(STR))
+        # test alias
+        self.assertEqual(codecs.encode(STR, "multi-tap"), ENC)
+        # uppercase should produce same codes as lowercase
+        self.assertEqual(codecs.encode("THIS", "multitap"), codecs.encode("this", "multitap"))
+
+    def test_codec_quoted_printable(self):
+        STR = "Subject: =?UTF-8?"
+        ENC = "Subject: =3D?UTF-8?"
+        self.assertEqual(codecs.encode(STR, "quoted-printable"), ENC)
+        self.assertEqual(codecs.decode(ENC, "quoted-printable"), STR)
+        # test aliases
+        self.assertIsNotNone(codecs.encode(STR, "qp"))
+        self.assertIsNotNone(codecs.encode(STR, "quopri"))
+        # plain ASCII roundtrip
+        self.assertEqual(codecs.decode(codecs.encode("hello world", "qp"), "qp"), "hello world")
+

@@ -4,6 +4,7 @@ from .galactic import *
 from .ipsum import *
 from .leetspeak import *
 from .morse import *
+from .multitap import *
 from .navajo import *
 from .radio import *
 from .southpark import *
