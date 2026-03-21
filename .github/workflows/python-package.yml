@@ -12,6 +12,10 @@ on:
   pull_request:
     branches: [ "main" ]
 
+permissions:
+  id-token: write # for OIDC
+  contents: read
+
 jobs:
   build:
     runs-on: ${{ matrix.os }}
@@ -100,9 +104,5 @@ jobs:
       name: Build ${{ env.package }} package
       run: python3 -m pip install --upgrade build && python3 -m build
     - if: steps.filter.outputs.version == 'true'
-      name: Upload ${{ env.package }} to PyPi
+      name: Publish to PyPI
       uses: pypa/gh-action-pypi-publish@release/v1
-      with:
-        password: ${{ secrets.PYPI_API_TOKEN }}
-        verbose: true
-        verify_metadata: false
