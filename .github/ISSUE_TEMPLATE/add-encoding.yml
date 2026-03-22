@@ -1,0 +1,21 @@
+name: Add new encoding
+description: Propose a new encoding to be added
+title: "Add new encoding: [codec]"
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Describe the encoding, its purpose, and how it works
+      placeholder: Provide a clear and concise description
+    validations:
+      required: true
+  - type: input
+    id: reference
+    attributes:
+      label: Reference
+      description: Provide a reference URL for the encoding
+      placeholder: https://
+    validations:
+      required: false
