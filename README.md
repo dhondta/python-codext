@@ -11,7 +11,7 @@
 [![DOI](https://zenodo.org/badge/236679865.svg)](https://zenodo.org/badge/latestdoi/236679865)
 [![License](https://img.shields.io/pypi/l/codext.svg)](https://pypi.python.org/pypi/codext/)
 
-[**CodExt**](https://github.com/dhondta/python-codext) is a (Python2-3 compatible) library that extends the native [`codecs`](https://docs.python.org/3/library/codecs.html) library (namely for adding new custom encodings and character mappings) and provides **120+ new codecs**, hence its name combining *CODecs EXTension*. It also features a **guess mode** for decoding multiple layers of encoding and **CLI tools** for convenience.
+[**CodExt**](https://github.com/dhondta/python-codext) is a (Python2-3 compatible) library that extends the native [`codecs`](https://docs.python.org/3/library/codecs) library (namely for adding new custom encodings and character mappings) and provides **120+ new codecs**, hence its name combining *CODecs EXTension*. It also features a **guess mode** for decoding multiple layers of encoding and **CLI tools** for convenience.
 
 ```sh
 $ pip install codext
@@ -19,7 +19,7 @@ $ pip install codext
 
 Want to contribute a new codec ?    |     Want to contribute a new macro ?
 :----------------------------------:|:------------------------------------:
-Check the [documentation](https://python-codext.readthedocs.io/en/latest/howto.html) first<br>Then [PR](https://github.com/dhondta/python-codext/pulls) your new codec | [PR](https://github.com/dhondta/python-codext/pulls) your updated version of [`macros.json`](https://github.com/dhondta/python-codext/blob/main/codext/macros.json)
+Check the [documentation](https://python-codext.readthedocs.io/en/latest/howto) first<br>Then [PR](https://github.com/dhondta/python-codext/pulls) your new codec | [PR](https://github.com/dhondta/python-codext/pulls) your updated version of [`macros.json`](https://github.com/dhondta/python-codext/blob/main/codext/macros.json)
 
 ## :mag: Demonstrations
 
@@ -210,7 +210,7 @@ o
 
 ## :page_with_curl: List of codecs
 
-#### [BaseXX](https://python-codext.readthedocs.io/en/latest/enc/base.html)
+#### [BaseXX](https://python-codext.readthedocs.io/en/latest/enc/base)
 
 - [X] `base1`: useless, but for the sake of completeness
 - [X] `base2`: simple conversion to binary (with a variant with a reversed alphabet)
@@ -221,7 +221,7 @@ o
 - [X] `base11`: conversion to digits with a "*a*"
 - [X] `base16`: simple conversion to hexadecimal (with a variant holding an alphabet with digits and letters inverted)
 - [X] `base26`: conversion to alphabet letters
-- [X] `base32`: classical conversion according to the RFC4648 with all its variants ([zbase32](https://philzimmermann.com/docs/human-oriented-base-32-encoding.txt), extended hexadecimal, [geohash](https://en.wikipedia.org/wiki/Geohash), [Crockford](https://www.crockford.com/base32.html))
+- [X] `base32`: classical conversion according to the RFC4648 with all its variants ([zbase32](https://philzimmermann.com/docs/human-oriented-base-32-encoding.txt), extended hexadecimal, [geohash](https://en.wikipedia.org/wiki/Geohash), [Crockford](https://www.crockford.com/base32))
 - [X] `base36`: [Base36](https://en.wikipedia.org/wiki/Base36) conversion to letters and digits (with a variant inverting both groups)
 - [X] `base45`: [Base45](https://datatracker.ietf.org/doc/html/draft-faltstrom-base45-04.txt) DRAFT algorithm (with a variant inverting letters and digits)
 - [X] `base58`: multiple versions of [Base58](https://en.bitcoinwiki.org/wiki/Base58) (bitcoin, flickr, ripple)
@@ -233,11 +233,11 @@ o
 - [X] `base91`: [Base91](http://base91.sourceforge.net) custom conversion
 - [X] `base100` (or *emoji*): [Base100](https://github.com/AdamNiederer/base100) custom conversion
 - [X] `base122`: [Base100](http://blog.kevinalbs.com/base122) custom conversion
-- [X] `base-genericN`: see [base encodings](https://python-codext.readthedocs.io/en/latest/enc/base.html) ; supports any possible base
+- [X] `base-genericN`: see [base encodings](https://python-codext.readthedocs.io/en/latest/enc/base) ; supports any possible base
 
 This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `base85` codec.
 
-#### [Binary](https://python-codext.readthedocs.io/en/latest/enc/binary.html)
+#### [Binary](https://python-codext.readthedocs.io/en/latest/enc/binary)
 
 - [X] `baudot`: supports CCITT-1, CCITT-2, EU/FR, ITA1, ITA2, MTK-2 (Python3 only), UK, ...
 - [X] `baudot-spaced`: variant of `baudot` ; groups of 5 bits are whitespace-separated
@@ -251,7 +251,12 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 - [X] `manchester-inverted`: variant of `manchester` ; XORes each bit of the input with `10`
 - [X] `rotateN`: rotates characters by the specified number of bits (*N* belongs to [1, 7] ; Python 3 only)
 
-#### [Common](https://python-codext.readthedocs.io/en/latest/enc/common.html)
+#### [Checksums](https://python-codext.readthedocs.io/en/latest/enc/checksums)
+
+- [X] `adler`: Adler32 algorithm (relies on `zlib`)
+- [X] `crc`: CRC of lengths 8, 10-17, 21, 24, 30-32, 40, 64, 82 with a variety of polynoms
+
+#### [Common](https://python-codext.readthedocs.io/en/latest/enc/common)
 
 - [X] `a1z26`: keeps words whitespace-separated and uses a custom character separator
 - [X] `cases`: set of case-related encodings (including camel-, kebab-, lower-, pascal-, upper-, snake- and swap-case, slugify, capitalize, title)
@@ -261,7 +266,7 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 - [X] `ordinal`: dummy character ordinals conversion (converts to 3-digits groups)
 - [X] `ordinal-spaced`: variant of `ordinal` ; dummy character ordinals conversion, handling whitespace separators
 
-#### [Compression](https://python-codext.readthedocs.io/en/latest/enc/compressions.html)
+#### [Compression](https://python-codext.readthedocs.io/en/latest/enc/compressions)
 
 - [X] `gzip`: standard Gzip compression/decompression
 - [X] `lz77`: compresses the given data with the algorithm of Lempel and Ziv of 1977
@@ -272,7 +277,7 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 
 > :warning: Compression functions are of course definitely **NOT** encoding functions ; they are implemented for leveraging the `.encode(...)` API from `codecs`.
 
-#### [Cryptography](https://python-codext.readthedocs.io/en/latest/enc/crypto.html)
+#### [Cryptography](https://python-codext.readthedocs.io/en/latest/enc/crypto)
 
 - [X] `affine`: aka Affine Cipher
 - [X] `atbash`: aka Atbash Cipher
@@ -287,10 +292,9 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 
 > :warning: Crypto functions are of course definitely **NOT** encoding functions ; they are implemented for leveraging the `.encode(...)` API from `codecs`.
 
-#### [Hashing](https://python-codext.readthedocs.io/en/latest/enc/hashing.html)
+#### [Hashing](https://python-codext.readthedocs.io/en/latest/enc/hashing)
 
 - [X] `blake`: includes BLAKE2b and BLAKE2s (Python 3 only ; relies on `hashlib`)
-- [X] `checksums`: includes Adler32 and CRC32 (relies on `zlib`)
 - [X] `crypt`: Unix's crypt hash for passwords (Python 3 and Unix only ; relies on `crypt`)
 - [X] `md`: aka Message Digest ; includes MD4 and MD5 (relies on `hashlib`)
 - [X] `sha`: aka Secure Hash Algorithms ; includes SHA1, 224, 256, 384, 512 (Python2/3) but also SHA3-224, -256, -384 and -512 (Python 3 only ; relies on `hashlib`)
@@ -298,7 +302,7 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 
 > :warning: Hash functions are of course definitely **NOT** encoding functions ; they are implemented for convenience with the `.encode(...)` API from `codecs` and useful for chaning codecs.
 
-#### [Languages](https://python-codext.readthedocs.io/en/latest/enc/languages.html)
+#### [Languages](https://python-codext.readthedocs.io/en/latest/enc/languages)
 
 - [X] `braille`: well-known braille language (Python 3 only)
 - [X] `ipsum`: aka lorem ipsum
@@ -312,13 +316,13 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 - [X] `tap`: converts text to tap/knock code, commonly used by prisoners
 - [X] `tomtom`: similar to `morse`, using slashes and backslashes
 
-#### [Others](https://python-codext.readthedocs.io/en/latest/enc/others.html)
+#### [Others](https://python-codext.readthedocs.io/en/latest/enc/others)
 
 - [X] `dna`: implements the 8 rules of DNA sequences (N belongs to [1,8])
 - [X] `letter-indices`: encodes consonants and/or vowels with their corresponding indices
 - [X] `markdown`: unidirectional encoding from Markdown to HTML
 
-#### [Steganography](https://python-codext.readthedocs.io/en/latest/enc/stegano.html)
+#### [Steganography](https://python-codext.readthedocs.io/en/latest/enc/stegano)
 
 - [X] `hexagram`: uses Base64 and encodes the result to a charset of [I Ching hexagrams](https://en.wikipedia.org/wiki/Hexagram_%28I_Ching%29) (as implemented [here](https://github.com/qntm/hexagram-encode))
 - [X] `klopf`: aka Klopf code ; Polybius square with trivial alphabetical distribution
@@ -328,7 +332,7 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 - [X] `whitespace`: replaces bits with whitespaces and tabs
 - [X] `whitespace_after_before`: variant of `whitespace` ; encodes characters as new characters with whitespaces before and after according to an equation described in the codec name (e.g. "`whitespace+2*after-3*before`")
 
-#### [Web](https://python-codext.readthedocs.io/en/latest/enc/web.html)
+#### [Web](https://python-codext.readthedocs.io/en/latest/enc/web)
 
 - [X] `html`: implements entities according to [this reference](https://dev.w3.org/html5/html-author/charref)
 - [X] `url`: aka URL encoding
