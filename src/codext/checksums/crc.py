@@ -1,16 +1,14 @@
 # -*- coding: UTF-8 -*-
-"""Checksum Codecs - string common checksums.
+"""CRC Codecs - Cyclic Redundancy Check checksum algorithm.
 
-These are codecs for hashing strings, for use with other codecs in encoding chains.
+This is a codec for computing checksums, for use with other codecs in encoding chains.
 
 These codecs:
 - transform strings from str to str
 - transform strings from bytes to bytes
 - transform file content from str to bytes (write)
 """
-from zlib import adler32
-
-from ..__common__ import add, b
+from ..__common__ import add
 
 
 CRC = {
@@ -261,7 +259,6 @@ def crc_checksum(n=""):
     return _crc
 
 
-add("adler32", lambda data, error="strict": (adler32(b(data)) & 0xffffffff, len(data)), guess=None)
 add("crca", crc_checksum(), pattern=_pattern(), guess=None)
 for i in CRC.keys():
     if isinstance(i, int):

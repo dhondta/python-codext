@@ -9,7 +9,7 @@ from unittest import TestCase
 
 from codext.__common__ import *
 from codext.binary.baudot import _check_alphabet
-from codext.hashing.checksums import CRC
+from codext.checksums.crc import CRC
 
 
 class ComplementaryTestCase(TestCase):

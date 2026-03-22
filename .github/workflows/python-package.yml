@@ -64,10 +64,6 @@ jobs:
       with:
         fetch-depth: 0
         ref: ${{ github.head_ref || github.ref_name }}
-    - name: Sync with remote
-      run: |
-        git fetch origin
-        git rebase origin/${{ github.ref_name }}
     - name: Set up Python ${{ env.python_version }}
       uses: actions/setup-python@v6
       with:
