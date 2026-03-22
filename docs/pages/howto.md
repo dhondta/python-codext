@@ -75,7 +75,7 @@ This uses: [`codext.add`](https://github.com/dhondta/python-codext/blob/main/src
 
 This applies when the codec is more complex than a mapping, as defined in _[Case 2: Encoding map](./#case-2-encoding-map)_.
 
-**Examples**: [`crypto/barbie`](https://github.com/dhondta/python-codext/blob/main/src/codext/crypto/barbie.py), [`crypto/railfence`](https://github.com/dhondta/python-codext/blob/main/src/codext/crypto/railfence.py), [`stegano/resistor`](https://github.com/dhondta/python-codext/blob/main/src/codext/stegano/resitor.py), [`stegano/whitespace`](https://github.com/dhondta/python-codext/blob/main/src/codext/stegano/whitespace.py)
+**Examples**: [`crypto/barbie`](https://github.com/dhondta/python-codext/blob/main/src/codext/crypto/barbie.py), [`crypto/railfence`](https://github.com/dhondta/python-codext/blob/main/src/codext/crypto/railfence.py), [`stegano/resistor`](https://github.com/dhondta/python-codext/blob/main/src/codext/stegano/resistor.py), [`stegano/whitespace`](https://github.com/dhondta/python-codext/blob/main/src/codext/stegano/whitespace.py)
 
 The following shall be considered:
 
