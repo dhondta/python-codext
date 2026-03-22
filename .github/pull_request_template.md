@@ -1,6 +1,3 @@
-## Type
-- [ ] New encoding (required)
-
 ## Checklist
 - [ ] No unrelated changes
 - [ ] Codec is new (not already implemented)

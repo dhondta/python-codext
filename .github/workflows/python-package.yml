@@ -10,8 +10,7 @@ on:
     branches: [ "main" ]
 
 permissions:
-  actions: write
-  id-token: write # for OIDC
+  id-token: write
   contents: read
 
 jobs:
@@ -53,6 +52,8 @@ jobs:
         pytest --cov=$package
   coverage:
     needs: [prepare, build]
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     env:
       cov_badge_path: docs/coverage.svg

@@ -1,7 +1,7 @@
 site_author: dhondta
 site_name: "Codext - Extension of native codecs for Python"
 repo_url: https://github.com/dhondta/python-codext
-copyright: Copyright &copy; 2021-2023 Alexandre D'Hondt
+copyright: Copyright &copy; 2021-2026 Alexandre D'Hondt
 docs_dir: pages
 nav:
   - Introduction: index.md
@@ -37,6 +37,8 @@ extra:
       name: Alex on Twitter
 extra_css:
   - css/extra.css
+plugins:
+  - search
 theme:
   name: material
   palette:
@@ -50,7 +52,6 @@ theme:
         name: Switch to light mode
   logo: img/logo.png
   favicon: img/icon.png
-use_directory_urls: false
 markdown_extensions:
   - toc:
       permalink: true

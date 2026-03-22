@@ -1,9 +1,9 @@
 The purpose of this section is to provide a tutorial for creating new codecs accordingly.
 
-As explained in [this section](./features.html), `codext` provides the possibility to add new codecs in two ways:
+As explained in [this section](./features), `codext` provides the possibility to add new codecs in two ways:
 
-1. [`add`](https://github.com/dhondta/python-codext/blob/master/codext/__common__.py#L56): using this function, the *encode* and *decode* functions must be given as arguments.
-2. [`add_map`](https://github.com/dhondta/python-codext/blob/master/codext/__common__.py#L160): using this function, an *encoding map* must be given but can be formatted in different ways to handle various use cases.
+1. [`add`](https://github.com/dhondta/python-codext/blob/main/src/codext/__common__.py#L56): using this function, the *encode* and *decode* functions must be given as arguments.
+2. [`add_map`](https://github.com/dhondta/python-codext/blob/main/src/codext/__common__.py#L160): using this function, an *encoding map* must be given but can be formatted in different ways to handle various use cases.
 
 In both cases, a *pattern* is given in argument and aims to define the set of all strings that aim to select this codec.
 
@@ -49,29 +49,33 @@ Whatever solution is chosen, the following arguments shall be considered:
 
 ### Which `add` function ?
 
-At this point, it is necessary to determine what kind of codec you want. If it is a simple map of characters, you should definitely use [`add_map`](https://github.com/dhondta/python-codext/blob/master/codext/__common__.py#L160). If it is more complex and cannot be handled using [`add_map`](https://github.com/dhondta/python-codext/blob/master/codext/__common__.py#L160)'s options, then you should use [`add`](https://github.com/dhondta/python-codext/blob/master/codext/__common__.py#L56) and define the encode/decode functions yourself.
+At this point, it is necessary to determine what kind of codec you want. If it is a simple map of characters, you should definitely use [`add_map`](https://github.com/dhondta/python-codext/blob/main/src/codext/__common__.py#L160). If it is more complex and cannot be handled using [`add_map`](https://github.com/dhondta/python-codext/blob/main/src/codext/__common__.py#L160)'s options, then you should use [`add`](https://github.com/dhondta/python-codext/blob/main/src/codext/__common__.py#L56) and define the encode/decode functions yourself.
 
 A few examples:
 
-- `morse` is a simple map that does not handle case ; it then uses [`add_map`](https://github.com/dhondta/python-codext/blob/master/codext/__common__.py#L160) with `ignore_case` set to "`encode`" (not "`both`" for encoding and decoding as it does not matter anyway for decoding)
-- `whitespace` has 2 codecs defined ; the simple one is a simple bit encoding map, therefore using [`add_map`](https://github.com/dhondta/python-codext/blob/master/codext/__common__.py#L160) with `intype` set to "`bin`" (for pre-converting characters to bits before applying the encoding map), and the complex one uses [`add`](https://github.com/dhondta/python-codext/blob/master/codext/__common__.py#L56) with its specific endocde/decode functions
+- `morse` is a simple map that does not handle case ; it then uses [`add_map`](https://github.com/dhondta/python-codext/blob/main/src/codext/__common__.py#L160) with `ignore_case` set to "`encode`" (not "`both`" for encoding and decoding as it does not matter anyway for decoding)
+- `whitespace` has 2 codecs defined ; the simple one is a simple bit encoding map, therefore using [`add_map`](https://github.com/dhondta/python-codext/blob/main/src/codext/__common__.py#L160) with `intype` set to "`bin`" (for pre-converting characters to bits before applying the encoding map), and the complex one uses [`add`](https://github.com/dhondta/python-codext/blob/main/src/codext/__common__.py#L56) with its specific endocde/decode functions
 - `atbash` defines a dynamic map with a "factory" function, that creates the encoding map according to the parameters supplied in the codec name
 
 So, before going further, determine the following:
 
-- What does the new codec map from and to ? E.g. if binary input and ordinal output, you can use [`add_map`](https://github.com/dhondta/python-codext/blob/master/codext/__common__.py#L160) with `intype="bin"` and `outype="ord"`.
-- Is this codec ignoring case ? If so, you can use [`add_map`](https://github.com/dhondta/python-codext/blob/master/codext/__common__.py#L160) and specify which operation(s) should ignore case, e.g. `ignore_case="both"` or `ignore_case="decode"`.
-- Should this codec handle no error ? If so, you can use [`add_map`](https://github.com/dhondta/python-codext/blob/master/codext/__common__.py#L160) do not forget to specify `no_error=True`.
-- Does the codec yields variable-length encoded tokens ? If so, you can still use [`add_map`](https://github.com/dhondta/python-codext/blob/master/codext/__common__.py#L160) but you should define `sep` (separator) as `codext` will not be able to handle ambiguities.
+- What does the new codec map from and to ? E.g. if binary input and ordinal output, you can use [`add_map`](https://github.com/dhondta/python-codext/blob/main/src/codext/__common__.py#L160) with `intype="bin"` and `outype="ord"`.
+- Is this codec ignoring case ? If so, you can use [`add_map`](https://github.com/dhondta/python-codext/blob/main/src/codext/__common__.py#L160) and specify which operation(s) should ignore case, e.g. `ignore_case="both"` or `ignore_case="decode"`.
+- Should this codec handle no error ? If so, you can use [`add_map`](https://github.com/dhondta/python-codext/blob/main/src/codext/__common__.py#L160) do not forget to specify `no_error=True`.
+- Does the codec yields variable-length encoded tokens ? If so, you can still use [`add_map`](https://github.com/dhondta/python-codext/blob/main/src/codext/__common__.py#L160) but you should define `sep` (separator) as `codext` will not be able to handle ambiguities.
 
-If you find aspects that are not covered in these questions, you shall use [`add`](https://github.com/dhondta/python-codext/blob/master/codext/__common__.py#L56), then refering to [Case 1](#case-1-generic-encoding-definition). Otherwise, you can use [`add_map`](https://github.com/dhondta/python-codext/blob/master/codext/__common__.py#L160) and refer 
+If you find aspects that are not covered in these questions, you shall use [`add`](https://github.com/dhondta/python-codext/blob/main/src/codext/__common__.py#L56), then refering to [Case 1](#case-1-generic-encoding-definition). Otherwise, you can use [`add_map`](https://github.com/dhondta/python-codext/blob/main/src/codext/__common__.py#L160) and refer 
 to [Case 2](#case-2-encoding-map).
 
 -----
 
 ### Case 1: Generic encoding definition
 
-This uses: [`codext.add`](https://github.com/dhondta/python-codext/blob/master/codext/__common__.py#L56)
+This uses: [`codext.add`](https://github.com/dhondta/python-codext/blob/main/src/codext/__common__.py#L56)
+
+This applies when the codec is more complex than a mapping, as defined in _[Case 2: Encoding map](./#case-2-encoding-map)_.
+
+**Examples**: [`crypto/barbie`](https://github.com/dhondta/python-codext/blob/main/src/codext/crypto/barbie.py), [`crypto/railfence`](https://github.com/dhondta/python-codext/blob/main/src/codext/crypto/railfence.py), [`stegano/resistor`](https://github.com/dhondta/python-codext/blob/main/src/codext/stegano/resitor.py), [`stegano/whitespace`](https://github.com/dhondta/python-codext/blob/main/src/codext/stegano/whitespace.py)
 
 The following shall be considered:
 
@@ -92,7 +96,7 @@ Both functions must take 2 arguments and return 2 values (in order to stick to `
     
     This last mode is an addition to the native ones. It can be useful for some encodings that must cause no error while encoding and can therefore have their original characters in the output.
 
-Also, while defining the `encode` and/or `decode` functions, `codext.handle_error` can be used as a shortcut to handle the different modes. It returns a wrapped function that takes `token` and `position` as arguments (see [`excess3`](https://github.com/dhondta/python-codext/blob/master/codext/binary/excess3.py) for an example).
+Also, while defining the `encode` and/or `decode` functions, `codext.handle_error` can be used as a shortcut to handle the different modes. It returns a wrapped function that takes `token` and `position` as arguments (see [`excess3`](https://github.com/dhondta/python-codext/blob/main/src/codext/binary/excess3.py) for an example).
 
 ```python
 >>> help(codext.handle_error)
@@ -125,7 +129,11 @@ _handle_error(token, position)
 
 ### Case 2: Encoding map
 
-This uses: [`codext.add_map`](https://github.com/dhondta/python-codext/blob/master/codext/__common__.py#L160)
+This uses: [`codext.add_map`](https://github.com/dhondta/python-codext/blob/main/src/codext/__common__.py#L160)
+
+This applies when the codec can be defined a simple mapping between source and destination tokens.
+
+**Examples**: [`languages/braille`](https://github.com/dhondta/python-codext/blob/main/src/codext/languages/braille.py), [`languages/morse`](https://github.com/dhondta/python-codext/blob/main/src/codext/languages/morse.py), [`languages/southpark`](https://github.com/dhondta/python-codext/blob/main/src/codext/languages/southpark.py), [`stegano/klopf`](https://github.com/dhondta/python-codext/blob/main/src/codext/stegano/klopf.py), [`stegano/rick`](https://github.com/dhondta/python-codext/blob/main/src/codext/stegano/rick.py)
 
 The following options shall be considered:
 
@@ -143,10 +151,10 @@ The following options shall be considered:
 
 `encmap` can be defined as follows:
 
-1. **Simple map**: In this case, the encoding map is a dictionary mapping each input character to an output one (see [`radio`](https://github.com/dhondta/python-codext/blob/master/codext/languages/radio.py) for an example).
-2. **List of maps**: In this case, encoding maps are put in a list and referenced by their order number starting from 1, meaning that the `pattern` shall define a capture group with values from 1 to the length of this list (see [`dna`](https://github.com/dhondta/python-codext/blob/master/codext/others/dna.py) for an example).
+1. **Simple map**: In this case, the encoding map is a dictionary mapping each input character to an output one (see [`radio`](https://github.com/dhondta/python-codext/blob/main/src/codext/languages/radio.py) for an example).
+2. **List of maps**: In this case, encoding maps are put in a list and referenced by their order number starting from 1, meaning that the `pattern` shall define a capture group with values from 1 to the length of this list (see [`dna`](https://github.com/dhondta/python-codext/blob/main/src/codext/others/dna.py) for an example).
 3. **Parametrized map**: This variant defines a dictionary of regex-selected encoding maps, that is, a dictionary of dictionaries with keys matching the captured groups from codec's pattern.
-4. **Map factory function**: This one is implemented by a function that returns the composed encoding map. This function takes a single argument according to the capture group from the `pattern` (see [`affine`](https://github.com/dhondta/python-codext/blob/master/codext/crypto/affine.py) for an example).
+4. **Map factory function**: This one is implemented by a function that returns the composed encoding map. This function takes a single argument according to the capture group from the `pattern` (see [`affine`](https://github.com/dhondta/python-codext/blob/main/src/codext/crypto/affine.py) for an example).
 
 !!! note "Mapping one input character to multiple output characters"
     
@@ -156,7 +164,7 @@ The following options shall be considered:
 
 ### Self-generated tests
 
-In order to facilitate testing, a test suite can be automatically generated from a set of *examples*. This is defined in the `__examples__` dunder inside codec's source file (see [`sms`](https://github.com/dhondta/python-codext/blob/master/codext/stegano/sms.py) for an example). By default, the `add`/`add_map` function will get `__examples__` from the global scope but this behavior can be overridden by specifying the keyword-argument `examples` (e.g. `add(..., examples=__examples1__)` ; see [`ordinal`](https://github.com/dhondta/python-codext/blob/master/codext/common/ordinal.py) for an example).
+In order to facilitate testing, a test suite can be automatically generated from a set of *examples*. This is defined in the `__examples__` dunder inside codec's source file (see [`sms`](https://github.com/dhondta/python-codext/blob/main/src/codext/stegano/sms.py) for an example). By default, the `add`/`add_map` function will get `__examples__` from the global scope but this behavior can be overridden by specifying the keyword-argument `examples` (e.g. `add(..., examples=__examples1__)` ; see [`ordinal`](https://github.com/dhondta/python-codext/blob/main/src/codext/common/ordinal.py) for an example).
 
 A set of examples is a dictionary specifying the test cases to be considered. The keys are the descriptions of the test cases and the values can be either dictionaries of input texts and their output encoded texts or lists of input texts. Each key has the format "`operation(encodings)`". Operations can be:
 
@@ -228,13 +236,23 @@ __examples__ = {
 
 -----
 
+### Codec names for the guessing mode
+
+The `__guess__` list of codec names is used to limit the possibilities in the tree search from the [guessing mode](./guessing). Especially when the codec is dynamic and may have a large (or even infinite) number of dynamic names, it is necessary to set a limited number in order to avoid exponentially increasing computation time. This list, when relevant, shall be used with due care.
+
+!!! note "Mapping one input character to multiple output characters"
+    
+    As a best practice, static names for the [guessing mode](./guessing) should be limited to 16, in order to avoid exponential computation time in the search tree algorithm.
+
+-----
+
 ### Adding a new codec to `codext`
 
 As a checklist when making a codec for addition in `codext`, please follow these steps:
 
 1. Create your codec file (i.e. starting with a copy of an existing similar one)
-2. Place it into the right category folder
-3. Add it to the list in [`README.md`](https://github.com/dhondta/python-codext/blob/master/README.md#list-of-codecs)
-4. Add its documentation in the [right Markdown file](https://github.com/dhondta/python-codext/tree/master/docs/enc)
-5. If self-generated tests are not enough, add manual tests in [the related file](https://github.com/dhondta/python-codext/blob/master/tests/test_manual.py)
+2. Place it into the right category folder (when a category cannot be put in one of the folders under the root of [`codext`](https://github.com/dhondta/python-codext/blob/main/src/codext), it shall be put by default in [`others`](https://github.com/dhondta/python-codext/blob/main/src/codext/others))
+3. Add it to the list in [`README.md`](https://github.com/dhondta/python-codext/blob/main/src/README.md#list-of-codecs)
+4. Add its documentation in the [right Markdown file](https://github.com/dhondta/python-codext/tree/main/src/docs/enc)
+5. If self-generated tests are not enough, add manual tests in [the related file](https://github.com/dhondta/python-codext/blob/main/src/tests/test_manual.py)
 
