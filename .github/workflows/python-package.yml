@@ -88,20 +88,17 @@ jobs:
       id: changed_files
       with:
         files: ${{ env.cov_badge_path }}
-    - name: Commit files
+    - name: Push coverage badge
       if: steps.changed_files.outputs.files_changed == 'true'
       run: |
         git config --local user.email "github-actions[bot]@users.noreply.github.com"
         git config --local user.name "github-actions[bot]"
+        git fetch origin
+        git checkout coverage-badge || git checkout -b coverage-badge
         git add $cov_badge_path
-        git commit -m "Updated coverage.svg"
-    - name: Push changes
-      if: steps.changed_files.outputs.files_changed == 'true'
-      uses: ad-m/github-push-action@master
-      with:
-        branch: ${{ github.head_ref || github.ref_name }}
-        force: true
-        github_token: ${{ secrets.GITHUB_TOKEN }}
+        git diff --cached --quiet && exit 0
+        git commit -m "Update coverage badge"
+        git push origin coverage-badge --force
   deploy:
     runs-on: ubuntu-latest
     needs: [prepare, coverage]
