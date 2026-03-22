@@ -5,7 +5,7 @@
 [![PyPi](https://img.shields.io/pypi/v/codext.svg)](https://pypi.python.org/pypi/codext/)
 [![Read The Docs](https://readthedocs.org/projects/python-codext/badge/?version=latest)](https://python-codext.readthedocs.io/en/latest/?badge=latest)
 [![Build Status](https://github.com/dhondta/python-codext/actions/workflows/python-package.yml/badge.svg)](https://github.com/dhondta/python-codext/actions/workflows/python-package.yml)
-[![Coverage Status](https://raw.githubusercontent.com/dhondta/python-codext/main/docs/coverage.svg)](#)
+[![Coverage Status](https://raw.githubusercontent.com/dhondta/python-codext/coverage-badge/docs/coverage.svg)](#)
 [![Python Versions](https://img.shields.io/pypi/pyversions/codext.svg)](https://pypi.python.org/pypi/codext/)
 [![Known Vulnerabilities](https://snyk.io/test/github/dhondta/python-codext/badge.svg?targetFile=requirements.txt)](https://snyk.io/test/github/dhondta/python-codext?targetFile=requirements.txt)
 [![DOI](https://zenodo.org/badge/236679865.svg)](https://zenodo.org/badge/latestdoi/236679865)
@@ -255,6 +255,7 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 
 - [X] `adler`: Adler32 algorithm (relies on `zlib`)
 - [X] `crc`: CRC of lengths 8, 10-17, 21, 24, 30-32, 40, 64, 82 with a variety of polynoms
+- [X] `luhn`: Luhn mod N algorithm
 
 #### [Common](https://python-codext.readthedocs.io/en/latest/enc/common)
 
