@@ -9,5 +9,6 @@ from .railfence import *
 from .rot import *
 from .scytale import *
 from .shift import *
+from .trithemius import *
 from .xor import *
 
