@@ -8,12 +8,11 @@ import random
 from unittest import TestCase
 
 from codext.__common__ import *
-from codext.binary.baudot import _check_alphabet
-from codext.checksums.crc import CRC
 
 
 class ComplementaryTestCase(TestCase):
     def test_codec_baudot(self):
+        from codext.binary.baudot import _check_alphabet
         self.assertRaises(ValueError, _check_alphabet, ["BAD_ALPHABET"])
     
     def test_codec_dna(self):
@@ -22,6 +21,13 @@ class ComplementaryTestCase(TestCase):
     
     def test_codec_morse(self):
         self.assertRaises(LookupError, codecs.encode, "test", "morse-AAB")
+    
+    def test_codec_polybius(self):
+        from codext.crypto.polybius import polybius_encode, polybius_decode
+        self.assertRaises(LookupError, polybius_encode, "ABC")
+        self.assertRaises(ValueError, polybius_decode(), "BAD_")
+        self.assertRaises(ValueError, polybius_decode(), "441543441")
+        self.assertEqual(codecs.decode("441543445", "polybius", "ignore"), "TEST")
     
     def test_codec_sms(self):
         self.assertEqual(codecs.decode("A-B-222-3-4-5", "sms", "leave"), "ABcdgj")
@@ -103,6 +109,7 @@ class ManualTestCase(TestCase):
         self.assertRaises(LookupError, codecs.encode, STR, "tokenize-200")
     
     def test_codec_hash_functions(self):
+        from codext.checksums.crc import CRC
         STR = b"This is a test string!"
         for h in ["adler32", "md2", "md5", "sha1", "sha224", "sha256", "sha384", "sha512"]:
             self.assertIsNotNone(codecs.encode(STR, h))

@@ -126,6 +126,25 @@ This implements the Citrix CTX1 password encoding algorithm.
 
 -----
 
+### Polybius Square Cipher
+
+This implements the well-known Polybius Square cipher, using the square with the alphabet in normal order as the default. It can be used dynamically with a custom alphabet.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`polybius` | text <-> polybius square ciphertext | `polybius-square`, `polybius_BACDEFGHIKLMNOPQRSTUVWXYZ`, ... |
+
+```python
+>>> codext.encode("this is a test", "polybius")
+'44232443 2443 11 44154344'
+>>> codext.encode("this is a test", "polybius_BACDEFGHIKLMNOPQRSTUVWXYZ")
+'44232443 2443 12 44154344'
+>>> codext.decode("44232443 2443 11 441543445", "polybius-square", errors="replace")
+'THIS IS A TEST?'
+```
+
+-----
+
 ### Rail Fence Cipher
 
 This implements the Rail Fence encoding algorithm, using 3 rails and offset 0 as the default parameters. The encoding fence is built from the top ; the `up` flag can be used to build the fence from the bottom. Note that trying parameters that do not fit the input length will trigger a `ValueError` mentioning the bad value.
