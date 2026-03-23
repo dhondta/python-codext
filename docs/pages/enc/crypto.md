@@ -220,6 +220,26 @@ This is a dynamic encoding, that is, it holds the key. There is no default key, 
 
 -----
 
+### VIC Cipher
+
+The VIC cipher combines a straddling checkerboard substitution (converting letters to a stream of digits) with a double columnar transposition applied to that digit stream. The checkerboard is built from a keyword-mixed alphabet; single-digit codes are assigned to the 8 letters filling the top row (columns 0–9 minus two blank columns), and two-digit codes to the remaining 18 letters across two lower rows. A keyword and two transposition keys are required.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`vic` | text <-> VIC digit ciphertext | `vic-python-352`, `vic_secret_KEY1_KEY2` | requires checkerboard keyword and at least one transposition key
+
+```python
+>>> import codext
+>>> codext.encode("HELLO", "vic-python-352")
+'42228285'
+>>> codext.decode("42228285", "vic-python-352")
+'HELLO'
+>>> codext.encode("ATTACKATDAWN", "vic-python-352-461")
+'8833231882605277'
+```
+
+-----
+
 ### XOR with 1 byte
 
 This is a dynamic encoding, that is, it can be called with an integer to define the ordinal of the byte to XOR with the input text.

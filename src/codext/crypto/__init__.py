@@ -9,6 +9,7 @@ from .railfence import *
 from .rot import *
 from .scytale import *
 from .shift import *
+from .vic import *
 from .vigenere import *
 from .xor import *
 
