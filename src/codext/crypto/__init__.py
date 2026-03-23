@@ -1,6 +1,7 @@
 # -*- coding: UTF-8 -*-
 from .affine import *
 from .atbash import *
+from .beaufort import *
 from .bacon import *
 from .barbie import *
 from .citrix import *
