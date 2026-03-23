@@ -10,5 +10,6 @@ from .rot import *
 from .scytale import *
 from .shift import *
 from .trithemius import *
+from .vigenere import *
 from .xor import *
 

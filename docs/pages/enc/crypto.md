@@ -202,6 +202,24 @@ This is a dynamic encoding, that is, it can be called with an integer to define 
 
 -----
 
+### Vigenere Cipher
+
+This is a dynamic encoding, that is, it holds the key. There is no default key, meaning that `vigenere` as the encoding scheme throws a `LookupError` indicating that the _key must be a non-empty alphabetic string_.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`vigenere` | text <-> Vigenere ciphertext | `vigenere-abcdef`, `vigenere_MySuperSecret` | key only consists of characters, not digits
+
+```python
+>>> codext.encode("This is a test !", "vigenere-abababa")
+'Tiit it a tfsu !'
+>>> codext.encode("This is a test !", "vigenere_MySuperSecret")
+'Ffam xw r liuk !'
+>>> codext.decode("Tiit it a tfsu !", "vigenere-abababa")
+```
+
+-----
+
 ### XOR with 1 byte
 
 This is a dynamic encoding, that is, it can be called with an integer to define the ordinal of the byte to XOR with the input text.
