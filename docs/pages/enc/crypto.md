@@ -109,6 +109,25 @@ It implements the cipher for its 4 different keys.
 
 -----
 
+### Beaufort Cipher
+
+This is a variant of the [Vigenere Cipher](#vigenere-cipher). There is no default key, meaning that `beaufort` as the encoding scheme throws a `LookupError` indicating that the _key must be a non-empty alphabetic string_.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`beaufort` | text <-> Beaufort ciphertext | `beaufort-abcdef`, `beaufort_MySuperSecret` | key only consists of characters, not digits
+
+```python
+>>> codext.encode("This is a test !", "beaufort-abababa")
+'Husj sj a hxii !'
+>>> codext.encode("This is a test !", "beaufort_MySuperSecret")
+'Trkc hm r zaky !'
+>>> codext.decode("Husj sj a hxii !", "vigenere-abababa")
+'This is a test !'
+```
+
+-----
+
 ### Citrix CTX1
 
 This implements the Citrix CTX1 password encoding algorithm.
@@ -202,6 +221,23 @@ This is a dynamic encoding, that is, it can be called with an integer to define 
 
 -----
 
+### Trithemius Cipher
+
+This is a variant of the [Vigenere Cipher](#vigenere-cipher) with key `"ABCDEFGHIJKLMNOPQRSTUVWXYZ"`.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`trithemius` | text <-> Trithemius ciphertext | `trithemius`, `trithemius_cipher` | 
+
+```python
+>>> codext.encode("This is a test !", "trithemius")
+'Tikv mx g ambd !'
+>>> codext.decode("Tikv mx g ambd !", "trithemius")
+'This is a test !'
+```
+
+-----
+
 ### Vigenere Cipher
 
 This is a dynamic encoding, that is, it holds the key. There is no default key, meaning that `vigenere` as the encoding scheme throws a `LookupError` indicating that the _key must be a non-empty alphabetic string_.
@@ -216,6 +252,7 @@ This is a dynamic encoding, that is, it holds the key. There is no default key, 
 >>> codext.encode("This is a test !", "vigenere_MySuperSecret")
 'Ffam xw r liuk !'
 >>> codext.decode("Tiit it a tfsu !", "vigenere-abababa")
+'This is a test !'
 ```
 
 -----
