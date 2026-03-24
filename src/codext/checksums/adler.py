@@ -3,10 +3,10 @@
 
 This is a codec for computing checksums, for use with other codecs in encoding chains.
 
-These codecs:
-- transform strings from str to str
-- transform strings from bytes to bytes
-- transform file content from str to bytes (write)
+This codec:
+- transforms strings from str to str
+- transforms strings from bytes to bytes
+- transforms file content from str to bytes (write)
 """
 from zlib import adler32
 

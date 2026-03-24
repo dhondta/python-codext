@@ -1,5 +1,6 @@
 # -*- coding: UTF-8 -*-
 import _codecs
+import builtins
 import codecs
 import hashlib
 import json
@@ -20,22 +21,6 @@ from platform import system
 from random import randint
 from string import *
 from types import FunctionType, ModuleType
-try:  # Python2
-    import __builtin__ as builtins
-except ImportError:
-    import builtins
-try:  # Python2
-    from inspect import getfullargspec
-except ImportError:
-    from inspect import getargspec as getfullargspec
-try:  # Python2
-    from string import maketrans
-except ImportError:
-    maketrans = str.maketrans
-try:  # Python3
-    from importlib import reload
-except ImportError:
-    pass
 try:
     import re._parser as sre_parse
 except ImportError:
@@ -43,6 +28,8 @@ except ImportError:
 
 # from Python 3.11, 'sre_parse' is bound as '_parser' ; monkey-patch it for backward-compatibility
 re.sre_parse = sre_parse
+
+maketrans = str.maketrans
 
 
 __all__ = ["add", "add_macro", "add_map", "b", "clear", "codecs", "decode", "encode", "ensure_str", "examples", "guess",
@@ -277,6 +264,7 @@ def add(ename, encode=None, decode=None, pattern=None, text=True, add_to_codecs=
                 # this occurs while m is not None, but possibly no capture group that gives at least 1 group index ;
                 #  in this case, if fenc/fdec is a decorated function, execute it with no arg
                 if len(args) == 0:
+                    from inspect import getfullargspec
                     if fenc and len(getfullargspec(fenc).args) == 1:
                         fenc = fenc()
                     if fdec and len(getfullargspec(fdec).args) == 1:
@@ -767,6 +755,7 @@ codecs.remove = remove
 
 def reset():
     """ Reset codext's local registry of search functions and macros. """
+    from importlib import reload
     global __codecs_registry, CODECS_REGISTRY, MACROS, PERS_MACROS  # noqa: F824
     clear()
     d = os.path.dirname(__file__)
@@ -1142,9 +1131,8 @@ def generate_string_from_regex(regex):
 
 def generate_strings_from_regex(regex, star_plus_max=STAR_PLUS_MAX, repeat_max=REPEAT_MAX, yield_max=YIELD_MAX):
     """ Utility function to generate strings from a regex pattern. """
-    i = 0
-    for result in __gen_str_from_re(regex, star_plus_max, repeat_max, yield_max):
-        yield result
+    for r in __gen_str_from_re(regex, star_plus_max, repeat_max, yield_max):
+        yield r
 
 
 # guess feature objects
