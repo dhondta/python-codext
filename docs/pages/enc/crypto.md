@@ -71,6 +71,23 @@ It implements the monoalphabetic substitution cipher used for the Hebrew alphabe
 
 -----
 
+### Autoclave/Autokey Cipher
+
+This is a variant of the [Vigenere Cipher](#vigenere-cipher) using a key stream generated from the primer key and the message appended.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`autoclave` | text <-> Autoclave ciphertext | `autoclave-cipher`, `autokey` | 
+
+```python
+>>> codext.encode("This is a test !", "autoclave-test")
+'Mlal bz i lmkt !'
+>>> codext.decode("Mlal bz i lmkt !", "autokey_cipher-test")
+'This is a test !'
+```
+
+-----
+
 ### Baconian Cipher
 
 It support only letters.

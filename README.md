@@ -282,6 +282,7 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 
 - [X] `affine`: aka Affine Cipher
 - [X] `atbash`: aka Atbash Cipher
+- [X] `autoclave`: aka Autoclave/Autokey Cipher (variant of Vigenere Cipher)
 - [X] `bacon`: aka Baconian Cipher
 - [X] `barbie-N`: aka Barbie Typewriter (*N* belongs to [1, 4])
 - [X] `beaufort`: aka Beaufort Cipher (variant of Vigenere Cipher)
