@@ -287,6 +287,7 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 - [X] `barbie-N`: aka Barbie Typewriter (*N* belongs to [1, 4])
 - [X] `beaufort`: aka Beaufort Cipher (variant of Vigenere Cipher)
 - [X] `citrix`: aka Citrix CTX1 password encoding
+- [X] `phillips`: aka Phillips Cipher (polyalphabetic block cipher with 8 key squares)
 - [X] `polybius`: aka Polybius Square Cipher
 - [X] `railfence`: aka Rail Fence Cipher
 - [X] `rotN`: aka Caesar cipher (*N* belongs to [1,25])
