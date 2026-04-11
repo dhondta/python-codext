@@ -671,7 +671,7 @@ def list_categories():
             c.append(d.rstrip("s"))
     # particular category, hardcoded from base/_base.py
     c += ["base-generic"]
-    return c
+    return list(set(c))
 list_categories()
 
 

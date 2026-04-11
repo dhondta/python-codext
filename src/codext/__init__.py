@@ -170,7 +170,7 @@ def main():
     listi = sparsers.add_parser("list", help="list items")
     lsparsers = listi.add_subparsers(dest="type", help="type of item to be listed", required=True)
     liste = lsparsers.add_parser("encodings", help="list encodings")
-    liste.add_argument("category", nargs="+", help="selected categories")
+    liste.add_argument("category", nargs="*", help="selected categories")
     listm = lsparsers.add_parser("macros", help="list macros")
     addm = sparsers.add_parser("add-macro", help="add a macro to the registry")
     addm.add_argument("name", help="macro's name")
@@ -198,13 +198,13 @@ def main():
         # list encodings or macros
         elif args.command == "list":
             if args.type == "encodings":
-                cats = args.category or list_categories()
-                for c in sorted(cats):
-                    l = list_encodings(c)
-                    if len(l) > 0:
-                        if len(cats) > 0:
+                if args.category:
+                    for c in sorted(args.category):
+                        if len(l := list_encodings(c)) > 0:
                             print(c.upper() + ":")
-                        __print_tabular(l)
+                            __print_tabular(l)
+                else:
+                    __print_tabular(list_encodings())
             elif args.type == "macros":
                 l = list_macros()
                 if len(l) > 0:

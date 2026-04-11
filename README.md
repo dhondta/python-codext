@@ -43,7 +43,7 @@ $ echo -en "test" | codext encode base100
 👫👜👪👫
 ```
 
-### Chaining codecs
+### :chains: Chaining codecs
 
 ```sh
 $ echo -en "Test string" | codext encode reverse
@@ -62,7 +62,7 @@ $ echo -en "AGTCAGTCAGTGAGAAAGTCAGTGAGAAAGTGAGTGAGAAAGTGAGTCAGTGAGAAAGTCAGAAAGTG
 test string
 ```
 
-### Using macros
+### :twisted_rightwards_arrows: Using macros
 
 ```sh
 $ codext add-macro my-encoding-chain gzip base63 lzma base64
@@ -79,7 +79,9 @@ $ codext list macros
 example-macro
 ```
 
-## :computer: Usage (base CLI tool) <a href="https://twitter.com/intent/tweet?text=UnBase%20-%20Decode%20any%20multi-layer%20base-encoded%20string.%0D%0APython%20tool%20for%20decoding%20any%20base-encoded%20string,%20even%20when%20encoded%20with%20multiple%20layers.%0D%0Ahttps%3a%2f%2fgithub%2ecom%2fdhondta%2fpython-codext%0D%0A&hashtags=python,base,encodings,codecs,cryptography,stegano,steganography,ctftools"><img src="https://img.shields.io/badge/Tweet%20(unbase)--lightgrey?logo=twitter&style=social" alt="Tweet on unbase" height="20"/></a>
+## :desktop_computer: Usage (`baseXX` CLI tools) <a href="https://twitter.com/intent/tweet?text=UnBase%20-%20Decode%20any%20multi-layer%20base-encoded%20string.%0D%0APython%20tool%20for%20decoding%20any%20base-encoded%20string,%20even%20when%20encoded%20with%20multiple%20layers.%0D%0Ahttps%3a%2f%2fgithub%2ecom%2fdhondta%2fpython-codext%0D%0A&hashtags=python,base,encodings,codecs,cryptography,stegano,steganography,ctftools"><img src="https://img.shields.io/badge/Tweet%20(unbase)--lightgrey?logo=twitter&style=social" alt="Tweet on unbase" height="20"/></a>
+
+Playing with base encodings.
 
 ```session
 $ echo "Test string !" | base122
@@ -106,9 +108,63 @@ $ echo "Test string !" | base91 | base85 | base36 | base58-flickr | unbase -f Te
 Test string !
 ```
 
-## :computer: Usage (Python)
+## :computer: Usage (CLI)
 
-Getting the list of available codecs:
+Listing codecs.
+
+```session
+$ codext list encodings
+a1z26                      adler32               affine             alternative-rot        ascii           
+atbash                     autoclave             bacon              barbie                 base            
+base1                      base2                 base3              base4                  base8           
+<<snipped>>
+```
+
+Finding a codec based on a name.
+
+```session
+$ codext search bitcoin
+base58
+```
+
+Encoding a string.
+
+```sesssion
+$ echo -en "This is a test" | codext encode polybius
+44232443 2443 11 44154344
+```
+
+Encoding a file.
+
+```session
+$ echo -en "this is a test" > to_be_encoded.txt
+$ codext encode base64 < to_be_encoded.txt > text.b64
+$ cat text.b64 
+dGhpcyBpcyBhIHRlc3Q=
+```
+
+Chaining codecs.
+
+```session
+$ echo -en "mrdvm6teie6t2cq=" | codext encode upper | codext decode base32 | codext decode base64
+test
+```
+
+Iteratively guessing decodings.
+
+```session
+$ echo -en "test" | codext encode base64 gzip | codext guess
+Codecs: gzip
+dGVzdA==
+$ echo -en "test" | codext encode base64 gzip | codext guess gzip -i base
+Codecs: gzip, base64
+test
+```
+
+
+## :snake: Usage (Python)
+
+Getting the list of available codecs.
 
 ```python
 >>> import codext
@@ -116,6 +172,9 @@ Getting the list of available codecs:
 >>> codext.list()
 ['ascii85', 'base85', 'base100', 'base122', ..., 'tomtom', 'dna', 'html', 'markdown', 'url', 'resistor', 'sms', 'whitespace', 'whitespace-after-before']
 
+Playing with some base encodings.
+
+```python
 >>> codext.encode("this is a test", "base58-bitcoin")
 'jo91waLQA1NNeBmZKUF'
 
@@ -130,7 +189,21 @@ Getting the list of available codecs:
 
 >>> codecs.decode("👫👟👠👪🐗👠👪🐗👘🐗👫👜👪👫", "base100")
 'this is a test'
+```
 
+Playing with some cryptography-based codecs.
+
+```python
+>>> codext.encode("This is a test !", "vigenere-MYSECRETKET")
+'Ffaw kj e mowm !'
+
+>>> codext.encode("This is a test !", "autoclave-SECRET")
+'Llkj ml t amkb !'
+```
+
+Encoding/decoding with various other codecs.
+
+```python
 >>> for i in range(8):
         print(codext.encode("this is a test", "dna-%d" % (i + 1)))
 GTGAGCCAGCCGGTATACAAGCCGGTATACAAGCAGACAAGTGAGCGGGTATGTGA
@@ -157,30 +230,6 @@ CACTCGGTCGGCCATATGTTCGGCCATATGTTCGTCTGTTCACTCGCCCATACACT
 >>> with open("morse.txt",encoding="morse") as f:
 	f.read()
 'this is a test'
-
->>> codext.decode("""
-      =            
-              X         
-   :            
-      x         
-  n  
-    r 
-        y   
-      Y            
-              y        
-     p    
-         a       
- `          
-            n            
-          |    
-  a          
-o    
-       h        
-          `            
-          g               
-           o 
-   z      """, "whitespace-after+before")
-'CSC{not_so_invisible}'
 
 >>> print(codext.encode("An example test string", "baudot-tape"))
 ***.**
