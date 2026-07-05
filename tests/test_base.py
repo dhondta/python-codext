@@ -211,6 +211,19 @@ class TestCodecsBase(TestCase):
         self.assertRaises(ValueError, codecs.decode, b(B100)[1:], "base100")
         self.assertIsNotNone(codecs.decode(b(B100) + b"\n", "base100", "ignore"))
     
+    def test_codec_base45(self):
+        # RFC 9285 test vectors
+        for s, b45 in [("AB", "BB8"), ("Hello!!", "%69 VD92EX0"), ("base-45", "UJCLQE7W581")]:
+            self.assertEqual(codecs.encode(s, "base45"), b45)
+            self.assertEqual(codecs.encode(b(s), "base45"), b(b45))
+            self.assertEqual(codecs.decode(b45, "base45"), s)
+            self.assertEqual(codecs.decode(b(b45), "base45"), b(s))
+        # a trailing non-ASCII byte must not be dropped (byte length, not str length, drives encoding)
+        self.assertEqual(codecs.encode(b"\xcf\xb1\x1b", "base45"), b"OBQR0")
+        self.assertEqual(codecs.decode(b"OBQR0", "base45"), b"\xcf\xb1\x1b")
+        for data in [b"\xff\xfe", b"hello", b"\x00", b"\x80\x81\x82\x83\x84"]:
+            self.assertEqual(codecs.decode(codecs.encode(data, "base45"), "base45"), data)
+
     def test_codec_base_generic(self):
         for n in range(2, 255):
             bn = "base{}_generic".format(n)
