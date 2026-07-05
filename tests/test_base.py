@@ -172,7 +172,15 @@ class TestCodecsBase(TestCase):
         self.assertEqual(codecs.decode(B58, "base58-fl"), STR)
         self.assertEqual(codecs.encode(STR, "base58-short-url"), B58)
         self.assertEqual(codecs.encode(STR, "base58-url"), B58)
-    
+        # leading null bytes must be preserved as leading charset[0] ('1')
+        self.assertEqual(codecs.encode("\x00abc", "base58"), "1ZiCa")
+        self.assertEqual(codecs.encode("\x00", "base58"), "1")
+        self.assertEqual(codecs.encode("\x00\x00abc", "base58"), "11ZiCa")
+        self.assertEqual(codecs.decode("1ZiCa", "base58"), "\x00abc")
+        self.assertEqual(codecs.decode("11ZiCa", "base58"), "\x00\x00abc")
+        self.assertEqual(codecs.encode(b("\x00abc"), "base58"), b("1ZiCa"))
+        self.assertEqual(codecs.decode(b("1ZiCa"), "base58"), b("\x00abc"))
+
     def test_codec_base62(self):
         for b62, enc in zip(["CsoB4HQ5gmgMyCenF7E", "M2yLERaFqwqW8MoxPHO"], ["base62", "base62-inv"]):
             self.assertEqual(codecs.encode(STR, enc), b62)
