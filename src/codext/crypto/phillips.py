@@ -18,9 +18,6 @@ Reference: https://www.dcode.fr/phillips-cipher
 """
 from ..__common__ import *
 
-_ALPHA = "ABCDEFGHIKLMNOPQRSTUVWXYZ"  # 25 letters; I and J share one cell
-_ALPHA_SET = set(_ALPHA)
-
 
 __examples__ = {
     'enc(phillips)':             None,
@@ -31,19 +28,19 @@ __examples__ = {
 __guess__ = ["phillips-key", "phillips-secret", "phillips-password"]
 
 
-def _build_grid(key):
-    """Build the initial 5×5 grid from a keyword (J treated as I)."""
+_ALPHABET = "ABCDEFGHIKLMNOPQRSTUVWXYZ"
+
+
+def __make_grids(key):
+    """Return all 8 grids: the initial grid plus 7 row-rotated variants."""
+    # build the initial 5×5 grid from a keyword (J treated as I)
     seen, letters = set(), []
-    for c in key.upper().replace("J", "I") + _ALPHA:
-        if c in _ALPHA_SET and c not in seen:
+    for c in key.upper().replace("J", "I") + _ALPHABET:
+        if c in set(_ALPHABET) and c not in seen:
             letters.append(c)
             seen.add(c)
-    return [letters[i * 5:(i + 1) * 5] for i in range(5)]
-
-
-def _make_grids(key):
-    """Return all 8 grids: the initial grid plus 7 row-rotated variants."""
-    grid = _build_grid(key)
+    grid = [letters[i * 5:(i + 1) * 5] for i in range(5)]
+    # now build the other 7 row-rotated variant grids
     grids = [grid]
     for _ in range(7):
         grid = [row[1:] + [row[0]] for row in grid]
@@ -51,19 +48,14 @@ def _make_grids(key):
     return grids
 
 
-def _grid_positions(grid):
-    """Return a mapping from letter to (row, col) for the given grid."""
-    return {ch: (r, c) for r, row in enumerate(grid) for c, ch in enumerate(row)}
-
-
-def _process_pair(a, b, grid, decode=False):
+def __process_pair(a, b, grid, decode=False):
     """Encode or decode a letter pair using Playfair substitution rules.
 
     Same row   → each letter shifts one step right (encode) / left (decode).
     Same col   → each letter shifts one step down  (encode) / up   (decode).
     Rectangle  → each letter moves to the other's column (self-inverse).
     """
-    pos = _grid_positions(grid)
+    pos = {ch: (r, c) for r, row in enumerate(grid) for c, ch in enumerate(row)}
     r1, c1 = pos[a]
     r2, c2 = pos[b]
     d = -1 if decode else 1
@@ -77,14 +69,13 @@ def _process_pair(a, b, grid, decode=False):
 def phillips_encode(key):
     _key = (key or "").strip()
     # Compute grids eagerly if key is valid; otherwise defer error to call time
-    _grids = _make_grids(_key) if _key and _key.isalpha() else None
-
+    _grids = __make_grids(_key) if _key and _key.isalpha() else None
     def encode(text, errors="strict"):
         if _grids is None:
             raise LookupError("Bad parameter for encoding 'phillips': "
                               "key must be a non-empty alphabetic string")
         t = ensure_str(text).upper().replace("J", "I")
-        alpha = [(i, c) for i, c in enumerate(t) if c in _ALPHA_SET]
+        alpha = [(i, c) for i, c in enumerate(t) if c in set(_ALPHABET)]
         # Pad to an even count with a trailing X
         padding_char = None
         if len(alpha) % 2 == 1:
@@ -93,7 +84,7 @@ def phillips_encode(key):
         for pair_num, k in enumerate(range(0, len(alpha), 2)):
             pos1, a = alpha[k]
             pos2, b = alpha[k + 1]
-            e1, e2 = _process_pair(a, b, _grids[pair_num % 8])
+            e1, e2 = __process_pair(a, b, _grids[pair_num % 8])
             enc_map[pos1] = e1
             if pos2 >= 0:
                 enc_map[pos2] = e2
@@ -102,23 +93,20 @@ def phillips_encode(key):
         result = [enc_map.get(i, c) for i, c in enumerate(t)]
         if padding_char is not None:
             result.append(padding_char)
-        r = "".join(result)
-        return r, len(text)
-
+        return "".join(result), len(text)
     return encode
 
 
 def phillips_decode(key):
     _key = (key or "").strip()
     # Compute grids eagerly if key is valid; otherwise defer error to call time
-    _grids = _make_grids(_key) if _key and _key.isalpha() else None
-
+    _grids = __make_grids(_key) if _key and _key.isalpha() else None
     def decode(text, errors="strict"):
         if _grids is None:
             raise LookupError("Bad parameter for decoding 'phillips': "
                               "key must be a non-empty alphabetic string")
         t = ensure_str(text).upper().replace("J", "I")
-        alpha = [(i, c) for i, c in enumerate(t) if c in _ALPHA_SET]
+        alpha = [(i, c) for i, c in enumerate(t) if c in set(_ALPHABET)]
         if len(alpha) % 2 == 1:
             if errors == "strict":
                 raise ValueError("phillips: encoded text must contain an even "
@@ -128,15 +116,12 @@ def phillips_decode(key):
         for pair_num, k in enumerate(range(0, len(alpha), 2)):
             pos1, a = alpha[k]
             pos2, b = alpha[k + 1]
-            d1, d2 = _process_pair(a, b, _grids[pair_num % 8], decode=True)
+            d1, d2 = __process_pair(a, b, _grids[pair_num % 8], decode=True)
             dec_map[pos1] = d1
             dec_map[pos2] = d2
-        result = [dec_map.get(i, c) for i, c in enumerate(t)]
-        r = "".join(result)
-        return r, len(text)
-
+        return "".join(dec_map.get(i, c) for i, c in enumerate(t)), len(text)
     return decode
 
 
-add("phillips", phillips_encode, phillips_decode,
-    r"^phillips(?:[-_]cipher)?(?:[-_]([a-zA-Z]+))?$", penalty=.1)
+add("phillips", phillips_encode, phillips_decode, r"^phillips(?:[-_]cipher)?(?:[-_]([a-zA-Z]+))?$", printables_rate=1.,
+    penalty=.1)
