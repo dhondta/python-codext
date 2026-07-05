@@ -162,6 +162,25 @@ This implements the Citrix CTX1 password encoding algorithm.
 
 -----
 
+### Phillips Cipher
+
+This implements Phillips cipher, a polyalphabetic code using 8 grids generated with one keyword.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`phillips` | text <-> phillips ciphertext | `phillips-key`, `phillips_password`, ... |
+
+```python
+>>> codext.encode("this is a test", "phillips_mysuperkey")
+'ZCNM NM E XKMVZ'
+>>> codext.encode("Another Test String", "phillips-PaSsWoRd")
+'SMEZKBE LBON OLEHQHV'
+>>> codext.decode("SMEZKBE LBON OLEHQHV", "phillips-password")
+'ANOTHER TEST STRINGX'
+```
+
+-----
+
 ### Polybius Square Cipher
 
 This implements the well-known Polybius Square cipher, using the square with the alphabet in normal order as the default. It can be used dynamically with a custom alphabet.

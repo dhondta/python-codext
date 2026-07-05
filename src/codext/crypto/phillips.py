@@ -125,3 +125,4 @@ def phillips_decode(key):
 
 add("phillips", phillips_encode, phillips_decode, r"^phillips(?:[-_]cipher)?(?:[-_]([a-zA-Z]+))?$", printables_rate=1.,
     penalty=.1)
+
