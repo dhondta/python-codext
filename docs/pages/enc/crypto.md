@@ -257,6 +257,8 @@ This is a dynamic encoding, that is, it can be called with an integer to define 
 
 -----
 
+<<<<<<< HEAD
+=======
 ### Trithemius Cipher
 
 This is a variant of the [Vigenere Cipher](#vigenere-cipher) with key `"ABCDEFGHIJKLMNOPQRSTUVWXYZ"`.
@@ -274,6 +276,7 @@ This is a variant of the [Vigenere Cipher](#vigenere-cipher) with key `"ABCDEFGH
 
 -----
 
+>>>>>>> origin/main
 ### Vigenere Cipher
 
 This is a dynamic encoding, that is, it holds the key. There is no default key, meaning that `vigenere` as the encoding scheme throws a `LookupError` indicating that the _key must be a non-empty alphabetic string_.
@@ -288,7 +291,10 @@ This is a dynamic encoding, that is, it holds the key. There is no default key, 
 >>> codext.encode("This is a test !", "vigenere_MySuperSecret")
 'Ffam xw r liuk !'
 >>> codext.decode("Tiit it a tfsu !", "vigenere-abababa")
+<<<<<<< HEAD
+=======
 'This is a test !'
+>>>>>>> origin/main
 ```
 
 -----
