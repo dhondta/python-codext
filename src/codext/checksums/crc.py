@@ -3,10 +3,10 @@
 
 This is a codec for computing checksums, for use with other codecs in encoding chains.
 
-These codecs:
-- transform strings from str to str
-- transform strings from bytes to bytes
-- transform file content from str to bytes (write)
+This codec:
+- transforms strings from str to str
+- transforms strings from bytes to bytes
+- transforms file content from str to bytes (write)
 """
 from ..__common__ import add
 
@@ -212,7 +212,7 @@ CRC = {
     },
 }
 
-_pattern = lambda n="": r"^crc" + str(n) + r"(|[-_]?(?:%s))$" % "|".join(x for x in CRC[n].keys() if len(x) > 0)
+_pattern = lambda n="": rf"^crc(?:[-_]?){n}(|[-_]?(?:{'|'.join(x for x in CRC[n].keys() if len(x) > 0)}))$"
 _rev_int = lambda i, l=None: int(bin(i)[2:].zfill(l or len(bin(i)[2:]))[::-1], 2)
 
 

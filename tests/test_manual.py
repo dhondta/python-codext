@@ -96,6 +96,17 @@ class ManualTestCase(TestCase):
         self.assertRaises(NotImplementedError, codecs.decode, STR, "slug")
         self.assertRaises(NotImplementedError, codecs.decode, STR, "snake")
     
+    def test_codec_checksum_functions(self):
+        from codext.checksums.crc import CRC
+        for n, variants in CRC.items():
+            for name, params in variants.items():
+                enc = ("crc%d-%s" % (n, name) if isinstance(n, int) else "crc-%s" % name).rstrip("-")
+                self.assertEqual(codecs.encode("123456789", enc), "%0{}x".format(round((n or 16)/4+.5)) % params[5])
+        from codext.checksums.luhn import luhn
+        for s, r in [("", ""), ("0", "0"), ("1", "8"), ("7992739871", "3")]:
+            self.assertEqual(codecs.encode(s, "luhn"), r)
+        self.assertEqual(codecs.encode("-", "luhn", errors="ignore"), "")
+    
     def test_codec_dummy_str_manips(self):
         STR = "this is a test"
         self.assertEqual(codecs.decode(STR, "reverse"), "tset a si siht")
@@ -109,7 +120,6 @@ class ManualTestCase(TestCase):
         self.assertRaises(LookupError, codecs.encode, STR, "tokenize-200")
     
     def test_codec_hash_functions(self):
-        from codext.checksums.crc import CRC
         STR = b"This is a test string!"
         for h in ["adler32", "md2", "md5", "sha1", "sha224", "sha256", "sha384", "sha512"]:
             self.assertIsNotNone(codecs.encode(STR, h))
@@ -145,13 +155,6 @@ class ManualTestCase(TestCase):
                 h = "crypt-" + m
                 self.assertIsNotNone(codecs.encode(STR, h))
                 self.assertRaises(NotImplementedError, codecs.decode, STR, h)
-        # CRC checks
-        STR = "123456789"
-        for n, variants in CRC.items():
-            for name, params in variants.items():
-                enc = ("crc%d-%s" % (n, name) if isinstance(n, int) else "crc-%s" % name).rstrip("-")
-                print(enc)
-                self.assertEqual(codecs.encode(STR, enc), "%0{}x".format(round((n or 16)/4+.5)) % params[5])
     
     def test_codec_markdown(self):
         HTM = "<h1>Test title</h1>\n\n<p>Test paragraph</p>\n"

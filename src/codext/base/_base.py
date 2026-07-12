@@ -130,6 +130,10 @@ def base_encode(input, charset, errors="strict", exc=BaseEncodeError):
     while i > 0:
         i, c = divmod(i, n)
         r = charset[c] + r
+    # preserve leading zero bytes: big-integer bases such as Base58 map each
+    # leading null byte of the input to a leading charset[0] character
+    if not isinstance(input, int):
+        r = charset[0] * (len(input) - len(input.lstrip("\x00"))) + r
     return r
 
 
@@ -151,7 +155,8 @@ def base_decode(input, charset, errors="strict", exc=BaseDecodeError):
             i = i * n + charset.index(c)
         except ValueError:
             handle_error("base", errors, exc, decode=True)(c, k, dec(i), "base%d" % n)
-    return dec(i)
+    # restore the leading zero bytes encoded as leading charset[0] characters
+    return chr(0) * (len(input) - len(input.lstrip(charset[0]))) + dec(i)
 
 
 # base codec factory functions
