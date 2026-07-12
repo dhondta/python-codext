@@ -202,20 +202,21 @@ This is a dynamic encoding, that is, it can be called with an integer to define 
 
 -----
 
-### Vigenere Cipher
+### Playfair Cipher
 
-This is a dynamic encoding, that is, it holds the key. There is no default key, meaning that `vigenere` as the encoding scheme throws a `LookupError` indicating that the _key must be a non-empty alphabetic string_.
+The Playfair cipher is a symmetric encryption method using polygram substitution with bigrams (pairs of letters), invented in 1854 by Charles Wheatstone, but popularized by Lord Playfair.
 
 **Codec** | **Conversions** | **Aliases** | **Comment**
 :---: | :---: | --- | ---
-`vigenere` | text <-> Vigenere ciphertext | `vigenere-abcdef`, `vigenere_MySuperSecret` | key only consists of characters, not digits
+`playfair` | text <-> Playfair ciphertext | `playfair`, `playfair-playfairexample`, `playfair-keyword` | Dynamic key parameter ; letters only ; `J` is normalized to `I`
 
 ```python
->>> codext.encode("This is a test !", "vigenere-abababa")
-'Tiit it a tfsu !'
->>> codext.encode("This is a test !", "vigenere_MySuperSecret")
-'Ffam xw r liuk !'
->>> codext.decode("Tiit it a tfsu !", "vigenere-abababa")
+>>> codext.encode("HIDETHEGOLDINTHETREESTUMP", "playfair-playfairexample")
+'BMODZBXDNABEKUDMUIXMMOUVIF'
+>>> codext.decode("BMODZBXDNABEKUDMUIXMMOUVIF", "playfair-playfairexample")
+'HIDETHEGOLDINTHETREXESTUMP'
+>>> codext.decode(codext.encode("INSTRUMENT", "playfair-keyword"), "playfair-keyword")
+'INSTRUMENT'
 ```
 
 -----
@@ -238,4 +239,3 @@ This is a dynamic encoding, that is, it can be called with an integer to define 
 >>> codext.encode("~bcy*cy*k*~oy~", "xor-10")
 'this is a test'
 ```
-

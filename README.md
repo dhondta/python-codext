@@ -285,12 +285,12 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 - [X] `bacon`: aka Baconian Cipher
 - [X] `barbie-N`: aka Barbie Typewriter (*N* belongs to [1, 4])
 - [X] `citrix`: aka Citrix CTX1 password encoding
+- [X] `playfair`: aka Playfair Cipher
 - [X] `polybius`: aka Polybius Square Cipher
 - [X] `railfence`: aka Rail Fence Cipher
 - [X] `rotN`: aka Caesar cipher (*N* belongs to [1,25])
 - [X] `scytaleN`: encrypts using the number of letters on the rod (*N* belongs to [1,[)
 - [X] `shiftN`: shift ordinals (*N* belongs to [1,255])
-- [X] `vigenere`: aka Vigenere Cipher
 - [X] `xorN`: XOR with a single byte (*N* belongs to [1,255])
 
 > :warning: Crypto functions are of course definitely **NOT** encoding functions ; they are implemented for leveraging the `.encode(...)` API from `codecs`.
