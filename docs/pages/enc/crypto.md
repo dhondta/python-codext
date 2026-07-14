@@ -274,6 +274,30 @@ This is a variant of the [Vigenere Cipher](#vigenere-cipher) with key `"ABCDEFGH
 
 -----
 
+### VIC Cipher
+
+The VIC cipher combines a straddling checkerboard substitution (converting letters to a stream of digits) and an over-encryption based on a modulo-10 sum with eventually a conversion from digits to text.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`vic` | text <-> VIC digit/text ciphertext | `vic-keyword`, `vic-key-12`, `vic-^-26-0248`, `vic-*-73-534T` | optional checkerboard keyword or alphabet marker, blank positions (exactly 2 distinct digits), over-encryption key (digits), "`T`" marker for text conversion
+
+Alphabet markers:
+- `*`: uses "`ABC[...]XYZ./`" (uppercase letters + "`./`")
+- `^`: uses "`./ZYX[...]CBA`" ("`./`" + reversed uppercase letters)
+
+```python
+>>> import codext
+>>> codext.encode("VICTOR", "vic-^-26-0248T")
+'VVXYWYY.XYJ'
+>>> codext.decode("VVXYWYY.XYJ", "vic-^-26-0248T")
+'VICTOR2'  # trailing superfluous letter because of text conversion
+>>> codext.encode("LONGTESTSTRING", "vic-^-85-72564")
+'5031237844273727064454072378'
+```
+
+-----
+
 ### Vigenere Cipher
 
 This is a dynamic encoding, that is, it holds the key. There is no default key, meaning that `vigenere` as the encoding scheme throws a `LookupError` indicating that the _key must be a non-empty alphabetic string_.
