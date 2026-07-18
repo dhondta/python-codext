@@ -25,7 +25,9 @@ from ..__common__ import *
 
 
 __examples__ = {
+    'dec(phillips)':               None,
     'enc(phillips)':               None,
+    'enc(phillips-key)':           {'ATTACK1': None},
     'enc(phillips-key)':           {'ATTACK': "HUUHLL", 'TESTME': "UFZUSM", 'ABCDEF': "HCLMFA"},
     'enc(phillips-key-5-1-2)':     {'This is a Test String': "KPVBVHTCRHCHCGQBT"},
     'dec(phillips-key-5-1-2)':     {'KPVBVHTCRHCHCGQBT': "THISISATESTSTRING"},
@@ -58,69 +60,45 @@ def __make_grids(key):
     return grids
 
 
-def _shift_text(text, grids, block_size, dh, dv, errors, decode=False):
-    t = ensure_str(text).upper().replace("J", "I")
-    pos_maps = [
-        {ch: (r, c) for r, row in enumerate(grid) for c, ch in enumerate(row)}
-        for grid in grids
-    ]
+def __set_params(key, block_size, dh, dv):
+    return (key or "").strip(), \
+           int(block_size) if block_size else 5, \
+           int(dh) if dh else 1, \
+           int(dv) if dv else 1, \
+           __make_grids(key) if key and key.isalpha() else None
+
+
+def __shift_text(text, grids, block_size, dh, dv, errors, decode=False):
+    pos_maps = [{ch: (r, c) for r, row in enumerate(grid) for c, ch in enumerate(row)} for grid in grids]
+    r, i, t = "", 0, ensure_str(text).upper().replace("J", "I").replace(" ", "")
     _h = handle_error("phillips", errors, decode=decode)
-    r, i = "", 0
     for pos, c in enumerate(t):
-        if c == " ":
-            continue
         if c not in set(_ALPHABET):
             r += _h(c, pos, r)
-            continue
-        grid_idx = (i // block_size) % 8
-        grid = grids[grid_idx]
-        s, col = pos_maps[grid_idx][c]
-        r += grid[(s + dv) % 5][(col + dh) % 5]
-        i += 1
-    return r, len(text)
-
-
-def _make_cipher(key, block_size, dh, dv):
-    _key = (key or "").strip()
-    try:
-        block_size = int(block_size) if block_size else 5
-    except (ValueError, TypeError):
-        raise LookupError(f"Bad parameter for encoding 'phillips': block_size must be an integer, got {block_size}")
-    if not (1 <= block_size <= 25):
-        raise LookupError("Bad parameter for encoding 'phillips': block_size must be between 1 and 25, got "
-                          f"{block_size}")
-    try:
-        dh = int(dh) if dh else 1
-    except (ValueError, TypeError):
-        raise LookupError(f"Bad parameter for encoding 'phillips': dh must be an integer, got {dh}")
-    if not (1 <= dh <= 4):
-        raise LookupError(f"Bad parameter for encoding 'phillips': dh must be between 1 and 4, got {dh}")
-    try:
-        dv = int(dv) if dv else 1
-    except (ValueError, TypeError):
-        raise LookupError(f"Bad parameter for encoding 'phillips': dv must be an integer, got {dv}")
-    if not (1 <= dv <= 4):
-        raise LookupError(f"Bad parameter for encoding 'phillips': dv must be between 1 and 4, got {dv}")
-    return _key, block_size, dh, dv, __make_grids(_key) if _key and _key.isalpha() else None
+        else:
+            grid_idx = (i // block_size) % 8
+            grid = grids[grid_idx]
+            s, col = pos_maps[grid_idx][c]
+            r += grid[(s + dv) % 5][(col + dh) % 5]
+            i += 1
+    return r, len(r)
 
 
 def phillips_encode(key, block_size=None, dh=None, dv=None):
-    _key, block_size, dh, dv, grids = _make_cipher(key, block_size, dh, dv)
+    _key, block_size, dh, dv, grids = __set_params(key, block_size, dh, dv)
     def encode(text, errors="strict"):
-        if grids is None:
-            raise LookupError("Bad parameter for encoding 'phillips': "
-                              "key must be a non-empty alphabetic string")
-        return _shift_text(text, grids, block_size, dh, dv, errors)
+        if _key == "":
+            raise LookupError("Bad parameter for encoding 'phillips': key cannot be empty")
+        return __shift_text(text, grids, block_size, dh, dv, errors)
     return encode
 
 
 def phillips_decode(key, block_size=None, dh=None, dv=None):
-    _key, block_size, dh, dv, grids = _make_cipher(key, block_size, dh, dv)
+    _key, block_size, dh, dv, grids = __set_params(key, block_size, dh, dv)
     def decode(text, errors="strict"):
-        if grids is None:
-            raise LookupError("Bad parameter for decoding 'phillips': "
-                              "key must be a non-empty alphabetic string")
-        return _shift_text(text, grids, block_size, -dh, -dv, errors, True)
+        if _key == "":
+            raise LookupError("Bad parameter for encoding 'phillips': key cannot be empty")
+        return __shift_text(text, grids, block_size, -dh, -dv, errors, True)
     return decode
 
 
