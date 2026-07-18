@@ -11,6 +11,7 @@ from ..__common__ import *
 
 
 __examples__ = {
+    'dec(hexagram)':                          {'䷕䷞䷈䷇t': None},
     'enc(hexagram|iching|i-ching-hexagrams)': {'this is a test': "䷰䷭䷚䷔䷞䷺䷗䷔䷞䷺䷗䷚䷏䷊䷂䷕䷞䷈䷇☯"},
 }
 
@@ -25,13 +26,13 @@ def hexagram_encode(input, errors="strict"):
 
 
 def hexagram_decode(input, errors="strict"):
-    r, ehandler = "", handle_error("hexagram", errors, decode=True)
+    r, _h = "", handle_error("hexagram", errors, decode=True)
     for i, c in enumerate(input):
         try:
             r += DECMAP[c]
         except KeyError:
-            r += ehandler(c, i, r)
-    return codecs.decode(r, "base64"), len(input)
+            r += _h(c, i, r)
+    return (r := codecs.decode(r, "base64")), len(r)
 
 
 add("hexagram", hexagram_encode, hexagram_decode, printables_rate=0.,

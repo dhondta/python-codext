@@ -172,7 +172,15 @@ class TestCodecsBase(TestCase):
         self.assertEqual(codecs.decode(B58, "base58-fl"), STR)
         self.assertEqual(codecs.encode(STR, "base58-short-url"), B58)
         self.assertEqual(codecs.encode(STR, "base58-url"), B58)
-    
+        # leading null bytes must be preserved as leading charset[0] ('1')
+        self.assertEqual(codecs.encode("\x00abc", "base58"), "1ZiCa")
+        self.assertEqual(codecs.encode("\x00", "base58"), "1")
+        self.assertEqual(codecs.encode("\x00\x00abc", "base58"), "11ZiCa")
+        self.assertEqual(codecs.decode("1ZiCa", "base58"), "\x00abc")
+        self.assertEqual(codecs.decode("11ZiCa", "base58"), "\x00\x00abc")
+        self.assertEqual(codecs.encode(b("\x00abc"), "base58"), b("1ZiCa"))
+        self.assertEqual(codecs.decode(b("1ZiCa"), "base58"), b("\x00abc"))
+
     def test_codec_base62(self):
         for b62, enc in zip(["CsoB4HQ5gmgMyCenF7E", "M2yLERaFqwqW8MoxPHO"], ["base62", "base62-inv"]):
             self.assertEqual(codecs.encode(STR, enc), b62)
@@ -211,6 +219,19 @@ class TestCodecsBase(TestCase):
         self.assertRaises(ValueError, codecs.decode, b(B100)[1:], "base100")
         self.assertIsNotNone(codecs.decode(b(B100) + b"\n", "base100", "ignore"))
     
+    def test_codec_base45(self):
+        # RFC 9285 test vectors
+        for s, b45 in [("AB", "BB8"), ("Hello!!", "%69 VD92EX0"), ("base-45", "UJCLQE7W581")]:
+            self.assertEqual(codecs.encode(s, "base45"), b45)
+            self.assertEqual(codecs.encode(b(s), "base45"), b(b45))
+            self.assertEqual(codecs.decode(b45, "base45"), s)
+            self.assertEqual(codecs.decode(b(b45), "base45"), b(s))
+        # a trailing non-ASCII byte must not be dropped (byte length, not str length, drives encoding)
+        self.assertEqual(codecs.encode(b"\xcf\xb1\x1b", "base45"), b"OBQR0")
+        self.assertEqual(codecs.decode(b"OBQR0", "base45"), b"\xcf\xb1\x1b")
+        for data in [b"\xff\xfe", b"hello", b"\x00", b"\x80\x81\x82\x83\x84"]:
+            self.assertEqual(codecs.decode(codecs.encode(data, "base45"), "base45"), data)
+
     def test_codec_base_generic(self):
         for n in range(2, 255):
             bn = "base{}_generic".format(n)

@@ -5,9 +5,12 @@ from .bacon import *
 from .barbie import *
 from .citrix import *
 from .playfair import *
+from .phillips import *
 from .polybius import *
 from .railfence import *
 from .rot import *
 from .scytale import *
 from .shift import *
+from .vic import *
+from .vigenere import *
 from .xor import *

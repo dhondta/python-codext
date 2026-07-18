@@ -34,7 +34,10 @@ def base45_encode(mode):
     b45 = _get_charset(B45, mode)
     def encode(text, errors="strict"):
         t, s = b(text), ""
-        for i in range(0, len(text), 2):
+        # iterate over the byte sequence (t), not len(text): when the input
+        # holds non-ASCII characters, b(text) is longer than text and using
+        # len(text) silently drops the trailing bytes
+        for i in range(0, len(t), 2):
             n = 256 * __ord(t[i])
             try:
                 n += __ord(t[i+1])
@@ -54,7 +57,7 @@ def base45_decode(mode):
     def decode(text, errors="strict"):
         t, s = b(text), ""
         ehandler = handle_error("base45", errors, decode=True)
-        for i in range(0, len(text), 3):
+        for i in range(0, len(t), 3):
             try:
                 n = b45[__chr(t[i])]
             except KeyError:

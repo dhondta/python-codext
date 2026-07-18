@@ -71,6 +71,23 @@ It implements the monoalphabetic substitution cipher used for the Hebrew alphabe
 
 -----
 
+### Autoclave/Autokey Cipher
+
+This is a variant of the [Vigenere Cipher](#vigenere-cipher) using a key stream generated from the primer key and the message appended.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`autoclave` | text <-> Autoclave ciphertext | `autoclave-cipher`, `autokey` | 
+
+```python
+>>> codext.encode("This is a test !", "autoclave-test")
+'Mlal bz i lmkt !'
+>>> codext.decode("Mlal bz i lmkt !", "autokey_cipher-test")
+'This is a test !'
+```
+
+-----
+
 ### Baconian Cipher
 
 It support only letters.
@@ -109,6 +126,25 @@ It implements the cipher for its 4 different keys.
 
 -----
 
+### Beaufort Cipher
+
+This is a variant of the [Vigenere Cipher](#vigenere-cipher). There is no default key, meaning that `beaufort` as the encoding scheme throws a `LookupError` indicating that the _key must be a non-empty alphabetic string_.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`beaufort` | text <-> Beaufort ciphertext | `beaufort-abcdef`, `beaufort_MySuperSecret` | key only consists of characters, not digits
+
+```python
+>>> codext.encode("This is a test !", "beaufort-abababa")
+'Husj sj a hxii !'
+>>> codext.encode("This is a test !", "beaufort_MySuperSecret")
+'Trkc hm r zaky !'
+>>> codext.decode("Husj sj a hxii !", "vigenere-abababa")
+'This is a test !'
+```
+
+-----
+
 ### Citrix CTX1
 
 This implements the Citrix CTX1 password encoding algorithm.
@@ -122,6 +158,25 @@ This implements the Citrix CTX1 password encoding algorithm.
 'NBBMNAAGIDEPJJBMNIFNIMEMJKEL'
 >>> codext.decode("NBBMNAAGIDEPJJBMNIFNIMEMJKEL", "citrix-ctx1")
 'this is a test'
+```
+
+-----
+
+### Phillips Cipher
+
+This implements Phillips cipher, a polyalphabetic code using 8 grids generated with one keyword.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`phillips` | text <-> phillips ciphertext | `phillips-key`, `phillips_password`, ... |
+
+```python
+>>> codext.encode("this is a test", "phillips_mysuperkey")
+'ZCNM NM E XKMVZ'
+>>> codext.encode("Another Test String", "phillips-PaSsWoRd")
+'SMEZKBE LBON OLEHQHV'
+>>> codext.decode("SMEZKBE LBON OLEHQHV", "phillips-password")
+'ANOTHER TEST STRINGX'
 ```
 
 -----
