@@ -152,8 +152,7 @@ class ManualTestCase(TestCase):
             METHODS = [x[7:].lower() for x in crypt.__dict__ if x.startswith("METHOD_")] \
                       if crypt is not None else []
             for m in METHODS:
-                h = "crypt-" + m
-                self.assertIsNotNone(codecs.encode(STR, h))
+                self.assertIsNotNone(codecs.encode(STR, h := f"crypt-{m}"))
                 self.assertRaises(NotImplementedError, codecs.decode, STR, h)
     
     def test_codec_markdown(self):

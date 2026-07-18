@@ -13,8 +13,9 @@ from ..__common__ import *
 
 
 __examples__ = {
-    'enc-dec(ipsum|lorem-ipsum)': ["This is a test !"],
+    'dec(lorem_ipsum)':           {'orci #': None, 'Auctor babel commodo#': None},
     'enc(ipsum)':                 {'Bad test#': None},
+    'enc-dec(ipsum|lorem-ipsum)': ["This is a test !"],
 }
 
 
@@ -59,7 +60,7 @@ SCHARS = "0123456789.,:;!?+=-*/\\"
 
 
 def ipsum_encode(text, errors="strict"):
-    s, strip = "", False
+    s, strip, _h = "", False, handle_error("ipsum", errors, " ")
     for i, c in enumerate(text):
         try:
             if c == " " or c in SCHARS:
@@ -70,13 +71,12 @@ def ipsum_encode(text, errors="strict"):
                 s += (w.capitalize() if c.isupper() else w) + " "
                 strip = True
         except KeyError:
-            s += handle_error("ipsum", errors, " ")(c, i)
-    return s[:-1] if strip else s, len(text)
+            s += _h(c, i, s)
+    return (s := s[:-1] if strip else s), len(s)
 
 
 def ipsum_decode(text, errors="strict"):
-    s = ""
-    words = text.split(" ")
+    s, words, _h = "", text.split(" "), handle_error("ipsum", errors, decode=True, item="word")
     for i, w in enumerate(words[:-1] if words[-1] == "" else words):
         if w.strip() == "":
             s += " "
@@ -88,8 +88,8 @@ def ipsum_decode(text, errors="strict"):
                     raise KeyError
                 s += w[:len(w)-len(w.lstrip(SCHARS))] + w.strip(SCHARS)[0] + w[len(w.rstrip(SCHARS)):len(w)]
             except KeyError:
-                s += handle_error("ipsum", errors, decode=True, item="word")(w, i)
-    return s, len(text)
+                s += _h(w, i, s)
+    return s, len(s)
 
 
 add("ipsum", ipsum_encode, ipsum_decode, pattern=r"^(?:lorem[-_]?)?ipsum$", printables_rate=1.,

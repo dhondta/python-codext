@@ -13,10 +13,10 @@ from ..__common__ import add, ensure_str, UNIX
 
 if UNIX:
     try:
-        import crypt
+        import legacycrypt as crypt
     except ImportError:
         try:
-            import legacycrypt as crypt
+            import crypt
         except ImportError:
             crypt = None
     

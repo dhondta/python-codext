@@ -11,6 +11,8 @@ from ..__common__ import *
 
 
 __examples__ = {
+    'enc(polybius-ABCDEFGHIKLMNOPQRSTUVZZZZ)':       None,
+    'dec(polybius)':                                 {'4423244 24': None},
     'enc(polybius|polybius-square|polybius_square)': {'this is a test': "44232443 2443 11 44154344"},
     'enc(polybius-ABCDEFGHIKLMNOPQRSTUVWXYZ)':       {'this is a test': "44232443 2443 11 44154344"},
     'dec(polybius)':                                 {'44232443 2443 11 44154344': "THIS IS A TEST"},
@@ -59,15 +61,12 @@ def polybius_decode(alphabet=_DEFAULT_ALPHABET):
         _h = handle_error("polybius", errors, decode=True)
         r, t, i = "", ensure_str(text), 0
         while i < len(t):
-            if t[i] == " ":
-                r += " "
-                i += 1
-            elif i + 1 < len(t):
+            if t[i:i+2].isdigit():
                 r += decmap.get(t[i:i+2]) or _h(t[i:i+2], i, r)
-                i += 2
-            else:
-                r += _h(t[i], i, r)
                 i += 1
+            else:
+                r += " " if t[i] == " " else _h(t[i], i, r)
+            i += 1
         return r, len(t)
     return decode
 
