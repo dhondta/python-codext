@@ -276,6 +276,66 @@ The Playfair cipher is a symmetric encryption method using polygram substitution
 
 -----
 
+### Trithemius Cipher
+
+This is a variant of the [Vigenere Cipher](#vigenere-cipher) with key `"ABCDEFGHIJKLMNOPQRSTUVWXYZ"`.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`trithemius` | text <-> Trithemius ciphertext | `trithemius`, `trithemius_cipher` | 
+
+```python
+>>> codext.encode("This is a test !", "trithemius")
+'Tikv mx g ambd !'
+>>> codext.decode("Tikv mx g ambd !", "trithemius")
+'This is a test !'
+```
+
+-----
+
+### VIC Cipher
+
+The VIC cipher combines a straddling checkerboard substitution (converting letters to a stream of digits) and an over-encryption based on a modulo-10 sum with eventually a conversion from digits to text.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`vic` | text <-> VIC digit/text ciphertext | `vic-keyword`, `vic-key-12`, `vic-^-26-0248`, `vic-*-73-534T` | optional checkerboard keyword or alphabet marker, blank positions (exactly 2 distinct digits), over-encryption key (digits), "`T`" marker for text conversion
+
+Alphabet markers:
+- `*`: uses "`ABC[...]XYZ./`" (uppercase letters + "`./`")
+- `^`: uses "`./ZYX[...]CBA`" ("`./`" + reversed uppercase letters)
+
+```python
+>>> import codext
+>>> codext.encode("VICTOR", "vic-^-26-0248T")
+'VVXYWYY.XYJ'
+>>> codext.decode("VVXYWYY.XYJ", "vic-^-26-0248T")
+'VICTOR2'  # trailing superfluous letter because of text conversion
+>>> codext.encode("LONGTESTSTRING", "vic-^-85-72564")
+'5031237844273727064454072378'
+```
+
+-----
+
+### Vigenere Cipher
+
+This is a dynamic encoding, that is, it holds the key. There is no default key, meaning that `vigenere` as the encoding scheme throws a `LookupError` indicating that the _key must be a non-empty alphabetic string_.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`vigenere` | text <-> Vigenere ciphertext | `vigenere-abcdef`, `vigenere_MySuperSecret` | key only consists of characters, not digits
+
+```python
+>>> codext.encode("This is a test !", "vigenere-abababa")
+'Tiit it a tfsu !'
+>>> codext.encode("This is a test !", "vigenere_MySuperSecret")
+'Ffam xw r liuk !'
+>>> codext.decode("Tiit it a tfsu !", "vigenere-abababa")
+'This is a test !'
+```
+
+-----
+
 ### XOR with 1 byte
 
 This is a dynamic encoding, that is, it can be called with an integer to define the ordinal of the byte to XOR with the input text.
