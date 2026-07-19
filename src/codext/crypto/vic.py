@@ -137,6 +137,6 @@ def vic_decode(key=None, blanks=None, numeric_key=None):
     return _decode
 
 
-add("vic", vic_encode, vic_decode, r"vic(?:[-_]([\^*./a-zA-Z]+))?(?:[-_]([0-9]{2}))?(?:[-_]([0-9]+T?))?$",
+add("vic", vic_encode, vic_decode, r"vic(?:[-_]([\^*]|[./a-zA-Z]+))?(?:[-_]([0-9]{2}))?(?:[-_]([0-9]+T?))?$",
     printables_rate=1., penalty=.1)
 
