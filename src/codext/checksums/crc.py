@@ -13,6 +13,7 @@ from ..__common__ import add
 
 CRC = {
     '': {
+        '':              (0x1021, 0xc6c6, True, True, 0, 0xbf05),
         'a':             (0x1021, 0xc6c6, True, True, 0, 0xbf05),
     },
     8: {
@@ -78,6 +79,7 @@ CRC = {
         'mpt1327':       (0x6815, 0, False, False, 1, 0x2566),
     },
     16: {
+        '':              (0x8005, 0, True, True, 0, 0xbb3d),
         'acorn':         (0x1021, 0, False, False, 0, 0x31c3),
         'arc':           (0x8005, 0, True, True, 0, 0xbb3d),
         'atom':          (0x002d, 0, True, True, 0, 0x4287),
