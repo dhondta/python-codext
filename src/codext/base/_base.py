@@ -125,8 +125,10 @@ def base_encode(input, charset, errors="strict", exc=BaseEncodeError):
         if i > SIZE_LIMIT:
             raise InputSizeLimitError("Input exceeded size limit")
         return i * charset[0]
-    if n == 10:
-        return str(i) if charset == digits else "".join(charset[int(x)] for x in str(i))
+    # keep this fast-path only for a non-standard 10-character charset ; the digits
+    # charset uses the generic loop below (leading zeros, bignums, no str/int round-trip)
+    if n == 10 and charset != digits:
+        return "".join(charset[int(x)] for x in str(i))
     while i > 0:
         i, c = divmod(i, n)
         r = charset[c] + r
@@ -148,8 +150,8 @@ def base_decode(input, charset, errors="strict", exc=BaseDecodeError):
     i, n, dec = 0, len(charset), lambda n: base_encode(n, [chr(x) for x in range(256)], errors, exc)
     if n == 1:
         return i2s(len(input))
-    if n == 10:
-        return i2s(int(input)) if charset == digits else "".join(str(charset.index(c)) for c in input)
+    if n == 10 and charset != digits:
+        return "".join(str(charset.index(c)) for c in input)
     for k, c in enumerate(input):
         try:
             i = i * n + charset.index(c)
