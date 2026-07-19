@@ -257,6 +257,25 @@ This is a dynamic encoding, that is, it can be called with an integer to define 
 
 -----
 
+### Playfair Cipher
+
+The Playfair cipher is a symmetric encryption method using polygram substitution with bigrams (pairs of letters), invented in 1854 by Charles Wheatstone, but popularized by Lord Playfair.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`playfair` | text <-> Playfair ciphertext | `playfair`, `playfair-playfairexample`, `playfair-keyword` | Dynamic key parameter ; letters only ; `J` is normalized to `I`
+
+```python
+>>> codext.encode("HIDETHEGOLDINTHETREESTUMP", "playfair-playfairexample")
+'BMODZBXDNABEKUDMUIXMMOUVIF'
+>>> codext.decode("BMODZBXDNABEKUDMUIXMMOUVIF", "playfair-playfairexample")
+'HIDETHEGOLDINTHETREXESTUMP'
+>>> codext.decode(codext.encode("INSTRUMENT", "playfair-keyword"), "playfair-keyword")
+'INSTRUMENT'
+```
+
+-----
+
 ### Trithemius Cipher
 
 This is a variant of the [Vigenere Cipher](#vigenere-cipher) with key `"ABCDEFGHIJKLMNOPQRSTUVWXYZ"`.
@@ -335,4 +354,3 @@ This is a dynamic encoding, that is, it can be called with an integer to define 
 >>> codext.encode("~bcy*cy*k*~oy~", "xor-10")
 'this is a test'
 ```
-
