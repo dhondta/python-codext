@@ -106,6 +106,25 @@ class ManualTestCase(TestCase):
         for s, r in [("", ""), ("0", "0"), ("1", "8"), ("7992739871", "3")]:
             self.assertEqual(codecs.encode(s, "luhn"), r)
         self.assertEqual(codecs.encode("-", "luhn", errors="ignore"), "")
+
+    def test_codec_crc_bare_defaults(self):
+        # a crc<width> used without a variant suffix must resolve to that family's default ;
+        # width 16 and the crc-a family had no default and crashed with KeyError instead
+        from codext.checksums.crc import CRC
+        for n in CRC.keys():
+            name = "crc%d" % n if isinstance(n, int) else "crc"
+            expected = "%0{}x".format(round((n or 16)/4+.5)) % CRC[n][""][5]
+            self.assertEqual(codecs.encode("123456789", name), expected)
+            self.assertEqual(codecs.encode(b"123456789", name), b(expected))
+        # bare crc-16 is CRC-16/ARC (poly 0x8005), the same as its arc/ibm/lha aliases
+        for name in ["crc16", "crc-16", "crc_16", "crc16-arc", "crc16-ibm", "crc16-lha"]:
+            self.assertEqual(codecs.encode("123456789", name), "bb3d")
+        # bare crc is CRC-A, the same as the crca alias
+        self.assertEqual(codecs.encode("123456789", "crc"), "bf05")
+        self.assertEqual(codecs.encode("123456789", "crca"), "bf05")
+        # adding a default must not make an unknown variant resolve
+        self.assertRaises(LookupError, codecs.encode, "123456789", "crc16-bad")
+        self.assertRaises(LookupError, codecs.encode, "123456789", "crc-bad")
     
     def test_codec_dummy_str_manips(self):
         STR = "this is a test"
