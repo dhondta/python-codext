@@ -112,7 +112,30 @@ class TestCodecsBase(TestCase):
         self.assertEqual(codecs.decode(B8, "base8-01234567"), STR)
         self.assertRaises(LookupError, codecs.encode, "test", "base8-0123456")
         self.assertRaises(LookupError, codecs.encode, "test", "base8-012345678")
-    
+
+    def test_codec_base10(self):
+        B10 = "2361031878030638688519054699098996"
+        self.assertEqual(codecs.encode(STR, "base10"), B10)
+        self.assertEqual(codecs.encode(b(STR), "base10"), b(B10))
+        self.assertEqual(codecs.decode(B10, "base10"), STR)
+        self.assertEqual(codecs.decode(b(B10), "base10"), b(STR))
+        for alias in ["int", "integer", "dec", "decimal"]:
+            self.assertEqual(codecs.encode(STR, alias), B10)
+            self.assertEqual(codecs.decode(B10, alias), STR)
+        # leading null bytes must be preserved as leading '0' characters
+        self.assertEqual(codecs.encode("\x00abc", "base10"), "06382179")
+        self.assertEqual(codecs.encode("\x00", "base10"), "0")
+        self.assertEqual(codecs.encode("\x00\x00abc", "base10"), "006382179")
+        self.assertEqual(codecs.decode("06382179", "base10"), "\x00abc")
+        self.assertEqual(codecs.decode("00", "base10"), "\x00\x00")
+        self.assertEqual(codecs.encode(b("\x00abc"), "base10"), b("06382179"))
+        self.assertEqual(codecs.decode(b("06382179"), "base10"), b("\x00abc"))
+        # a value whose big integer ends in a 0xe nibble must survive decoding
+        self.assertEqual(codecs.decode(codecs.encode(b"d\xc6\xfe", "base10"), "base10"), b"d\xc6\xfe")
+        # large inputs must not hit the int<->str conversion digit limit
+        for data in [b"\x00\xff\xfe", b"\x00\x00", b"\x2a" * 2048]:
+            self.assertEqual(codecs.decode(codecs.encode(data, "base10"), "base10"), data)
+
     def test_codec_base16(self):
         B16 = "7468697320697320612074657374"
         self.assertEqual(codecs.encode(STR, "base16"), B16)
