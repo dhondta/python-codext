@@ -1,6 +1,6 @@
 The purpose of this section is to provide a tutorial for creating new codecs accordingly.
 
-As explained in [this section](./features), `codext` provides the possibility to add new codecs in two ways:
+As explained in [this section](features.md), `codext` provides the possibility to add new codecs in two ways:
 
 1. [`add`](https://github.com/dhondta/python-codext/blob/main/src/codext/__common__.py#L56): using this function, the *encode* and *decode* functions must be given as arguments.
 2. [`add_map`](https://github.com/dhondta/python-codext/blob/main/src/codext/__common__.py#L160): using this function, an *encoding map* must be given but can be formatted in different ways to handle various use cases.
@@ -73,7 +73,7 @@ to [Case 2](#case-2-encoding-map).
 
 This uses: [`codext.add`](https://github.com/dhondta/python-codext/blob/main/src/codext/__common__.py#L56)
 
-This applies when the codec is more complex than a mapping, as defined in _[Case 2: Encoding map](./#case-2-encoding-map)_.
+This applies when the codec is more complex than a mapping, as defined in _[Case 2: Encoding map](#case-2-encoding-map)_.
 
 **Examples**: [`crypto/barbie`](https://github.com/dhondta/python-codext/blob/main/src/codext/crypto/barbie.py), [`crypto/railfence`](https://github.com/dhondta/python-codext/blob/main/src/codext/crypto/railfence.py), [`stegano/resistor`](https://github.com/dhondta/python-codext/blob/main/src/codext/stegano/resistor.py), [`stegano/whitespace`](https://github.com/dhondta/python-codext/blob/main/src/codext/stegano/whitespace.py)
 
@@ -238,11 +238,11 @@ __examples__ = {
 
 ### Codec names for the guessing mode
 
-The `__guess__` list of codec names is used to limit the possibilities in the tree search from the [guessing mode](./guessing). Especially when the codec is dynamic and may have a large (or even infinite) number of dynamic names, it is necessary to set a limited number in order to avoid exponentially increasing computation time. This list, when relevant, shall be used with due care.
+The `__guess__` list of codec names is used to limit the possibilities in the tree search from the [guessing mode](guessing.md). Especially when the codec is dynamic and may have a large (or even infinite) number of dynamic names, it is necessary to set a limited number in order to avoid exponentially increasing computation time. This list, when relevant, shall be used with due care.
 
 !!! note "Mapping one input character to multiple output characters"
     
-    As a best practice, static names for the [guessing mode](./guessing) should be limited to 16, in order to avoid exponential computation time in the search tree algorithm.
+    As a best practice, static names for the [guessing mode](guessing.md) should be limited to 16, in order to avoid exponential computation time in the search tree algorithm.
 
 -----
 

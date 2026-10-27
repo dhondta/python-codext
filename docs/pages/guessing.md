@@ -11,7 +11,7 @@ The following parameters are tunable:
 - `stop_func`: can be a function or a regular expression to be matched (automatically converted to a function that uses the `re` module) ; by default, checks if all input characters are printable.
 - `min_depth`: the minimum depth for the tree search (allows to avoid a bit of overhead while checking the current decoded output at a depth with the stop function when we are sure it should not be the right result) ; by default 0.
 - `max_depth`: the maximum depth for the tree search ; by default 5.
-- `codec_categories`: a string indicating a codec [category](#list-codecs) or a list of [category](#list-codecs) strings ; by default, `None`, meaning the whole [categories](#list-codecs) (very slow).
+- `codec_categories`: a string indicating a codec [category](features.md#list-codecs) or a list of [category](features.md#list-codecs) strings ; by default, `None`, meaning the whole [categories](features.md#list-codecs) (very slow).
 - `found`: a list or tuple of currently found encodings that can be used to save time if the first decoding steps are known ; by default, an empty tuple.
 
 A simple example for a 1-stage base64-encoded string:
@@ -58,7 +58,7 @@ If we know the first encoding, we can set this in the `found` parameter to save 
 ('This is a test', ('base62', 'base64'))
 ```
 
-If we are sure that only `base` (which is a valid [category](#list-codecs)) encodings are used, we can restrict the tree search using the `codec_categories` parameter to save time:
+If we are sure that only `base` (which is a valid [category](features.md#list-codecs)) encodings are used, we can restrict the tree search using the `codec_categories` parameter to save time:
 
 ```python
 >>> codext.guess("CJG3Ix8bVcSRMLOqwDUg28aDsT7", "test", codec_categories="base")
@@ -78,7 +78,7 @@ When multiple results are expected, `stop` and `show` arguments can be used resp
 
 !!! warning "Computation time"
     
-    Note that, in the very last examples, the first call takes much longer than the second one but requires no knowledge about the possible [categories](#list-codecs) of encodings.
+    Note that, in the very last examples, the first call takes much longer than the second one but requires no knowledge about the possible [categories](features.md#list-codecs) of encodings.
 
 -----
 

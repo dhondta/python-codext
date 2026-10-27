@@ -1,10 +1,10 @@
-`codext` also provides some very common encodings, for the sake of simplicity (e.g. while chaining codecs with [the CLI tool](../cli.html)).
+`codext` also provides some very common encodings, for the sake of simplicity (e.g. while chaining codecs with [the CLI tool](../cli.md)).
 
 -----
 
 ### A1Z26
 
-This simple codec converts letters to their order number in the alphabet using a separator between characters and keeping words separated by a whitespace. It is similar to the [`consonant-vowel-indices`](others.html#letter-indices) encoding.
+This simple codec converts letters to their order number in the alphabet using a separator between characters and keeping words separated by a whitespace. It is similar to the [`consonant-vowel-indices`](others.md#letter-indices) encoding.
 
 **Codec** | **Conversions** | **Aliases** | **Comment**
 :---: | :---: | --- | ---

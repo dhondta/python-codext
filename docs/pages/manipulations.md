@@ -19,7 +19,7 @@ These transformation functions are simple string transformations, including `str
 `title` | text <-> titled text |  | decoding "untitles" the text
 `uppercase` | text <-> uppercase text | `upper` | decoding is `lowercase`
 
-Of course, these transformations have no interest while using them in Python as the `str` methods can be called. It can be useful while using `codext` from the terminal (see [*CLI tool*](cli.html)).
+Of course, these transformations have no interest while using them in Python as the `str` methods can be called. It can be useful while using `codext` from the terminal (see [*CLI tool*](cli.md)).
 
 Some simple examples:
 
@@ -49,7 +49,7 @@ These transformation functions are simple string transformations.
 `substitute` | text <-> text with token substituted |  | 
 `tokenize` | text <-> text split in tokens of length N |  | parametrized with _N_
 
-As in the previous section, these transformations have no interest while using them in Python but well while using `codext` from the terminal (see [*CLI tool*](cli.html)).
+As in the previous section, these transformations have no interest while using them in Python but well while using `codext` from the terminal (see [*CLI tool*](cli.md)).
 
 A simple example:
 
