@@ -8,6 +8,36 @@ version = {attr = "codext.__info__.__version__"}
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+
+[tool.coverage.run]
+source = ["codext"]
+omit = [
+  "src/codext/__info__.py",
+  "src/codext/**/__init__.py",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+  'pragma: no cover',
+  'if.*?__name__.*?==.*?.__main__.:',
+  'def main\(\)\:',
+  'def __stdin_pipe\(\)\:',
+  'for line in __stdin_pipe\(\)\:',
+  'def __format_list\(items, include\=True\)\:',
+  'def __print_tabular\(lst, space\=4\)\:',
+  'except ImportError:',
+  'except NameError:',
+  'raise NotImplementedError',
+  'def _detect\(text\)\:',
+  'def _lang\(lang\)\:',
+  'if stopfunc\.LANG_BACKEND\:',
+  'def _validate\(stop_function, lang_backend\=\"none\"\)\:',
+  'except KeyboardInterrupt\:',
+  'if alt and len\(t\) \% 2 \=\= 1\:',
+]
+
 [project]
 name = "codext"
 authors = [
@@ -16,7 +46,7 @@ authors = [
 description = "Native codecs extension"
 license = {file = "LICENSE"}
 keywords = ["python", "development", "programming", "codecs", "encodings"]
-requires-python = ">=3.8,<4"
+requires-python = ">=3.10,<4"
 classifiers = [
   "Development Status :: 5 - Production/Stable",
   "Environment :: Console",
