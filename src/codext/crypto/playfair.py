@@ -33,8 +33,6 @@ __examples__ = {
 }
 __guess__ = ["playfair"]
 
-
-# Standard 5×5 Playfair alphabet (I and J share the same cell)
 _DEFAULT_ALPHABET = {
     5: UC.replace("J", ""),
     6: UC + DG,
@@ -45,7 +43,7 @@ def __build_grid(key=None, grid_size=5, replace_char=('J', 'I')):
     """Build the Playfair grid from an optional keyword. """
     seen, grid = set(), []
     for c in key.upper():
-        if c == replace_char[0]:
+        if grid_size == 5 and c == replace_char[0]:
             c = replace_char[1]
         if c.isalpha() and c not in seen:
             seen.add(c)
@@ -137,7 +135,7 @@ def playfair_decode(key=None, grid_size=None, fill_chars=None, replace_char=None
     return decode
 
 
-add("playfair", playfair_encode, playfair_decode,
-    r"^playfair(?:[-_]cipher)?(?:[-_]([\^*]|[a-zA-Z]+))?(?:[-_]([56]))?(?:[-_]([A-Z]{1,2}))?(?:[-_]([A-Z]{2}))?$",
+add("playfair", playfair_encode, playfair_decode, r"^playfair(?:[-_]cipher)?(?:[-_]([\^*]|[a-zA-Z]+))?"
+    r"(?:(?:[-_](5))?(?:[-_]([A-Z]{1,2}))?(?:[-_]([A-Z]{2}))|(?:[-_](6))?(?:[-_]([A-Z]{1,2}))?())?$",
     printables_rate=1., penalty=.1)
 
