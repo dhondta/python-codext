@@ -273,6 +273,25 @@ This is a variant of the [Vigenere Cipher](#vigenere-cipher) whose key is made o
 
 -----
 
+### Hill Cipher
+
+The letters (A=0, ..., Z=25) are taken in blocks of n, each block being multiplied (as a column vector) by a n x n key matrix modulo 26. The key matrix is given as a keyword whose length is a square (4 letters for a 2x2 matrix, 9 for a 3x3 matrix, ...), filled row by row ; it must be invertible modulo 26, that is, its determinant must be coprime with 26. Other characters are kept in place, as well as the case of the letters. When encoding, the last block is padded with "`X`", the padding letters being appended to the text.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`hill` | text <-> Hill ciphertext | `hill-ddcf`, `hill_cipher-gybnqkurp` | key length must be a square and the key matrix must be invertible modulo 26
+
+```python
+>>> codext.encode("ACT", "hill-gybnqkurp")
+'POH'
+>>> codext.decode("POH", "hill-gybnqkurp")
+'ACT'
+>>> codext.encode("Cats!", "hill-gybnqkurp")
+'Finh!AE'
+```
+
+-----
+
 ### Nihilist Cipher
 
 Each letter of the text and of the key is replaced by its coordinates (row and column, from 1 to 5) in a 5x5 Polybius square (I and J sharing a cell), read as a two-digit number. The ciphertext is made of the sums of the numbers of the text and of the repeated key, separated by spaces. The square is filled with an optional keyword (without duplicates), then with the remaining letters of the alphabet. When encoding, whitespaces are ignored ; when decoding, the numbers are separated by whitespaces.

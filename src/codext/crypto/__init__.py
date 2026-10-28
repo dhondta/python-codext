@@ -8,6 +8,7 @@ from .bazeries import *
 from .bifid import *
 from .citrix import *
 from .columnar import *
+from .hill import *
 from .nihilist import *
 from .playfair import *
 from .phillips import *
