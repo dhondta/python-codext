@@ -275,6 +275,35 @@ The text is written in rows under a keyword, then read column by column, in the 
 
 -----
 
+### Enigma
+
+The Enigma machine is the rotor cipher machine used by the German armed forces during World War II. Each letter goes through the plugboard, the rotors (from right to left), the reflector, then back through the rotors and the plugboard. The rotors step before each letter, including the double stepping of the middle rotor ; as the reflector is an involution, the same settings decrypt the ciphertext. This codec emulates the Enigma I and M3 (3 rotors among I to VIII, reflector A, B or C) and the M4 (Beta or Gamma as the fixed fourth rotor, thin reflector B or C).
+
+The settings are given with the codec name as `enigma-[reflector]-[rotors]-[rings]-[positions]-[plugboard]`, from the left to the right of the machine, each part being optional from the right:
+
+- *reflector*: `a`, `b`, `c`, `bthin` or `cthin` (default: `b`)
+- *rotors*: their numbers (`1` to `8`), prefixed with `b` (Beta) or `g` (Gamma) for the M4 (default: `123`)
+- *rings*: the ring settings, as letters (`a` for 01, `b` for 02, ... ; default: `a` for each rotor)
+- *positions*: the initial positions, as letters (default: `a` for each rotor)
+- *plugboard*: the pairs of swapped letters, concatenated (e.g. `avbscg` for A-V, B-S and C-G ; default: none)
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`enigma` | text <-> Enigma ciphertext | `enigma`, `enigma_cipher-c-678`, `enigma-b-245-bul-bla-avbscgdlfuhzinkmowrx`, `enigma-cthin-b568-epel-cdsz-aebfcmdqhujnlxprszvw` | Only ASCII letters are encrypted (their case is kept) ; other characters are left unchanged and do not step the rotors
+
+```python
+>>> codext.encode("Attack at dawn", "enigma")
+'Bzhgno cr rtcm'
+>>> codext.decode("Bzhgno cr rtcm", "enigma")
+'Attack at dawn'
+>>> codext.encode("Attack at dawn", "enigma-b-245-bul-bla-avbscgdlfuhzinkmowrx")
+'Evhqzv rr blri'
+>>> codext.encode("Attack at dawn", "enigma-cthin-b568-epel-cdsz-aebfcmdqhujnlxprszvw")
+'Svbyeg oi nxcm'
+```
+
+-----
+
 ### Four-square Cipher
 
 The Four-square cipher, invented by Felix Delastelle, substitutes pairs of letters using four squares arranged in a 2x2 matrix: the upper-left and lower-right ones hold the alphabet in order, while the upper-right and lower-left ones are filled with two keywords. The first letter of each pair is located in the upper-left square and the second one in the lower-right square ; they are replaced by the letters at the other corners of the rectangle they form (in the upper-right square, then in the lower-left one).

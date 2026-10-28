@@ -353,6 +353,7 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 - [X] `chaocipher`: aka Chaocipher (two alphabets permuted after each letter)
 - [X] `citrix`: aka Citrix CTX1 password encoding
 - [X] `columnar`: aka Columnar Transposition Cipher (keyword-ordered columns ; a second keyword gives the double transposition)
+- [X] `enigma`: aka Enigma machine (Enigma I, M3 and M4, with reflector, rotors, rings, positions and plugboard)
 - [X] `foursquare`: aka Four-square Cipher (bigrams substituted with two keyed squares and two plain ones)
 - [X] `gronsfeld`: aka Gronsfeld Cipher (variant of Vigenere Cipher with a numeric key)
 - [X] `hill`: aka Hill Cipher (blocks of letters multiplied by a key matrix modulo 26)

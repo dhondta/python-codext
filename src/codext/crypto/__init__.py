@@ -9,6 +9,7 @@ from .bifid import *
 from .chaocipher import *
 from .citrix import *
 from .columnar import *
+from .enigma import *
 from .foursquare import *
 from .hill import *
 from .nihilist import *
