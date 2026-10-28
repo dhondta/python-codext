@@ -124,6 +124,18 @@ class ManualTestCase(TestCase):
         for s, r in [("", ""), ("0", "0"), ("1", "8"), ("7992739871", "3")]:
             self.assertEqual(codecs.encode(s, "luhn"), r)
         self.assertEqual(codecs.encode("-", "luhn", errors="ignore"), "")
+        # Fletcher, with the test vectors of Wikipedia ; the width defaults to 16
+        for enc, vectors in {
+            'fletcher|fletcher-16|fletcher_16|fletcher16': ["0000", "c8f0", "2057", "0627"],
+            'fletcher32': ["00000000", "f04fc729", "56502d2a", "ebe19591"],
+            'fletcher64': ["0000000000000000", "c8c6c527646362c6", "c8c72b276463c8c6", "312e2b28cccac8c6"],
+        }.items():
+            for e in enc.split("|"):
+                for s, r in zip(["", "abcde", "abcdef", "abcdefgh"], vectors):
+                    self.assertEqual(codecs.encode(s, e), r)
+                    self.assertEqual(codecs.encode(b(s), e), b(r))
+        self.assertRaises(LookupError, codecs.encode, "test", "fletcher8")
+        self.assertRaises(NotImplementedError, codecs.decode, "c8f0", "fletcher")
 
     def test_codec_crc_bare_defaults(self):
         # a crc<width> used without a variant suffix must resolve to that family's default ;
@@ -178,6 +190,24 @@ class ManualTestCase(TestCase):
         for h in ["sha3_224", "sha3_256", "sha3_384", "sha3_512"]:
             self.assertIsNotNone(codecs.encode(STR, h))
             self.assertRaises(NotImplementedError, codecs.decode, STR, h)
+        # FNV, with test vectors of the reference implementation ; the hash of an empty string is the offset basis,
+        #  and the width defaults to 32
+        for enc, vectors in {
+            'fnv1|fnv-1|fnv_1-32|fnv1_32': ["811c9dc5", "050c5d7e", "31f0b262"],
+            'fnv1-64': ["cbf29ce484222325", "af63bd4c8601b7be", "340d8765a4dda9c2"],
+            'fnv1a|fnv-1a|fnv_1a-32|fnv1a_32': ["811c9dc5", "e40c292c", "bf9cf968"],
+            'fnv1a-64': ["cbf29ce484222325", "af63dc4c8601ec8c", "85944171f73967e8"],
+            'fnv1a-128': ["6c62272e07bb014262b821756295c58d"],
+            'fnv1-256': ["dd268dbcaac550362d98c384c4e576ccc8b1536847b6bbb31023b4c8caee0535"],
+        }.items():
+            for e in enc.split("|"):
+                for s, r in zip(["", "a", "foobar"], vectors):
+                    self.assertEqual(codecs.encode(s, e), r)
+                    self.assertEqual(codecs.encode(b(s), e), b(r))
+        self.assertEqual(len(codecs.encode(STR, "fnv1a-1024")), 256)
+        self.assertRaises(LookupError, codecs.encode, STR, "fnv1-16")
+        self.assertRaises(LookupError, codecs.encode, STR, "fnv1a-2048")
+        self.assertRaises(NotImplementedError, codecs.decode, STR, "fnv1a")
         if UNIX:
             try:
                 import crypt

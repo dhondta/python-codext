@@ -1,6 +1,7 @@
 # -*- coding: UTF-8 -*-
 from .blake import *
 from .crypt import *
+from .fnv import *
 from .md import *
 from .mmh3 import *
 from .sha import *

@@ -28,6 +28,7 @@ These one-way transformation functions are mostly computed with a generic CRC.
 :---: | :---: | --- | ---
 `adler32` | data --> Adler32(data) |  | relies on [`zlib`](https://docs.python.org/3/library/zlib.html)
 `crcN` | data --> CRCN(data) | many available variants ; see [this source](https://github.com/dhondta/python-codext/blob/master/codext/hashing/checksums.py) | 
+`fletcherN` | data --> FletcherN(data) | `fletcher-16`, `fletcher_32`, ... | *N* belongs to {16, 32, 64} (default: 16) ; blocks of N/2 bits are read in little-endian order
 
 ```python
 >>> codext.encode("This is a test string !", "crc10-gsm")
@@ -46,6 +47,10 @@ These one-way transformation functions are mostly computed with a generic CRC.
 'e89b72737a60f502'
 >>> codext.encode("This is a test string !", "crc82-darc")
 '37a49332f8907c01de3d8'
+>>> codext.encode("This is a test string !", "fletcher")
+'4ef4'
+>>> codext.encode("This is a test string !", "fletcher64")
+'22df63cbdafbf924'
 ```
 
 -----
@@ -65,6 +70,26 @@ This one-way transformation function relies on the native [`crypt`](https://docs
 '$1$qLvI5Kml$kXm7/Yvm87XcnzDdAgfsX1'
 >>> codext.encode("This is a test string !", "crypt-sha512")
 '$6$P9pjfscoLy9vpRrH$KHuRMbAltdkIQ/XL9HqrRRQTZUB2jFucH21RPbDXlsNV/ffek9MFJVZ0P2qZMTxL8m1MO0rS8UQgxj2x/Xs9A1'
+```
+
+-----
+
+### Fowler-Noll-Vo
+
+These one-way transformation functions are non-cryptographic hashes, used e.g. in hash tables.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`fnv1` | data --> FNV-1(data, width) | `fnv-1`, `fnv1-64`, `fnv_1_128`, ... | parametrized ; *width* belongs to {32, 64, 128, 256, 512, 1024} (default: 32)
+`fnv1a` | data --> FNV-1a(data, width) | `fnv-1a`, `fnv1a-64`, `fnv_1a_128`, ... | parametrized ; *width* belongs to {32, 64, 128, 256, 512, 1024} (default: 32)
+
+```python
+>>> codext.encode("This is a test string !", "fnv1")
+'cb19f818'
+>>> codext.encode("This is a test string !", "fnv1a")
+'0932265e'
+>>> codext.encode("This is a test string !", "fnv1a-64")
+'0043c18797567d7e'
 ```
 
 -----
