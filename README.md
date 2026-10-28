@@ -3,11 +3,11 @@
 <h3 align="center">Encode/decode anything.</h3>
 
 [![PyPi](https://img.shields.io/pypi/v/codext.svg)](https://pypi.python.org/pypi/codext/)
+[![Python Versions](https://img.shields.io/pypi/pyversions/codext.svg)](https://pypi.python.org/pypi/codext/)
 [![Read The Docs](https://readthedocs.org/projects/python-codext/badge/?version=latest)](https://python-codext.readthedocs.io/en/latest/?badge=latest)
 [![Build Status](https://github.com/dhondta/python-codext/actions/workflows/python-package.yml/badge.svg)](https://github.com/dhondta/python-codext/actions/workflows/python-package.yml)
 [![Security](https://github.com/dhondta/python-codext/actions/workflows/security.yml/badge.svg)](https://github.com/dhondta/python-codext/actions/workflows/security.yml)
 [![Coverage Status](https://raw.githubusercontent.com/dhondta/python-codext/coverage-badge/docs/coverage.svg)](#)
-[![Python Versions](https://img.shields.io/pypi/pyversions/codext.svg)](https://pypi.python.org/pypi/codext/)
 [![DOI](https://zenodo.org/badge/236679865.svg)](https://zenodo.org/badge/latestdoi/236679865)
 [![License](https://img.shields.io/pypi/l/codext.svg)](https://pypi.python.org/pypi/codext/)
 

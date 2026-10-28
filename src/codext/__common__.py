@@ -13,6 +13,7 @@ from functools import reduce, update_wrapper, wraps
 from importlib import import_module
 from importlib.util import find_spec
 from inspect import currentframe
+from collections import Counter
 from io import BytesIO
 from itertools import chain, product
 from locale import getlocale
@@ -72,7 +73,12 @@ LINUX = system() == "Linux"
 UNIX = DARWIN or LINUX
 WINDOWS = system() == "Windows"
 
-entropy = lambda s: -sum([p * log(p, 2) for p in [float(s.count(c)) / len(s) for c in set(s)]])
+
+def entropy(s):
+    """ Shannon entropy of the given string or bytes, counting the characters in a single pass. """
+    n, l = Counter(s), len(s)
+    return -sum([p * log(p, 2) for p in [n[c] / l for c in set(s)]])
+
 
 isb = lambda s: isinstance(s, bytes)
 iss = lambda s: isinstance(s, str)
@@ -284,12 +290,12 @@ def add(ename, encode=None, decode=None, pattern=None, text=True, add_to_codecs=
         if fenc:
             fenc = fix_inout_formats(fenc)
         if fdec:
+            sl, sc = getattr(fdec, '__strip__', (False, False))
             fdec = fix_inout_formats(fdec)
-            sl, sc = kwargs.pop('strip_lines', False), kwargs.pop('strip_crlf', False)
             if sl or sc:
                 def _striplines(f):
                     def __wrapper(input, *a, **kw):
-                        return f(_stripl(input, sc, sl), *a, **kw)
+                        return f(_stripl(input, sl, sc), *a, **kw)
                     return __wrapper
                 # this fixes issues with wrapped encoded inputs
                 fdec = _striplines(fdec)
@@ -501,6 +507,7 @@ def add_map(ename, encmap, repl_char="?", sep="", ignore_case=None, no_error=Fal
                 smapdict = {getattr(k, case_e)() if i in ["both", "encode"] else k: \
                             ([getattr(x, case_d)() for x in v] if isinstance(v, list) else getattr(v, case_d)()) \
                                 if i in ["both", "decode"] else v for k, v in smapdict.items()}
+            strip = (False, False)
             if decode:
                 tmp = {}
                 # this has a meaning for encoding maps that could have clashes in encoded chars (e.g. Bacon's cipher ;
@@ -512,7 +519,10 @@ def add_map(ename, encmap, repl_char="?", sep="", ignore_case=None, no_error=Fal
                         if x not in tmp.keys():
                             tmp[x] = k
                 smapdict, cs = tmp, reduce(lambda acc, x: acc + x, tmp.keys())
-                kwargs['strip_lines'], kwargs['strip_crlf'] = "\n" not in set(cs), "\r\n" not in cs
+                # line breaks that are not in the decoding map are stripped from the input (wrapped encoded text),
+                #  except for codecs triggering no error, as they keep the unknown characters (thus, the lines)
+                if not no_error:
+                    strip = ("\n" not in set(cs), "\r\n" not in cs)
             # this allows to avoid an error with Python2 in the "for i, c in enumerate(parts)" loop
             if '' not in smapdict.keys():
                 smapdict[''] = ""
@@ -593,6 +603,8 @@ def add_map(ename, encmap, repl_char="?", sep="", ignore_case=None, no_error=Fal
                                     tmp.append("[" + s + "]")
                         r = "".join(tmp) + lsep
                 return r[:len(r)-len(lsep)], len(b(text))
+            # the stripping flags are carried by the function, as it is built for each looked up encoding name
+            code.__strip__ = strip
             return code
         if re.search(r"\([^(?:)]", kwargs.get('pattern', "")) is None:
             # in this case, there is no capturing group for parametrization
