@@ -38,6 +38,15 @@ class ComplementaryTestCase(TestCase):
         self.assertRaises(ValueError, polybius_decode(), "441543441")
         self.assertEqual(codecs.decode("441543445", "polybius", "ignore"), "TEST")
     
+    def test_codec_letter_indices(self):
+        # bad characters are consumed when not raising an error (decoding used to loop forever)
+        self.assertEqual(codecs.decode("1E!2", "consonant-index", "ignore"), "BEC")
+        self.assertEqual(codecs.decode("1E!2", "consonant-index", "replace"), "BE?C")
+        self.assertEqual(codecs.decode("1E!2", "consonant-index", "leave"), "BE!C")
+        # the errors handling applies to the encoded text too
+        self.assertEqual(codecs.encode("Test!", "consonant-index", "ignore"), "16E1516")
+        self.assertEqual(codecs.encode("Test!", "consonant-index", "replace"), "16E1516?")
+    
     def test_codec_sms(self):
         self.assertEqual(codecs.decode("A-B-222-3-4-5", "sms", "leave"), "ABcdgj")
 
@@ -222,6 +231,16 @@ class ManualTestCase(TestCase):
         # and therefore ord(" ")-random(0,20)-random(0,20) will never fall into the valid ordinals !
         self.assertRaises(ValueError, codecs.encode, "this is a test", "whitespace-after-before")
         self.assertIn("\x00", codecs.encode("this is a test", "whitespace-after-before", "replace"))
+        # characters that no number of spaces can shift to a printable one (this used to loop forever)
+        for c in ["\xff", chr(0x141)]:
+            self.assertEqual(codecs.decode(codecs.encode("A" + c + "B", "whitespace+after-before", "ignore"),
+                                           "whitespace+after-before"), "AB")
+        self.assertRaises(ValueError, codecs.encode, "A\xff", "whitespace-2*after+3*before")
+        # a division gives non-integer shifts (or divides by zero spaces), hence nothing can be encoded
+        self.assertRaises(ValueError, codecs.encode, "A", "whitespace+2/after-before")
+        # a line holding more than one character is not decoded at all
+        self.assertEqual(codecs.decode(" A \nBC\n D", "whitespace+after-before", "ignore"),
+                         codecs.decode(" A \n D", "whitespace+after-before"))
 
     def test_codec_zero_width(self):
         self.assertRaises(LookupError, codecs.encode, "test", "zero-width-4")

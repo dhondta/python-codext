@@ -66,7 +66,7 @@ def letters_encode(letters):
                 s += encmap[c]
             except KeyError:
                 s += handle_error("letter-indices", errors)(c, i)
-        return "".join(encmap.get(c.upper(), c) for c in text), len(text)
+        return s, len(text)
     return encode
 
 
@@ -86,7 +86,9 @@ def letters_decode(letters):
                 except (IndexError, KeyError):
                     pass
             if err:
+                # the bad character is consumed, whatever the errors handling
                 s += handle_error("letter-indices", errors, decode=True)(text[i], i)
+                i += 1
         return s, len(text)
     return decode
 

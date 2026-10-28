@@ -28,7 +28,7 @@ __examples1__ = {
 }
 __examples2__ = {
     'dec(whitespace+after-before)':     {'}         \n      a  \n  .   v  ': None},
-    'enc(whitespace+after-before)':     {'Test\r': None},
+    'enc(whitespace+after-before)':     {'Test\r': None, 'Test\xff': None, 'Test\u0141': None},
     'enc-dec(whitespace+after-before)': ["Test", "TESTSTRING!"],
 }
 __guess1__ = ["whitespace", "whitespace-inv"]
@@ -40,19 +40,39 @@ add_map("whitespace", ENCMAP, intype="bin", pattern=r"^whitespaces?([-_]inv(?:er
         guess=__guess1__, entropy=1., printables_rate=1., expansion_factor=8.)
 
 
+PRINTABLES = printable[:-6]
+PRINTABLE_ORDS = set(map(ord, PRINTABLES))
+
+
 def wsba_encode(p):
-    eq = "ord(c)" + p
+    # the expression comes from the codec name, validated by its pattern
+    f = eval("lambda o, after, before: o" + p)
+    
+    def _value(o, after, before):
+        try:
+            return f(o, after, before)
+        except ZeroDivisionError:
+            return
+    
+    def _pairs(c):
+        """ Get the numbers of spaces (after, before) that shift the given character to a printable one that decodes
+             back to it ; there is none for characters lower than the first printable or too far from the printables. """
+        if ord(c) < min(PRINTABLE_ORDS):
+            return []
+        return [(a, b) for a in range(21) for b in range(21)
+                if isinstance(v := _value(ord(c), a, b), int) and v in PRINTABLE_ORDS]
+    
     def encode(text, errors="strict"):
-        r, _h = [], handle_error("whitespace" + p, errors, repl_char="\x00")
+        r, _h, pairs = [], handle_error("whitespace_after_before", errors, repl_char="\x00"), {}
         for i, c in enumerate(text):
-            if ord(c) < min(ord(c) for c in printable[:-6]):
+            if c not in pairs:
+                pairs[c] = _pairs(c)
+            if len(pairs[c]) == 0:
                 r.append(_h(c, i))
             else:
-                enc, offset = "\x00", random.randint(-10,10)
-                while enc not in printable[:-6]:
-                    after, before = random.randint(0, 20), random.randint(0, 20)
-                    enc = chr(eval(eq) % 256)
-                r.append(" " * before + enc + " " * after)
+                # choosing among the valid pairs is equivalent to drawing random pairs until the result is printable
+                after, before = random.choice(pairs[c])
+                r.append(" " * before + chr(f(ord(c), after, before)) + " " * after)
         return (s := "\n".join(r)), len(s)
     return encode
 
@@ -66,6 +86,7 @@ def wsba_decode(p):
                 continue
             if ll > 1:
                 s += _h(l, i)
+                continue
             after, before = len(l) - len(l.rstrip(" ")), len(l) - len(l.lstrip(" "))
             c = l[before]
             s += chr(eval(eq))

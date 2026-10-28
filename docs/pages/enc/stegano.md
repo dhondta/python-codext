@@ -123,7 +123,7 @@ This simple encoding replaces zeros and ones of the binary version of the input 
 **Codec** | **Conversions** | **Aliases** | **Comment**
 :---: | :---: | --- | ---
 `whitespace` | text <-> whitespaces and tabs | `whitespaces?-inv(erted)?` | The default encoding uses tabs for zeros and spaces for ones
-`whitespace_after_before` | text <-> whitespaces[letter]whitespaces | | This codec encodes characters as new characters with whitespaces before and after according to an equation described in the codec name (e.g. "`whitespace+2*after-3*before`")
+`whitespace_after_before` | text <-> whitespaces[letter]whitespaces | | This codec encodes characters as new characters with whitespaces before and after according to an equation described in the codec name (e.g. "`whitespace+2*after-3*before`") ; characters that no number of whitespaces (0 to 20) can shift to a printable one (e.g. whitespaces, control or most non-ASCII characters) cannot be encoded
 
 ```python
 >>> codext.encode("test", "whitespace")
