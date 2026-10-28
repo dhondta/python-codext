@@ -339,6 +339,7 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 - [X] `bazeries`: aka Bazeries Cipher (two Polybius grids and a transposition keyed by a number)
 - [X] `beaufort`: aka Beaufort Cipher (variant of Vigenere Cipher)
 - [X] `bifid`: aka Bifid Cipher (Delastelle's fractionation with a 5x5 Polybius square) ; `trifid` for its 3x3x3 cube variant
+- [X] `chaocipher`: aka Chaocipher (two alphabets permuted after each letter)
 - [X] `citrix`: aka Citrix CTX1 password encoding
 - [X] `columnar`: aka Columnar Transposition Cipher (keyword-ordered columns ; a second keyword gives the double transposition)
 - [X] `gronsfeld`: aka Gronsfeld Cipher (variant of Vigenere Cipher with a numeric key)

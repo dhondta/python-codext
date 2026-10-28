@@ -220,6 +220,25 @@ The codec name holds the optional keyword, then the optional period. The period 
 
 -----
 
+### Chaocipher
+
+The Chaocipher was invented by John F. Byrne in 1918 and only disclosed in 2010. It uses two alphabets, the left one for the ciphertext and the right one for the plaintext. Each letter is replaced by the letter at the same position in the other alphabet, then both alphabets are permuted, so that the substitution changes with every letter. The alphabets are given as keywords (without duplicates) followed by the remaining letters ; by default, those of the example of [Moshe Rubin's paper](http://www.chaocipher.com/ActualChaocipher/Chaocipher-Revealing-Algorithm-Rubin.pdf) are used (`HXUCZVAMDSLKPEFJRIGTWOBNYQ` and `PTLNBQDEOYSFAVZKGJRIHWXUMC`). Other characters are kept in place, as well as the case of the letters.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`chaocipher` | text <-> Chaocipher ciphertext | `chao-cipher`, `chaocipher-left-right` | optional left and right keywords (both or none)
+
+```python
+>>> codext.encode("WELLDONEISBETTERTHANWELLSAID", "chaocipher")
+'OAHQHCNYNXTSZJRRHJBYHQKSOUJY'
+>>> codext.decode("OAHQHCNYNXTSZJRRHJBYHQKSOUJY", "chaocipher")
+'WELLDONEISBETTERTHANWELLSAID'
+>>> codext.encode("Well done, is better than well said!", "chaocipher")
+'Oahq hcny, nx tszjrr hjby hqks oujy!'
+```
+
+-----
+
 ### Citrix CTX1
 
 This implements the Citrix CTX1 password encoding algorithm.

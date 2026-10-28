@@ -6,6 +6,7 @@ from .bacon import *
 from .barbie import *
 from .bazeries import *
 from .bifid import *
+from .chaocipher import *
 from .citrix import *
 from .columnar import *
 from .hill import *
