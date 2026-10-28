@@ -12,18 +12,18 @@ from ..__common__ import *
 
 __examples__ = {
     'enc(rotate-0|rotate-8|rotate-left-8)': None,
-    'enc(rotate1|rotate-right-1|rotate_1)': {'This is a test': "*4\xb4\xb9\x10\xb4\xb9\x10\xb0\x10:\xb2\xb9:"},
-    'enc(rotate-left-1|rotate_left_1)':     {'This is a test': "¨ÐÒæ@Òæ@Â@èÊæè"},
+    'enc(rotate1|rotate-right-1|rotate_1|rotate_right_1)': {
+        'This is a test': "*4\xb4\xb9\x10\xb4\xb9\x10\xb0\x10:\xb2\xb9:"},
+    'enc(rotate-left-1|rotate_left_1|rotateleft1)': {
+        'This is a test': "¨ÐÒæ@Òæ@Â@èÊæè"},
 }
 __guess__ = ["rotate-%d" % i for i in range(1, 8)] + ["rotate-left-%d" % i for i in range(1, 8)]
 
 
 def _getn(i):
-    m = 1
-    if str(i).startswith("left"):
-        i = i[4:].lstrip("-_")
-        m = -1
-    return m * int(i)
+    """ Get the signed number of bits from the parameter, e.g. 1, "right-1" or "left_1" (to the right by default). """
+    m = re.match(r"^(left|right)?[-_]?([1-7])$", str(i))
+    return [1, -1][m.group(1) == "left"] * int(m.group(2))
 
 
 def _rotaten(text, n=1):

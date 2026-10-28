@@ -461,6 +461,25 @@ The Playfair cipher is a symmetric encryption method using polygram substitution
 
 -----
 
+### Skip Cipher
+
+This transposition cipher reads the text by jumping a constant number of characters each time, starting from a given position (1 by default) and looping on the text. The skip value must be coprime with the length of the text, otherwise some characters would never be read (an error is then raised, or the text is left unchanged with `errors="leave"`). Every character is transposed, including whitespaces and punctuation ; remove them beforehand to get the classical form.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`skip` | text <-> Skip ciphertext | `skip-3`, `skip_cipher-3-2` | parameterized with the skip value and an optional start position (from 1)
+
+```python
+>>> codext.encode("DCODE", "skip-3")
+'DDCEO'
+>>> codext.decode("DDCEO", "skip-3")
+'DCODE'
+>>> codext.encode("DCODE", "skip-3-2")
+'CEODD'
+```
+
+-----
+
 ### Trithemius Cipher
 
 This is a variant of the [Vigenere Cipher](#vigenere-cipher) with key `"ABCDEFGHIJKLMNOPQRSTUVWXYZ"`.

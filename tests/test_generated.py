@@ -26,17 +26,12 @@ def make_test(**params):
                 dec = False
         # now execute tests relying on the given examples
         for k, examples in params['examples'].items():
-            # multiple encoding names can be given, e.g. 'enc(morse|morse-AB|...)'
-            m = re.match(r"(?:dec|enc|enc-dec)\((.*?)(?:\|(.*?))*\)(\*)?", k)
+            # multiple encoding names can be given, e.g. 'enc(morse|morse-AB|...)' ; each of them is tested
+            m = re.match(r"(?:dec|enc|enc-dec)\((.*?)\)", k)
             if m:
                 f1 = getattr(codecs, ["decode", "encode"][k.startswith("enc")])
                 f2 = getattr(codecs, ["encode", "decode"][k.startswith("enc")])
-                for ename in m.groups():
-                    if ename == "*":
-                        # ignore mode only
-                        continue
-                    if ename is None:
-                        continue
+                for ename in m.group(1).split("|"):
                     # buggy generated encoding names
                     try:
                         lookup(ename)
