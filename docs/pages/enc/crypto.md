@@ -126,6 +126,31 @@ It implements the cipher for its 4 different keys.
 
 -----
 
+### Bazeries Cipher
+
+The Bazeries cipher, created by Etienne Bazeries, combines a transposition and a substitution with two Polybius grids, both driven by a number. The text is split into groups whose sizes are the digits of the number (repeated as needed), each group is reversed, and each letter is replaced by the letter at the same position in the second grid. The first grid holds the alphabet written in columns ; the second one is filled in rows with the number written in English words (e.g. `23` gives `TWENTY THREE`), or with an optional keyword, followed by the remaining letters.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`bazeries` | text <-> Bazeries ciphertext | `bazeries-23`, `bazeries_cipher-81257`, `bazeries-23-keyword`, `bazeries-12,3`, `bazeries-23-5-wv`, `bazeries-42-6` | Number required ; comma-separated group sizes for groups of 10 letters or more ; 5x5 grid by default, with `J` normalized to `I` (`5-XY` replaces *X* by *Y* instead) ; 6x6 grid (letters and digits, uppercase output) with `6` ; other characters and the case (5x5 grid only) are kept
+
+```python
+>>> codext.encode("DCODE", "bazeries-23")
+'DLSLO'
+>>> codext.decode("DLSLO", "bazeries-23")
+'DCODE'
+>>> codext.encode("Simple substitution plus transposition", "bazeries-81257")
+'Xrmgqn brykrbkxkbkr xgqw cbrcqrweukcbw'
+>>> codext.encode("DCODE", "bazeries-23-keyword")
+'FMTMP'
+>>> codext.encode("ATTACKATDAWNTHENRETREAT", "bazeries-12,3")
+'CYOIMOSAOMMOQBMMOQWMQWC'
+>>> codext.encode("Test 1234!", "bazeries-42-6")
+'DTXD 2UW8!'
+```
+
+-----
+
 ### Beaufort Cipher
 
 This is a variant of the [Vigenere Cipher](#vigenere-cipher). There is no default key, meaning that `beaufort` as the encoding scheme throws a `LookupError` indicating that the _key must be a non-empty alphabetic string_.

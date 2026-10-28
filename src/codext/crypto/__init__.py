@@ -3,6 +3,7 @@ from .affine import *
 from .atbash import *
 from .bacon import *
 from .barbie import *
+from .bazeries import *
 from .citrix import *
 from .playfair import *
 from .phillips import *

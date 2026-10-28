@@ -334,6 +334,7 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 - [X] `autoclave`: aka Autoclave/Autokey Cipher (variant of Vigenere Cipher)
 - [X] `bacon`: aka Baconian Cipher
 - [X] `barbie-N`: aka Barbie Typewriter (*N* belongs to [1, 4])
+- [X] `bazeries`: aka Bazeries Cipher (two Polybius grids and a transposition keyed by a number)
 - [X] `beaufort`: aka Beaufort Cipher (variant of Vigenere Cipher)
 - [X] `citrix`: aka Citrix CTX1 password encoding
 - [X] `playfair`: aka Playfair Cipher
