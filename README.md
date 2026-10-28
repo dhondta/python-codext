@@ -340,6 +340,7 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 - [X] `beaufort`: aka Beaufort Cipher (variant of Vigenere Cipher)
 - [X] `bifid`: aka Bifid Cipher (Delastelle's fractionation with a 5x5 Polybius square) ; `trifid` for its 3x3x3 cube variant
 - [X] `citrix`: aka Citrix CTX1 password encoding
+- [X] `columnar`: aka Columnar Transposition Cipher (keyword-ordered columns ; a second keyword gives the double transposition)
 - [X] `playfair`: aka Playfair Cipher
 - [X] `phillips`: aka Phillips Cipher (polyalphabetic block cipher with 8 key squares)
 - [X] `polybius`: aka Polybius Square Cipher

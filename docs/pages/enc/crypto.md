@@ -237,6 +237,25 @@ This implements the Citrix CTX1 password encoding algorithm.
 
 -----
 
+### Columnar Transposition Cipher
+
+The text is written in rows under a keyword, then read column by column, in the alphabetical order of the keyword letters (from left to right for repeated letters). The last row may be incomplete (irregular columnar transposition) ; a regular transposition is obtained by padding the text beforehand. With a second keyword, the result is transposed again (double transposition). Every character is transposed, including whitespaces and punctuation.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`columnar` | text <-> columnar transposition ciphertext | `columnar-transposition`, `columnar-cipher` | parameterized with one or two alphanumeric keywords, e.g. `columnar-zebras` or `columnar-zebras-stripe`
+
+```python
+>>> codext.encode("WEAREDISCOVEREDFLEEATONCE", "columnar-zebras")
+'EVLNACDTESEAROFODEECWIREE'
+>>> codext.decode("EVLNACDTESEAROFODEECWIREE", "columnar_transposition-zebras")
+'WEAREDISCOVEREDFLEEATONCE'
+>>> codext.encode("WEAREDISCOVEREDFLEEATONCE", "columnar-zebras-stripe")
+'CAEENSOIAEDRLEFWEDREEVTOC'
+```
+
+-----
+
 ### Phillips Cipher
 
 This implements Phillips cipher, a polyalphabetic code using 8 grids generated with one keyword.
