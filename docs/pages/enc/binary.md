@@ -81,6 +81,23 @@ It converts characters to their odrinals, left-pads with zeros, converts digits 
 
 -----
 
+### Chuck Norris Unary
+
+Each character is written with the 7 bits of its ASCII code, then the resulting bit string is cut into runs of identical bits, each run being written as two blocks of zeros separated by a space: `0` for a run of 1s or `00` for a run of 0s, followed by as many zeros as bits in the run (see the [CodinGame puzzle](https://www.codingame.com/training/easy/chuck-norris)). Only ASCII characters can be encoded.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`chuck-norris` | text <-> Chuck Norris unary code | `chucknorris`, `chuck-norris-unary`, `chuck_norris_code` | ASCII characters only
+
+```python
+>>> codext.encode("CC", "chuck-norris")
+'0 0 00 0000 0 000 00 0000 0 00'
+>>> codext.decode("0 0 00 0000 0 000 00 0000 0 00", "chuck-norris")
+'CC'
+```
+
+-----
+
 ### Elias Gamma/Delta Codes
 
 These universal codes write positive integers as self-delimiting codewords, hence concatenated without separator:

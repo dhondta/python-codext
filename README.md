@@ -301,6 +301,7 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 - [X] `bcd`: _Binary Coded Decimal_, encodes characters from their (zero-left-padded) ordinals
 - [X] `bcd-extended0`: variant of `bcd` ; encodes characters from their (zero-left-padded) ordinals using prefix bits `0000`
 - [X] `bcd-extended1`: variant of `bcd` ; encodes characters from their (zero-left-padded) ordinals using prefix bits `1111`
+- [X] `chuck-norris`: Chuck Norris unary code (runs of the 7-bit ASCII bits written with blocks of zeros)
 - [X] `elias-gamma`, `elias-delta`: Elias universal codes, encoding characters from their ordinals (or lists of integers with `-integers`)
 - [X] `excess3`: uses Excess-3 (aka Stibitz code) binary encoding to convert characters from their ordinals
 - [X] `fibonacci`: Fibonacci universal code, encoding characters from their ordinals (or lists of integers with `-integers`)
