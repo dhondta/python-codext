@@ -81,6 +81,33 @@ It converts characters to their odrinals, left-pads with zeros, converts digits 
 
 -----
 
+### Elias Gamma/Delta Codes
+
+These universal codes write positive integers as self-delimiting codewords, hence concatenated without separator:
+
+- Elias gamma: N zeros followed by the N+1 bits of the integer
+- Elias delta: the Elias gamma codeword of the number of bits of the integer, followed by its bits without the leading 1
+
+Each character of the text is encoded from its ordinal + 1 (as 0 cannot be encoded), the output being a string of bits ; when decoding, the whitespaces are ignored. With the `-integers` variant (or `-int`), the text holds integers (from 1) in decimal, separated by whitespaces or commas, and the decoded integers are separated by a space.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`elias-gamma` | text <-> Elias gamma bits | `gamma`, `eliasgamma`, `elias-gamma-int` | `-int(egers)` for lists of integers
+`elias-delta` | text <-> Elias delta bits | `delta`, `eliasdelta`, `elias-delta-int` | `-int(egers)` for lists of integers
+
+```python
+>>> codext.encode("Hi!", "elias-gamma")
+'0000001001001000000110101000000100010'
+>>> codext.encode("Hi!", "elias-delta")
+'00111001001001111010100011000010'
+>>> codext.decode("00111001001001111010100011000010", "delta")
+'Hi!'
+>>> codext.encode("1 2 3 17", "elias-gamma-int")
+'1010011000010001'
+```
+
+-----
+
 ### Excess-3
 
 Also called *Stibitz code*, it converts characters to ordinals, left-pads with zeros and then applies Excess-3 (Stibitz) code to get groups of 4 bits that are finally reassembled into bytes.
@@ -94,6 +121,29 @@ Also called *Stibitz code*, it converts characters to ordinals, left-pads with z
 ';t7C\x84H6T8D\x83e<£eD\x944D\x84I6`'
 >>> codext.decode(";t7C\x84H6T8D\x83e<£eD\x944D\x84I6`", "stibitz")
 'This is a test!'
+```
+
+-----
+
+### Fibonacci Code
+
+This universal code writes positive integers as self-delimiting codewords, hence concatenated without separator: the Zeckendorf representation of the integer (sum of non-consecutive Fibonacci numbers 1, 2, 3, 5, 8, ...), from the least significant term, followed by an additional 1 (each codeword ends with `11`).
+
+Each character of the text is encoded from its ordinal + 1 (as 0 cannot be encoded), the output being a string of bits ; when decoding, the whitespaces are ignored. With the `-integers` variant (or `-int`), the text holds integers (from 1) in decimal, separated by whitespaces or commas, and the decoded integers are separated by a space.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`fibonacci` | text <-> Fibonacci code bits | `fib`, `fibonacci-coding`, `fibonacci-int` | `-int(egers)` for lists of integers
+
+```python
+>>> codext.encode("Hi!", "fibonacci")
+'000101001110100100011000000011'
+>>> codext.decode("000101001110100100011000000011", "fibonacci")
+'Hi!'
+>>> codext.encode("1 2 3 17", "fibonacci-int")
+'1101100111010011'
+>>> codext.decode("1101100111010011", "fibonacci-integers")
+'1 2 3 17'
 ```
 
 -----

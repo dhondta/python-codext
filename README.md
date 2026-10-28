@@ -301,7 +301,9 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 - [X] `bcd`: _Binary Coded Decimal_, encodes characters from their (zero-left-padded) ordinals
 - [X] `bcd-extended0`: variant of `bcd` ; encodes characters from their (zero-left-padded) ordinals using prefix bits `0000`
 - [X] `bcd-extended1`: variant of `bcd` ; encodes characters from their (zero-left-padded) ordinals using prefix bits `1111`
+- [X] `elias-gamma`, `elias-delta`: Elias universal codes, encoding characters from their ordinals (or lists of integers with `-integers`)
 - [X] `excess3`: uses Excess-3 (aka Stibitz code) binary encoding to convert characters from their ordinals
+- [X] `fibonacci`: Fibonacci universal code, encoding characters from their ordinals (or lists of integers with `-integers`)
 - [X] `gray`: aka reflected binary code
 - [X] `manchester`: XORes each bit of the input with `01`
 - [X] `manchester-inverted`: variant of `manchester` ; XORes each bit of the input with `10`
