@@ -256,6 +256,23 @@ The text is written in rows under a keyword, then read column by column, in the 
 
 -----
 
+### Gronsfeld Cipher
+
+This is a variant of the [Vigenere Cipher](#vigenere-cipher) whose key is made of digits, each digit giving the shift of a letter (0 to 9). There is no default key, meaning that `gronsfeld` as the encoding scheme throws a `LookupError` indicating that the _key must be a non-empty numeric string_.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`gronsfeld` | text <-> Gronsfeld ciphertext | `gronsfeld-31415`, `gronsfeld_cipher-0123` | key only consists of digits
+
+```python
+>>> codext.encode("ATTACKATDAWN", "gronsfeld-31415")
+'DUXBHNBXEFZO'
+>>> codext.decode("DUXBHNBXEFZO", "gronsfeld-31415")
+'ATTACKATDAWN'
+```
+
+-----
+
 ### Phillips Cipher
 
 This implements Phillips cipher, a polyalphabetic code using 8 grids generated with one keyword.
