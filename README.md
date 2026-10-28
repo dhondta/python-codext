@@ -380,6 +380,7 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 
 #### [Others](https://python-codext.readthedocs.io/en/latest/enc/others.html)
 
+- [X] `binhex`: BinHex 4.0 (`.hqx`), the binary-to-text encoding of the classic Mac OS
 - [X] `dna`: implements the 8 rules of DNA sequences (N belongs to [1,8])
 - [X] `letter-indices`: encodes consonants and/or vowels with their corresponding indices
 - [X] `markdown`: unidirectional encoding from Markdown to HTML

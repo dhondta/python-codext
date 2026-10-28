@@ -15,6 +15,15 @@ class ComplementaryTestCase(TestCase):
         from codext.binary.baudot import _check_alphabet
         self.assertRaises(ValueError, _check_alphabet, ["BAD_ALPHABET"])
     
+    def test_codec_binhex(self):
+        hqx = ":!5d!2j!)!*!&\"3#3\"$X55'9XE'r,eJ!!:"
+        # in non-strict modes, CRCs are not checked and what is available from the data fork is returned
+        self.assertEqual(codecs.decode(hqx[:-1], "binhex", "ignore"), "Hello")
+        self.assertEqual(codecs.decode(hqx.replace("XE", "XF"), "binhex", "replace"), "Helpo")
+        self.assertEqual(codecs.decode(hqx[:22] + ":", "binhex", "ignore"), "")
+        self.assertEqual(codecs.decode("This is a test", "binhex", "ignore"), "")
+        self.assertEqual(codecs.decode(":N!8:", "binhex", "ignore"), "")
+    
     def test_codec_dna(self):
         self.assertEqual(codecs.decode("ABC", "dna-1", errors="ignore"), "\x02")
         self.assertEqual(codecs.decode("ABC", "dna-2", errors="replace"), "[00??01]")

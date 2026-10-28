@@ -4,6 +4,23 @@ All kinds of other codecs are categorized in "*Others*".
 
 -----
 
+### BinHex
+
+BinHex 4.0 (`.hqx`) is the binary-to-text encoding of the classic Mac OS. The data is stored as the data fork of a file (named "`-`", with unknown type and creator codes and an empty resource fork) whose header and forks are protected with CRCs. This stream is compressed with run-length encoding, then encoded with 6 bits per character, framed by "`:`" and wrapped in lines of 64 characters after the "`(This file must be converted with BinHex 4.0)`" line.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`binhex` | data <-> BinHex 4.0 data | `binhex4`, `binhex-4.0`, `hqx` | decoding ignores the text around the data, checks the CRCs and returns the data fork
+
+```python
+>>> codext.encode("Hello", "binhex")
+'(This file must be converted with BinHex 4.0)\n\n:!5d!2j!)!*!&"3#3"$X55\'9XE\'r,eJ!!:\n'
+>>> codext.decode(":!5d!2j!)!*!&\"3#3\"$X55'9XE'r,eJ!!:", "hqx")
+'Hello'
+```
+
+-----
+
 ### DNA
 
 This implements the 8 methods of ATGC nucleotides following the rule of complementary pairing, according the literature about coding and computing of DNA sequences.
