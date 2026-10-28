@@ -342,6 +342,7 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 - [X] `citrix`: aka Citrix CTX1 password encoding
 - [X] `columnar`: aka Columnar Transposition Cipher (keyword-ordered columns ; a second keyword gives the double transposition)
 - [X] `gronsfeld`: aka Gronsfeld Cipher (variant of Vigenere Cipher with a numeric key)
+- [X] `nihilist`: aka Nihilist Cipher (sums of the Polybius coordinates of the text and of a repeated key)
 - [X] `playfair`: aka Playfair Cipher
 - [X] `phillips`: aka Phillips Cipher (polyalphabetic block cipher with 8 key squares)
 - [X] `polybius`: aka Polybius Square Cipher

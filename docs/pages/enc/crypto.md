@@ -273,6 +273,25 @@ This is a variant of the [Vigenere Cipher](#vigenere-cipher) whose key is made o
 
 -----
 
+### Nihilist Cipher
+
+Each letter of the text and of the key is replaced by its coordinates (row and column, from 1 to 5) in a 5x5 Polybius square (I and J sharing a cell), read as a two-digit number. The ciphertext is made of the sums of the numbers of the text and of the repeated key, separated by spaces. The square is filled with an optional keyword (without duplicates), then with the remaining letters of the alphabet. When encoding, whitespaces are ignored ; when decoding, the numbers are separated by whitespaces.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`nihilist` | text <-> Nihilist ciphertext | `nihilist-russian`, `nihilist_cipher-zebras-russian` | parameterized with an optional square keyword and a key
+
+```python
+>>> codext.encode("DYNAMITE WINTER PALACE", "nihilist-zebras-russian")
+'37 106 62 36 67 47 86 26 104 53 62 77 27 55 57 66 55 36 54 27'
+>>> codext.decode("37 106 62 36 67 47 86 26 104 53 62 77 27 55 57 66 55 36 54 27", "nihilist-zebras-russian")
+'DYNAMITEWINTERPALACE'
+>>> codext.encode("Hello", "nihilist-key")
+'48 30 85 56 49'
+```
+
+-----
+
 ### Phillips Cipher
 
 This implements Phillips cipher, a polyalphabetic code using 8 grids generated with one keyword.
