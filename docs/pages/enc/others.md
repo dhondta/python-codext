@@ -77,3 +77,25 @@ This is only for "encoding" (converting) Markdown to HTML.
 '<h1>Test</h1>\n\n<p>paragraph</p>\n'
 ```
 
+-----
+
+### yEnc
+
+yEnc is the binary-to-text encoding of Usenet. Each byte is shifted by 42 and only the critical characters (NUL, LF, CR, "`=`", as well as TAB and SPACE at the beginning or the end of a line and "`.`" at the beginning of a line) are escaped with "`=`".
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`yenc` | data <-> yEnc-encoded data | `y-enc`, `y_enc` | raw data on a single line
+`yenc-N` | data <-> yEnc-encoded data | | data in lines of N characters
+`yenc-full` | data <-> yEnc-encoded data | `yenc-N-full` | data in lines of 128 (or N) characters, framed by the `=ybegin` header and the `=yend` trailer (size and CRC32)
+
+When decoding, the header and the trailer are detected (the size and the CRC32 being checked) and line breaks are ignored, so that every form is decoded by any of these codecs.
+
+```python
+>>> codext.encode("Hello", "yenc")
+'r\x8f\x96\x96\x99'
+>>> codext.encode("Hello", "yenc-full")
+'=ybegin line=128 size=5 name=-\r\nr\x8f\x96\x96\x99\r\n=yend size=5 crc32=f7d18982\r\n'
+>>> codext.decode("=ybegin line=128 size=5 name=-\r\nr\x8f\x96\x96\x99\r\n=yend size=5 crc32=f7d18982\r\n", "yenc")
+'Hello'
+```

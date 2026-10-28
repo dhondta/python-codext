@@ -383,6 +383,7 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 - [X] `dna`: implements the 8 rules of DNA sequences (N belongs to [1,8])
 - [X] `letter-indices`: encodes consonants and/or vowels with their corresponding indices
 - [X] `markdown`: unidirectional encoding from Markdown to HTML
+- [X] `yenc`: Usenet binary-to-text encoding (raw, wrapped or framed with header, trailer and CRC32)
 
 #### [Steganography](https://python-codext.readthedocs.io/en/latest/enc/stegano.html)
 

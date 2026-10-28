@@ -4,4 +4,5 @@ from .kbshift import *
 from .letters import *
 from .markdown import *
 from .uuencode import *
+from .yenc import *
 
