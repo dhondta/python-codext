@@ -64,6 +64,7 @@ Note that for `base64`, it overwrites the native `base64_codec` to also support 
 `base10` | text <-> Base10 encoded text | `base[-_]?10|int(?:eger)?|dec(?:imal)?` | 
 `base11` | text <-> Base11 encoded text | `base[-_]?11(|[-_]inv(erted)?)` | 
 `base36` | text <-> Base36 encoded text | `base[-_]?36(|[-_]inv(erted)?)` | 
+`base38` | data <-> Base38 encoded text | `base[-_]?38` | Matter QR code payload encoding (chunks of 3 bytes)
 `base45` | text <-> Base45 encoded text | `base[-_]?45(|[-_]inv(erted)?)` | 
 `base58` | text <-> Base58 encoded text | `base[-_]?58(|[-_](bc|bitcoin|rp|ripple|fl|flickr|short[-]?url|url))` | Supports Bitcoin, Ripple and short URL
 `base62` | text <-> Base62 encoded text | `base[-_]?62(|[-_]inv(erted)?)` | 
@@ -81,6 +82,15 @@ Note that for `base64`, it overwrites the native `base64_codec` to also support 
 'WANEK4'
 >>> codecs.decode("4WMHTK6UZL044O91NKCEB8", "base36")
 'this is a test'
+```
+
+Base38 is the encoding of the payloads of the [Matter](https://github.com/project-chip/connectedhomeip) setup QR codes. The data is taken by chunks of 3 bytes, each chunk being read as a little-endian integer and written with the least significant digit first in the alphabet "`0-9A-Z-.`" (5 characters for 3 bytes, 4 for 2 bytes and 2 for 1 byte). It differs from the generic base conversion, which converts the whole input as a single integer.
+
+```python
+>>> codext.encode("Hello World!", "base38")
+'KKHF3W2S013OPM3EJX11'
+>>> codext.decode("KKHF3W2S013OPM3EJX11", "base38")
+'Hello World!'
 ```
 
 ```python

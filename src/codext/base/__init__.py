@@ -2,6 +2,7 @@
 from argparse import ArgumentParser, RawTextHelpFormatter
 from types import MethodType
 
+from .base38 import *
 from .base45 import *
 from .base85 import *
 from .base91 import *

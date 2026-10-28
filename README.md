@@ -272,6 +272,7 @@ CACTCGGTCGGCCATATGTTCGGCCATATGTTCGTCTGTTCACTCGCCCATACACT
 - [X] `base26`: conversion to alphabet letters
 - [X] `base32`: classical conversion according to the RFC4648 with all its variants ([zbase32](https://philzimmermann.com/docs/human-oriented-base-32-encoding.txt), extended hexadecimal, [geohash](https://en.wikipedia.org/wiki/Geohash), [Crockford](https://www.crockford.com/base32))
 - [X] `base36`: [Base36](https://en.wikipedia.org/wiki/Base36) conversion to letters and digits (with a variant inverting both groups)
+- [X] `base38`: [Base38](https://github.com/project-chip/connectedhomeip/blob/master/src/setup_payload/Base38Encode.cpp) encoding of the Matter setup QR codes (chunks of 3 bytes)
 - [X] `base45`: [Base45](https://datatracker.ietf.org/doc/html/draft-faltstrom-base45-04.txt) DRAFT algorithm (with a variant inverting letters and digits)
 - [X] `base58`: multiple versions of [Base58](https://en.bitcoinwiki.org/wiki/Base58) (bitcoin, flickr, ripple)
 - [X] `base62`: [Base62](https://en.wikipedia.org/wiki/Base62) conversion to lower- and uppercase letters and digits (with a variant with letters and digits inverted)
