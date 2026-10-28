@@ -119,3 +119,30 @@ This simple encoding replaces zeros and ones of the binary version of the input 
 >>> codext.decode("             m      \n        l               \n   u     \n            m     ", "whitespace+after-before")
 'test'
 ```
+
+-----
+
+### Zero-Width Characters
+
+This codec hides text in invisible Unicode characters. The result can be inserted anywhere in a cover text: when decoding, every character that is not part of the codec's alphabet is ignored, so the cover text does not need to be removed first.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`zero-width` | text <-> zero-width characters | `zerowidth`, `zero_width`, `zero-width-binary`, `zero-width-2` | bits of the UTF-8 bytes ; `U+200B` (zero-width space) for 0, `U+200C` (zero-width non-joiner) for 1
+`zero-width-ternary` | text <-> zero-width characters | `zero-width-zwsp`, `zero-width-3` | 11 base-3 digits per character with `U+200B`, `U+200C`, `U+200D` ; compatible with the `MODE_ZWSP` of [zwsp-steg](https://github.com/enodari/zwsp-steg-py) ; code points up to `U+2B3FA`
+`zero-width-quinary` | text <-> zero-width characters | `zero-width-full`, `zero-width-5` | 7 base-5 digits per character with `U+200B` to `U+200F` ; compatible with the `MODE_FULL` of [zwsp-steg](https://github.com/enodari/zwsp-steg-py) ; code points up to `U+1312C` (no emoji)
+
+```python
+>>> codext.encode("A", "zero-width")
+'\u200b\u200c\u200b\u200b\u200b\u200b\u200b\u200c'
+>>> cover = "Nothing to see here."
+>>> stego = cover[:8] + codext.encode("secret", "zero-width") + cover[8:]
+>>> print(stego)
+Nothing to see here.
+>>> len(cover), len(stego)
+(20, 68)
+>>> codext.decode(stego, "zero-width")
+'secret'
+>>> codext.decode(codext.encode("secret", "zero-width-full"), "zero-width-quinary")
+'secret'
+```

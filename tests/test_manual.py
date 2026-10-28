@@ -201,3 +201,16 @@ class ManualTestCase(TestCase):
         self.assertRaises(ValueError, codecs.encode, "this is a test", "whitespace-after-before")
         self.assertIn("\x00", codecs.encode("this is a test", "whitespace-after-before", "replace"))
 
+    def test_codec_zero_width(self):
+        self.assertRaises(LookupError, codecs.encode, "test", "zero-width-4")
+        # decoding ignores the cover text, hence the hidden message can be inserted anywhere in it
+        hidden = codecs.encode("secret", "zero-width")
+        self.assertEqual(codecs.decode("Nothing " + hidden + "to see here.", "zero-width"), "secret")
+        # an invalid UTF-8 byte (0xff) followed by a valid message
+        bad = chr(0x200c) * 8 + codecs.encode("ok", "zero-width")
+        self.assertEqual(codecs.decode(bad, "zero-width", "replace"), "?ok")
+        self.assertEqual(codecs.decode(bad, "zero-width", "ignore"), "ok")
+        # code points above 5**7 cannot be encoded with the quinary variant
+        STR = "A" + chr(0x1f600) + "B"
+        self.assertEqual(codecs.encode(STR, "zero-width-full", "ignore"), codecs.encode("AB", "zero-width-full"))
+        self.assertIn(chr(0x1f600), codecs.encode(STR, "zero-width-full", "leave"))

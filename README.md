@@ -390,6 +390,7 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 - [X] `sms`: also called _T9 code_ ; uses "`-`" as a separator for encoding, "`-`" or "`_`" or whitespace for decoding
 - [X] `whitespace`: replaces bits with whitespaces and tabs
 - [X] `whitespace_after_before`: variant of `whitespace` ; encodes characters as new characters with whitespaces before and after according to an equation described in the codec name (e.g. "`whitespace+2*after-3*before`")
+- [X] `zero-width`: hides text in invisible zero-width characters (binary, ternary and quinary variants, compatible with zwsp-steg)
 
 #### [Web](https://python-codext.readthedocs.io/en/latest/enc/web.html)
 
