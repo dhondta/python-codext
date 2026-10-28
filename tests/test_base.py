@@ -263,6 +263,16 @@ class TestCodecsBase(TestCase):
         self.assertRaises(LookupError, codecs.decode, "test", "base1-generic")
         self.assertRaises(LookupError, codecs.decode, "test", "base256-generic")
     
+    def test_codec_base1024(self):
+        bad = codecs.encode("Hello!", "ecoji-v1") + "\U0001f170\u23f0\U0001f170\U0001f170"
+        # the decoding stops at the first error, keeping what was decoded so far
+        self.assertEqual(codecs.decode(bad, "ecoji", "ignore"), "Hello!")
+        self.assertEqual(codecs.decode(bad, "ecoji", "replace"), "Hello!?")
+        self.assertEqual(codecs.decode(bad, "ecoji", "leave"), "Hello!\U0001f170\u23f0\U0001f170\U0001f170")
+        # non-Ecoji characters are dropped
+        bad = codecs.encode("Hello!", "ecoji").replace("\u2615", "!\u2615")
+        self.assertEqual(codecs.decode(bad, "ecoji", "ignore"), "Hello!")
+    
     def test_base_main(self):
         tmp = sys.argv[:]
         tfile = "test-base-main.txt"

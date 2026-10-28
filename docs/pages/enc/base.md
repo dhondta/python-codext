@@ -155,6 +155,7 @@ This encoding implements various different versions of Base85.
 `base100` | text <-> Base100 encoded text | `base[-_]?100|emoji` | Python 3 only
 `base122` | text <-> Base122 encoded text | `base[-_]?122` | Python 3 only
 `base128` | text <-> Base128 encoded text | `base[-_]?128` | Relies on the ASCII charset
+`base1024` | data <-> Ecoji encoded text | `base[-_]?1024`, `ecoji`, `ecoji-v1`, `ecoji-v2` | 10 bits per emoji ; encodes with Ecoji version 2 by default
 `base2048` | data <-> Base2048 encoded text | `base[-_]?2048` | 11 bits per character, optimised for Twitter
 `base32768` | data <-> Base32768 encoded text | `base[-_]?32768` | 15 bits per character, optimised for UTF-16
 `base65536` | data <-> Base65536 encoded text | `base[-_]?65536` | 16 bits per character, optimised for UTF-32
@@ -184,4 +185,15 @@ Base2048, Base32768 and Base65536 were designed by [qntm](https://github.com/qnt
 '驈ꍬ慯谠𓁯饬ᔡ'
 >>> codext.decode("驈ꍬ慯谠𓁯饬ᔡ", "base65536")
 'Hello, World!'
+```
+
+Base1024, also known as [Ecoji](https://github.com/keith-turner/ecoji), encodes the data with 1024 emojis, that is, 10 bits per emoji. The data is taken by blocks of 5 bytes giving 4 emojis, an incomplete last block being completed with padding emojis. Ecoji has two versions with different sets of emojis: version 1 always pads the last block to 4 emojis, while version 2 (the default) only writes the first padding emoji. When decoding, both versions are supported (but cannot be mixed), whitespaces are ignored and encoded texts may be concatenated.
+
+```python
+>>> codext.encode("Hello!", "ecoji")
+'🏯🔩🚗🌷🍌☕'
+>>> codext.encode("Hello!", "ecoji-v1")
+'🏯🔩🚗🌷🍌☕☕☕'
+>>> codext.decode("🏯🔩🚗🌷🍌☕☕☕", "base1024")
+'Hello!'
 ```

@@ -7,6 +7,7 @@ from .base85 import *
 from .base91 import *
 from .base100 import *
 from .base122 import *
+from .base1024 import *
 from .base65536 import *
 from .baseN import *
 from ..__common__ import *
