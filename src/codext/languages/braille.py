@@ -1,11 +1,17 @@
 # -*- coding: UTF-8 -*-
 """Braille Codec - braille content encoding.
 
+Braille, created by Louis Braille in 1824, writes characters as cells of 6 raised dots read by touch. This codec writes
+ each character with the Unicode braille pattern of the Braille ASCII correspondence (uncontracted letters, digits as
+ lower-cell patterns and punctuation), a space being written as the blank braille pattern U+2800.
+
 This codec:
 - en/decodes strings from str to str
 - en/decodes strings from bytes to bytes
 - decodes file content to str (read)
 - encodes file content from str to bytes (write)
+
+Reference: https://en.wikipedia.org/wiki/Braille_ASCII
 """
 from ..__common__ import *
 

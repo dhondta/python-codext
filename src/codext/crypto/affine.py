@@ -1,6 +1,11 @@
 # -*- coding: UTF-8 -*-
 """Affine Cipher Codec - affine content encoding.
 
+The affine cipher is a monoalphabetic substitution cipher where each character of index x in the alphabet is replaced by
+ the character of index (a * x + b) mod m, m being the length of the alphabet ; a must be coprime with m for the
+ substitution to be reversible (with a = 1, this is a Caesar cipher). The alphabet is given as a mask (e.g. "?l?u?s" for
+ lowercase letters, uppercase letters and symbols) followed by the key "a,b" (e.g. "affine-?l?u-5,8").
+
 This codec:
 - en/decodes strings from str to str
 - en/decodes strings from bytes to bytes

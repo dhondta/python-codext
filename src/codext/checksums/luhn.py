@@ -1,12 +1,19 @@
 # -*- coding: UTF-8 -*-
 """Luhn Codec - Luhn Mod N checksum algorithm.
 
-This is a codec for computing checksums, for use with other codecs in encoding chains.
+The Luhn algorithm, patented by Hans Peter Luhn (IBM) in 1960, computes the check digit of identification numbers such
+ as credit card numbers and IMEI: from the rightmost digit, every other digit is doubled (the digits of the result being
+ summed), and the check digit is what completes the total to a multiple of 10. The Luhn mod N variant extends it to
+ alphabets of N characters (digits then letters, e.g. "luhn-16" or "luhn36"). This codec returns the check character
+ (one-way), for use with other codecs in encoding chains.
 
 This codec:
 - transforms strings from str to str
 - transforms strings from bytes to bytes
 - transforms file content from str to bytes (write)
+
+Reference: https://en.wikipedia.org/wiki/Luhn_algorithm
+           https://en.wikipedia.org/wiki/Luhn_mod_N_algorithm
 """
 from ..__common__ import *
 

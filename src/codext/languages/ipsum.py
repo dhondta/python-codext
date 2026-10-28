@@ -1,11 +1,18 @@
 # -*- coding: UTF-8 -*-
-"""Letters Codec - letter indices-related content encoding.
+"""Lorem Ipsum Codec - lorem ipsum content encoding.
+
+Lorem ipsum is the pseudo-Latin placeholder text derived from Cicero's De finibus bonorum et malorum and used in
+ typesetting since the 1500s. This codec hides a text in it: each letter is replaced by a random Lorem ipsum word
+ starting with this letter (capitalized for an uppercase letter), spaces and punctuation being kept. When decoding, the
+ first letter of each word is taken, provided that the word belongs to the dictionary.
 
 This codec:
 - en/decodes strings from str to str
 - en/decodes strings from bytes to bytes
 - decodes file content to str (read)
 - encodes file content from str to bytes (write)
+
+Reference: https://en.wikipedia.org/wiki/Lorem_ipsum
 """
 import random
 

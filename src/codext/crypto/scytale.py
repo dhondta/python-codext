@@ -1,11 +1,17 @@
 # -*- coding: UTF-8 -*-
 """Scytale-N Codec - scytale content encoding.
 
+The scytale is a transposition device used by the Spartans: a strip of parchment wound around a rod of a given diameter
+ is written along the rod, then unwound. Equivalently, the text is written in rows of N characters (the number of
+ letters around the rod) and read column by column, that is, every N-th character from each starting position.
+
 This codec:
 - en/decodes strings from str to str
 - en/decodes strings from bytes to bytes
 - decodes file content to str (read)
 - encodes file content from str to bytes (write)
+
+Reference: https://en.wikipedia.org/wiki/Scytale
 """
 from math import ceil
 

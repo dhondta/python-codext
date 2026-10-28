@@ -1,6 +1,10 @@
 # -*- coding: UTF-8 -*-
 """Rick Astley Codec - Rick Astley's song content encoding.
 
+This codec hides a text in the lyrics of Rick Astley's "Never Gonna Give You Up" (1987), the song of the rickrolling
+ meme: each letter is replaced by a word of the chorus (the case of the word distinguishing the letters sharing a word),
+ "+" standing for a space.
+
 This codec:
 - en/decodes strings from str to str
 - en/decodes strings from bytes to bytes

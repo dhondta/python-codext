@@ -1,11 +1,17 @@
 # -*- coding: UTF-8 -*-
 """Polybius Square Codec - polybius-square content encoding.
 
+The Polybius square, described by the Greek historian Polybius (2nd century BC) for signalling with torches, writes each
+ letter as its row and column numbers (from 1 to 5) in a 5x5 square holding the alphabet (I and J sharing a cell). The
+ square can be filled with a custom alphabet of 25 distinct characters given in the codec name ; spaces are kept.
+
 This codec:
 - en/decodes strings from str to str
 - en/decodes strings from bytes to bytes
 - decodes file content to str (read)
 - encodes file content from str to bytes (write)
+
+Reference: https://en.wikipedia.org/wiki/Polybius_square
 """
 from ..__common__ import *
 

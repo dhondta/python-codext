@@ -1,6 +1,14 @@
 # -*- coding: UTF-8 -*-
 """Generic baseN functions.
 
+This module holds the common machinery of the base codecs: the charset selection (a charset may depend on the variant
+ given in the codec name, e.g. "-inv" for inverted charsets), the generic base conversion and the codec factory, the
+ generic "baseN-generic" codec (N from 2 to 255, with a generated charset) and the command-line tool factory used by the
+ baseXX console scripts.
+
+When N is not a power of 2, the whole input is converted as a single big integer written in base N (most significant
+ digit first), each leading null byte of the input being kept as a leading first character of the charset (as Base58
+ does).
 """
 from argparse import ArgumentParser, RawTextHelpFormatter
 from math import log

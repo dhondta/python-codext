@@ -1,6 +1,10 @@
 # -*- coding: UTF-8 -*-
 """Gzip Codec - gzip content compression.
 
+Gzip is the file format and compression tool created by Jean-loup Gailly and Mark Adler in 1992 for the GNU project,
+ using the DEFLATE algorithm (LZ77 and Huffman coding) with a header and a CRC-32 trailer. This codec relies on Python's
+ gzip module ; decoding is tried with and without the gzip file signature.
+
 NB: Not an encoding properly speaking.
 
 This codec:
@@ -8,6 +12,8 @@ This codec:
 - en/decodes strings from bytes to bytes
 - decodes file content to str (read)
 - encodes file content from str to bytes (write)
+
+Reference: https://datatracker.ietf.org/doc/html/rfc1952
 """
 import zlib
 from gzip import GzipFile

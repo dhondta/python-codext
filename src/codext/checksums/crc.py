@@ -1,12 +1,20 @@
 # -*- coding: UTF-8 -*-
 """CRC Codecs - Cyclic Redundancy Check checksum algorithm.
 
-This is a codec for computing checksums, for use with other codecs in encoding chains.
+A Cyclic Redundancy Check, invented by W. Wesley Peterson in 1961, is the remainder of the polynomial division of the
+ data by a generator polynomial over GF(2), used to detect accidental changes in transmitted or stored data. Each CRC
+ algorithm is defined by its width, polynomial, initial value, input and output reflection and final XOR value ; this
+ codec implements the widths and variants of the catalogue of parametrised CRC algorithms (e.g. "crc8", "crc16-ccitt",
+ "crc32", "crc32-c", "crc64-ecma"), returning the CRC as hexadecimal (one-way), for use with other codecs in encoding
+ chains.
 
 This codec:
 - transforms strings from str to str
 - transforms strings from bytes to bytes
 - transforms file content from str to bytes (write)
+
+Reference: https://en.wikipedia.org/wiki/Cyclic_redundancy_check
+           https://reveng.sourceforge.io/crc-catalogue/all.htm
 """
 from ..__common__ import add
 

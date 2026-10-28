@@ -1,11 +1,17 @@
 # -*- coding: UTF-8 -*-
 """SMS Codec - phone keystrokes content encoding.
 
+This codec writes each letter as the keystrokes needed to type it on a phone keypad with multi-tap text entry (as on the
+ Nokia 3310): the digit of the key holding the letter, repeated according to the position of the letter on the key (e.g.
+ "222" for C), "0" standing for a space. The keystrokes are separated by "-" (or "_" or whitespace when decoding).
+
 This codec:
 - en/decodes strings from str to str
 - en/decodes strings from bytes to bytes
 - decodes file content to str (read)
 - encodes file content from str to bytes (write)
+
+Reference: https://en.wikipedia.org/wiki/Multi-tap
 """
 from ..__common__ import *
 

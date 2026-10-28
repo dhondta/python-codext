@@ -1,11 +1,17 @@
 # -*- coding: UTF-8 -*-
 """Klopf Codec - Polybius-based content encoding.
 
+The Klopf code (German for knock) writes each letter as two digits from 1 to 5 given by its position in a 5x5 Polybius
+ square filled with the alphabet (I and J sharing a cell), the column first ; like the tap code, it can be transmitted
+ by knocking. Spaces are kept.
+
 This codec:
 - en/decodes strings from str to str
 - en/decodes strings from bytes to bytes
 - decodes file content to str (read)
 - encodes file content from str to bytes (write)
+
+Reference: https://www.dcode.fr/klopf-code
 """
 from ..__common__ import *
 

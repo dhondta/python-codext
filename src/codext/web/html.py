@@ -1,11 +1,19 @@
 # -*- coding: UTF-8 -*-
 """HTML entity Codec - html entity content encoding.
 
+HTML character references represent characters that are reserved or hard to type in HTML, such as the named entities
+ defined by the HTML5 specification (e.g. "&lt;" for "<", "&Tab;" for a tab). This codec replaces the characters having
+ a named entity by this entity, and the other characters beyond U+00FF by "&" followed by their hexadecimal code point
+ and ";" (e.g. "&1234;", a non-standard form without "#x") ; decoding supports both forms, but not the standard numeric
+ references ("&#...;").
+
 This codec:
 - en/decodes strings from str to str
 - en/decodes strings from bytes to bytes
 - decodes file content to str (read)
 - encodes file content from str to bytes (write)
+
+Reference: https://html.spec.whatwg.org/multipage/named-characters.html
 """
 from ..__common__ import *
 

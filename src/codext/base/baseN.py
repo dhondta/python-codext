@@ -1,11 +1,26 @@
 # -*- coding: UTF-8 -*-
 """BaseN Codecs - base content encodings.
 
+These are the classical base encodings, defined by their charsets (most of them also with an inverted variant, "-inv",
+ swapping the groups of characters, e.g. digits and letters):
+
+- base1 (unary), base2, base3, base4, base8, base10 (decimal), base11, base16 (hexadecimal), base26 (letters), base36,
+   base62, base63 (with "_"), base67 (with "-_.!~") and base128 (ASCII)
+- base32 (RFC 4648) and its variants: extended hex (RFC 4648), z-base-32 (Zimmermann), Crockford's and Geohash
+- base58 in its Bitcoin, Ripple and Flickr (short URL) variants
+- base64 (RFC 4648) and its URL- and filename-safe variant
+
+The bases that are powers of 2 group the bits of the input (with "=" padding, as in RFC 4648), while the other ones
+ convert the whole input as a single big integer.
+
 These codecs:
 - en/decode strings from str to str
 - en/decode strings from bytes to bytes
 - decode file content to str (read)
 - encode file content from str to bytes (write)
+
+Reference: https://datatracker.ietf.org/doc/html/rfc4648
+           https://en.bitcoinwiki.org/wiki/Base58
 """
 from ..__common__ import *
 from ._base import base, base_generic, digits, lower, main, upper

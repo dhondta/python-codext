@@ -1,11 +1,19 @@
 # -*- coding: UTF-8 -*-
 """Base122 Codec - base122 content encoding.
 
+Base122, created by Kevin Albertson, is a binary-to-text encoding optimised for UTF-8 (e.g. for embedding binary data in
+ web pages). The data is read by groups of 7 bits, each group being written as a single-byte UTF-8 character ; as 6
+ values would be harmful in HTML or JSON (null, line feed, carriage return, double quote, ampersand and backslash), a
+ group having one of these values is written with the next 7 bits in a two-byte UTF-8 character, hence an expansion of
+ about 14%.
+
 This codec:
 - en/decodes strings from str to str
 - en/decodes strings from bytes to bytes
 - decodes file content to str (read)
 - encodes file content from str to bytes (write)
+
+Reference: http://blog.kevinalbs.com/base122
 """
 from ._base import main
 from ..__common__ import *

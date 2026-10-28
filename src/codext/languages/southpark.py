@@ -1,11 +1,18 @@
 # -*- coding: UTF-8 -*-
 """Southpark Codec - Kenny's language content encoding.
 
+Kenny McCormick, from the South Park animated series, speaks through his hood, so that only muffled sounds can be heard.
+ Each letter is written with 3 of these sounds among "m", "p" and "f" (that is, its index written in base 3), keeping
+ the case of the letter ; the "-icase" variant ignores the case (uppercase sounds, "FFF" for a space). The symbols can
+ be replaced in the codec name (6 symbols for the default variant, 3 for "-icase").
+
 This codec:
 - en/decodes strings from str to str
 - en/decodes strings from bytes to bytes
 - decodes file content to str (read)
 - encodes file content from str to bytes (write)
+
+Reference: https://www.dcode.fr/kenny-language
 """
 from ..__common__ import *
 

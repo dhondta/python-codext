@@ -1,11 +1,18 @@
 # -*- coding: UTF-8 -*-
 """BCD Codec - Binary Coded Decimal content encoding.
 
+Binary Coded Decimal writes each decimal digit with its own group of 4 bits (0000 to 1001), as used e.g. by calculators,
+ clocks and some financial systems. Each character is encoded from its ordinal, written with 3 decimal digits
+ (zero-left-padded), the resulting nibbles being packed into bytes (the last one being padded with 0000). The extended
+ variants write a single digit per byte, prefixed with the bits 0000 ("bcd-extended0") or 1111 ("bcd-extended1").
+
 This codec:
 - en/decodes strings from str to str
 - en/decodes strings from bytes to bytes
 - decodes file content to str (read)
 - encodes file content from str to bytes (write)
+
+Reference: https://en.wikipedia.org/wiki/Binary-coded_decimal
 """
 from ..__common__ import *
 

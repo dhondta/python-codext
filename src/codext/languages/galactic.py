@@ -2,11 +2,17 @@
 # -*- coding: UTF-8 -*-
 """Galactic Alphabet Codec - Minecraft enchantment language content encoding.
 
+The Standard Galactic Alphabet was created by Tom Hall for the Commander Keen video games (1990) and later reused as the
+ language of Minecraft's enchanting table. Each letter is replaced by a Unicode character resembling its glyph ; as
+ there are no exact Unicode equivalents, several lookalike characters are accepted for most letters when decoding.
+
 This codec:
 - en/decodes strings from str to str
 - en/decodes strings from bytes to bytes
 - decodes file content to str (read)
 - encodes file content from str to bytes (write)
+
+Reference: https://en.wikipedia.org/wiki/Commander_Keen#Standard_Galactic_Alphabet
 """
 from ..__common__ import *
 

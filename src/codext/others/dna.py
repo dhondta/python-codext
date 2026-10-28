@@ -1,8 +1,10 @@
 # -*- coding: UTF-8 -*-
 """DNA Codec - dna content encoding.
 
-This implements the 8 methods of ATGC nucleotides following the rule of complementary pairing, according the literature4
- about coding and computing of DNA sequences.
+DNA coding writes the data with the four nucleotides A, C, G and T, each one holding 2 bits (hence 4 nucleotides per
+ byte), as used in DNA computing and DNA-based steganography. Among the 24 possible assignments of the 4 pairs of bits
+ to the nucleotides, the 8 rules respecting the complementary pairing (A-T and C-G) are implemented ("dna-1" to
+ "dna-8"), according to the literature about coding and computing of DNA sequences.
 
 This codec:
 - en/decodes strings from str to str

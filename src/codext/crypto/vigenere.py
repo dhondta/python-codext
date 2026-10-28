@@ -1,11 +1,23 @@
 # -*- coding: UTF-8 -*-
 """Vigenere Cipher Codec - vigenere content encoding.
 
+The Vigenere cipher, described by Giovan Battista Bellaso in 1553 and later misattributed to Blaise de Vigenere, shifts
+ each letter by the value of the corresponding letter of a repeated keyword (A=0, ..., Z=25) ; the case is kept and
+ other characters are left as is (they do not consume key letters). This module also holds its variants:
+
+- autoclave (autokey): the key is followed by the plaintext itself instead of being repeated
+- Beaufort: each letter is replaced by the key letter minus the text letter (reciprocal)
+- Gronsfeld: the key is made of digits (shifts from 0 to 9)
+- Porta: each pair of key letters selects one of 13 reciprocal alphabets swapping the halves A-M and N-Z
+- Trithemius: the key is the whole alphabet, that is, the shift increases by 1 for each letter
+
 This codec:
 - en/decodes strings from str to str
 - en/decodes strings from bytes to bytes
 - decodes file content to str (read)
 - encodes file content from str to bytes (write)
+
+Reference: https://en.wikipedia.org/wiki/Vigen%C3%A8re_cipher
 """
 from string import ascii_lowercase as LC, ascii_uppercase as UC, digits as DG
 

@@ -1,11 +1,18 @@
 # -*- coding: UTF-8 -*-
 """Base91 Codec - base91 content encoding.
 
+basE91, designed by Joachim Henke, uses 91 printable ASCII characters (all but space, "-", "\" and "'"). The input bits
+ are read by groups of 13 bits (or 14 bits when the value of the 13 bits is small enough), each group being written with
+ 2 characters, hence an expansion of about 23%. The "-alt" variant uses another charset and always reads 13 bits, while
+ the "-inv" variants swap the groups of characters of the charset.
+
 This codec:
 - en/decodes strings from str to str
 - en/decodes strings from bytes to bytes
 - decodes file content to str (read)
 - encodes file content from str to bytes (write)
+
+Reference: http://base91.sourceforge.net
 """
 from ._base import _get_charset, digits, lower, main, upper
 from ..__common__ import *

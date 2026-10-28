@@ -1,12 +1,17 @@
 # -*- coding: UTF-8 -*-
 """MMH3 Codecs - string hashing with MurmurHash3.
 
-These are codecs for hashing strings, for use with other codecs in encoding chains.
+MurmurHash3, created by Austin Appleby in 2011, is a fast non-cryptographic hash function used e.g. in hash tables,
+ Bloom filters and for fingerprinting (e.g. favicon hashes in Shodan). Its 32-bit and 128-bit variants are provided when
+ available in hashlib. These codecs return the hexadecimal digest (one-way), for use with other codecs in encoding
+ chains.
 
 These codecs:
 - transform strings from str to str
 - transform strings from bytes to bytes
 - transform file content from str to bytes (write)
+
+Reference: https://github.com/aappleby/smhasher
 """
 from ..__common__ import *
 

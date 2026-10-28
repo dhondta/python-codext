@@ -1,12 +1,18 @@
 # -*- coding: UTF-8 -*-
 """SHA Hashing Codecs - string hashing with Secure Hash Algorithms.
 
-These are codecs for hashing strings, for use with other codecs in encoding chains.
+The Secure Hash Algorithms are published by the NIST: SHA-1 (1995, 160 bits, now broken), the SHA-2 family designed by
+ the NSA (SHA-224, SHA-256, SHA-384 and SHA-512) and the SHA-3 family (SHA3-224 to SHA3-512, based on Keccak,
+ standardised in 2015). These codecs return the hexadecimal digest (one-way), for use with other codecs in encoding
+ chains.
 
 These codecs:
 - transform strings from str to str
 - transform strings from bytes to bytes
 - transform file content from str to bytes (write)
+
+Reference: https://csrc.nist.gov/pubs/fips/180-4/upd1/final
+           https://csrc.nist.gov/pubs/fips/202/final
 """
 from ..__common__ import *
 

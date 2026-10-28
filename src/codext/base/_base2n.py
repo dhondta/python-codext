@@ -1,6 +1,10 @@
 # -*- coding: UTF-8 -*-
 """BaseN functions with N a power of 2.
 
+When N is a power of 2 (2, 4, 8, 16, 32, 64, ...), each character holds a fixed number of bits (log2(N)): the input
+ bytes are read as a stream of bits, cut into groups of that size and mapped to the charset, the last group being padded
+ with zero bits. The output is then padded with "=" up to a whole number of quanta (the smallest number of characters
+ holding a whole number of bytes, e.g. 4 characters for 3 bytes with Base64), as RFC 4648 does.
 """
 from math import ceil, log
 

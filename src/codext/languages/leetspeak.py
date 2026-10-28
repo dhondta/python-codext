@@ -1,11 +1,17 @@
 # -*- coding: UTF-8 -*-
 """Leetspeak Codec - leetspeak content encoding.
 
+Leetspeak (1337), born in the 1980s on bulletin board systems, replaces letters by similar-looking digits or symbols.
+ This codec uses the substitutions A=4 (or @), B=8, E=3, G=9, I=1, L=1, O=0, S=5, T=7 and Z=2 ; as several letters share
+ the same symbol, decoding is ambiguous and outputs uppercase letters.
+
 This codec:
 - en/decodes strings from str to str
 - en/decodes strings from bytes to bytes
 - decodes file content to str (read)
 - encodes file content from str to bytes (write)
+
+Reference: https://en.wikipedia.org/wiki/Leet
 """
 from ..__common__ import *
 

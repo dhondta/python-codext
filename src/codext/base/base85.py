@@ -1,13 +1,25 @@
 # -*- coding: UTF-8 -*-
 """Base85 Codec - base85 content encoding.
 
-This is a simple wrapper for adding base64.b85**code to the codecs.
+Base85 writes each group of 4 bytes (a 32-bit integer) with 5 characters among 85, hence an expansion of only 25%. It
+ comes in several variants with different charsets and conventions:
+
+- Ascii85 (btoa), with the characters from "!" to "u", "z" standing for a group of 4 null bytes
+- Adobe's variant, framed by "<~" and "~>"
+- xbtoa, with "y" standing for 4 spaces, framed by the "xbtoa Begin" and "xbtoa End" lines (holding the size and
+   checksums)
+- RFC 1924 (for IPv6 addresses), Z85 (ZeroMQ) and the XML variant (draft-kwiatkowski-base85-for-xml), with their own
+   charsets
 
 This codec:
 - en/decodes strings from str to str
 - en/decodes strings from bytes to bytes
 - decodes file content to str (read)
 - encodes file content from str to bytes (write)
+
+Reference: https://en.wikipedia.org/wiki/Ascii85
+           https://datatracker.ietf.org/doc/html/rfc1924
+           https://rfc.zeromq.org/spec/32
 """
 import base64
 

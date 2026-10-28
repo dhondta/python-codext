@@ -1,11 +1,19 @@
 # -*- coding: UTF-8 -*-
 """ROT Codec - rot-with-N-offset content encoding.
 
+ROT-N, or the Caesar cipher (used by Julius Caesar with a shift of 3), shifts each letter by N positions in the alphabet
+ (from 1 to 25), the case being kept and other characters left as is ; ROT13 is its own inverse. ROT47 applies the same
+ principle to the 94 printable ASCII characters. Two variants are also provided: the progressive ROT, whose shift
+ increases (or decreases with "-n") by 1 for each character, and the alternative ROT, whose shift alternates between +N
+ and -N.
+
 This codec:
 - en/decodes strings from str to str
 - en/decodes strings from bytes to bytes
 - decodes file content to str (read)
 - encodes file content from str to bytes (write)
+
+Reference: https://en.wikipedia.org/wiki/Caesar_cipher
 """
 from string import ascii_lowercase as LC, ascii_uppercase as UC, digits as DIG
 

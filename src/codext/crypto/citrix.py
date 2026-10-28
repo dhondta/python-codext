@@ -1,13 +1,15 @@
 # -*- coding: UTF-8 -*-
 """Citrix Codec - citrix password encoding.
 
+Citrix CTX1 is the reversible obfuscation used by Citrix products (e.g. in ICA files or the NetScaler configuration) to
+ store passwords. Each byte is XORed with 0xA5 and with the previous encoded value, then written as two uppercase
+ letters, one per nibble (the nibble added to "A"), hence an expansion factor of 2.
+
 This codec:
 - en/decodes strings from str to str
 - en/decodes strings from bytes to bytes
 - decodes file content to str (read)
 - encodes file content from str to bytes (write)
-
-Reference: https://crypto.interactive-maths.com/atbash-cipher.html
 """
 from ..__common__ import *
 

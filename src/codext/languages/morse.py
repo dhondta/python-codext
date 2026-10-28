@@ -1,11 +1,18 @@
 # -*- coding: UTF-8 -*-
 """Morse Codec - morse content encoding.
 
+Morse code, developed by Samuel Morse and Alfred Vail for the electric telegraph in the 1830s-1840s, writes each
+ character as a sequence of short and long signals (dots and dashes). This codec uses the International Morse Code for
+ letters, digits and punctuation, the characters being separated by spaces and the words by "/" ; the word separator,
+ the dash and the dot symbols can be replaced in the codec name (e.g. "morse-/AB" or "morse-01").
+
 This codec:
 - en/decodes strings from str to str
 - en/decodes strings from bytes to bytes
 - decodes file content to str (read)
 - encodes file content from str to bytes (write)
+
+Reference: https://en.wikipedia.org/wiki/Morse_code
 """
 from ..__common__ import *
 

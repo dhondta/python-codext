@@ -1,13 +1,19 @@
 # -*- coding: UTF-8 -*-
 """Base100 Codec - base100 content encoding.
 
-Note: only works in Python3 ; strongly inspired from https://github.com/MasterGroosha/pybase100
+Base100, also known as the emoji encoding, was created by Adam Niederer. Each byte is written with one of 256 emojis,
+ from U+1F3F7 to U+1F4F6, whose UTF-8 encoding is the 4 bytes F0 9F followed by two bytes computed from the byte value
+ (hence a fixed expansion factor of 4 in bytes, but of 1 in characters). This implementation is strongly inspired by
+ pybase100.
 
 This codec:
 - en/decodes strings from str to str
 - en/decodes strings from bytes to bytes
 - decodes file content to str (read)
 - encodes file content from str to bytes (write)
+
+Reference: https://github.com/AdamNiederer/base100
+           https://github.com/MasterGroosha/pybase100
 """
 from ._base import main
 from ..__common__ import *

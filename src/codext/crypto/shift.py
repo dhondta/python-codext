@@ -1,6 +1,9 @@
 # -*- coding: UTF-8 -*-
 """Shift Codec - Shift-ordinal-with-N content encoding.
 
+Each character is replaced by the character whose ordinal is shifted by N (from 1 to 255), modulo 256 ; unlike ROT-N,
+ every byte value is shifted, not only the letters.
+
 This codec:
 - en/decodes strings from str to str
 - en/decodes strings from bytes to bytes

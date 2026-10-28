@@ -1,11 +1,17 @@
 # -*- coding: UTF-8 -*-
 """Tom-Tom Codec - tom-tom content encoding.
 
+The Tom-Tom code writes each letter as a short sequence of slashes and backslashes (e.g. "/" for A, "/\" for E), the
+ letters being separated by spaces and the words by "|" ; the three symbols can be replaced in the codec name (e.g.
+ "tom-tom-/01").
+
 This codec:
 - en/decodes strings from str to str
 - en/decodes strings from bytes to bytes
 - decodes file content to str (read)
 - encodes file content from str to bytes (write)
+
+Reference: https://www.dcode.fr/tom-tom-code
 """
 from ..__common__ import *
 

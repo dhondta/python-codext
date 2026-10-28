@@ -1,6 +1,11 @@
 # -*- coding: UTF-8 -*-
 """Letters Codec - letter indices-related content encoding.
 
+These codecs replace the letters by their indices among the consonants or the vowels (A, E, I, O, U and Y):
+ "consonant-index" replaces the consonants by their index (B=1, ..., Z=20) and keeps the vowels, "vowel-index" replaces
+ the vowels by their index (A=1, ..., Y=6) and keeps the consonants, while "consonant-vowel-index" replaces both,
+ prefixed with "C" or "V". Spaces are removed and the decoded text is uppercase.
+
 This codec:
 - en/decodes strings from str to str
 - en/decodes strings from bytes to bytes

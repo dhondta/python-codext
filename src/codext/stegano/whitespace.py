@@ -1,6 +1,14 @@
 # -*- coding: UTF-8 -*-
 """Whitespace Codec - whitespace/tabs content encoding.
 
+These codecs hide a text in whitespace characters:
+
+- "whitespace": each bit of the characters is written as a tab (0) or a space (1), or the opposite with "-inv", hence an
+   invisible text
+- "whitespace+after-before" (or another arithmetic expression of "after" and "before"): each character is written on its
+   own line as a printable character surrounded by random numbers of spaces before and after it, the original character
+   being the printable one shifted according to the expression of these numbers
+
 This codec:
 - en/decodes strings from str to str
 - en/decodes strings from bytes to bytes

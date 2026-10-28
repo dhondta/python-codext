@@ -1,6 +1,9 @@
 # -*- coding: UTF-8 -*-
 """Octal Codec - octal content encoding.
 
+Each character is replaced by its ordinal written in base 8: with 3 digits each and without separator by default, or
+ with as many digits as needed and separated by spaces with the "-spaced" variant.
+
 This codec:
 - en/decodes strings from str to str
 - en/decodes strings from bytes to bytes

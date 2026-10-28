@@ -1,11 +1,18 @@
 # -*- coding: UTF-8 -*-
 """A1Z26 Codec - A1Z26 content encoding.
 
+A1Z26 replaces each letter by its position in the alphabet (A=1, B=2, ..., Z=26), a classic of puzzle hunts and
+ geocaching. The numbers of the letters of a word are joined with a separator ("-" by default, or one of "_/|,;:*" given
+ in the codec name), while the words remain separated by spaces ; only letters and spaces can be encoded, and the
+ decoded text is lowercase.
+
 This codec:
 - en/decodes strings from str to str
 - en/decodes strings from bytes to bytes
 - decodes file content to str (read)
 - encodes file content from str to bytes (write)
+
+Reference: https://www.dcode.fr/letter-number-cipher
 """
 from string import ascii_lowercase as lower
 

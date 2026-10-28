@@ -1,11 +1,18 @@
 # -*- coding: UTF-8 -*-
 """Base45 Codec - base45 content encoding.
 
+Base45 (RFC 9285) was designed for QR codes, whose alphanumeric mode only holds 45 characters (digits, uppercase
+ letters, space and "$%*+-./:"), and is used e.g. by the EU Digital COVID Certificates. The data is taken by pairs of
+ bytes, each pair (a 16-bit integer) being written with 3 characters, least significant digit first ; a last single byte
+ is written with 2 characters. The "-inv" variant swaps the digits and the letters in the charset.
+
 This codec:
 - en/decodes strings from str to str
 - en/decodes strings from bytes to bytes
 - decodes file content to str (read)
 - encodes file content from str to bytes (write)
+
+Reference: https://datatracker.ietf.org/doc/html/rfc9285
 """
 from ._base import _get_charset, digits, lower, main, upper
 from ..__common__ import *

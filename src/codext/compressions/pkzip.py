@@ -1,6 +1,10 @@
 # -*- coding: UTF-8 -*-
 """Pkzip Codec - pkzip content compression.
 
+These codecs expose the compression methods of the ZIP format (created by Phil Katz for PKZIP in 1989), as implemented
+ by Python's zipfile module: DEFLATE (method 8, LZ77 and Huffman coding), BZIP2 (method 12, Burrows-Wheeler transform)
+ and LZMA (method 14, Lempel-Ziv-Markov chain). The raw compressed stream is output, without the ZIP archive structure.
+
 NB: Not an encoding properly speaking.
 
 This codec:
@@ -8,6 +12,8 @@ This codec:
 - en/decodes strings from bytes to bytes
 - decodes file content to str (read)
 - encodes file content from str to bytes (write)
+
+Reference: https://en.wikipedia.org/wiki/ZIP_(file_format)
 """
 import zipfile
 

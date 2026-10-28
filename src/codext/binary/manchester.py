@@ -1,11 +1,19 @@
 # -*- coding: UTF-8 -*-
 """Manchester Codec - Manchester content encoding.
 
+Manchester code, from the University of Manchester where it was used for storing data on the Manchester Mark 1's
+ magnetic drum, is a line code that guarantees a transition in the middle of each bit period (hence a self-clocking
+ signal): each bit is written with two bits, as the XOR of the bit with the clock. By default, the convention of G. E.
+ Thomas is used (1 is written 10 and 0 is written 01), while the inverted variant ("ethernet", "ieee802.4") uses the
+ opposite convention of IEEE 802.3 (1 is written 01 and 0 is written 10). Each input byte thus gives two output bytes.
+
 This codec:
 - en/decodes strings from str to str
 - en/decodes strings from bytes to bytes
 - decodes file content to str (read)
 - encodes file content from str to bytes (write)
+
+Reference: https://en.wikipedia.org/wiki/Manchester_code
 """
 from ..__common__ import *
 

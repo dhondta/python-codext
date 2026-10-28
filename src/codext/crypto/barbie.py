@@ -1,8 +1,10 @@
 # -*- coding: UTF-8 -*-
 """Barbie typewriter Codec - barbie content encoding.
 
-While Barbie typewriter is more a cipher, its very limited key size of 2 bits makes it easy to turn into four variants
- of the same encoding.
+The Barbie typewriter (Mattel's E-mail Box, 1999) has a secret code mode that substitutes the typed characters according
+ to a fixed table, applied once or several times. While it is more a cipher, its very limited key size of 2 bits (from 1
+ to 4 applications of the substitution) makes it easy to turn into four variants of the same encoding ("barbie-1" to
+ "barbie-4").
 
 This codec:
 - en/decodes strings from str to str

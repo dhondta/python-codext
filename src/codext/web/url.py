@@ -1,11 +1,17 @@
 # -*- coding: UTF-8 -*-
 """URL Codec - urlencode content encoding.
 
+Percent-encoding (RFC 3986), commonly called URL encoding, writes the characters that are not allowed or reserved in a
+ URL as "%" followed by the two hexadecimal digits of the byte. This codec encodes every character but the letters,
+ digits, "_" and "-" ; decoding is case-insensitive.
+
 This codec:
 - en/decodes strings from str to str
 - en/decodes strings from bytes to bytes
 - decodes file content to str (read)
 - encodes file content from str to bytes (write)
+
+Reference: https://datatracker.ietf.org/doc/html/rfc3986#section-2.1
 """
 from ..__common__ import *
 

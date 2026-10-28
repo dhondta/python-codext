@@ -1,6 +1,11 @@
 # -*- coding: UTF-8 -*-
 """LZ77 Codec - Lempel-Ziv 1977 compression algorithm.
 
+LZ77, published by Abraham Lempel and Jacob Ziv in 1977, replaces repeated sequences by references to a previous
+ occurrence within a sliding window. In this implementation, the output is a stream of bits: a literal byte is written
+ as the flag bit 0 followed by its 8 bits, while a match is written as the flag bit 1 followed by its distance (12 bits,
+ within a window of 20 bytes) and its length (4 bits, up to 14 bytes), the last byte being padded with zero bits.
+
 NB: Not an encoding properly speaking.
 
 This codec:
@@ -10,6 +15,8 @@ This codec:
 - encodes file content from str to bytes (write)
 
 Inspired from: https://github.com/manassra/LZ77-Compressor
+
+Reference: https://en.wikipedia.org/wiki/LZ77_and_LZ78
 """
 from ..__common__ import *
 

@@ -1,11 +1,18 @@
 # -*- coding: UTF-8 -*-
 """Navajo Codec - Navajo code content encoding.
 
+The Navajo code was used by the Navajo code talkers of the US Marine Corps during World War II: each letter was spelled
+ with a Navajo word whose English translation starts with that letter (e.g. "WOL-LA-CHEE", ant, for A), several words
+ being available for the most frequent letters. Each letter is replaced by one of its words (chosen randomly), the words
+ being separated by spaces.
+
 This codec:
 - en/decodes strings from str to str
 - en/decodes strings from bytes to bytes
 - decodes file content to str (read)
 - encodes file content from str to bytes (write)
+
+Reference: https://en.wikipedia.org/wiki/Code_talker#Navajo_code_talkers
 """
 from ..__common__ import *
 

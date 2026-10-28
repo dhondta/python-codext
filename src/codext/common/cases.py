@@ -1,7 +1,12 @@
 # -*- coding: UTF-8 -*-
 """Case Codecs - simple string case manipulations.
 
-These are case-related codecs for manipulating strings, for use with other codecs in encoding/decoding chains.
+These are case-related codecs for manipulating strings, for use with other codecs in encoding/decoding chains:
+
+- uppercase, lowercase, capitalize, title and swapcase, whose decoding applies the reverse operation (as far as
+   possible, as the original case is lost)
+- camelcase, pascalcase, slugify (or kebab case), snakecase and screaming snake case, which only encode, as the
+   separators between the words are lost
 
 These codecs:
 - en/decodes strings from str to str

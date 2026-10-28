@@ -1,6 +1,11 @@
 # -*- coding: UTF-8 -*-
 """Keyboard-Shift Codec - keyboard line shifting content encoding.
 
+Each character is replaced by the key located N positions to its left on the same row of a keyboard layout (looping at
+ the beginning of the row), as when typing with the hands shifted ; decoding shifts to the right. The layout and the
+ shift are given in the codec name, e.g. "kbshift-qwerty-1" (layouts: azerty, azerty-be, azerty-fr, qwerty, qwerty-us,
+ ansi and dvorak), characters out of the layout being kept as is.
+
 This codec:
 - en/decodes strings from str to str
 - en/decodes strings from bytes to bytes

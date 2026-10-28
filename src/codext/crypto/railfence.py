@@ -1,11 +1,17 @@
 # -*- coding: UTF-8 -*-
 """Rail Fence Cipher Codec - rail fence content encoding.
 
+The rail fence cipher (or zigzag cipher) is a transposition cipher: the text is written diagonally downwards and upwards
+ on a number of rails (3 by default), then read rail by rail. The number of rails, the starting offset on the zigzag and
+ the starting direction ("-up") can be given in the codec name (e.g. "railfence-5-3-up").
+
 This codec:
 - en/decodes strings from str to str
 - en/decodes strings from bytes to bytes
 - decodes file content to str (read)
 - encodes file content from str to bytes (write)
+
+Reference: https://en.wikipedia.org/wiki/Rail_fence_cipher
 """
 from ..__common__ import *
 

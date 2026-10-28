@@ -1,11 +1,17 @@
 # -*- coding: UTF-8 -*-
 """Resistor Codec - resistor color codes content encoding.
 
+The electronic color code (IEC 60062) marks the values of resistors and capacitors with colored bands, one per digit:
+ black (0), brown, red, orange, yellow, green, blue, violet, grey and white (9). Each character is replaced by the
+ colors of the digits of its ordinal, displayed as colored blocks using ANSI escape sequences (hence for terminals).
+
 This codec:
 - en/decodes strings from str to str
 - en/decodes strings from bytes to bytes
 - decodes file content to str (read)
 - encodes file content from str to bytes (write)
+
+Reference: https://en.wikipedia.org/wiki/Electronic_color_code
 """
 from ..__common__ import *
 

@@ -1,6 +1,11 @@
 # -*- coding: UTF-8 -*-
 """Bacon's Cipher Codec - bacon content encoding.
 
+Bacon's cipher was devised by Francis Bacon in 1605 as a steganographic method: each letter is written as a group of 5
+ symbols among two ("a" and "b"), which can then be hidden e.g. in the choice between two typefaces. This implementation
+ uses the original 24-letter alphabet, in which I and J, as well as U and V, share the same code. The two symbols can be
+ chosen in the codec name (e.g. "bacon-01" or "bacon-ba").
+
 This codec:
 - en/decodes strings from str to str
 - en/decodes strings from bytes to bytes

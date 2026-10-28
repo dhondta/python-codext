@@ -1,6 +1,9 @@
 # -*- coding: UTF-8 -*-
 """XOR Codec - XOR-with-1-byte content encoding.
 
+Each byte is XORed with a single-byte key N (from 1 to 255), a simple obfuscation often found in malware and CTF
+ challenges ; as XOR is its own inverse, decoding is the same as encoding.
+
 This codec:
 - en/decodes strings from str to str
 - en/decodes strings from bytes to bytes

@@ -1,11 +1,17 @@
 # -*- coding: UTF-8 -*-
 """Radio Codec - NATO/Military phonetic alphabet content encoding.
 
+The NATO phonetic alphabet (or ICAO radiotelephony spelling alphabet), adopted in the 1950s, assigns a code word to each
+ letter (Alpha, Bravo, Charlie, ...) so that it can be spelled unambiguously over radio. Each letter is replaced by its
+ code word, the words being separated by spaces and the spaces of the text by "/".
+
 This codec:
 - en/decodes strings from str to str
 - en/decodes strings from bytes to bytes
 - decodes file content to str (read)
 - encodes file content from str to bytes (write)
+
+Reference: https://en.wikipedia.org/wiki/NATO_phonetic_alphabet
 """
 from ..__common__ import *
 

@@ -1,11 +1,18 @@
 # -*- coding: UTF-8 -*-
 """Tap code - Tap/knock code encoding.
 
+The tap code (or knock code), used by prisoners of war (e.g. in Vietnam) to communicate by tapping on walls, writes each
+ letter as its row and column in a 5x5 Polybius square, K being replaced by C. Each coordinate is written as dots (taps)
+ separated by a space, the letters being separated by the blank braille pattern ; the "-inv" variant uses the reversed
+ alphabet.
+
 This codec:
 - en/decodes strings from str to str
 - en/decodes strings from bytes to bytes
 - decodes file content to str (read)
 - encodes file content from str to bytes (write)
+
+Reference: https://en.wikipedia.org/wiki/Tap_code
 """
 from ..__common__ import *
 

@@ -1,10 +1,16 @@
 # -*- coding: UTF-8 -*-
 """Markdown Codec - markdown content conversion to HTML.
 
+Markdown, created by John Gruber and Aaron Swartz in 2004, is a lightweight markup language for writing formatted text
+ in plain text. This codec converts Markdown to HTML (one-way), relying on the markdown2 package (only available when it
+ is installed).
+
 This codec:
 - encodes strings from str to str
 - encodes strings from bytes to bytes
 - encodes file content from str to bytes (write)
+
+Reference: https://daringfireball.net/projects/markdown/
 """
 from ..__common__ import *
 

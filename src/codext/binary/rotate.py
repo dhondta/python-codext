@@ -1,6 +1,10 @@
 # -*- coding: UTF-8 -*-
 """Rotate-Bits Codec - rotate-N-bits content encoding.
 
+Each byte is rotated by N bits (from 1 to 7), that is, its bits are shifted circularly, those leaving on one side coming
+ back on the other side (as the ROR and ROL instructions of processors do). The rotation is to the right by default, or
+ to the left with the "-left" variant ; decoding applies the opposite rotation.
+
 This codec:
 - en/decodes strings from str to str
 - en/decodes strings from bytes to bytes

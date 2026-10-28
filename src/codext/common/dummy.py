@@ -1,7 +1,12 @@
 # -*- coding: UTF-8 -*-
 """Dummy Codecs - simple string manipulations.
 
-These are dummy codecs for manipulating strings, for use with other codecs in encoding/decoding chains.
+These are dummy codecs for manipulating strings, for use with other codecs in encoding/decoding chains:
+
+- replace (a character replaced by another one, e.g. "replace-ab" replaces "a" by "b") and substitute (a token replaced
+   by another one, e.g. "substitute-this/that")
+- reverse (whole text), reverse-lines (each line) and reverse-words (each word)
+- strip-spaces (removes the spaces) and tokenize (splits the text into tokens of N characters separated by spaces)
 
 These codecs:
 - en/decodes strings from str to str

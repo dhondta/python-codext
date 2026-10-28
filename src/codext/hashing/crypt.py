@@ -1,12 +1,18 @@
 # -*- coding: UTF-8 -*-
 """Crypt Hashing Codec - string hashing with Unix's Crypt.
 
-These are codecs for hashing strings, for use with other codecs in encoding chains.
+crypt is the password hashing function of Unix systems, used to store the passwords in /etc/shadow. The method is given
+ in the codec name among those available on the system (e.g. "crypt-sha512", "crypt-md5", Blowfish by default), a random
+ salt being generated each time, hence the output differs between calls. This codec is only available on Unix, relying
+ on the crypt module (or its legacycrypt replacement since Python 3.13), and returns the hash string (one-way), for use
+ with other codecs in encoding chains.
 
 These codecs:
 - transform strings from str to str
 - transform strings from bytes to bytes
 - transform file content from str to bytes (write)
+
+Reference: https://en.wikipedia.org/wiki/Crypt_(C)
 """
 from ..__common__ import add, ensure_str, UNIX
 

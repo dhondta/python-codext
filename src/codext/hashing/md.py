@@ -1,12 +1,19 @@
 # -*- coding: UTF-8 -*-
 """MD Hashing Codecs - string hashing with Message Digest (MD).
 
-These are codecs for hashing strings, for use with other codecs in encoding chains.
+The Message Digest algorithms were designed by Ronald Rivest: MD2 (1989, implemented here as it is not provided by
+ hashlib anymore), MD4 (1990, only when available in hashlib) and MD5 (1991), all producing 128-bit digests ; they are
+ now considered broken for cryptographic use. These codecs return the hexadecimal digest (one-way), for use with other
+ codecs in encoding chains.
 
 These codecs:
 - transform strings from str to str
 - transform strings from bytes to bytes
 - transform file content from str to bytes (write)
+
+Reference: https://datatracker.ietf.org/doc/html/rfc1319
+           https://datatracker.ietf.org/doc/html/rfc1320
+           https://datatracker.ietf.org/doc/html/rfc1321
 """
 from ..__common__ import *
 

@@ -1,11 +1,19 @@
 # -*- coding: UTF-8 -*-
 """UU Codec - UU content encoding, relying on the native uu package.
 
+Uuencoding (Unix-to-Unix encoding) was created by Mary Ann Horton in 1980 for transferring binary files over UUCP and
+ e-mail. Each line encodes up to 45 bytes in groups of 3 bytes written as 4 characters from the printable ASCII range
+ (the value added to 32, "`" standing for 0), and starts with the character holding its number of bytes ; the lines are
+ framed by a "begin" line (with permissions and file name) and an "end" line. This codec relies on binascii's uuencoding
+ functions, and decoding works with or without the framing lines.
+
 This codec:
 - en/decodes strings from str to str
 - en/decodes strings from bytes to bytes
 - decodes file content to str (read)
 - encodes file content from str to bytes (write)
+
+Reference: https://en.wikipedia.org/wiki/Uuencoding
 """
 from binascii import a2b_uu as _dec, b2a_uu as _enc
 

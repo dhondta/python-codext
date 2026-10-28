@@ -1,6 +1,11 @@
 # -*- coding: UTF-8 -*-
 """LZ78 Codec - Lempel-Ziv 1978 compression algorithm.
 
+LZ78, published by Abraham Lempel and Jacob Ziv in 1978, builds a dictionary of the sequences seen so far: the output is
+ made of pairs of a dictionary index (the longest known prefix) and the next character, each pair adding a new entry to
+ the dictionary. In this implementation, the indices are written on as many bytes as needed for the current size of the
+ dictionary.
+
 NB: Not an encoding properly speaking.
 
 This codec:
@@ -10,6 +15,8 @@ This codec:
 - encodes file content from str to bytes (write)
 
 Inspired from: https://github.com/mileswatson/lempel-ziv-compression
+
+Reference: https://en.wikipedia.org/wiki/LZ77_and_LZ78
 """
 from ..__common__ import *
 

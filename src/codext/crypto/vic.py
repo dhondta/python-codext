@@ -1,11 +1,20 @@
 # -*- coding: UTF-8 -*-
 """Vic Cipher Codec - vic content encoding.
 
+The VIC cipher was used by the Soviet spy Reino Hayhanen in the 1950s (named after his codename "VICTOR"). This
+ implementation combines its main steps: a straddling checkerboard substitution (the frequent letters of the top row
+ giving one digit, the other ones two digits, starting with one of the two blank positions of the top row), then an
+ optional over-encryption of the digits by a modulo-10 addition of a numeric key, then an optional conversion of the
+ digits back to text ("T" marker). The checkerboard is filled with a keyword, "*" (alphabetical order) or "^" (reversed
+ order), followed by "./".
+
 This codec:
 - en/decodes strings from str to str
 - en/decodes strings from bytes to bytes
 - decodes file content to str (read)
 - encodes file content from str to bytes (write)
+
+Reference: https://en.wikipedia.org/wiki/VIC_cipher
 """
 from itertools import cycle
 from string import ascii_uppercase as UC

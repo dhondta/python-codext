@@ -1,6 +1,11 @@
 # -*- coding: UTF-8 -*-
 """Atbash Cipher Codec - atbash-based content encoding.
 
+Atbash is an ancient Hebrew monoalphabetic substitution cipher that reverses the alphabet (A becomes Z, B becomes Y, and
+ so on), hence it is its own inverse. The alphabets can be given as a mask: by default "?u?l", each group (uppercase and
+ lowercase letters) being reversed separately, while a mask enclosed in brackets (e.g. "atbash-[?l?u]") is reversed as a
+ whole.
+
 This codec:
 - en/decodes strings from str to str
 - en/decodes strings from bytes to bytes

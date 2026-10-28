@@ -1,11 +1,18 @@
 # -*- coding: UTF-8 -*-
 """Excess-3 Codec - Excess-3 code (aka Stibitz code) content encoding.
 
+The Excess-3 code, invented by George Stibitz in the 1930s for relay computers, is a binary coded decimal code in which
+ each decimal digit d is written with the 4 bits of d + 3 (0011 to 1100) ; it is self-complementing, which made
+ subtraction easier. Each character is encoded from its ordinal, written with 3 decimal digits (zero-left-padded), the
+ resulting nibbles being packed into bytes (the last one being padded with 0000).
+
 This codec:
 - en/decodes strings from str to str
 - en/decodes strings from bytes to bytes
 - decodes file content to str (read)
 - encodes file content from str to bytes (write)
+
+Reference: https://en.wikipedia.org/wiki/Excess-3
 """
 from ..__common__ import *
 

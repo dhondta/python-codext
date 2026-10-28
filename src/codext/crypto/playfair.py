@@ -1,9 +1,15 @@
 # -*- coding: UTF-8 -*-
 """Playfair Cipher Codec - playfair content encoding.
 
-The Playfair cipher is a symmetric encryption method using polygram substitution
-with bigrams (pairs of letters), invented in 1854 by Charles Wheatstone, but
-popularized by his friend Lord Playfair.
+The Playfair cipher is a symmetric encryption method using polygram substitution with bigrams (pairs of letters),
+ invented in 1854 by Charles Wheatstone, but popularized by his friend Lord Playfair. The text is split into pairs of
+ letters (a filling letter being inserted between doubled letters and at the end if needed), and each pair is replaced
+ according to its positions in a square filled with a keyword: letters in the same row are shifted right, letters in the
+ same column are shifted down, and otherwise each letter takes the column of the other one.
+
+The 5x5 square (I and J sharing a cell by default) or the 6x6 square (letters and digits) can be used, with the keyword,
+ "*" (alphabetical order) or "^" (reversed alphabet), the filling letters and the replaced pair being configurable in
+ the codec name.
 
 This codec:
 - en/decodes strings from str to str

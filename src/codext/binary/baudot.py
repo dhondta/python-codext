@@ -1,11 +1,22 @@
 # -*- coding: UTF-8 -*-
-"""Baudot Codec - baudot content conversion to HTML.
+"""Baudot Codec - baudot content encoding.
+
+The Baudot code was invented by Emile Baudot in the 1870s for telegraphy, then reworked by Donald Murray and
+ standardised as the International Telegraph Alphabets (ITA1, then ITA2, used by teleprinters and radioteletype). Each
+ character is written with 5 bits ; as 32 codes are not enough, two special codes switch between the letters and the
+ figures (digits and punctuation) shifts, which are inserted in the output when needed.
+
+Several alphabets are supported (CCITT-1, CCITT-2, the original Baudot code (EU/FR), ITA1, ITA2 and its US and
+ meteorological variants, MTK-2, Murray, UK), as well as the bit order ("-lsb" or "-msb"). The "baudot-spaced" variant
+ separates the groups of 5 bits with spaces, while "baudot-tape" draws them as a punched paper tape.
 
 This codec:
 - en/decodes strings from str to str
 - en/decodes strings from bytes to bytes
 - decodes file content to str (read)
 - encodes file content from str to bytes (write)
+
+Reference: https://en.wikipedia.org/wiki/Baudot_code
 """
 from ..__common__ import *
 
