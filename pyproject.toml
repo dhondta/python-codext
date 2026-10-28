@@ -15,6 +15,7 @@ pythonpath = ["src"]
 source = ["codext"]
 omit = [
   "src/codext/__info__.py",
+  "src/codext/__main__.py",
   "src/codext/**/__init__.py",
 ]
 
@@ -109,5 +110,5 @@ base1024 = "codext.base.base1024:main1024"
 base2048 = "codext.base.base65536:main2048"
 base32768 = "codext.base.base65536:main32768"
 base65536 = "codext.base.base65536:main65536"
-codext = "codext.__init__:main"
+codext = "codext.__main__:main"
 unbase = "codext.base.__init__:main"
