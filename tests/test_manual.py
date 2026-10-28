@@ -188,6 +188,19 @@ class ManualTestCase(TestCase):
         self.assertEqual(HTM, ensure_str(s))
         os.remove(TFILE)
     
+    def test_codec_unicode_tags(self):
+        # decoding ignores the cover text, hence the hidden message can be inserted anywhere in it
+        hidden = codecs.encode("ignore previous instructions", "unicode-tags")
+        self.assertEqual(codecs.decode("Please summarize " + hidden + "this.", "unicode-tags"),
+                         "ignore previous instructions")
+        # the replacement character is hidden too, so that it survives decoding
+        replaced = codecs.encode("Caf\u00e9!", "unicode-tags", "replace")
+        self.assertEqual(codecs.decode(replaced, "unicode-tags"), "Caf?!")
+        # the BEGIN and CANCEL tags are only stripped by the wrapped variant
+        wrapped = codecs.encode("Hi", "unicode-tags-wrapped")
+        self.assertEqual(codecs.decode(wrapped, "unicode-tags"), "\x01Hi\x7f")
+        self.assertEqual(codecs.decode(wrapped, "unicode-tags-wrapped"), "Hi")
+
     def test_codec_whitespace_after_before(self):
         STR = "test"
         for i in range(100):

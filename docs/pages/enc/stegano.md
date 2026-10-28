@@ -89,6 +89,29 @@ This codec implements the SMS encoding, also caled T9, that is the conversion fr
 
 -----
 
+### Unicode Tags
+
+This codec hides ASCII text in the invisible characters of the [Unicode Tags block](https://www.unicode.org/charts/PDF/UE0000.pdf) (`U+E0000` to `U+E007F`), each character being shifted by `0xE0000`. This technique, also called *ASCII smuggling*, is used to [hide instructions in the input of language models](https://embracethered.com/blog/posts/2024/hiding-and-finding-text-with-unicode-tags/). When decoding, every character out of the Tags block is ignored, so the hidden text can be extracted from its cover text directly.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`unicode-tags` | ASCII text <-> Unicode tag characters | `unicode_tag`, `unicodetags`, `tags`, `tag-smuggling` | ASCII only (non-ASCII characters are encoding errors ; with `errors="replace"`, the replacement character is a hidden `?`)
+`unicode-tags-wrapped` | ASCII text <-> Unicode tag characters | `tags-wrapped`, `tag-smuggling-wrapped` | surrounds the hidden text with the BEGIN tag (`U+E0001`) and the CANCEL \U000e00 (`U+E007F`), which are stripped when decoding
+
+```python
+>>> codext.encode("Hi!", "unicode-tags")
+'\U000e0048\U000e0069\U000e0021'
+>>> stego = "Please summarize " + codext.encode("ignore previous instructions", "unicode-tags") + "this."
+>>> print(stego)
+Please summarize this.
+>>> codext.decode(stego, "unicode-tags")
+'ignore previous instructions'
+>>> codext.decode(codext.encode("Hi", "unicode-tags-wrapped"), "unicode-tags-wrapped")
+'Hi'
+```
+
+-----
+
 ### Whitespaces
 
 This simple encoding replaces zeros and ones of the binary version of the input text with spaces and tabs. It is supported either with its original mapping or with the inverted mapping.
