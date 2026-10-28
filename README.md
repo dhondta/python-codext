@@ -288,6 +288,7 @@ CACTCGGTCGGCCATATGTTCGGCCATATGTTCGTCTGTTCACTCGCCCATACACT
 - [X] `base32768`: [Base32768](https://github.com/qntm/base32768) custom conversion (15 bits per character, optimised for UTF-16)
 - [X] `base65536`: [Base65536](https://github.com/qntm/base65536) custom conversion (16 bits per character, optimised for UTF-32)
 - [X] `bech32`: [Bech32](https://github.com/bitcoin/bips/blob/master/bip-0173.mediawiki) encoding with a human-readable part ; `bech32m` for its [Bech32m](https://github.com/bitcoin/bips/blob/master/bip-0350.mediawiki) variant
+- [X] `leb128` (or *varint*): [LEB128](https://en.wikipedia.org/wiki/LEB128) encoding of lists of integers ; `sleb128` for its signed variant
 - [X] `base-genericN`: see [base encodings](https://python-codext.readthedocs.io/en/latest/enc/base.html) ; supports any possible base
 
 This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `base85` codec.

@@ -12,6 +12,7 @@ from .base1024 import *
 from .bech32 import *
 from .base65536 import *
 from .baseN import *
+from .leb128 import *
 from ..__common__ import *
 from ..__info__ import __version__
 

@@ -165,6 +165,8 @@ This encoding implements various different versions of Base85.
 `base100` | text <-> Base100 encoded text | `base[-_]?100|emoji` | Python 3 only
 `base122` | text <-> Base122 encoded text | `base[-_]?122` | Python 3 only
 `base128` | text <-> Base128 encoded text | `base[-_]?128` | Relies on the ASCII charset
+`leb128` | integers <-> LEB128 (varint) bytes | `uleb128`, `varint` | unsigned integers, separated by whitespaces or commas
+`sleb128` | integers <-> signed LEB128 bytes | `leb128-signed` | signed integers (two's complement)
 `base1024` | data <-> Ecoji encoded text | `base[-_]?1024`, `ecoji`, `ecoji-v1`, `ecoji-v2` | 10 bits per emoji ; encodes with Ecoji version 2 by default
 `bech32` | data <-> Bech32 encoded text | `bech32-<hrp>` | human-readable part required for encoding
 `bech32m` | data <-> Bech32m encoded text | `bech32m-<hrp>` | human-readable part required for encoding
@@ -219,4 +221,15 @@ Bech32 ([BIP-173](https://github.com/bitcoin/bips/blob/master/bip-0173.mediawiki
 'Hello, World!'
 >>> codext.encode("Hello, World!", "bech32m-test")
 'test1fpjkcmr09ss9wmmjd3jzzmkehgn'
+```
+
+LEB128 (Little Endian Base 128), also known as varint, writes integers with 7 bits per byte, least significant group first, the most significant bit of each byte being set except for the last one. The signed variant (SLEB128) writes the integers in two's complement, its last byte being sign-extended. When encoding, the text holds the integers in decimal, separated by whitespaces or commas ; when decoding, the integers are separated by a space. Unlike `base128`, which converts the whole input as a single integer with the ASCII charset, these codecs work on lists of integers.
+
+```python
+>>> codext.encode("624485 300", "leb128")
+'å\x8e&¬\x02'
+>>> codext.decode("å\x8e&¬\x02", "varint")
+'624485 300'
+>>> codext.encode("-123456", "sleb128")
+'À»x'
 ```
