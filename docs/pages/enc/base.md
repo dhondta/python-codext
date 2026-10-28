@@ -155,6 +155,9 @@ This encoding implements various different versions of Base85.
 `base100` | text <-> Base100 encoded text | `base[-_]?100|emoji` | Python 3 only
 `base122` | text <-> Base122 encoded text | `base[-_]?122` | Python 3 only
 `base128` | text <-> Base128 encoded text | `base[-_]?128` | Relies on the ASCII charset
+`base2048` | data <-> Base2048 encoded text | `base[-_]?2048` | 11 bits per character, optimised for Twitter
+`base32768` | data <-> Base32768 encoded text | `base[-_]?32768` | 15 bits per character, optimised for UTF-16
+`base65536` | data <-> Base65536 encoded text | `base[-_]?65536` | 16 bits per character, optimised for UTF-32
 
 ```python
 >>> codecs.encode("this is a test", "base100")
@@ -170,3 +173,15 @@ This encoding implements various different versions of Base85.
 'this is a test'
 ```
 
+Base2048, Base32768 and Base65536 were designed by [qntm](https://github.com/qntm/base65536). The data is written with 11, 15 or 16 bits per character, using repertoires of Unicode characters that are safe to transmit (no whitespace, no punctuation, no control or combining characters). The final bits are padded with 1s and may be written with a character of a smaller final repertoire, which can only end the encoded text. When decoding, whitespaces are ignored.
+
+```python
+>>> codext.encode("Hello, World!", "base2048")
+'ԋϠɲණరϢఋԵړƶ'
+>>> codext.encode("Hello, World!", "base32768")
+'䩲腻㐥桥懛瀑溣'
+>>> codext.encode("Hello, World!", "base65536")
+'驈ꍬ慯谠𓁯饬ᔡ'
+>>> codext.decode("驈ꍬ慯谠𓁯饬ᔡ", "base65536")
+'Hello, World!'
+```

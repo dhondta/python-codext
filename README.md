@@ -282,6 +282,9 @@ CACTCGGTCGGCCATATGTTCGGCCATATGTTCGTCTGTTCACTCGCCCATACACT
 - [X] `base91`: [Base91](http://base91.sourceforge.net) custom conversion
 - [X] `base100` (or *emoji*): [Base100](https://github.com/AdamNiederer/base100) custom conversion
 - [X] `base122`: [Base100](http://blog.kevinalbs.com/base122) custom conversion
+- [X] `base2048`: [Base2048](https://github.com/qntm/base2048) custom conversion (11 bits per character, optimised for Twitter)
+- [X] `base32768`: [Base32768](https://github.com/qntm/base32768) custom conversion (15 bits per character, optimised for UTF-16)
+- [X] `base65536`: [Base65536](https://github.com/qntm/base65536) custom conversion (16 bits per character, optimised for UTF-32)
 - [X] `base-genericN`: see [base encodings](https://python-codext.readthedocs.io/en/latest/enc/base.html) ; supports any possible base
 
 This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `base85` codec.
