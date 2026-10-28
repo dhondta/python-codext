@@ -156,6 +156,8 @@ This encoding implements various different versions of Base85.
 `base122` | text <-> Base122 encoded text | `base[-_]?122` | Python 3 only
 `base128` | text <-> Base128 encoded text | `base[-_]?128` | Relies on the ASCII charset
 `base1024` | data <-> Ecoji encoded text | `base[-_]?1024`, `ecoji`, `ecoji-v1`, `ecoji-v2` | 10 bits per emoji ; encodes with Ecoji version 2 by default
+`bech32` | data <-> Bech32 encoded text | `bech32-<hrp>` | human-readable part required for encoding
+`bech32m` | data <-> Bech32m encoded text | `bech32m-<hrp>` | human-readable part required for encoding
 `base2048` | data <-> Base2048 encoded text | `base[-_]?2048` | 11 bits per character, optimised for Twitter
 `base32768` | data <-> Base32768 encoded text | `base[-_]?32768` | 15 bits per character, optimised for UTF-16
 `base65536` | data <-> Base65536 encoded text | `base[-_]?65536` | 16 bits per character, optimised for UTF-32
@@ -196,4 +198,15 @@ Base1024, also known as [Ecoji](https://github.com/keith-turner/ecoji), encodes 
 '🏯🔩🚗🌷🍌☕☕☕'
 >>> codext.decode("🏯🔩🚗🌷🍌☕☕☕", "base1024")
 'Hello!'
+```
+
+Bech32 ([BIP-173](https://github.com/bitcoin/bips/blob/master/bip-0173.mediawiki)) and Bech32m ([BIP-350](https://github.com/bitcoin/bips/blob/master/bip-0350.mediawiki)) write the data with a human-readable part (HRP), the separator "`1`", then the data regrouped by 5 bits in the alphabet "`qpzry9x8gf2tvdw0s3jn54khce6mua7l`", followed by a 6-character checksum computed over the HRP and the data. The HRP is required for encoding. When decoding, it is read from the text and only checked if given with the codec name ; the data is returned without it. The length limit of 90 characters of BIP-173 is not enforced. SegWit addresses, whose first data character is the witness version, are not decoded as such.
+
+```python
+>>> codext.encode("Hello, World!", "bech32-test")
+'test1fpjkcmr09ss9wmmjd3jzzw2fmd3'
+>>> codext.decode("test1fpjkcmr09ss9wmmjd3jzzw2fmd3", "bech32")
+'Hello, World!'
+>>> codext.encode("Hello, World!", "bech32m-test")
+'test1fpjkcmr09ss9wmmjd3jzzmkehgn'
 ```
