@@ -21,6 +21,8 @@ Reference: https://github.com/qntm/base2048
            https://github.com/qntm/base32768
            https://github.com/qntm/base65536
 """
+from functools import lru_cache
+
 from ._base import main
 from ..__common__ import *
 
@@ -86,7 +88,10 @@ def __repertoire(ranges):
     return "".join(chr(c) for r in ranges.split() for a, b in [r.split("-")] for c in range(int(a, 16), int(b, 16) + 1))
 
 
-def __base(n):
+@lru_cache(maxsize=None)
+def __tables(n):
+    """ Build the repertoires and the decoding table of the given base ; this is done lazily, at first use, as it takes
+         some tens of milliseconds that should not be spent when importing codext. """
     nbits = n.bit_length() - 1
     main, final = map(__repertoire, REPERTOIRES[n])
     fbits = len(final).bit_length() - 1
@@ -95,8 +100,14 @@ def __base(n):
         main = "".join(main[(z & 255) << 8 | z >> 8] for z in range(n))
     lookup = {c: (fbits, z) for z, c in enumerate(final)}
     lookup.update({c: (nbits, z) for z, c in enumerate(main)})
+    return main, final, fbits, lookup
+
+
+def __base(n):
+    nbits = n.bit_length() - 1
     
     def encode(text, errors="strict"):
+        main, final, fbits, _ = __tables(n)
         r, z, k = [], 0, 0
         for x in b(text):
             z, k = z << 8 | x, k + 8
@@ -112,6 +123,7 @@ def __base(n):
     
     def decode(text, errors="strict"):
         _h, text = handle_error(f"base{n}", errors, decode=True), ensure_str(text)
+        lookup = __tables(n)[3]
         chars, r, z, k = [], bytearray(), 0, 0
         for i, c in enumerate(text):
             if c in lookup:

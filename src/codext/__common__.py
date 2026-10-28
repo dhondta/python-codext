@@ -11,12 +11,12 @@ import sys
 from encodings.aliases import aliases as ALIASES
 from functools import reduce, update_wrapper, wraps
 from importlib import import_module
+from importlib.util import find_spec
 from inspect import currentframe
 from io import BytesIO
 from itertools import chain, product
 from locale import getlocale
 from math import log
-from pkgutil import iter_modules
 from platform import system
 from random import randint
 from string import *
@@ -41,6 +41,7 @@ CODECS_REGISTRY = None
 CODECS_OVERWRITTEN = []
 CODECS_CATEGORIES = ["native", "custom"]
 CODECS_CACHE = {}
+PRINTABLES = frozenset(printable)
 LANG = getlocale()
 if LANG:
     LANG = (LANG[0] or "")[:2].lower()
@@ -57,6 +58,10 @@ MASKS = {
 }
 
 __codecs_registry = []
+# caches depending on the state of the registry (cleared whenever it changes)
+__guess_lists = {}
+__names_table = []
+__lookup_cache = {}
 
 MACROS = {}
 PERS_MACROS = {}
@@ -178,14 +183,10 @@ def __stdin_pipe():
 
 def _input(infile):
     # handle input file or stdin
-    c = b("")
     if infile:
         with open(infile, 'rb') as f:
-            c = f.read()
-    else:
-        for line in __stdin_pipe():
-            c += line
-    return c
+            return f.read()
+    return b("").join(__stdin_pipe())
 
 
 def _set_exc(name, etype="ValueError"):
@@ -238,15 +239,23 @@ def add(ename, encode=None, decode=None, pattern=None, text=True, add_to_codecs=
     for exc in kwargs.get('extra_exceptions', []):
         _set_exc(exc)  # create additional custom exceptions as builtins
     glob = currentframe().f_back.f_globals
+    # the pattern is compiled once, as it is matched against every encoding name looked up
+    rx = re.compile(pattern) if pattern else None
+    # category of the codec, from the folder of the module adding it
+    cat = glob.get('__file__', os.path.join("custom", "_")).split(os.path.sep)[-2].rstrip("s")
+    category = kwargs.get('category', cat)
+    for c in [cat, category]:
+        if c not in CODECS_CATEGORIES:
+            CODECS_CATEGORIES.append(c)
     # search function for the new encoding
     @_with_repr(ename)
     def getregentry(encoding):
-        if encoding != ename and not (pattern and re.match(pattern, encoding)):
+        if encoding != ename and not (rx and rx.match(encoding)):
             return
         fenc, fdec, name = encode, decode, encoding
         # prepare CodecInfo input arguments
         if pattern:
-            m, args, i = re.match(pattern, encoding), [], 1
+            m, args, i = rx.match(encoding), [], 1
             try:
                 while True:
                     try:
@@ -329,11 +338,7 @@ def add(ename, encode=None, decode=None, pattern=None, text=True, add_to_codecs=
         ci.parameters['add_to_codecs'] = add_to_codecs
         ci.parameters['pattern'] = pattern
         ci.parameters['text'] = text
-        f = glob.get('__file__', os.path.join("custom", "_"))
-        cat = f.split(os.path.sep)[-2].rstrip("s")
-        if cat not in CODECS_CATEGORIES:
-            CODECS_CATEGORIES.append(cat)
-        ci.parameters['category'] = kwargs.get('category', cat)
+        ci.parameters['category'] = category
         ci.parameters['examples'] = kwargs.get('examples', glob.get('__examples__'))
         ci.parameters['guess'] = kwargs.get('guess', glob.get('__guess__', [ename])) or []
         ci.parameters['module'] = kwargs.get('module', glob.get('__name__'))
@@ -349,6 +354,7 @@ def add(ename, encode=None, decode=None, pattern=None, text=True, add_to_codecs=
     if kwargs.get('aliases'):
         getregentry.__aliases__ = list(map(lambda n: re.sub(r"[\s\-]", "_", n), kwargs['aliases']))
     getregentry.__pattern__ = pattern
+    getregentry.__category__ = category
     register(getregentry, add_to_codecs)
     return getregentry
 
@@ -517,14 +523,14 @@ def add_map(ename, encmap, repl_char="?", sep="", ignore_case=None, no_error=Fal
             for x in smapdict.values():
                 getattr(l, ["append", "extend"][isinstance(x, list)])(x)
             rminlen = max(1, min(map(len, set(l) - {''})))
+            # case handling, separator and kind of token do not depend on the text, hence they are determined once
+            icase = ignore_case in ["both", "decode" if decode else "encode"]
+            case = getattr(str, case_d if decode else case_e) if icase else None
+            lsep = "" if decode else sep if len(sep) <= 1 else sep[0]
+            kind = ["character", "token"][tmaxlen > 1]
             
             # generic encoding/decoding function for map encodings
             def code(text, errors="strict"):
-                icase = ignore_case == "both" or \
-                        decode and ignore_case == "decode" or \
-                        not decode and ignore_case == "encode"
-                if icase:
-                    case = case_d if decode else case_e
                 if no_error:
                     errors = "leave"
                 text = ensure_str(text)
@@ -533,9 +539,7 @@ def add_map(ename, encmap, repl_char="?", sep="", ignore_case=None, no_error=Fal
                         text = "".join(f"{bin(ord(c))[2:]:0>8}" for c in text)
                     elif intype == "ord":
                         text = "".join(str(ord(c)).zfill(3) for c in text)
-                r = ""
-                lsep = "" if decode else sep if len(sep) <= 1 else sep[0]
-                kind = ["character", "token"][tmaxlen > 1]
+                r = []
                 error_func = handle_error(ename, errors, lsep, repl_char, rminlen, decode, kind)
                 
                 # get the value from the mapping dictionary, trying the token with its inverted case if relevant
@@ -544,8 +548,7 @@ def add_map(ename, encmap, repl_char="?", sep="", ignore_case=None, no_error=Fal
                         result = smapdict[token]
                     except KeyError:
                         if icase and not case_changed:
-                            token_inv_case = getattr(token, case)()
-                            return __get_value(token_inv_case, position, True)
+                            return __get_value(case(token), position, True)
                         return error_func(token, position)
                     if isinstance(result, list):
                         result = result[0]
@@ -554,7 +557,7 @@ def add_map(ename, encmap, repl_char="?", sep="", ignore_case=None, no_error=Fal
                 # if a separator is defined, rely on it by splitting the input text
                 if decode and len(sep) > 0:
                     for i, c in enumerate(re.split("[" + sep + "]", text)):
-                        r += __get_value(c, i)
+                        r.append(__get_value(c, i))
                 # otherwise, move through the text using a cursor for tokenizing it ; this allows defining more complex
                 #  encodings with variable token lengths
                 else:
@@ -563,8 +566,8 @@ def add_map(ename, encmap, repl_char="?", sep="", ignore_case=None, no_error=Fal
                         token = text[cursor:cursor+1]
                         for l in range(tminlen, tmaxlen + 1):
                             token = text[cursor:cursor+l]
-                            if token in smapdict.keys() or icase and getattr(token, case)() in smapdict.keys():
-                                r += __get_value(token, cursor)
+                            if token in smapdict or icase and case(token) in smapdict:
+                                r.append(__get_value(token, cursor))
                                 cursor += l
                                 break
                         else:
@@ -574,20 +577,21 @@ def add_map(ename, encmap, repl_char="?", sep="", ignore_case=None, no_error=Fal
                             # if the number of bad chars is the minimum token length, consume it and start a new buffer
                             if len(bad) == tminlen or errors == "leave":
                                 posn = cursor - len(bad)
-                                r += error_func(bad, posn)
+                                r.append(error_func(bad, posn))
                                 bad = ""
+                r = "".join(r)
                 if decode:
                     if outype in ["bin", "ord"]:
-                        tmp, r = "", r.replace(lsep, "")
+                        tmp, r = [], r.replace(lsep, "")
                         step = [3, 8][outype == "bin"]
                         for i in range(0, len(r), step):
                             s = r[i:i+step]
                             try:
-                                tmp += chr(int(s, 2) if outype == "bin" else int(s))
+                                tmp.append(chr(int(s, 2) if outype == "bin" else int(s)))
                             except ValueError:
                                 if len(s) > 0:
-                                    tmp += "[" + s + "]"
-                        r = tmp + lsep
+                                    tmp.append("[" + s + "]")
+                        r = "".join(tmp) + lsep
                 return r[:len(r)-len(lsep)], len(b(text))
             return code
         if re.search(r"\([^(?:)]", kwargs.get('pattern', "")) is None:
@@ -623,6 +627,7 @@ def clear():
     """ Clear codext's local registry of search functions. """
     global __codecs_registry, MACROS, PERS_MACROS  # noqa: F824
     __codecs_registry, MACROS, PERS_MACROS = [], {}, {}
+    __registry_changed()
 codecs.clear = clear
 
 
@@ -664,14 +669,13 @@ def is_native(encoding):
 
 def list_categories():
     """ Get a list of all codec categories. """
-    c = CODECS_CATEGORIES
     root = os.path.dirname(__file__)
-    for d in os.listdir(root):
-        if os.path.isdir(os.path.join(root, d)) and not d.startswith("__"):
-            c.append(d.rstrip("s"))
-    # particular category, hardcoded from base/_base.py
-    c += ["base-generic"]
-    return list(set(c))
+    # categories from the folders of the codecs, plus a particular category, hardcoded from base/_base.py
+    for c in [d.rstrip("s") for d in os.listdir(root) if os.path.isdir(os.path.join(root, d)) and
+              not d.startswith("__")] + ["base-generic"]:
+        if c not in CODECS_CATEGORIES:
+            CODECS_CATEGORIES.append(c)
+    return CODECS_CATEGORIES[:]
 list_categories()
 
 
@@ -705,9 +709,11 @@ def list_encodings(*categories):
                 enc.append(ci.name)
     for search_function in CODECS_OVERWRITTEN + __codecs_registry:
         name = search_function.__name__.replace("_", "-")
-        p = search_function.__pattern__
-        ci = search_function(name) if p is None else search_function(generate_string_from_regex(p))
-        c = "other" if ci is None else ci.parameters['category']
+        c = getattr(search_function, "__category__", None)
+        if c is None:
+            p = getattr(search_function, "__pattern__", None)
+            ci = search_function(name) if p is None else search_function(_sample_name(search_function))
+            c = "other" if ci is None else ci.parameters['category']
         if (len(categories) == 0 or c in categories) and c not in exclude:
             enc.append(name)
     for category in categories:
@@ -731,6 +737,7 @@ def remove(name):
             tbr.append(search_function)
     for search_function in tbr:
         __codecs_registry.remove(search_function)
+    __registry_changed()
     try:
         del MACROS[name]
     except KeyError:
@@ -769,6 +776,7 @@ def reset():
     # restore codext's registry
     else:
         __codecs_registry = CODECS_REGISTRY[:]
+    __registry_changed()
     # restore codext's embedded set of macros
     with open(os.path.join(os.path.dirname(__file__), "macros.json")) as f:
         MACROS = json.load(f)
@@ -897,12 +905,15 @@ def decode(obj, encoding='utf-8', errors='strict'):
 codecs.decode = decode
 
 
+_REPEAT = re.compile(r"\[(\d+)\]$")
+
+
 def encode(obj, encoding='utf-8', errors='strict'):
     """ Custom encode function relying on the hooked lookup function. """
-    n, m = 1, re.search(r"\[(\d+)\]$", encoding)
+    n, m = 1, _REPEAT.search(encoding)
     if m:
         n = int(m.group(1))
-        encoding = re.sub(r"\[(\d+)\]$", "", encoding)
+        encoding = encoding[:m.start()]
     ci = lookup(encoding)
     for i in range(n):
         try:
@@ -919,6 +930,26 @@ codecs.encode = encode
 
 def lookup(encoding, macro=True):
     """ Hooked lookup function for searching first for codecs in the local registry of this module. """
+    # the results are cached per encoding name, as searching through the registry is costly ; a macro is only returned
+    #  when allowed, and failures are not cached (a codec or a macro may be added afterwards)
+    try:
+        ci = __lookup_cache[encoding]
+        if macro or not isinstance(ci, CodecMacro):
+            return ci
+    except (KeyError, TypeError):
+        pass
+    ci = __lookup(encoding, macro)
+    try:
+        __lookup_cache[encoding] = ci
+    except TypeError:
+        pass
+    return ci
+codecs.lookup = lookup
+
+
+def __lookup(encoding, macro=True):
+    """ Search for the given encoding, first in the local registry of this module, then with the original lookup
+         function and finally among the macros. """
     # first, try to match the given encoding with codecs' search functions
     for search_function in CODECS_OVERWRITTEN + __codecs_registry:
         codecinfo = search_function(encoding)
@@ -928,7 +959,7 @@ def lookup(encoding, macro=True):
     for search_function in CODECS_OVERWRITTEN + __codecs_registry:
         if search_function.__name__.replace("_", "-") == encoding or \
            encoding in getattr(search_function, "__aliases__", []):
-            codecinfo = search_function(generate_string_from_regex(search_function.__pattern__))
+            codecinfo = search_function(_sample_name(search_function))
             if codecinfo is not None:
                 return codecinfo
     # finally, get a CodecInfo with the original lookup function and refine it with a dictionary of parameters
@@ -945,7 +976,6 @@ def lookup(encoding, macro=True):
         e = LookupError(f"unknown encoding: {encoding}")
         e.__cause__ = e  # stop exception chaining
         raise e
-codecs.lookup = lookup
 
 
 def register(search_function, add_to_codecs=False):
@@ -964,6 +994,7 @@ def register(search_function, add_to_codecs=False):
         except LookupError:
             l = __codecs_registry
         l.append(search_function)
+        __registry_changed()
     if add_to_codecs:
         __orig_register(search_function)
 
@@ -974,37 +1005,69 @@ def __register(search_function):
 codecs.register = __register
 
 
+def __names():
+    """ Get the table of names used for searching encodings, as tuples (names to be matched, resulting name, search
+         function), built once per state of the registry. """
+    if len(__names_table) == 0:
+        for search_function in CODECS_OVERWRITTEN + __codecs_registry:
+            n = search_function.__name__
+            __names_table.append(((n, n.replace("_", "-")), n.replace("_", "-"), search_function))
+        for alias, name in ALIASES.items():
+            __names_table.append(((alias, name), name, None))
+    return __names_table
+
+
+def __registry_changed():
+    """ Clear the caches depending on the state of the registry. """
+    __guess_lists.clear()
+    __lookup_cache.clear()
+    __names_table.clear()
+
+
+def _sample_name(search_function):
+    """ Get the encoding name generated from the pattern of the given search function (used when looking up a codec by
+         its name) ; it is cached on the search function, as generating strings from a regex is costly. """
+    try:
+        return search_function.__sample__
+    except AttributeError:
+        search_function.__sample__ = s = generate_string_from_regex(getattr(search_function, "__pattern__", None))
+        return s
+
+
+def _sample_rounds(search_function):
+    """ Get 5 sets of encoding names generated from the pattern of the given search function, for the extended search ;
+         they are cached on the search function, as generating strings from a regex is costly. """
+    try:
+        return search_function.__samples__
+    except AttributeError:
+        p = getattr(search_function, "__pattern__", None)
+        search_function.__samples__ = r = [list(generate_strings_from_regex(p)) for _ in range(5)]
+        return r
+
+
 def search(encoding_regex, extended=True):
     """ Function similar to lookup but allows to search for an encoding based on a regex instead. It searches this way
          into the local registry but also tries a simple lookup with the original lookup function. """
-    matches = []
-    for search_function in CODECS_OVERWRITTEN + __codecs_registry:
-        n = search_function.__name__
-        for name in [n, n.replace("_", "-")]:
-            if re.search(encoding_regex, name):
-                matches.append(n.replace("_", "-"))
-                continue
-        if extended:
+    matches, rx = [], re.compile(encoding_regex)
+    for names, name, search_function in __names():
+        if any(rx.search(n) for n in names):
+            matches.append(name)
+        if extended and search_function is not None:
             # in some cases, encoding_regex can match a generated string that uses a particular portion of its
             #  generating pattern ; e.g. we expect encoding_regex="uu_" to find "uu" and "uu_codec" while it can also
             #  find "morse" or "atbash" very rarely because of their dynamic patterns and the limited number of randomly
             #  generated strings
             # so, we can use a qualified majority voting to ensure we do not get a "junk" encoding in the list of
-            #  matches ; executing 5 times the string generation for a given codec but adding the codec to the list of
+            #  matches ; using 5 sets of generated strings for a given codec but adding the codec to the list of
             #  matches only if we get at least 3 matches ensures that we consider up to 2 failures that could be
             #  stochastic, therefore drastically decreasing the probability to get a "junk" encoding in the matches list
             c = 0
-            for i in range(5):
-                for s in generate_strings_from_regex(search_function.__pattern__):
-                    if re.search(encoding_regex, s):
-                        c += 1
+            for strings in _sample_rounds(search_function):
+                if any(rx.search(s) for s in strings):
+                    c += 1
+                    if c >= 3:
+                        matches.append(search_function.__name__)
                         break
-                if c >= 3:
-                    matches.append(n)
-                    break
-    for s, n in ALIASES.items():
-        if re.search(encoding_regex, s) or re.search(encoding_regex, n):
-            matches.append(n)
     return sorted(list(set(matches)), key=_human_keys)
 codecs.search = search
 
@@ -1136,7 +1199,14 @@ def generate_strings_from_regex(regex, star_plus_max=STAR_PLUS_MAX, repeat_max=R
 
 
 # guess feature objects
-__module_exists = lambda n: n in [x[1] for x in iter_modules()]
+def __module_exists(name):
+    """ Check if a top-level module is installed, without importing it. """
+    try:
+        return find_spec(name) is not None
+    except (ImportError, ValueError):
+        return False
+
+
 stopfunc = ModuleType("stopfunc", """
     Predefined stop functions
     ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1149,7 +1219,7 @@ stopfunc = ModuleType("stopfunc", """
     - `regex`:      takes one argument, the regular expression, for checking a string against the given pattern
     - `text`:       checks for printables and an entropy less than 4.6 (empirically determined)
 """)
-stopfunc.printables = lambda s: all(c in printable for c in ensure_str(s))
+stopfunc.printables = lambda s: PRINTABLES.issuperset(ensure_str(s))
 stopfunc.printables.__name__ = stopfunc.printables.__qualname__ = "printables"
 stopfunc.regex = lambda p: lambda s: re.search(p, ensure_str(s)) is not None
 stopfunc.regex.__name__ = stopfunc.regex.__qualname__ = "regex"
@@ -1270,6 +1340,20 @@ def __guess(prev_input, input, stop_func, depth, max_depth, min_depth, encodings
                 stop, show, scoring_heuristic, extended, debug)
 
 
+def __guess_list(encoding):
+    """ Get the list of encoding names to be tried when guessing for the given encoding, cached per state of the
+         registry. """
+    try:
+        return __guess_lists[encoding]
+    except KeyError:
+        try:
+            l = lookup(encoding, False).parameters['guess']
+        except Exception:
+            l = []
+        __guess_lists[encoding] = l
+        return l
+
+
 def __make_encodings_dict(include, exclude):
     """ Process encodings inclusion and exclusion lists, listing categories and developping codecs' lists of possible
          encoding names. It also creates a cache with the CodecInfo objects for improving performance. """
@@ -1281,11 +1365,7 @@ def __make_encodings_dict(include, exclude):
             for enc in ((list_encodings(*cc) if (len(cc) > 0 or keep) and len(sc) == 0 else []) + sc):
                 g = []
                 for e in (search(enc, False) or [enc]):
-                    try:
-                        ci = lookup(e, False)
-                        g.extend(ci.parameters['guess'])
-                    except:
-                        pass
+                    g.extend(__guess_list(e))
                 if enc in g:  # e.g. "rot-1" => ["rot-1", "rot-2", ...] ; only "rot-1" is to be selected
                     l.append(enc)
                 else:         # e.g. "rot"   => ["rot-1", "rot-2", ...] ; all the "rot-N" shall be selected
@@ -1298,7 +1378,8 @@ def __make_encodings_dict(include, exclude):
 
 def __rank(prev_input, input, prev_encoding, encodings, heuristic=False, extended=False, yield_score=False):
     """ Filter valid encodings and rank them by relevance. """
-    ranking = {}
+    # characteristics of the input text, computed once per padding character (see __score)
+    ranking, texts = {}, {}
     for e in encodings:
         try:
             codec = CODECS_CACHE[e]
@@ -1307,7 +1388,7 @@ def __rank(prev_input, input, prev_encoding, encodings, heuristic=False, extende
                 CODECS_CACHE[e] = codec = lookup(e, False)
             except LookupError:
                 continue
-        t = __score(prev_input, input, prev_encoding, e, codec, heuristic, extended)
+        t = __score(prev_input, input, prev_encoding, e, codec, heuristic, extended, texts)
         if t:
             ranking[e] = t
     for encoding, result in sorted(ranking.items(), key=lambda x: (-x[1][0], x[0])):
@@ -1326,13 +1407,12 @@ class _Text(object):
             text = text.rstrip(b(pad_char) if isinstance(text, bytes) else pad_char)
         self.len = len(self.text)
         self.lcharset = len(set(self.text))
-        self.printables = float(len([c for c in self.text if c in printable])) / self.len
+        self.printables = float(sum(map(PRINTABLES.__contains__, self.text))) / self.len
         self.entropy = entropy(self.text)
 
 
-def __score(prev_input, input, prev_encoding, encoding, codec, heuristic=False, extended=False):
+def __score(prev_input, input, prev_encoding, encoding, codec, heuristic=False, extended=False, texts=None):
     """ Score relevant encodings given an input. """
-    obj = None
     sc = codec.parameters.get('scoring', {})
     no_error, transitive = codec.parameters.get('no_error', False), sc.get('transitive', False)
     # ignore encodings that fail to decode with their default errors handling value
@@ -1349,10 +1429,12 @@ def __score(prev_input, input, prev_encoding, encoding, codec, heuristic=False, 
         ci_prev = lookup(prev_encoding, False)
         if ci_prev.parameters['name'] == codec.parameters['name']:
             return
-    # compute input's characteristics only once and only if the control flow reaches this point
-    pad = sc.get('padding_char')
-    if obj is None:
-        obj = _Text(input, pad)
+    # compute input's characteristics only once per padding character and only if the control flow reaches this point
+    pad, texts = sc.get('padding_char'), {} if texts is None else texts
+    try:
+        obj = texts[pad]
+    except KeyError:
+        obj = texts[pad] = _Text(input, pad)
     if heuristic:
         # from here, the goal (e.g. if the input is Base32) is to rank candidate encodings (e.g. multiple base
         #  codecs) so that we can put the right one as early as possible and eventually exclude bad candidates
@@ -1488,7 +1570,7 @@ def guess(input, stop_func=stopfunc.default, min_depth=0, max_depth=5, include=N
                 break
     except KeyboardInterrupt:
         pass
-    CODECS_CACHE = {}
+    CODECS_CACHE.clear()
     return result
 codecs.guess = guess
 
@@ -1505,6 +1587,7 @@ def rank(input, extended=False, limit=-1, include=None, exclude=None):
     encodings = __make_encodings_dict(include if isinstance(include, dict) else {-1: include or CODECS_CATEGORIES},
                                       exclude if isinstance(exclude, dict) else {-1: exclude or []})
     r = list(__rank(None, input, "", encodings[-1], True, extended, True))
+    CODECS_CACHE.clear()
     return r[:limit] if len(r) > 1 else r
 codecs.rank = rank
 
