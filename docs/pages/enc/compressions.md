@@ -73,3 +73,36 @@ This implements multiple compression types available in the native [`zipfile`](h
 'a test string'
 ```
 
+-----
+
+### Run-Length Encoding
+
+This replaces each run of identical consecutive characters by its length followed by the character. The default variant writes the length in decimal ; it cannot encode digits, as they would be confused with the lengths. The `compact` variant omits a length of 1, the `suffix` variant writes the length after the character (both can be combined as `rle-compact-suffix`), while the `bytes` variant writes the length as a single character (code point 1 to 255) and can encode any input. The `escape` variant keeps single characters as they are and writes a run as the character twice followed by the number of extra repeats as a single character (code point 0 to 255) ; it can encode any input and does not expand text without repeats.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`rle` | text <-> RLE-compressed text | `run-length`, `runlength`, `run_length_encoding` | digits cannot be encoded ; decoding accepts lengths of 1 being omitted
+`rle-compact` | text <-> RLE-compressed text | `run-length-compact` | lengths of 1 are omitted
+`rle-suffix` | text <-> RLE-compressed text | `run-length-suffix` | lengths after the characters (e.g. `A3B2`)
+`rle-compact-suffix` | text <-> RLE-compressed text | `run-length-compact-suffix` | lengths after the characters, lengths of 1 being omitted
+`rle-bytes` | data <-> RLE-compressed data | `run-length-bytes` | each run as a (length, character) pair, longer runs being split
+`rle-escape` | data <-> RLE-compressed data | `run-length-escape` | runs as a repeated character and a count of extra repeats, longer runs being split
+
+```python
+>>> codext.encode("WWWWWWWWWWWWBWWWWWWWWWWWWBBB", "rle")
+'12W1B12W3B'
+>>> codext.encode("WWWWWWWWWWWWBWWWWWWWWWWWWBBB", "rle-compact")
+'12WB12W3B'
+>>> codext.decode("12WB12W3B", "run-length")
+'WWWWWWWWWWWWBWWWWWWWWWWWWBBB'
+>>> codext.encode("WWWWWWWWWWWWBWWWWWWWWWWWWBBB", "rle-suffix")
+'W12B1W12B3'
+>>> codext.encode("WWWWWWWWWWWWBWWWWWWWWWWWWBBB", "rle-compact-suffix")
+'W12BW12B3'
+>>> codext.encode("AAAB", "rle-bytes")
+'\x03A\x01B'
+>>> codext.encode("AAAAAB", "rle-escape")
+'AA\x03B'
+>>> codext.decode("AA\x03B", "rle-escape")
+'AAAAAB'
+```

@@ -324,6 +324,7 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 - [X] `pkzip_deflate`: standard Zip-deflate compression/decompression
 - [X] `pkzip_bzip2`: standard BZip2 compression/decompression
 - [X] `pkzip_lzma`: standard LZMA compression/decompression
+- [X] `rle`: compresses runs of identical characters with Run-Length Encoding (count before or after each character, compact, bytes or repeated-byte escape variants)
 
 > :warning: Compression functions are of course definitely **NOT** encoding functions ; they are implemented for leveraging the `.encode(...)` API from `codecs`.
 

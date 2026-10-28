@@ -3,6 +3,7 @@ from .gzipp import *
 from .lz77 import *
 from .lz78 import *
 from .pkzip import *
+from .rle import *
 
 
 for e in list_encodings("compression"):
