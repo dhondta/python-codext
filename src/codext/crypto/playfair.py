@@ -19,8 +19,7 @@ This codec:
 
 Reference: https://www.dcode.fr/playfair-cipher
 """
-from string import ascii_uppercase as UC, digits as DG
-
+from ._square import *
 from ..__common__ import *
 
 
@@ -42,47 +41,29 @@ __examples__ = {
 }
 __guess__ = ["playfair"]
 
-_DEFAULT_ALPHABET = {
-    5: UC.replace("J", ""),
-    6: UC + DG,
-}
 
-
-def __build_grid(key=None, grid_size=5, replace_char=('J', 'I')):
-    """Build the Playfair grid from an optional keyword. """
-    seen, grid = set(), []
-    for c in key.upper():
-        if grid_size == 5 and c == replace_char[0]:
-            c = replace_char[1]
-        if c.isalpha() and c not in seen:
-            seen.add(c)
-            grid.append(c)
-    for c in _DEFAULT_ALPHABET[grid_size]:
-        if c not in seen:
-            seen.add(c)
-            grid.append(c)
-    return grid, {grid[i]: (i // grid_size, i % grid_size) for i in range(grid_size ** 2)}
+def __build_grid(key, alphabet, grid_size, replace_char):
+    """Build the Playfair grid from a keyword. """
+    grid = keyed_square(key, alphabet, replace_char)
+    return grid, {c: divmod(i, grid_size) for i, c in enumerate(grid)}
 
 
 def __set_params(key, grid_size, fill_chars, replace_char):
     if len(fc := str(fill_chars or "XQ").upper()) == 2 and fc[0] == fc[1]:
         raise LookupError("Bad parameter for encoding 'playfair': filling char must be a single letter or a pair of "
                           "distinct letters")
-    if len(rc := str(replace_char or "JI").upper()) == 2 and rc[0] == rc[1]:
-        raise LookupError("Bad parameter for encoding 'playfair': replaced char must be a pair of distinct letters")
-    gs = int(grid_size or 5)
-    a = _DEFAULT_ALPHABET[gs]
+    gs, rc, a = square_params("playfair", grid_size, replace_char)
     if len(fc) == 1:
         fc += a[(a.index(fc[0])+1) % len(a)]
-    return (a if key == "*" else a[::-1] if key == "^" else key).upper(), gs, tuple(fc), tuple(rc)
+    return (a if key == "*" else a[::-1] if key == "^" else key).upper(), a, gs, tuple(fc), rc
 
 
 def playfair_encode(key=None, grid_size=None, fill_chars=None, replace_char=None):
-    key, gsize, fchars, rchar = __set_params(key, grid_size, fill_chars, replace_char)
-    grid, pos = __build_grid(key, gsize, rchar)
+    key, alphabet, gsize, fchars, rchar = __set_params(key, grid_size, fill_chars, replace_char)
+    grid, pos = __build_grid(key, alphabet, gsize, rchar)
     def encode(text, errors="strict"):
         _filler = lambda c: fchars[1] if c == fchars[0] else fchars[0]
-        chars = [rchar[1] if gsize == 5 and c == rchar[0] else c for c in ensure_str(text).upper().replace(" ", "")]
+        chars = [rchar[1] if rchar and c == rchar[0] else c for c in ensure_str(text).upper().replace(" ", "")]
         result, i, _h = [], 0, handle_error("playfair", errors)
         while i < len(chars):
             a = chars[i]
@@ -113,10 +94,10 @@ def playfair_encode(key=None, grid_size=None, fill_chars=None, replace_char=None
 
 
 def playfair_decode(key=None, grid_size=None, fill_chars=None, replace_char=None):
-    key, gsize, _, rchar = __set_params(key, grid_size, fill_chars, replace_char)
-    grid, pos = __build_grid(key, gsize, rchar)
+    key, alphabet, gsize, _, rchar = __set_params(key, grid_size, fill_chars, replace_char)
+    grid, pos = __build_grid(key, alphabet, gsize, rchar)
     def decode(text, errors="strict"):
-        chars = [rchar[1] if gsize == 5 and c == rchar[0] else c for c in ensure_str(text)]
+        chars = [rchar[1] if rchar and c == rchar[0] else c for c in ensure_str(text)]
         result, i, _h = [], 0, handle_error("playfair", errors, decode=True)
         while i < len(chars):
             try:

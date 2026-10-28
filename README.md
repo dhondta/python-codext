@@ -353,6 +353,7 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 - [X] `chaocipher`: aka Chaocipher (two alphabets permuted after each letter)
 - [X] `citrix`: aka Citrix CTX1 password encoding
 - [X] `columnar`: aka Columnar Transposition Cipher (keyword-ordered columns ; a second keyword gives the double transposition)
+- [X] `foursquare`: aka Four-square Cipher (bigrams substituted with two keyed squares and two plain ones)
 - [X] `gronsfeld`: aka Gronsfeld Cipher (variant of Vigenere Cipher with a numeric key)
 - [X] `hill`: aka Hill Cipher (blocks of letters multiplied by a key matrix modulo 26)
 - [X] `nihilist`: aka Nihilist Cipher (sums of the Polybius coordinates of the text and of a repeated key)
@@ -366,6 +367,7 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 - [X] `shiftN`: shift ordinals (*N* belongs to [1,255])
 - [X] `skip`: aka Skip Cipher (transposition reading every N-th character, looping on the text)
 - [X] `trithemius`: aka Trithemius Cipher (variant of Vigenere Cipher)
+- [X] `twosquare`: aka Two-square Cipher or Double Playfair (bigrams substituted with two keyed squares, vertically or horizontally)
 - [X] `vic`: aka VIC Cipher
 - [X] `vigenere`: aka Vigenere Cipher
 - [X] `xorN`: XOR with a single byte (*N* belongs to [1,255])

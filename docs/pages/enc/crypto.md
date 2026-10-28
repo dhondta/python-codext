@@ -275,6 +275,27 @@ The text is written in rows under a keyword, then read column by column, in the 
 
 -----
 
+### Four-square Cipher
+
+The Four-square cipher, invented by Felix Delastelle, substitutes pairs of letters using four squares arranged in a 2x2 matrix: the upper-left and lower-right ones hold the alphabet in order, while the upper-right and lower-left ones are filled with two keywords. The first letter of each pair is located in the upper-left square and the second one in the lower-right square ; they are replaced by the letters at the other corners of the rectangle they form (in the upper-right square, then in the lower-left one).
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`foursquare` | text <-> Four-square ciphertext | `four-square-example-keyword`, `foursquare_cipher-key1-key2`, `foursquare-example-keyword-5-qk`, `foursquare-secret-key-6` | Two keywords required ; 5x5 squares by default, with `J` normalized to `I` (`5-XY` replaces *X* by *Y* instead) ; 6x6 squares (letters and digits) with `6` ; whitespace removed, uppercase output, padded with `X` to an even number of letters
+
+```python
+>>> codext.encode("help me obi wan kenobi", "foursquare-example-keyword")
+'FYNFNEHWBXAFFOKHMD'
+>>> codext.decode("FYNFNEHWBXAFFOKHMD", "foursquare-example-keyword")
+'HELPMEOBIWANKENOBI'
+>>> codext.encode("help me obi wan kenobi", "foursquare-example-keyword-5-qk")
+'FYGMKYHOBXMFKKKIMD'
+>>> codext.encode("Hide the gold 2026", "foursquare-secret-key-6")
+'FFTAQFSIOGT1209T'
+```
+
+-----
+
 ### Gronsfeld Cipher
 
 This is a variant of the [Vigenere Cipher](#vigenere-cipher) whose key is made of digits, each digit giving the shift of a letter (0 to 9). There is no default key, meaning that `gronsfeld` as the encoding scheme throws a `LookupError` indicating that the _key must be a non-empty numeric string_.
@@ -493,6 +514,27 @@ This is a variant of the [Vigenere Cipher](#vigenere-cipher) with key `"ABCDEFGH
 'Tikv mx g ambd !'
 >>> codext.decode("Tikv mx g ambd !", "trithemius")
 'This is a test !'
+```
+
+-----
+
+### Two-square Cipher
+
+The Two-square cipher (or Double Playfair), invented by Charles Wheatstone, substitutes pairs of letters using two squares filled with two keywords, placed one above the other (vertical, by default) or side by side (horizontal). The first letter of each pair is located in the first square and the second one in the second square ; they are replaced by the letters at the other corners of the rectangle they form. In the vertical variant, the output starts with the letter of the upper square and a pair whose letters share a column is left unchanged ; in the horizontal one, the output starts with the letter of the right square and a pair whose letters share a row is reversed.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`twosquare` | text <-> Two-square ciphertext | `two-square-example-keyword`, `double-playfair-key1-key2`, `twosquare-key-word-h`, `twosquare-key-word-horizontal-5-qk`, `twosquare-secret-key-v-6` | Two keywords required ; vertical (`v`, by default) or horizontal (`h`) ; 5x5 squares by default, with `J` normalized to `I` (`5-XY` replaces *X* by *Y* instead) ; 6x6 squares (letters and digits) with `6` ; whitespace removed, uppercase output, padded with `X` to an even number of letters
+
+```python
+>>> codext.encode("help me obi wan kenobi", "twosquare-example-keyword")
+'HECMXWSRKYXPHWNODG'
+>>> codext.encode("help me obi wan kenobi", "twosquare-example-keyword-5-qk")
+'HEDLXWSDJYANHOTKDG'
+>>> codext.encode("DCODEZ", "twosquare-key-word-h")
+'CDLBAV'
+>>> codext.decode("CDLBAV", "twosquare-key-word-h")
+'DCODEZ'
 ```
 
 -----

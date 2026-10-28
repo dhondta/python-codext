@@ -9,6 +9,7 @@ from .bifid import *
 from .chaocipher import *
 from .citrix import *
 from .columnar import *
+from .foursquare import *
 from .hill import *
 from .nihilist import *
 from .playfair import *
@@ -19,6 +20,7 @@ from .rot import *
 from .scytale import *
 from .shift import *
 from .skip import *
+from .twosquare import *
 from .vic import *
 from .vigenere import *
 from .xor import *

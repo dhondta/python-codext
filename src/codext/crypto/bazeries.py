@@ -15,8 +15,7 @@ This codec:
 
 Reference: https://www.dcode.fr/bazeries-cipher
 """
-from string import ascii_uppercase as UC, digits as DG
-
+from ._square import *
 from ..__common__ import *
 
 
@@ -58,19 +57,12 @@ def __n2w(n):
             return __n2w(n // s) + " " + w + ("" if (r := n % s) == 0 else " " + __n2w(r))
 
 
-def __build_grids(number, key, grid_size, replace_char):
+def __build_grids(number, key, alphabet, grid_size, replace_char):
     """ Build the substitution maps between the first grid (alphabet in columns) and the second grid (keyword or number
          in words, then the remaining letters, in rows). """
-    alphabet = UC.replace(replace_char[0], "") if grid_size == 5 else UC + DG
     # the first grid is filled in columns, hence position i in rows holds the letter at index (i % n) * n + i // n
     g1 = [alphabet[(i % grid_size) * grid_size + i // grid_size] for i in range(grid_size ** 2)]
-    seen, g2 = set(), []
-    for c in (key or __n2w(number)).upper() + alphabet:
-        if grid_size == 5 and c == replace_char[0]:
-            c = replace_char[1]
-        if c in alphabet and c not in seen:
-            seen.add(c)
-            g2.append(c)
+    g2 = keyed_square(key or __n2w(number), alphabet, replace_char)
     return dict(zip(g1, g2)), dict(zip(g2, g1))
 
 
@@ -82,12 +74,8 @@ def __set_params(numkey, key, grid_size, replace_char):
     sizes = [s for s in map(int, numkey.split(",") if "," in numkey else numkey) if s > 0]
     if len(sizes) == 0:
         raise LookupError("Bad parameter for encoding 'bazeries': numeric key must hold at least one non-null group size")
-    gs = int(grid_size or 5)
-    if gs == 6 and replace_char:
-        raise LookupError("Bad parameter for encoding 'bazeries': replaced char only applies to a 5x5 grid")
-    if len(rc := str(replace_char or "JI").upper()) != 2 or rc[0] == rc[1]:
-        raise LookupError("Bad parameter for encoding 'bazeries': replaced char must be a pair of distinct letters")
-    return sizes, __build_grids(int(numkey.replace(",", "")), key, gs, rc), gs, rc
+    gs, rc, alphabet = square_params("bazeries", grid_size, replace_char)
+    return sizes, __build_grids(int(numkey.replace(",", "")), key, alphabet, gs, rc), gs, rc
 
 
 def __bazeries(decode=False):
@@ -107,7 +95,8 @@ def __bazeries(decode=False):
             # only letters of the grid are transposed and substituted ; other characters and the case are kept in place
             slots, letters = [], []
             for i, c in enumerate(text):
-                if (u := c.upper()) == rchar[0] and gsize == 5:
+                u = c.upper()
+                if rchar and u == rchar[0]:
                     u = rchar[1]
                 if u in smap:
                     slots.append(i)
