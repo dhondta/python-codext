@@ -377,8 +377,9 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 - [X] `blake`: includes BLAKE2b and BLAKE2s (Python 3 only ; relies on `hashlib`)
 - [X] `crypt`: Unix's crypt hash for passwords (Python 3 and Unix only ; relies on `crypt`)
 - [X] `fnv`: aka Fowler-Noll-Vo ; includes FNV-1 and FNV-1a in 32, 64, 128, 256, 512 and 1024 bits
-- [X] `md`: aka Message Digest ; includes MD4 and MD5 (relies on `hashlib`)
-- [X] `sha`: aka Secure Hash Algorithms ; includes SHA1, 224, 256, 384, 512 (Python2/3) but also SHA3-224, -256, -384 and -512 (Python 3 only ; relies on `hashlib`)
+- [X] `keccak`: original Keccak (pre-SHA-3 padding, as used e.g. by Ethereum) in 224, 256, 384 and 512 bits
+- [X] `md`: aka Message Digest ; includes MD2, MD4 and MD5 (relies on `hashlib`), and MD6 (digest sizes multiple of 8, up to 512 bits)
+- [X] `sha`: aka Secure Hash Algorithms ; includes SHA0, SHA1, 224, 256, 384, 512 (Python2/3) but also SHA3-224, -256, -384 and -512 (Python 3 only ; relies on `hashlib`)
 - [X] `shake`: aka SHAKE hashing (Python 3 only ; relies on `hashlib`)
 
 > :warning: Hash functions are of course definitely **NOT** encoding functions ; they are implemented for convenience with the `.encode(...)` API from `codecs` and useful for chaning codecs.

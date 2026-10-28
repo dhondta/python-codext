@@ -3,8 +3,11 @@
 
 The Message Digest algorithms were designed by Ronald Rivest: MD2 (1989, implemented here as it is not provided by
  hashlib anymore), MD4 (1990, only when available in hashlib) and MD5 (1991), all producing 128-bit digests ; they are
- now considered broken for cryptographic use. These codecs return the hexadecimal digest (one-way), for use with other
- codecs in encoding chains.
+ now considered broken for cryptographic use. MD6 (2008, submitted to the SHA-3 competition) is unrelated to them: it
+ compresses blocks of 512 bytes into chaining values of 128 bytes along a 4-ary tree, which the last compression
+ truncates to the digest size (from 8 to 512 bits, given with the codec name, e.g. "md6-512" ; it defaults to 256). It
+ is implemented here in its default mode, unkeyed and with a tree height of 64. These codecs return the hexadecimal
+ digest (one-way), for use with other codecs in encoding chains.
 
 These codecs:
 - transform strings from str to str
@@ -14,7 +17,10 @@ These codecs:
 Reference: https://datatracker.ietf.org/doc/html/rfc1319
            https://datatracker.ietf.org/doc/html/rfc1320
            https://datatracker.ietf.org/doc/html/rfc1321
+           https://people.csail.mit.edu/rivest/pubs/RABCx08.pdf
 """
+from math import isqrt
+
 from ..__common__ import *
 
 
@@ -59,8 +65,59 @@ def md2(data):
     return "".join("{:02x}".format(x) for x in digest[:16])
 
 
+# MD6 constants (see the specification, section 9): Q (15 words of the fractional part of sqrt(6)), the tap positions,
+#  the shift amounts and the round constants (initial value and mask)
+M64 = (1 << 64) - 1
+MD6_Q = [isqrt(6 << 1920) >> (64 * (14 - i)) & M64 for i in range(15)]
+MD6_T = (17, 18, 21, 31, 67, 89)
+MD6_R = (10, 5, 13, 10, 11, 12, 2, 7, 14, 15, 7, 13, 11, 7, 6, 12)
+MD6_L = (11, 24, 9, 16, 15, 9, 27, 15, 6, 2, 29, 8, 15, 5, 31, 9)
+MD6_S0, MD6_SM = 0x0123456789abcdef, 0x7311c2812425cfa0
+
+
+def __md6_compress(n, rounds):
+    a, s, (t0, t1, t2, t3, t4, t5) = n[:], MD6_S0, MD6_T
+    for i in range(89, 89 + 16 * rounds):
+        j = (i - 89) % 16
+        if j == 0 and i > 89:
+            s = (s << 1 | s >> 63) & M64 ^ s & MD6_SM
+        x = s ^ a[i-t5] ^ a[i-t0] ^ (a[i-t1] & a[i-t2]) ^ (a[i-t3] & a[i-t4])
+        x ^= x >> MD6_R[j]
+        a.append((x ^ x << MD6_L[j]) & M64)
+    return a[-16:]
+
+
+def md6(n=""):
+    # a bad digest size is only reported when coding, as the lookup of the bare codec name must succeed (e.g. when
+    #  listing the encodings)
+    n = n or 256
+    def _hash(data, errors="strict"):
+        if n not in range(8, 513, 8):
+            raise LookupError("Bad parameter for encoding 'md6': digest size must be a multiple of 8 from 8 to 512")
+        # default mode (see the specification, section 2.4): no key, tree of height L=64 and r=40+d/4 rounds ; with
+        #  L=64, the sequential mode at level L+1 is never reached
+        m, rounds, lvl, key = b(data), 40 + n // 4, 0, [0] * 8
+        while True:
+            lvl += 1
+            nb, out = max(1, -(-len(m) // 512)), b""
+            for i in range(nb):
+                blk = m[512*i:512*(i+1)]
+                # control word: rounds, L, final compression flag (z), padding bits (p), key length and digest size
+                p = 8 * (512 - len(blk))
+                v = rounds << 48 | 64 << 40 | (nb == 1) << 36 | p << 20 | n
+                blk += b"\x00" * (p // 8)
+                w = [int.from_bytes(blk[k:k+8], "big") for k in range(0, 512, 8)]
+                out += b"".join(x.to_bytes(8, "big") for x in __md6_compress(MD6_Q + key + [lvl << 56 | i, v] + w,
+                                                                               rounds))
+            m = out
+            if nb == 1:
+                return m[-n // 8:].hex(), len(data)
+    return _hash
+
+
 add("md2", lambda s, error="strict": (md2(s), len(s)), guess=None)
 add("md5", lambda s, error="strict": (hashlib.new("md5", b(s)).hexdigest(), len(s)), guess=None)
 if "md4" in hashlib.algorithms_available:
     add("md4", lambda s, error="strict": (hashlib.new("md4", b(s)).hexdigest(), len(s)), guess=None)
 
+add("md6", md6, pattern=r"^md6(?:[-_]?(\d+))?$", guess=None)

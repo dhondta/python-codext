@@ -4,7 +4,7 @@
 
 ### BLAKE
 
-These one-way transformation functions all rely on the native [`hashlib`](https://docs.python.org/3/library/hashlib.html) library.
+These one-way transformation functions rely on the native [`hashlib`](https://docs.python.org/3/library/hashlib.html) library, except SHA-0 (withdrawn shortly after its publication and replaced by SHA-1), which is implemented in pure Python.
 
 **Codec** | **Conversions** | **Aliases** | **Comment**
 :---: | :---: | --- | ---
@@ -94,6 +94,23 @@ These one-way transformation functions are non-cryptographic hashes, used e.g. i
 
 -----
 
+### Keccak
+
+This one-way transformation function is the original Keccak, as submitted to the SHA-3 competition: it only differs from SHA-3 by the padding of the data (e.g. Ethereum uses Keccak-256).
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`keccak` | data --> Keccak(data, size) | `keccak224`, `keccak-256`, `keccak_512`, ... | parametrized ; *size* belongs to {224, 256, 384, 512} (default: 256)
+
+```python
+>>> codext.encode("This is a test string !", "keccak")
+'cee1238ea4e44163d88c21979e42fedb5451d60c1f97b0221f757c1e77b37883'
+>>> codext.encode("This is a test string !", "keccak-512")
+'d5cbccbd447103a06c2fd3fb3b566373395ce9c573015d83d5b75f518c92ca013fc73130bf0e941d29d2283176f1816f658064ff2ee09b470e314e1d61bda761'
+```
+
+-----
+
 ### Message Digest
 
 **Codec** | **Conversions** | **Aliases** | **Comment**
@@ -101,6 +118,7 @@ These one-way transformation functions are non-cryptographic hashes, used e.g. i
 `md2` | data --> MD2(data) |  | 
 `md4` | data --> MD4(data) |  | relies on [`hashlib`](https://docs.python.org/3/library/hashlib.html)
 `md5` | data --> MD5(data) |  | relies on [`hashlib`](https://docs.python.org/3/library/hashlib.html)
+`md6` | data --> MD6(data, size) | `md6-128`, `md6_512`, ... | parametrized ; *size* is a multiple of 8 in [8, 512] (default: 256) ; unkeyed, with the default tree height (64)
 
 ```python
 >>> codext.encode("This is a test string !", "md2")
@@ -109,16 +127,21 @@ These one-way transformation functions are non-cryptographic hashes, used e.g. i
 'ee4170b214eaac5be6a13d64a31b60b3'
 >>> codext.encode("This is a test string !", "md5")
 '5ba93d5b8e8efd9135f0030c978dd64e'
+>>> codext.encode("This is a test string !", "md6")
+'dc29b9f3d9cd16cf27b71f915b386bdd8fc3daa5eb7476a3408442d52bf8d869'
+>>> codext.encode("This is a test string !", "md6-128")
+'091d9f116b997823999ac64cfe3bfbad'
 ```
 
 -----
 
 ### Secure Hash Algorithm
 
-These one-way transformation functions all rely on the native [`hashlib`](https://docs.python.org/3/library/hashlib.html) library.
+These one-way transformation functions rely on the native [`hashlib`](https://docs.python.org/3/library/hashlib.html) library, except SHA-0 (withdrawn shortly after its publication and replaced by SHA-1), which is implemented in pure Python.
 
 **Codec** | **Conversions** | **Aliases** | **Comment**
 :---: | :---: | --- | ---
+`sha0` | data --> SHA0(data) |  | 
 `sha1` | data --> SHA1(data) |  | 
 `sha224` | data --> SHA224(data) |  | 
 `sha256` | data --> SHA256(data) |  | 
@@ -130,6 +153,8 @@ These one-way transformation functions all rely on the native [`hashlib`](https:
 `sha512` | data --> SHA512(data) |  | 
 
 ```python
+>>> codext.encode("This is a test string !", "sha0")
+'2cffee460320a8c226b9a62819f9409367d97e1b'
 >>> codext.encode("This is a test string !", "shake_256_64")
 '01a14a746d7c1d28927fe6078fdb9dcc8fabc45da58b3d1af13175b6278a6e824241927c47b4c5ced2ff629833574c9d985410d97c5c3d54d0f15b548cf2713d'
 >>> codext.encode("This is a test string !", "sha224")

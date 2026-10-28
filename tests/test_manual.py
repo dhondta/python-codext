@@ -208,6 +208,39 @@ class ManualTestCase(TestCase):
         self.assertRaises(LookupError, codecs.encode, STR, "fnv1-16")
         self.assertRaises(LookupError, codecs.encode, STR, "fnv1a-2048")
         self.assertRaises(NotImplementedError, codecs.decode, STR, "fnv1a")
+        # SHA-0, Keccak (original padding) and MD6, with test vectors of the specifications and reference
+        #  implementations
+        for enc, vectors in {
+            'sha0': ["f96cea198ad1dd5617ac084a3d92c6107708c0ef", "0164b8a914cd2a5e74c4f7ff082c4d97f1edf880"],
+            'keccak|keccak256|keccak-256|keccak_256': [
+                "c5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470",
+                "4e03657aea45a94fc7d47ba826c8d667c0d1e6e33a64a036ec44f58fa12d6c45"],
+            'keccak224': ["f71837502ba8e10837bdd8d365adb85591895602fc552b48b7390abd"],
+            'keccak-384': ["2c23146a63a29acf99e73b88f8c24eaa7dc60aa771780ccc006afbfa8fe2479b"
+                           "2dd2b21362337441ac12b515911957ff"],
+            'keccak_512': ["0eab42de4c3ceb9235fc91acffe746b29c29a8c366b7c60e4e67c466f36a4304"
+                           "c00fa9caf9d87976ba469bcbe06713b435f091ef2769fb160cdab33d3670680e"],
+            'md6|md6256|md6-256|md6_256': ["bca38b24a804aa37d821d31af00f5598230122c5bbfc4c4ad5ed40e4258f04ca",
+                                           "230637d4e6845cf0d092b558e87625f03881dd53a7439da34cf3b94ed0d8b2c5"],
+            'md6-224': ["d2091aa2ad17f38c51ade2697f24cafc3894c617c77ffe10fdc7abcb",
+                        "510c30e4202a5cdd8a4f2ae9beebb6f5988128897937615d52e6d228"],
+            'md6-512': ["6b7f33821a2c060ecdd81aefddea2fd3c4720270e18654f4cb08ece49ccb469f"
+                        "8beeee7c831206bd577f9f2630d9177979203a9489e47e04df4e6deaa0f8e0c0",
+                        "00918245271e377a7ffb202b90f3bda5477d8feab12d8a3a8994ebc55fe6e74c"
+                        "a8341520032eeea3fdef892f2882378f636212af4b2683ccf80bf025b7d9b457"],
+        }.items():
+            for e in enc.split("|"):
+                for s, r in zip(["", "abc"], vectors):
+                    self.assertEqual(codecs.encode(s, e), r)
+                    self.assertEqual(codecs.encode(b(s), e), b(r))
+        # MD6 over several levels of its tree (8192 bytes, i.e. 16 blocks, then 4, then 1)
+        self.assertEqual(codecs.encode(bytes(i & 0xff for i in range(8192)), "md6"),
+                         b"2a40338156df221b18b20e4003f51f61284cacd01935e9e87414e6ae40a6bd25")
+        self.assertEqual(len(codecs.encode(STR, "md6-8")), 2)
+        for e in ["keccak-128", "keccak_1024", "md6-0", "md6-12", "md6-520"]:
+            self.assertRaises(LookupError, codecs.encode, STR, e)
+        for e in ["sha0", "keccak", "md6"]:
+            self.assertRaises(NotImplementedError, codecs.decode, STR, e)
         if UNIX:
             try:
                 import crypt

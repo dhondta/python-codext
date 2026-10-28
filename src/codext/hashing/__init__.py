@@ -2,6 +2,7 @@
 from .blake import *
 from .crypt import *
 from .fnv import *
+from .keccak import *
 from .md import *
 from .mmh3 import *
 from .sha import *
