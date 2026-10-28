@@ -23,6 +23,30 @@
 
 -----
 
+### ADFGX/ADFGVX Cipher
+
+These ciphers were used by the German Army during World War I. Each character is first replaced by the labels of its row and column in a Polybius square, then the result is written in rows under a transposition keyword and read column by column, in the alphabetical order of the keyword letters. The square is filled with an optional keyword (without duplicates), then with the remaining characters of the alphabet.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`adfgx` | text <-> ADFGX ciphertext | `adfgx-cargo`, `adfgx_cipher-squarekey-cargo`, ... | 5x5 square with the labels `ADFGX` ; letters only, `J` is normalized to `I`
+`adfgvx` | text <-> ADFGVX ciphertext | `adfgvx-privacy`, `adfgvx_cipher-squarekey-privacy`, ... | 6x6 square with the labels `ADFGVX` ; letters and digits
+
+The codec name holds the optional square key, then the mandatory transposition key. Whitespaces are ignored (ciphertexts are usually written in groups of 5 letters) and the output is in uppercase. When encoding with `errors="replace"`, unsupported characters are encrypted as `X`.
+
+```python
+>>> codext.encode("Attack at once", "adfgx-btalpdhozkqfvsngicuxmrewy-cargo")
+'FAXDFADDDGDGFFFAFAXAFAFX'
+>>> codext.decode("FAXDF ADDDG DGFFF AFAX AFAFX", "adfgx-btalpdhozkqfvsngicuxmrewy-cargo")
+'ATTACKATONCE'
+>>> codext.encode("Attack at 1200am", "adfgvx-na1c3h8tb2ome5wrpd4f6g7i9j0klqsuvxyz-privacy")
+'DGDDDAGDDGAFADDFDADVDVFAADVX'
+>>> codext.decode(codext.encode("ATTACK AT DAWN", "adfgvx-secret-key"), "adfgvx-secret-key")
+'ATTACKATDAWN'
+```
+
+-----
+
 ### Affine Cipher
 
 This codec implements the Affine monoalphabetic substitution cipher. It is parametrizable with a mask for generating the alphabet and the parameters `a` and `b`. By default, it uses mask "`lus`" and parameters `a=1` and `b=2` but it can be set as in the examples hereafter.
