@@ -79,6 +79,23 @@ This is only for "encoding" (converting) Markdown to HTML.
 
 -----
 
+### XXencode
+
+XXencode works like UUencode, but with an alphabet made of "`+`", "`-`", digits and letters only. Each line encodes up to 45 bytes and starts with the character holding its number of bytes ; the lines are framed by a `begin` line and an `end` line.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`xx` | data <-> XXencoded data | `xxencode`, `xx-encode`, `xx_codec` | decoding works with or without the `begin` and `end` lines
+
+```python
+>>> codext.encode("Cat", "xxencode")
+'begin 666 -\n1Eq3o\n+\nend\n'
+>>> codext.decode("1Eq3o", "xx")
+'Cat'
+```
+
+-----
+
 ### yEnc
 
 yEnc is the binary-to-text encoding of Usenet. Each byte is shifted by 42 and only the critical characters (NUL, LF, CR, "`=`", as well as TAB and SPACE at the beginning or the end of a line and "`.`" at the beginning of a line) are escaped with "`=`".

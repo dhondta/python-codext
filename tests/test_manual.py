@@ -227,3 +227,10 @@ class ManualTestCase(TestCase):
         STR = "A" + chr(0x1f600) + "B"
         self.assertEqual(codecs.encode(STR, "zero-width-full", "ignore"), codecs.encode("AB", "zero-width-full"))
         self.assertIn(chr(0x1f600), codecs.encode(STR, "zero-width-full", "leave"))
+    
+    def test_codec_xxencode(self):
+        # a bad length character is reported, the number of bytes then being guessed from the length of the line
+        self.assertEqual(codecs.decode("!Eq3o", "xx", "ignore"), "Cat")
+        # an invalid group of 4 characters is handled as a whole (length "4" means 6 bytes)
+        self.assertEqual(codecs.decode("4Eq!oEq3o", "xx", "replace"), "?Cat")
+        self.assertEqual(codecs.decode("4Eq!oEq3o", "xx", "ignore"), "Cat")
