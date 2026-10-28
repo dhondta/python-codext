@@ -31,6 +31,13 @@ __examples5__ = {
     'dec(gronsfeld-cipher-31415)': {'DUXBHNBXEFZO': 'ATTACKATDAWN'},
     'enc-dec(gronsfeld-0|gronsfeld-12345|gronsfeld-9)': ['hello world', 'ATTACK AT DAWN', 'Test 1234!'],
 }
+__examples6__ = {
+    'enc(porta)':               None,
+    'enc(porta-fortification)': {'DEFENDTHEEASTWALLOFTHECASTLE': 'SYNNJSCVRNRLAHUTUKUCVRYRLANY'},
+    'dec(porta_cipher-fortification)': {'SYNNJSCVRNRLAHUTUKUCVRYRLANY': 'DEFENDTHEEASTWALLOFTHECASTLE'},
+    'enc(porta-key)':           {'Hello World': 'Ztxqm Kjcxv'},
+    'enc-dec(porta-secret)':    ['hello world', 'ATTACK AT DAWN', 'Test 1234!'],
+}
 __examples3__ = {
     'enc(trithemius-cipher)': {'this is a test': "tikv mx g ambd"},
     'enc(trithemius)':        {'HELLO': "HFNOS", '12345!@#$': "12345!@#$"},
@@ -46,6 +53,7 @@ __examples4__ = {
 __guess1__ = ["autoclave-key", "autoclave-password", "autoclave-secret"]
 __guess2__ = ["beaufort-key", "beaufort-password", "beaufort-secret"]
 __guess3__ = ["trithemius"]
+__guess6__ = ["porta-key", "porta-password", "porta-secret"]
 __guess5__ = ["gronsfeld-1234", "gronsfeld-12345", "gronsfeld-123456"]
 __guess4__ = ["vigenere-key", "vigenere-password", "vigenere-secret"]
 
@@ -54,6 +62,13 @@ bchar = lambda c, k, i, d=False: (LC if (b := c in LC) else UC)[(ord(k[i % len(k
                                                                  (ord(c) - ord("Aa"[b]))) % 26]
 vchar = lambda c, k, i, d=False: (LC if (b := c in LC) else UC)[(ord(c) - ord("Aa"[b]) + \
                                                                  [1, -1][d] * (ord(k[i % len(k)]) - ord('a'))) % 26]
+
+
+def pchar(c, k, i, d=False):
+    """ Porta: the key letters pairs (AB, CD, ..., YZ) select one of 13 reciprocal alphabets swapping the halves A-M
+         and N-Z ; hence, decoding is the same as encoding. """
+    alph, s, x = LC if c in LC else UC, (ord(k[i % len(k)]) - ord('a')) // 2, ord(c.lower()) - ord('a')
+    return alph[13 + (x + s) % 13 if x < 13 else (x - 13 - s) % 13]
 
 
 def __make(enc, char_func, key_stream=False, key_desc="alphabetic"):
@@ -99,6 +114,9 @@ def __gronsfeld(f):
 
 add("gronsfeld", *map(__gronsfeld, __make("gronsfeld", vchar, key_desc="numeric")),
     r"gronsfeld(?:[-_]cipher)?(?:[-_]([0-9]+))?$", examples=__examples5__, guess=__guess5__, penalty=.1)
+
+add("porta", *__make("porta", pchar), r"porta(?:[-_]cipher)?(?:[-_]([a-zA-Z]+))?$",
+    examples=__examples6__, guess=__guess6__, penalty=.1)
 
 add("trithemius", enc(k := "ABCDEFGHIJKLMNOPQRSTUVWXYZ"), dec(k), r"trithemius(?:[-_]cipher)?$",
     examples=__examples3__, guess=__guess3__, penalty=.1)

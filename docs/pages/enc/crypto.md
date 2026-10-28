@@ -311,6 +311,23 @@ This implements the well-known Polybius Square cipher, using the square with the
 
 -----
 
+### Porta Cipher
+
+This is a variant of the [Vigenere Cipher](#vigenere-cipher) where each pair of key letters (AB, CD, ..., YZ) selects one of 13 reciprocal alphabets swapping the halves A-M and N-Z. Hence, decoding is the same as encoding. There is no default key, meaning that `porta` as the encoding scheme throws a `LookupError` indicating that the _key must be a non-empty alphabetic string_.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`porta` | text <-> Porta ciphertext | `porta-abcdef`, `porta_cipher-MySuperSecret` | key only consists of characters, not digits
+
+```python
+>>> codext.encode("DEFENDTHEEASTWALLOFTHECASTLE", "porta-fortification")
+'SYNNJSCVRNRLAHUTUKUCVRYRLANY'
+>>> codext.decode("SYNNJSCVRNRLAHUTUKUCVRYRLANY", "porta-fortification")
+'DEFENDTHEEASTWALLOFTHECASTLE'
+```
+
+-----
+
 ### Rail Fence Cipher
 
 This implements the Rail Fence encoding algorithm, using 3 rails and offset 0 as the default parameters. The encoding fence is built from the top ; the `up` flag can be used to build the fence from the bottom. Note that trying parameters that do not fit the input length will trigger a `ValueError` mentioning the bad value.

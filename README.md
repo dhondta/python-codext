@@ -345,6 +345,7 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 - [X] `playfair`: aka Playfair Cipher
 - [X] `phillips`: aka Phillips Cipher (polyalphabetic block cipher with 8 key squares)
 - [X] `polybius`: aka Polybius Square Cipher
+- [X] `porta`: aka Porta Cipher (reciprocal variant of Vigenere Cipher with 13 alphabets)
 - [X] `railfence`: aka Rail Fence Cipher
 - [X] `rotN`: aka Caesar cipher (*N* belongs to [1,25])
 - [X] `scytaleN`: encrypts using the number of letters on the rod (*N* belongs to [1,[)
