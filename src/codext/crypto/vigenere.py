@@ -35,6 +35,18 @@ __examples2__ = {
     'enc(beaufort_key)':        {'Hello World': 'Danzq Cwnnh'},
     'enc-dec(beaufort-secret)': ['hello world', 'ATTACK AT DAWN', 'Test 1234!'],
 }
+__examples3__ = {
+    'enc(trithemius-cipher)': {'this is a test': "tikv mx g ambd"},
+    'enc(trithemius)':        {'HELLO': "HFNOS", '12345!@#$': "12345!@#$"},
+    'enc-dec(trithemius)':    ["Hello, World!", "@random"],
+}
+__examples4__ = {
+    'enc(vigenere)':            None,
+    'enc(vigenere-lemon)':      {'ATTACKATDAWN': 'LXFOPVEFRNHR'},
+    'enc(vigenere-key)':        {'hello': 'rijvs'},
+    'enc(vigenère_key)':        {'Hello World': 'Rijvs Uyvjn'},
+    'enc-dec(vigenere-secret)': ['hello world', 'ATTACK AT DAWN', 'Test 1234!'],
+}
 __examples5__ = {
     'enc(gronsfeld)':             None,
     'enc(gronsfeld-cipher-12a)':  None,
@@ -50,24 +62,12 @@ __examples6__ = {
     'enc(porta-key)':           {'Hello World': 'Ztxqm Kjcxv'},
     'enc-dec(porta-secret)':    ['hello world', 'ATTACK AT DAWN', 'Test 1234!'],
 }
-__examples3__ = {
-    'enc(trithemius-cipher)': {'this is a test': "tikv mx g ambd"},
-    'enc(trithemius)':        {'HELLO': "HFNOS", '12345!@#$': "12345!@#$"},
-    'enc-dec(trithemius)':    ["Hello, World!", "@random"],
-}
-__examples4__ = {
-    'enc(vigenere)':            None,
-    'enc(vigenere-lemon)':      {'ATTACKATDAWN': 'LXFOPVEFRNHR'},
-    'enc(vigenere-key)':        {'hello': 'rijvs'},
-    'enc(vigenère_key)':        {'Hello World': 'Rijvs Uyvjn'},
-    'enc-dec(vigenere-secret)': ['hello world', 'ATTACK AT DAWN', 'Test 1234!'],
-}
 __guess1__ = ["autoclave-key", "autoclave-password", "autoclave-secret"]
 __guess2__ = ["beaufort-key", "beaufort-password", "beaufort-secret"]
 __guess3__ = ["trithemius"]
-__guess6__ = ["porta-key", "porta-password", "porta-secret"]
-__guess5__ = ["gronsfeld-1234", "gronsfeld-12345", "gronsfeld-123456"]
 __guess4__ = ["vigenere-key", "vigenere-password", "vigenere-secret"]
+__guess5__ = ["gronsfeld-1234", "gronsfeld-12345", "gronsfeld-123456"]
+__guess6__ = ["porta-key", "porta-password", "porta-secret"]
 
 
 bchar = lambda c, k, i, d=False: (LC if (b := c in LC) else UC)[(ord(k[i % len(k)]) - ord('a') - \
