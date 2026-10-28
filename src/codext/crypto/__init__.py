@@ -5,6 +5,7 @@ from .atbash import *
 from .bacon import *
 from .barbie import *
 from .bazeries import *
+from .bifid import *
 from .citrix import *
 from .playfair import *
 from .phillips import *

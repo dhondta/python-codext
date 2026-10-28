@@ -194,6 +194,32 @@ This is a variant of the [Vigenere Cipher](#vigenere-cipher). There is no defaul
 
 -----
 
+### Bifid/Trifid Cipher
+
+These ciphers were invented by Felix Delastelle. Each letter is replaced by its coordinates in a 5x5 Polybius square (Bifid) or in a 3x3x3 cube (Trifid). Within each block of letters, whose size is the period (the whole text by default), the coordinates are written in rows (all the rows, then all the columns, ...), then read again as groups of coordinates that give the new letters. The square or cube is filled with an optional keyword (without duplicates), then with the remaining characters of the alphabet.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`bifid` | text <-> Bifid ciphertext | `bifid-keyword`, `bifid_cipher-keyword-5`, `bifid-7`, ... | 5x5 square ; `J` is normalized to `I` ; other characters and the case are kept
+`trifid` | text <-> Trifid ciphertext | `trifid-keyword`, `trifid_cipher-keyword-5`, `trifid-7`, ... | 3x3x3 cube with the 26 letters and `+` ; other characters are kept ; uppercase output (a letter can be substituted by `+`)
+
+The codec name holds the optional keyword, then the optional period. The period only counts the letters of the alphabet.
+
+```python
+>>> codext.encode("FLEEATONCE", "bifid-bgwkzqpndsioaxefclumthyvr")
+'UAEOLWRINS'
+>>> codext.encode("Flee at once!", "bifid-bgwkzqpndsioaxefclumthyvr")
+'Uaeo lw rins!'
+>>> codext.decode("UAEOLWRINS", "bifid-bgwkzqpndsioaxefclumthyvr")
+'FLEEATONCE'
+>>> codext.encode("aide-toi, le ciel t'aidera", "trifid-felixmariedelastelle-5")
+"FMJF-VOI, SS UFTF P'UFEQQC"
+>>> codext.decode("FMJFVOISSUFTFPUFEQQC", "trifid-felixmariedelastelle-5")
+'AIDETOILECIELTAIDERA'
+```
+
+-----
+
 ### Citrix CTX1
 
 This implements the Citrix CTX1 password encoding algorithm.
