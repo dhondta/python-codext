@@ -5,13 +5,13 @@
 [![PyPi](https://img.shields.io/pypi/v/codext.svg)](https://pypi.python.org/pypi/codext/)
 [![Read The Docs](https://readthedocs.org/projects/python-codext/badge/?version=latest)](https://python-codext.readthedocs.io/en/latest/?badge=latest)
 [![Build Status](https://github.com/dhondta/python-codext/actions/workflows/python-package.yml/badge.svg)](https://github.com/dhondta/python-codext/actions/workflows/python-package.yml)
+[![Security](https://github.com/dhondta/python-codext/actions/workflows/security.yml/badge.svg)](https://github.com/dhondta/python-codext/actions/workflows/security.yml)
 [![Coverage Status](https://raw.githubusercontent.com/dhondta/python-codext/coverage-badge/docs/coverage.svg)](#)
 [![Python Versions](https://img.shields.io/pypi/pyversions/codext.svg)](https://pypi.python.org/pypi/codext/)
-[![Known Vulnerabilities](https://snyk.io/test/github/dhondta/python-codext/badge.svg?targetFile=requirements.txt)](https://snyk.io/test/github/dhondta/python-codext?targetFile=requirements.txt)
 [![DOI](https://zenodo.org/badge/236679865.svg)](https://zenodo.org/badge/latestdoi/236679865)
 [![License](https://img.shields.io/pypi/l/codext.svg)](https://pypi.python.org/pypi/codext/)
 
-[**CodExt**](https://github.com/dhondta/python-codext) is a (Python2-3 compatible) library that extends the native [`codecs`](https://docs.python.org/3/library/codecs) library (namely for adding new custom encodings and character mappings) and provides **120+ new codecs**, hence its name combining *CODecs EXTension*. It also features a **guess mode** for decoding multiple layers of encoding and **CLI tools** for convenience.
+[**CodExt**](https://github.com/dhondta/python-codext) is a library (Python 3.10 or later) that extends the native [`codecs`](https://docs.python.org/3/library/codecs) library (namely for adding new custom encodings and character mappings) and provides **120+ new codecs**, hence its name combining *CODecs EXTension*. It also features a **guess mode** for decoding multiple layers of encoding and **CLI tools** for convenience.
 
 ```sh
 $ pip install codext
@@ -19,7 +19,7 @@ $ pip install codext
 
 Want to contribute a new codec ?    |     Want to contribute a new macro ?
 :----------------------------------:|:------------------------------------:
-Check the [documentation](https://python-codext.readthedocs.io/en/latest/howto) first<br>Then [PR](https://github.com/dhondta/python-codext/pulls) your new codec | [PR](https://github.com/dhondta/python-codext/pulls) your updated version of [`macros.json`](https://github.com/dhondta/python-codext/blob/main/codext/macros.json)
+Check the [documentation](https://python-codext.readthedocs.io/en/latest/howto.html) first<br>Then [PR](https://github.com/dhondta/python-codext/pulls) your new codec | [PR](https://github.com/dhondta/python-codext/pulls) your updated version of [`macros.json`](https://github.com/dhondta/python-codext/blob/main/src/codext/macros.json)
 
 ## :mag: Demonstrations
 
@@ -259,7 +259,7 @@ CACTCGGTCGGCCATATGTTCGGCCATATGTTCGTCTGTTCACTCGCCCATACACT
 
 ## :page_with_curl: List of codecs
 
-#### [BaseXX](https://python-codext.readthedocs.io/en/latest/enc/base)
+#### [BaseXX](https://python-codext.readthedocs.io/en/latest/enc/base.html)
 
 - [X] `base1`: useless, but for the sake of completeness
 - [X] `base2`: simple conversion to binary (with a variant with a reversed alphabet)
@@ -282,11 +282,11 @@ CACTCGGTCGGCCATATGTTCGGCCATATGTTCGTCTGTTCACTCGCCCATACACT
 - [X] `base91`: [Base91](http://base91.sourceforge.net) custom conversion
 - [X] `base100` (or *emoji*): [Base100](https://github.com/AdamNiederer/base100) custom conversion
 - [X] `base122`: [Base100](http://blog.kevinalbs.com/base122) custom conversion
-- [X] `base-genericN`: see [base encodings](https://python-codext.readthedocs.io/en/latest/enc/base) ; supports any possible base
+- [X] `base-genericN`: see [base encodings](https://python-codext.readthedocs.io/en/latest/enc/base.html) ; supports any possible base
 
 This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `base85` codec.
 
-#### [Binary](https://python-codext.readthedocs.io/en/latest/enc/binary)
+#### [Binary](https://python-codext.readthedocs.io/en/latest/enc/binary.html)
 
 - [X] `baudot`: supports CCITT-1, CCITT-2, EU/FR, ITA1, ITA2, MTK-2 (Python3 only), UK, ...
 - [X] `baudot-spaced`: variant of `baudot` ; groups of 5 bits are whitespace-separated
@@ -300,13 +300,13 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 - [X] `manchester-inverted`: variant of `manchester` ; XORes each bit of the input with `10`
 - [X] `rotateN`: rotates characters by the specified number of bits (*N* belongs to [1, 7] ; Python 3 only)
 
-#### [Checksums](https://python-codext.readthedocs.io/en/latest/enc/checksums)
+#### [Checksums](https://python-codext.readthedocs.io/en/latest/enc/hashing.html#checksums)
 
 - [X] `adler`: Adler32 algorithm (relies on `zlib`)
 - [X] `crc`: CRC of lengths 8, 10-17, 21, 24, 30-32, 40, 64, 82 with a variety of polynoms
 - [X] `luhn`: Luhn mod N algorithm
 
-#### [Common](https://python-codext.readthedocs.io/en/latest/enc/common)
+#### [Common](https://python-codext.readthedocs.io/en/latest/enc/common.html)
 
 - [X] `a1z26`: keeps words whitespace-separated and uses a custom character separator
 - [X] `cases`: set of case-related encodings (including camel-, kebab-, lower-, pascal-, upper-, snake- and swap-case, slugify, capitalize, title)
@@ -316,7 +316,7 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 - [X] `ordinal`: dummy character ordinals conversion (converts to 3-digits groups)
 - [X] `ordinal-spaced`: variant of `ordinal` ; dummy character ordinals conversion, handling whitespace separators
 
-#### [Compression](https://python-codext.readthedocs.io/en/latest/enc/compressions)
+#### [Compression](https://python-codext.readthedocs.io/en/latest/enc/compressions.html)
 
 - [X] `gzip`: standard Gzip compression/decompression
 - [X] `lz77`: compresses the given data with the algorithm of Lempel and Ziv of 1977
@@ -327,7 +327,7 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 
 > :warning: Compression functions are of course definitely **NOT** encoding functions ; they are implemented for leveraging the `.encode(...)` API from `codecs`.
 
-#### [Cryptography](https://python-codext.readthedocs.io/en/latest/enc/crypto)
+#### [Cryptography](https://python-codext.readthedocs.io/en/latest/enc/crypto.html)
 
 - [X] `affine`: aka Affine Cipher
 - [X] `atbash`: aka Atbash Cipher
@@ -350,7 +350,7 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 
 > :warning: Crypto functions are of course definitely **NOT** encoding functions ; they are implemented for leveraging the `.encode(...)` API from `codecs`.
 
-#### [Hashing](https://python-codext.readthedocs.io/en/latest/enc/hashing)
+#### [Hashing](https://python-codext.readthedocs.io/en/latest/enc/hashing.html)
 
 - [X] `blake`: includes BLAKE2b and BLAKE2s (Python 3 only ; relies on `hashlib`)
 - [X] `crypt`: Unix's crypt hash for passwords (Python 3 and Unix only ; relies on `crypt`)
@@ -360,7 +360,7 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 
 > :warning: Hash functions are of course definitely **NOT** encoding functions ; they are implemented for convenience with the `.encode(...)` API from `codecs` and useful for chaning codecs.
 
-#### [Languages](https://python-codext.readthedocs.io/en/latest/enc/languages)
+#### [Languages](https://python-codext.readthedocs.io/en/latest/enc/languages.html)
 
 - [X] `braille`: well-known braille language (Python 3 only)
 - [X] `ipsum`: aka lorem ipsum
@@ -374,13 +374,13 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 - [X] `tap`: converts text to tap/knock code, commonly used by prisoners
 - [X] `tomtom`: similar to `morse`, using slashes and backslashes
 
-#### [Others](https://python-codext.readthedocs.io/en/latest/enc/others)
+#### [Others](https://python-codext.readthedocs.io/en/latest/enc/others.html)
 
 - [X] `dna`: implements the 8 rules of DNA sequences (N belongs to [1,8])
 - [X] `letter-indices`: encodes consonants and/or vowels with their corresponding indices
 - [X] `markdown`: unidirectional encoding from Markdown to HTML
 
-#### [Steganography](https://python-codext.readthedocs.io/en/latest/enc/stegano)
+#### [Steganography](https://python-codext.readthedocs.io/en/latest/enc/stegano.html)
 
 - [X] `hexagram`: uses Base64 and encodes the result to a charset of [I Ching hexagrams](https://en.wikipedia.org/wiki/Hexagram_%28I_Ching%29) (as implemented [here](https://github.com/qntm/hexagram-encode))
 - [X] `klopf`: aka Klopf code ; Polybius square with trivial alphabetical distribution
@@ -390,16 +390,10 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 - [X] `whitespace`: replaces bits with whitespaces and tabs
 - [X] `whitespace_after_before`: variant of `whitespace` ; encodes characters as new characters with whitespaces before and after according to an equation described in the codec name (e.g. "`whitespace+2*after-3*before`")
 
-#### [Web](https://python-codext.readthedocs.io/en/latest/enc/web)
+#### [Web](https://python-codext.readthedocs.io/en/latest/enc/web.html)
 
 - [X] `html`: implements entities according to [this reference](https://dev.w3.org/html5/html-author/charref)
 - [X] `url`: aka URL encoding
 
-
-## :clap:  Supporters
-
-[![Stargazers repo roster for @dhondta/python-codext](https://reporoster.com/stars/dark/dhondta/python-codext)](https://github.com/dhondta/python-codext/stargazers)
-
-[![Forkers repo roster for @dhondta/python-codext](https://reporoster.com/forks/dark/dhondta/python-codext)](https://github.com/dhondta/python-codext/network/members)
 
 <p align="center"><a href="#top"><img src="https://img.shields.io/badge/Back%20to%20top--lightgrey?style=social" alt="Back to top" height="20"/></a></p>

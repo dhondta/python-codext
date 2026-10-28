@@ -1,0 +1,31 @@
+# This workflow audits the project's dependencies for known vulnerabilities
+# It is separate from python-package.yml so that a new advisory never blocks a release
+
+name: security
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  schedule:
+    - cron: "0 6 * * 1"  # weekly, catches new advisories between pushes
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pip-audit:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v7
+    - name: Set up Python
+      uses: actions/setup-python@v7
+      with:
+        python-version: "3.13"
+    - name: Install pip-audit
+      run: python -m pip install --upgrade pip pip-audit
+    - name: Audit dependencies
+      # audit the project path (not the environment) so that the runner's own packages are not reported
+      run: pip-audit .
