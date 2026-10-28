@@ -30,6 +30,9 @@ __examples__ = {
     'enc(playfair-playfairexample)':  {'HIDETHEGOLDINTHETREESTUMP': 'BMODZBXDNABEKUDMUIXMMOUVIF'},
     'enc-dec(playfair-keyword)':      ["TEST"],
     'enc-dec(playfair-*-5-X-IJ)':     ["TEST", "TESTSENTENCE"],
+    'enc(playfair-*-6-XQ-IJ)':        None,
+    'enc(playfair-secret-6)':         {'JUNK MAIL 42': "LPOLORFO8Y"},
+    'enc-dec(playfair-*-6-XQ)':       ["JUNKMAIL42", "HIDEGOLD2026"],
 }
 __guess__ = ["playfair"]
 
@@ -73,7 +76,7 @@ def playfair_encode(key=None, grid_size=None, fill_chars=None, replace_char=None
     grid, pos = __build_grid(key, gsize, rchar)
     def encode(text, errors="strict"):
         _filler = lambda c: fchars[1] if c == fchars[0] else fchars[0]
-        chars = [rchar[1] if c == rchar[0] else c for c in ensure_str(text).upper().replace(" ", "")]
+        chars = [rchar[1] if gsize == 5 and c == rchar[0] else c for c in ensure_str(text).upper().replace(" ", "")]
         result, i, _h = [], 0, handle_error("playfair", errors)
         while i < len(chars):
             a = chars[i]
@@ -92,11 +95,11 @@ def playfair_encode(key=None, grid_size=None, fill_chars=None, replace_char=None
             r_a, c_a = pos[a]
             r_b, c_b = pos[b]
             if r_a == r_b:
-                ea, eb = grid[r_a * 5 + (c_a + 1) % 5], grid[r_b * 5 + (c_b + 1) % 5]
+                ea, eb = grid[r_a * gsize + (c_a + 1) % gsize], grid[r_b * gsize + (c_b + 1) % gsize]
             elif c_a == c_b:
-                ea, eb = grid[((r_a + 1) % 5) * 5 + c_a], grid[((r_b + 1) % 5) * 5 + c_b]
+                ea, eb = grid[((r_a + 1) % gsize) * gsize + c_a], grid[((r_b + 1) % gsize) * gsize + c_b]
             else:
-                ea, eb = grid[r_a * 5 + c_b], grid[r_b * 5 + c_a]
+                ea, eb = grid[r_a * gsize + c_b], grid[r_b * gsize + c_a]
             result.extend([ea, eb])
             i += 1
         return (r := "".join(result)), len(r)
@@ -107,7 +110,7 @@ def playfair_decode(key=None, grid_size=None, fill_chars=None, replace_char=None
     key, gsize, _, rchar = __set_params(key, grid_size, fill_chars, replace_char)
     grid, pos = __build_grid(key, gsize, rchar)
     def decode(text, errors="strict"):
-        chars = [rchar[1] if c == rchar[0] else c for c in ensure_str(text)]
+        chars = [rchar[1] if gsize == 5 and c == rchar[0] else c for c in ensure_str(text)]
         result, i, _h = [], 0, handle_error("playfair", errors, decode=True)
         while i < len(chars):
             try:
@@ -124,18 +127,25 @@ def playfair_decode(key=None, grid_size=None, fill_chars=None, replace_char=None
                 i += 2
                 continue
             if r_a == r_b:
-                da, db = grid[r_a * 5 + (c_a - 1) % 5], grid[r_b * 5 + (c_b - 1) % 5]
+                da, db = grid[r_a * gsize + (c_a - 1) % gsize], grid[r_b * gsize + (c_b - 1) % gsize]
             elif c_a == c_b:
-                da, db = grid[((r_a - 1) % 5) * 5 + c_a], grid[((r_b - 1) % 5) * 5 + c_b]
+                da, db = grid[((r_a - 1) % gsize) * gsize + c_a], grid[((r_b - 1) % gsize) * gsize + c_b]
             else:
-                da, db = grid[r_a * 5 + c_b], grid[r_b * 5 + c_a]
+                da, db = grid[r_a * gsize + c_b], grid[r_b * gsize + c_a]
             result.extend([da, db])
             i += 2
         return (r := "".join(result)), len(r)
     return decode
 
 
-add("playfair", playfair_encode, playfair_decode, r"^playfair(?:[-_]cipher)?(?:[-_]([\^*]|[a-zA-Z]+))?"
-    r"(?:(?:[-_](5))?(?:[-_]([A-Z]{1,2}))?(?:[-_]([A-Z]{2}))|(?:[-_](6))?(?:[-_]([A-Z]{1,2}))?())?$",
+def __params(f):
+    """ Merge the groups of both alternatives of the pattern (replaced char only applies to the 5x5 grid). """
+    def _wrapper(key=None, gs5=None, fc5=None, replace_char=None, gs6=None, fc6=None):
+        return f(key, gs5 or gs6, fc5 or fc6, replace_char)
+    return _wrapper
+
+
+add("playfair", __params(playfair_encode), __params(playfair_decode), r"^playfair(?:[-_]cipher)?(?:[-_]([\^*]|"
+    r"[a-zA-Z]+))?(?:(?:[-_](5))?(?:[-_]([A-Z]{1,2}))?(?:[-_]([A-Z]{2}))?|[-_](6)(?:[-_]([A-Z]{1,2}))?)$",
     printables_rate=1., penalty=.1)
 
