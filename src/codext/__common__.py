@@ -1370,17 +1370,22 @@ def __make_encodings_dict(include, exclude):
     """ Process encodings inclusion and exclusion lists, listing categories and developping codecs' lists of possible
          encoding names. It also creates a cache with the CodecInfo objects for improving performance. """
     def _develop(d, keep=True):
-        d = d or {}
+        d, names = d or {}, None
         for k, v in d.items():
             l, cc, sc = [], [e for e in v if e in CODECS_CATEGORIES], [e for e in v if e not in CODECS_CATEGORIES]
+            cn = list_encodings(*cc) if (len(cc) > 0 or keep) and len(sc) == 0 else []
+            if len(sc) > 0 and names is None:
+                names = set(list_encodings())
             # list from in-scope categories and then everything that is not a category
-            for enc in ((list_encodings(*cc) if (len(cc) > 0 or keep) and len(sc) == 0 else []) + sc):
+            for enc in cn + sc:
                 g = []
                 for e in (search(enc, False) or [enc]):
                     g.extend(__guess_list(e))
-                if enc in g:  # e.g. "rot-1" => ["rot-1", "rot-2", ...] ; only "rot-1" is to be selected
-                    l.append(enc)
-                else:         # e.g. "rot"   => ["rot-1", "rot-2", ...] ; all the "rot-N" shall be selected
+                # an encoding name selects only itself, while a codec name selects all its encodings, even when it is
+                #  one of them (e.g. "base45" => ["base45", "base45-inv"])
+                if enc in g and enc not in cn and enc not in names:
+                    l.append(enc)  # e.g. "rot-1" => ["rot-1", "rot-2", ...] ; only "rot-1" is to be selected
+                else:              # e.g. "rot"   => ["rot-1", "rot-2", ...] ; all the "rot-N" shall be selected
                     l.extend(g)
             d[k] = list(set(l))
         return d

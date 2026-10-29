@@ -184,6 +184,22 @@ class TestCommon(TestCase):
         self.assertEqual(txt, _l(codext.guess(b64, "0123456789", max_depth=1, scoring_heuristic=True, include="base")))
         self.assertRaises(ValueError, codext.stopfunc._reload_lang, "DOES_NOT_EXIST")
     
+    def test_guess_codec_variants(self):
+        STR = "This is a test"
+        _g = lambda enc, **kw: codext.guess(codext.encode(STR, enc), "a test", max_depth=1, **kw)
+        # a codec name, given directly or through its category, selects all its encodings to be guessed, even when it is
+        #  one of them (e.g. "base45" => ["base45", "base45-inv"])
+        for enc, inc in [("base45-inv", "base"), ("base45-inv", "base45"), ("whitespace-inv", "stegano"),
+                         ("whitespace-inv", "whitespace")]:
+            self.assertIn((enc, ), _g(enc, include=inc))
+        # both Ook! decoders accept both forms, hence either can be found first
+        for inc in ["esoteric", "ook"]:
+            self.assertIn(STR, _g("ook-short", include=inc).values())
+        # while an encoding name only selects itself
+        self.assertEqual(list(_g("base45-inv", include="base45-inv")), [("base45-inv", )])
+        self.assertEqual(len(_g("base45-inv", include="base45", exclude="base45-inv")), 0)
+        self.assertEqual(len(_g("base45-inv", include="base", exclude="base45")), 0)
+    
     def test_rank_input(self):
         codext.remove("test_codec")
         self.assertRaises(LookupError, codext.encode, "TEST", "test")
