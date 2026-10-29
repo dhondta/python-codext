@@ -207,6 +207,7 @@ Codecs can be listed with the `list` function, either the whole codecs or only s
     - `binary`: codecs working on strings but applying their algorithms on their binary forms (e.g. `baudot`, `manchester`)
     - `common`: common codecs not included in the native ones or simly added for the purpose of standardization (e.g. `octal`, `ordinal`)
     - `crypto`: codecs related to cryptography algorithms (e.g. `barbie`, `rot`, `xor`)
+    - `esoteric`: esoteric programming languages (e.g. `brainfuck`, `pikalang`)
     - `language`: language-related codecs (e.g. `morse`, `navajo`)
     - `other`: uncategorized codecs (e.g. `letters`, `url`)
     - `stegano`: steganography-related codecs (e.g. `sms`, `resistor`)

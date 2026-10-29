@@ -31,6 +31,24 @@ class ComplementaryTestCase(TestCase):
     def test_codec_morse(self):
         self.assertRaises(LookupError, codecs.encode, "test", "morse-AAB")
     
+    def test_codec_brainfuck(self):
+        # with a non-strict errors handling, other characters are comments and unmatched brackets are ignored
+        for e in ["ignore", "replace", "leave"]:
+            self.assertEqual(codecs.decode("Comment: ++. then +.]", "brainfuck", e), "\x02\x03")
+            self.assertEqual(codecs.decode("+.[", "bf", e), "\x01")
+        self.assertRaises(ValueError, codecs.decode, "+. comment", "brainfuck")
+        self.assertRaises(ValueError, codecs.decode, "+. comment", "brainfuck", "BAD_ERRORS")
+    
+    def test_codec_pikalang(self):
+        # with a non-strict errors handling, unknown words and unmatched brackets are ignored
+        for e in ["ignore", "replace", "leave"]:
+            self.assertEqual(codecs.decode("pi pi pikachu chu ka pikachu pika", "pikalang", e), "\x02\x01")
+            self.assertEqual(codecs.decode("pi pikachu bad pi pikachu", "pikalang", e), "\x01\x02")
+        self.assertRaises(ValueError, codecs.decode, "pi pika pikachu", "pikalang", "BAD_ERRORS")
+        from codext.esoteric._brainfuck import bf_run
+        self.assertRaises(ValueError, bf_run, "+[]", max_steps=100)
+        self.assertEqual(bf_run("+[-]+.", max_steps=100), b"\x01")
+    
     def test_codec_polybius(self):
         from codext.crypto.polybius import polybius_encode, polybius_decode
         self.assertRaises(LookupError, polybius_encode, "ABC")

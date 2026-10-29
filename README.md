@@ -375,6 +375,11 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 
 > :warning: Crypto functions are of course definitely **NOT** encoding functions ; they are implemented for leveraging the `.encode(...)` API from `codecs`.
 
+#### [Esoteric](https://python-codext.readthedocs.io/en/latest/enc/esoteric.html)
+
+- [X] `brainfuck`: well-known esoteric programming language (encoding generates a program printing the text)
+- [X] `pikalang`: Brainfuck derivative using Pikachu's vocabulary
+
 #### [Hashing](https://python-codext.readthedocs.io/en/latest/enc/hashing.html)
 
 - [X] `blake`: includes BLAKE2b and BLAKE2s (Python 3 only ; relies on `hashlib`)
