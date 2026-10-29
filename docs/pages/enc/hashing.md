@@ -2,6 +2,21 @@
 
 -----
 
+### Bcrypt
+
+This one-way transformation function is the password hash based on the Blowfish cipher, written in the modular crypt format (`$2b$<cost>$<salt><digest>`). A random salt is generated each time, hence the output differs between calls. It relies on the [`bcrypt`](https://pypi.org/project/bcrypt/) package when it is installed (`pip install codext[bcrypt]`), and on a pure Python implementation otherwise, which is much slower (a cost of 12 takes about 40 seconds).
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`bcrypt` | data --> Bcrypt(data, cost) | `bcrypt-10`, `bcrypt_12`, ... | parametrized ; *cost* belongs to [4,31] (default: 12) ; passwords are truncated to 72 bytes
+
+```python
+>>> codext.encode("This is a test string !", "bcrypt-4")
+'$2b$04$Ad./eDM.6uhky8RUAQzhiuDO.1lrx4G1lX777EtSGJAp47yU1RsN2'
+```
+
+-----
+
 ### BLAKE
 
 These one-way transformation functions rely on the native [`hashlib`](https://docs.python.org/3/library/hashlib.html) library, except SHA-0 (withdrawn shortly after its publication and replaced by SHA-1), which is implemented in pure Python.

@@ -48,7 +48,7 @@ jobs:
         python -m pip install pytest pytest-cov
         pip install -r requirements.txt
         pip install "tinyscript>=1.31"
-        pip install .
+        pip install .[bcrypt]
     - name: Test ${{ env.package }} with pytest
       run: |
         pytest --cov=$package --cov-report=xml

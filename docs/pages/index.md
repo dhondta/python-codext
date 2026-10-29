@@ -7,3 +7,9 @@ This library requires Python 3.10 or later. It is available on [PyPi](https://py
 ```sh
 pip install codext
 ```
+
+The `bcrypt` hashing codec is much faster with the optional [`bcrypt`](https://pypi.org/project/bcrypt/) package, installed with the `bcrypt` extra:
+
+```sh
+pip install codext[bcrypt]
+```

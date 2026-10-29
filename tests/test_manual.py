@@ -333,6 +333,23 @@ class ManualTestCase(TestCase):
                          "85e813540f0ab405")
         for e in ["md4", "lm", "ntlm", "mysql323", "mysql41"]:
             self.assertRaises(NotImplementedError, codecs.decode, STR, e)
+        # bcrypt, with a test vector of OpenWall's crypt_blowfish (salt decoded from its base64 alphabet), through the
+        #  bcrypt package when installed, and in pure Python (forced by making its import fail)
+        import sys
+        from codext.hashing.bcrypt import _b64, bcrypt, BCRYPT_B64
+        salt = int("".join(f"{BCRYPT_B64.index(c):06b}" for c in "CCCCCCCCCCCCCCCCCCCCC."), 2) >> 4
+        salt = salt.to_bytes(16, "big")
+        self.assertEqual(_b64(salt), "CCCCCCCCCCCCCCCCCCCCC.")
+        self.assertEqual(_b64(bcrypt("U*U", salt, 5)), "E5YPO9kmyuRGyh0XouQYb4YMJKvyOeW")
+        for unavailable in [False, True]:
+            with patch.dict(sys.modules, {'bcrypt': None}) if unavailable else nullcontext():
+                for e, c in [("bcrypt-4", "04"), ("bcrypt_5", "05")]:
+                    h = codecs.encode(STR.decode(), e)
+                    self.assertRegex(h, rf"^\$2b\${c}\$[./A-Za-z0-9]{{53}}$")
+                    self.assertNotEqual(h, codecs.encode(STR.decode(), e))
+        for e in ["bcrypt-3", "bcrypt-32"]:
+            self.assertRaises(LookupError, codecs.encode, STR, e)
+        self.assertRaises(NotImplementedError, codecs.decode, STR, "bcrypt")
         if UNIX:
             try:
                 import crypt

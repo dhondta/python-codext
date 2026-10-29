@@ -390,6 +390,7 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 
 #### [Hashing](https://python-codext.readthedocs.io/en/latest/enc/hashing.html)
 
+- [X] `bcrypt`: aka bcrypt password hash (relies on `bcrypt` when available, e.g. with `pip install codext[bcrypt]`, pure Python otherwise)
 - [X] `blake`: includes BLAKE2b and BLAKE2s (Python 3 only ; relies on `hashlib`)
 - [X] `crypt`: Unix's crypt hash for passwords (Python 3 and Unix only ; relies on `crypt`)
 - [X] `fnv`: aka Fowler-Noll-Vo ; includes FNV-1 and FNV-1a in 32, 64, 128, 256, 512 and 1024 bits

@@ -1,4 +1,5 @@
 # -*- coding: UTF-8 -*-
+from .bcrypt import *
 from .blake import *
 from .crypt import *
 from .fnv import *
