@@ -259,6 +259,43 @@ class ManualTestCase(TestCase):
             self.assertRaises(LookupError, codecs.encode, STR, e)
         for e in ["sha0", "keccak", "md6"]:
             self.assertRaises(NotImplementedError, codecs.decode, STR, e)
+        # RIPEMD-160 and Whirlpool, with test vectors of the specifications, through hashlib when available, and in
+        #  pure Python (forced by making hashlib fail as with OpenSSL 3 without its legacy provider)
+        from contextlib import nullcontext
+        from unittest.mock import patch
+        from codext.hashing.ripemd import ripemd160
+        from codext.hashing.whirlpool import whirlpool
+        vectors = {
+            'ripemd160|ripemd-160|rmd160': {
+                '': "9c1185a5c5e9fc54612808977ee8f548b2258d31",
+                'abc': "8eb208f7e05d987a9b044a8e98c6b087f15a0bfc",
+                'message digest': "5d0689ef49d2fae572b881b123a85ffa21595f36",
+            },
+            'whirlpool': {
+                '': "19fa61d75522a4669b44e39c1d2e1726c530232130d407f89afee0964997f7a7"
+                    "3e83be698b288febcf88e3e03c4f0757ea8964e59b63d93708b138cc42a66eb3",
+                'abc': "4e2448a4c6f486bb16b6562c73b4020bf3043e3a731bce721ae1b303d97e6d4c"
+                       "7181eebdb6c57e277d0e34957114cbd6c797fc9d95d8b582d225292076d4eef5",
+                'The quick brown fox jumps over the lazy dog':
+                    "b97de512e91e3828b40d2b0fdce9ceb3c4a71f9bea8d88e75c4fa854df36725f"
+                    "d2b52eb6544edcacd6f8beddfea403cb55ae31f03ad62a5ef54e42ee82c3fb35",
+            },
+        }
+        for unavailable in [False, True]:
+            with patch("hashlib.new", side_effect=ValueError) if unavailable else nullcontext():
+                for enc, v in vectors.items():
+                    for e in enc.split("|"):
+                        for s, r in v.items():
+                            self.assertEqual(codecs.encode(s, e), r)
+                            self.assertEqual(codecs.encode(b(s), e), b(r))
+        # multi-block inputs, around the padding boundaries
+        for n in [55, 56, 63, 64, 65, 1000]:
+            self.assertEqual(ripemd160(b"a" * n), codecs.encode(b"a" * n, "ripemd160").decode())
+        # reference value computed with OpenSSL (legacy provider)
+        self.assertEqual(whirlpool(b"a" * 1000), "fe24b173807796fdac15ebcaf5769f661695601ffeb64490ec0eecd30bd5b2c3"
+                                                 "773b36d4edaf3175378b8df114e9496c833ef13606e7ab3d455681e98ecc818f")
+        for e in ["ripemd160", "whirlpool"]:
+            self.assertRaises(NotImplementedError, codecs.decode, STR, e)
         if UNIX:
             try:
                 import crypt

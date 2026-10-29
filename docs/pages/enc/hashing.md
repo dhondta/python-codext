@@ -135,6 +135,21 @@ This one-way transformation function is the original Keccak, as submitted to the
 
 -----
 
+### RIPEMD
+
+This one-way transformation function, used e.g. in Bitcoin addresses, relies on [`hashlib`](https://docs.python.org/3/library/hashlib.html) when it provides it, and on a pure Python implementation otherwise (OpenSSL 3 only provides it in its legacy provider).
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`ripemd160` | data --> RIPEMD-160(data) | `ripemd-160`, `rmd160`, ... | 
+
+```python
+>>> codext.encode("This is a test string !", "ripemd160")
+'f0c90bd665512fc158f3c47d6de76b58783c404c'
+```
+
+-----
+
 ### Secure Hash Algorithm
 
 These one-way transformation functions rely on the native [`hashlib`](https://docs.python.org/3/library/hashlib.html) library, except SHA-0 (withdrawn shortly after its publication and replaced by SHA-1), which is implemented in pure Python.
@@ -187,3 +202,17 @@ These one-way transformation functions rely on the native [`hashlib`](https://do
 '01a14a746d7c1d28927fe6078fdb9dcc8fabc45da58b3d1af13175b6278a6e824241927c47b4c5ced2ff629833574c9d985410d97c5c3d54d0f15b548cf2713d'
 ```
 
+-----
+
+### Whirlpool
+
+This one-way transformation function, adopted in ISO/IEC 10118-3, relies on [`hashlib`](https://docs.python.org/3/library/hashlib.html) when it provides it, and on a pure Python implementation otherwise (OpenSSL 3 only provides it in its legacy provider).
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`whirlpool` | data --> Whirlpool(data) |  | 
+
+```python
+>>> codext.encode("This is a test string !", "whirlpool")
+'60c9fe1d138fcf42d73798223394d0decebb60b170b5250fd0d18116a9f5d9a0c183220315a65d2fe0c9c4f5a5c314949b64581b9928fa32462b4b3a7b096798'
+```
