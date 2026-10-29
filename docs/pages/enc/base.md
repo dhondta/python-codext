@@ -174,6 +174,7 @@ This encoding implements various different versions of Base85.
 `base122` | text <-> Base122 encoded text | `base[-_]?122` | Python 3 only
 `base128` | text <-> Base128 encoded text | `base[-_]?128` | Relies on the ASCII charset
 `base128-latin1` | data <-> Base128 encoded text | `base128[-_]latin[-_]?1` | [Base128](https://github.com/rpuntaie/base128) with printable characters (digits, letters and Latin-1) ; chunks of 7 bytes, 7 bits per character, a last character giving the length of the last chunk
+`base256` | data <-> Base256 encoded text | `base[-_]?256` | [Base256](https://github.com/KvanTTT/BaseNcoding) with one printable character per byte (`!`, `#` to `~`, then U+00A0 to U+0142)
 `leb128` | integers <-> LEB128 (varint) bytes | `uleb128`, `varint` | unsigned integers, separated by whitespaces or commas
 `sleb128` | integers <-> signed LEB128 bytes | `leb128-signed` | signed integers (two's complement)
 `base1024` | data <-> Ecoji encoded text | `base[-_]?1024`, `ecoji`, `ecoji-v1`, `ecoji-v2` | 10 bits per emoji ; encodes with Ecoji version 2 by default
@@ -201,6 +202,13 @@ This encoding implements various different versions of Base85.
 >>> codecs.encode("Hello World!", "base128-latin1")
 'aPjÃây·ÕtÚÊÃX15'
 >>> codecs.decode("aPjÃây·ÕtÚÊÃX15", "base128-latin1")
+'Hello World!'
+```
+
+```python
+>>> codecs.encode("Hello World!", "base256")
+'j¨¯¯²By²µ¯§C'
+>>> codecs.decode("j¨¯¯²By²µ¯§C", "base256")
 'Hello World!'
 ```
 
