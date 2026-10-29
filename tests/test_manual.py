@@ -39,6 +39,15 @@ class ComplementaryTestCase(TestCase):
         self.assertRaises(ValueError, codecs.decode, "+. comment", "brainfuck")
         self.assertRaises(ValueError, codecs.decode, "+. comment", "brainfuck", "BAD_ERRORS")
     
+    def test_codec_ook(self):
+        # with a non-strict errors handling, other characters, an odd last word, "Ook? Ook?" and unmatched brackets are
+        #  ignored
+        for e in ["ignore", "replace", "leave"]:
+            self.assertEqual(codecs.decode("Ook. Ook. Ook! Ook. Ook? Ook? !? Ook. Ook. ?! Ook!", "ook", e), "\x01")
+            self.assertEqual(codecs.decode("Comment: Ook. Ook. Ook! Ook.", "ook-short", e), "\x01")
+        self.assertRaises(ValueError, codecs.decode, "Ook. Ook. Ook! Ook.!", "ook")
+        self.assertRaises(ValueError, codecs.decode, "Ook? Ook?", "ook", "BAD_ERRORS")
+    
     def test_codec_pikalang(self):
         # with a non-strict errors handling, unknown words and unmatched brackets are ignored
         for e in ["ignore", "replace", "leave"]:

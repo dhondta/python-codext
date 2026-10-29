@@ -21,6 +21,25 @@
 
 -----
 
+### Ook!
+
+[Ook!](https://www.dangermouse.net/esoteric/ook.html) is an esoteric programming language derived from Brainfuck, designed to be read and written by orang-utans: each Brainfuck command is a pair of the words `Ook.`, `Ook?` and `Ook!` (e.g. `Ook. Ook?` for `>` and `Ook! Ook.` for `.`). Short Ook! only keeps the punctuation marks (e.g. `.?` for `>`). Encoding generates a program that prints the text (as UTF-8), while decoding runs the program (with 8-bit cells and no input) and returns its output.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`ook` | text <-> Ook! program | `ook!`, `ook-short`, `short-ook` | both forms decoded (case-insensitive) ; whitespace ignored ; other characters only accepted with a non-strict errors handling ; programs that do not halt within 1000 steps per command (with a minimum of 1 million) are stopped
+
+```python
+>>> codext.encode("A", "ook-short")
+'.?................!??..................?!!?!?...!.'
+>>> codext.decode(".?................!??..................?!!?!?...!.", "ook")
+'A'
+>>> codext.decode("Ook. Ook. Ook. Ook. Ook! Ook.", "ook")
+'\x02'
+```
+
+-----
+
 ### Pikalang
 
 [Pikalang](https://github.com/groteworld/pikalang) is an esoteric programming language derived from Brainfuck, using the vocabulary of Pikachu: `pi` (`+`), `ka` (`-`), `pipi` (`>`), `pichu` (`<`), `pika` (`[`), `chu` (`]`), `pikachu` (`.`) and `pikapi` (`,`). Encoding generates a program that prints the text (as UTF-8), while decoding runs the program (with 8-bit cells and no input) and returns its output.

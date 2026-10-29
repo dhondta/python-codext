@@ -383,6 +383,7 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 #### [Esoteric](https://python-codext.readthedocs.io/en/latest/enc/esoteric.html)
 
 - [X] `brainfuck`: well-known esoteric programming language (encoding generates a program printing the text)
+- [X] `ook`: Brainfuck derivative for orang-utans (`Ook.`, `Ook?` and `Ook!`), also in its short form
 - [X] `pikalang`: Brainfuck derivative using Pikachu's vocabulary
 
 #### [Hashing](https://python-codext.readthedocs.io/en/latest/enc/hashing.html)
