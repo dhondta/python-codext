@@ -80,7 +80,7 @@ class ComplementaryTestCase(TestCase):
 
 class ManualTestCase(TestCase):
     def test_codec_aer256(self):
-        from codext.crypto.aer256 import _js_str
+        from codext.crypto._jsfloat import js_str as _js_str
         # numbers formatted as with JavaScript's String(...), as given by Node.js
         for x, r in [(0., "0"), (-0., "0"), (1e21, "1e+21"), (123456789012345680000., "123456789012345680000"),
                      (1e-6, "0.000001"), (1e-7, "1e-7"), (-1.2345e-7, "-1.2345e-7"), (2**60, "1152921504606847000"),
@@ -92,6 +92,10 @@ class ManualTestCase(TestCase):
         # with a long key, blocks exceed the precision of floats
         self.assertNotEqual(codecs.decode(codecs.encode("this is a test", k := "aer256-thisisaverylongkey"), k),
                             "this is a test")
+        # with ARMON-64, numbers in exponent notation are not split on their "+"
+        v = round((1e21 + 99) * 98 - 97)
+        self.assertEqual(codecs.decode("1e+21", "armon64-abc"), bytes.fromhex(f"{v:x}").decode("latin-1"))
+        self.assertEqual(codecs.decode("1e+21+1e+21", "armon64-abc"), 2 * codecs.decode("1e+21", "armon64-abc"))
     
     def test_codec_affine(self):
         STR = "this is a test"

@@ -17,9 +17,8 @@ This codec:
 
 Reference: https://github.com/gungunfebrianza/Mastering-Cryptography/blob/master/AER-256/AER-256.js
 """
-from math import floor, isfinite
-
-from ..__common__ import *
+from ._jsfloat import float_cipher
+from ..__common__ import add
 
 
 __examples__ = {
@@ -33,85 +32,4 @@ __examples__ = {
 }
 
 
-def _js_str(x):
-    """ Convert a float to a string like JavaScript's Number.prototype.toString. """
-    x = float(x)
-    if x != x:
-        return "NaN"
-    if x < 0:
-        return "-" + _js_str(-x)
-    if x == 0:
-        return "0"
-    if not isfinite(x):
-        return "Infinity"
-    # shortest digits that round-trip (as with repr) and decimal exponent n such that x = 0.digits * 10^n
-    m, _, e = repr(x).partition("e")
-    i, _, f = m.partition(".")
-    d = (i + f.rstrip("0")) if f != "0" else i
-    n = len(i) + int(e or 0)
-    k = len(d.lstrip("0"))
-    n -= len(d) - k
-    d = d.lstrip("0")
-    if k <= n <= 21:
-        return d + "0" * (n - k)
-    if 0 < n <= 21:
-        return d[:n] + "." + d[n:]
-    if -6 < n <= 0:
-        return "0." + "0" * -n + d
-    return d[0] + ("." + d[1:] if k > 1 else "") + "e" + "+-"[n < 1] + str(abs(n - 1))
-
-
-def __check_key(key):
-    key = str(key or "")
-    if len(key) < 3:
-        raise LookupError("Bad parameter for encoding 'aer256': key must be at least 3 characters long")
-    return [ord(c) for c in key], (len(key) + 1) // 2
-
-
-def aer256_encode(key=None):
-    def encode(text, errors="strict"):
-        k, n = __check_key(key)
-        _h, t = handle_error("aer256", errors), ensure_str(text)
-        t = "".join(c for c in "".join(c if ord(c) < 256 else _h(c, i) for i, c in enumerate(t)) if ord(c) < 256)
-        r = []
-        for i in range(0, len(t), n):
-            v = float(int("".join(f"{ord(c):02x}" for c in t[i:i+n]), 16))
-            for j, kc in enumerate(k):
-                if j % 3 == 0:
-                    v += kc
-                elif j % 3 == 1:
-                    v /= kc
-                else:
-                    v -= kc
-            r.append(_js_str(v))
-        return ", ".join(r), len(text)
-    return encode
-
-
-def aer256_decode(key=None):
-    def decode(text, errors="strict"):
-        k, _ = __check_key(key)
-        _h, t, r = handle_error("aer256", errors, decode=True, kind="number"), ensure_str(text), ""
-        for i, s in enumerate(t.split(", ") if t else []):
-            try:
-                v = float(s)
-            except ValueError:
-                r += _h(s, i)
-                continue
-            for j in range(len(k) - 1, -1, -1):
-                if j % 3 == 0:
-                    v -= k[j]
-                elif j % 3 == 1:
-                    v *= k[j]
-                else:
-                    v += k[j]
-            # Math.round, then the hexadecimal digits of the number (nothing when it is not positive)
-            v = floor(v) + (v - floor(v) >= .5) if isfinite(v) else 0
-            h = f"{v:x}" if v > 0 else ""
-            h = "0" * (len(h) % 2) + h
-            r += "".join(chr(int(h[j:j+2], 16)) for j in range(0, len(h), 2))
-        return r, len(text)
-    return decode
-
-
-add("aer256", aer256_encode, aer256_decode, r"^aer[-_]?256(?:[-_](\S*))?$", guess=None)
+add("aer256", *float_cipher("aer256", ", ", 3), r"^aer[-_]?256(?:[-_](\S*))?$", guess=None)

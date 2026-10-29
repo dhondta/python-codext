@@ -349,6 +349,7 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 - [X] `adfgx`: aka ADFGX Cipher (Polybius square and columnar transposition) ; `adfgvx` for its 6x6 variant
 - [X] `aer256`: aka AER-256 (toy cipher with float arithmetic, from online JavaScript tools)
 - [X] `affine`: aka Affine Cipher
+- [X] `armon64`: aka ARMON-64 (variant of AER-256 with a fourth operation)
 - [X] `atbash`: aka Atbash Cipher
 - [X] `autoclave`: aka Autoclave/Autokey Cipher (variant of Vigenere Cipher)
 - [X] `bacon`: aka Baconian Cipher

@@ -97,6 +97,27 @@ This codec implements the Affine monoalphabetic substitution cipher. It is param
 
 -----
 
+### ARMON-64
+
+This toy cipher, a variant of [AER-256](#aer-256), comes from online JavaScript encryption tools. It works the same way, but with a fourth operation (the number is multiplied by 0.01 times the code of the key character) and with `+` as the separator.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`armon64` | text <-> ARMON-64 ciphertext | `armon-64`, `armon_64` | parameterized with a mandatory key of at least 3 characters, e.g. `armon64-secret` ; only characters with a code below 256
+
+!!! warning "Precision"
+
+    As with AER-256, keys of more than 12 characters give blocks that are too large to be decrypted exactly. Unlike the original JavaScript, decryption does not split numbers in exponent notation (e.g. `1e+21`) on their `+`.
+
+```python
+>>> codext.encode("this is a test", "armon64-test")
+'210.18970297029702+177.9738613861386+-36.77544554455446+206.4225742574257+153.49900990099007+210.15524752475247+207.38732673267327'
+>>> codext.decode("210.18970297029702+177.9738613861386", "armon64-test")
+'this'
+```
+
+-----
+
 ### Atbash Cipher
 
 It implements the monoalphabetic substitution cipher used for the Hebrew alphabet. By default, it considers the lowercase and uppercase letters, inverted per group, as the alphabet. It can also use a mask to extend it. Note that it does not generate any error for characters that are not part of the alphabet.
