@@ -47,6 +47,27 @@ The codec name holds the optional square key, then the mandatory transposition k
 
 -----
 
+### AER-256
+
+This toy cipher comes from online JavaScript encryption tools. The text is split into blocks of half the key length (rounded up), each block being read as a number made of its character codes. For each character of the key, its code is added to, divides or is subtracted from this number in turn, and the resulting floating-point numbers are written as JavaScript would and separated by `, `.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`aer256` | text <-> AER-256 ciphertext | `aer-256`, `aer_256` | parameterized with a mandatory key of at least 3 characters, e.g. `aer256-secret` ; only characters with a code below 256
+
+!!! warning "Precision"
+
+    As the computations are done with double-precision floats, as in JavaScript, keys of more than 12 characters give blocks that are too large to be decrypted exactly.
+
+```python
+>>> codext.encode("this is a test", "aer256-key")
+'175.10891089108912, 147.33663366336634, -37.79207920792079, 171.86138613861385, 126.23762376237624, 175.0792079207921, 172.69306930693068'
+>>> codext.decode("175.10891089108912, 147.33663366336634", "aer256-key")
+'this'
+```
+
+-----
+
 ### Affine Cipher
 
 This codec implements the Affine monoalphabetic substitution cipher. It is parametrizable with a mask for generating the alphabet and the parameters `a` and `b`. By default, it uses mask "`lus`" and parameters `a=1` and `b=2` but it can be set as in the examples hereafter.

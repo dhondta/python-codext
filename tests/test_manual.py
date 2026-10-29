@@ -79,6 +79,20 @@ class ComplementaryTestCase(TestCase):
 
 
 class ManualTestCase(TestCase):
+    def test_codec_aer256(self):
+        from codext.crypto.aer256 import _js_str
+        # numbers formatted as with JavaScript's String(...), as given by Node.js
+        for x, r in [(0., "0"), (-0., "0"), (1e21, "1e+21"), (123456789012345680000., "123456789012345680000"),
+                     (1e-6, "0.000001"), (1e-7, "1e-7"), (-1.2345e-7, "-1.2345e-7"), (2**60, "1152921504606847000"),
+                     (float("nan"), "NaN"), (float("-inf"), "-Infinity"), (.1, "0.1")]:
+            self.assertEqual(_js_str(x), r)
+        # numbers that are not positive after decryption give no character, as with the original JavaScript
+        self.assertEqual(codecs.decode("NaN, -1e+21, 175.10891089108912", "aer256-key"), "th")
+        self.assertEqual(codecs.decode("x, 175.10891089108912", "aer256-key", "ignore"), "th")
+        # with a long key, blocks exceed the precision of floats
+        self.assertNotEqual(codecs.decode(codecs.encode("this is a test", k := "aer256-thisisaverylongkey"), k),
+                            "this is a test")
+    
     def test_codec_affine(self):
         STR = "this is a test"
         AFF1 = "vjkubkubcbvguv"

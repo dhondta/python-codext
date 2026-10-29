@@ -1,5 +1,6 @@
 # -*- coding: UTF-8 -*-
 from .adfgx import *
+from .aer256 import *
 from .affine import *
 from .atbash import *
 from .bacon import *
