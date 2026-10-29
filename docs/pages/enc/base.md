@@ -183,6 +183,7 @@ This encoding implements various different versions of Base85.
 `base2048` | data <-> Base2048 encoded text | `base[-_]?2048` | 11 bits per character, optimised for Twitter
 `base32768` | data <-> Base32768 encoded text | `base[-_]?32768` | 15 bits per character, optimised for UTF-16
 `base65536` | data <-> Base65536 encoded text | `base[-_]?65536` | 16 bits per character, optimised for UTF-32
+`base131072` | data <-> Base131072 encoded text | `base[-_]?131072` | 17 bits per character, variant of the [base131072](https://docs.rs/base131072) Rust crate
 
 ```python
 >>> codecs.encode("this is a test", "base100")
@@ -222,6 +223,15 @@ Base2048, Base32768 and Base65536 were designed by [qntm](https://github.com/qnt
 >>> codext.encode("Hello, World!", "base65536")
 '驈ꍬ慯谠𓁯饬ᔡ'
 >>> codext.decode("驈ꍬ慯谠𓁯饬ᔡ", "base65536")
+'Hello, World!'
+```
+
+Base131072, with 17 bits per character, was intended by qntm as the successor of Base65536, but its repertoire was never defined as Unicode did not hold enough safe characters. The `base131072` codec implements the variant of the [base131072](https://docs.rs/base131072) Rust crate, whose repertoire is made of the first 131072 assigned code points of Unicode 13.0 (from U+0020, hence including the printable ASCII characters and the space). The final bits are padded with 0s, and a last character (U+2EA39 or U+2EA38) tells whether 1 or 2 bytes must be dropped when decoding. When decoding, tabs and newlines are ignored.
+
+```python
+>>> codext.encode("Hello, World!", "base131072")
+'閠𩮬𦍜׆𭢅𠌃蓖𮨸'
+>>> codext.decode("閠𩮬𦍜׆𭢅𠌃蓖𮨸", "base131072")
 'Hello, World!'
 ```
 

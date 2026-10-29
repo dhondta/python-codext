@@ -265,6 +265,17 @@ class TestCodecsBase(TestCase):
         # the existing base128 codec (ASCII charset) is not affected
         self.assertEqual(codecs.encode("Hello World!", "base128"), "\t\x06+1Xo\x10\x15mw\x131H!")
     
+    def test_codec_base131072(self):
+        # a wrong character is dropped, and a padding mismatch is only reported with strict errors handling
+        enc = codecs.encode("Hello", "base131072")
+        self.assertEqual(codecs.decode(enc[:2] + "\x00" + enc[2:], "base131072", "ignore"), "Hello")
+        # without its padding character, "Hello" (5 bytes, 3 groups of 17 bits) decodes to 7 bytes
+        self.assertEqual(codecs.decode(enc[:-1], "base131072", "ignore"), "Hello\x00\x00")
+        self.assertRaises(ValueError, codecs.decode, enc[:-1], "base131072")
+        # the space belongs to the repertoire (value 0), unlike tabs and newlines which are ignored
+        self.assertEqual(codecs.decode(" ", "base131072", "ignore"), "\x00\x00\x00")
+        self.assertEqual(codecs.decode(enc[:2] + "\r\n" + enc[2:], "base131072"), "Hello")
+    
     def test_codec_base45(self):
         # RFC 9285 test vectors
         for s, b45 in [("AB", "BB8"), ("Hello!!", "%69 VD92EX0"), ("base-45", "UJCLQE7W581")]:

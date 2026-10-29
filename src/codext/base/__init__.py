@@ -14,6 +14,7 @@ from .base256 import *
 from .base1024 import *
 from .bech32 import *
 from .base65536 import *
+from .base131072 import *
 from .baseN import *
 from .leb128 import *
 from ..__common__ import *
