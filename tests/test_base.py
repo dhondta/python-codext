@@ -252,6 +252,19 @@ class TestCodecsBase(TestCase):
         # non-Base69 characters are dropped
         self.assertEqual(codecs.decode(enc[:5] + "!" + enc[5:], "base69", "ignore"), "ABCDEFGHIJKLMN")
     
+    def test_codec_base128_latin1(self):
+        # a bad chunk is handled as a whole, other chunks being kept ; non-Base128 characters are dropped
+        enc = codecs.encode("ABCDEFGHIJ", "base128-latin1")
+        self.assertEqual(codecs.decode(enc[:11] + "ÿ" + enc[12:], "base128-latin1", "ignore"), "ABCDEFG")
+        self.assertEqual(codecs.decode(enc[:6] + "\n" + enc[6:], "base128-latin1"), "ABCDEFGHIJ")
+        self.assertEqual(codecs.decode(enc[:3] + "!" + enc[3:], "base128-latin1", "ignore"), "ABCDEFGHIJ")
+        # the last character must be a length from 0 to 6, and give the length of the last chunk
+        self.assertEqual(codecs.decode(enc[:-1] + "7", "base128-latin1", "ignore"), "")
+        self.assertEqual(codecs.decode("1", "base128-latin1", "ignore"), "")
+        self.assertRaises(ValueError, codecs.decode, enc[:-1] + "2", "base128-latin1")
+        # the existing base128 codec (ASCII charset) is not affected
+        self.assertEqual(codecs.encode("Hello World!", "base128"), "\t\x06+1Xo\x10\x15mw\x131H!")
+    
     def test_codec_base45(self):
         # RFC 9285 test vectors
         for s, b45 in [("AB", "BB8"), ("Hello!!", "%69 VD92EX0"), ("base-45", "UJCLQE7W581")]:

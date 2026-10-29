@@ -283,6 +283,7 @@ CACTCGGTCGGCCATATGTTCGGCCATATGTTCGTCTGTTCACTCGCCCATACACT
 - [X] `base85`: all variants of Base85 ([Ascii85](https://fr.wikipedia.org/wiki/Ascii85), [z85](https://rfc.zeromq.org/spec/32), [Adobe](https://dencode.com/string/ascii85), [(x)btoa](https://dencode.com/string/ascii85), [RFC1924](https://datatracker.ietf.org/doc/html/rfc1924), [XML](https://datatracker.ietf.org/doc/html/draft-kwiatkowski-base85-for-xml-00))
 - [X] `base91`: [Base91](http://base91.sourceforge.net) custom conversion
 - [X] `base100` (or *emoji*): [Base100](https://github.com/AdamNiederer/base100) custom conversion
+- [X] `base128-latin1`: [Base128](https://github.com/rpuntaie/base128) with printable characters (digits, letters and Latin-1)
 - [X] `base122`: [Base100](http://blog.kevinalbs.com/base122) custom conversion
 - [X] `base1024` (or *ecoji*): [Ecoji](https://github.com/keith-turner/ecoji) custom conversion (10 bits per emoji, versions 1 and 2)
 - [X] `base2048`: [Base2048](https://github.com/qntm/base2048) custom conversion (11 bits per character, optimised for Twitter)
