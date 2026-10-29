@@ -305,6 +305,34 @@ class ManualTestCase(TestCase):
                                                  "773b36d4edaf3175378b8df114e9496c833ef13606e7ab3d455681e98ecc818f")
         for e in ["ripemd160", "whirlpool"]:
             self.assertRaises(NotImplementedError, codecs.decode, STR, e)
+        # MD4 (through hashlib when available, and in pure Python), the Windows LM and NT hashes (with a DES test vector
+        #  of the pure Python implementation) and the MySQL password hashes
+        from codext.hashing.md import md4
+        from codext.hashing.windows import des_encrypt
+        vectors = {
+            'md4': {'': "31d6cfe0d16ae931b73c59d7e0c089c0", 'abc': "a448017aaf21d8525fc10ae87aa6729d",
+                    'message digest': "d9130a8164549fe818874806e1c7014b"},
+            'lm|lmhash|lm-hash': {'': "aad3b435b51404eeaad3b435b51404ee",
+                                  'password': "e52cac67419a9a224a3b108f3fa6cb6d",
+                                  'Password1234567890': "e52cac67419a9a22c41a0e2828864838"},
+            'ntlm|nt|nthash|nt-hash': {'': "31d6cfe0d16ae931b73c59d7e0c089c0",
+                                       'password': "8846f7eaee8fb117ad06bdd830b7586c"},
+            'mysql323|mysql-3.23|mysql3': {'mypass': "6f8c114b58f2ce9e", 'pass word': "5d2e19393cc5ef67"},
+            'mysql41|mysql-4.1|mysql4': {'password': "*2470C0C06DEE42FD1618BB99005ADCA2EC9D1E19"},
+        }
+        for unavailable in [False, True]:
+            with patch("hashlib.new", side_effect=ValueError) if unavailable else nullcontext():
+                for enc, v in vectors.items():
+                    for e in enc.split("|"):
+                        for s, r in v.items():
+                            self.assertEqual(codecs.encode(s, e), r)
+                            self.assertEqual(codecs.encode(b(s), e), b(r))
+        for n in [55, 56, 63, 64, 65, 1000]:
+            self.assertEqual(md4(b"a" * n), codecs.encode(b"a" * n, "md4").decode())
+        self.assertEqual(des_encrypt(bytes.fromhex("133457799bbcdff1"), bytes.fromhex("0123456789abcdef")).hex(),
+                         "85e813540f0ab405")
+        for e in ["md4", "lm", "ntlm", "mysql323", "mysql41"]:
+            self.assertRaises(NotImplementedError, codecs.decode, STR, e)
         if UNIX:
             try:
                 import crypt

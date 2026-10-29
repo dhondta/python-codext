@@ -356,10 +356,12 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 - [X] `beaufort`: aka Beaufort Cipher (variant of Vigenere Cipher)
 - [X] `bifid`: aka Bifid Cipher (Delastelle's fractionation with a 5x5 Polybius square) ; `trifid` for its 3x3x3 cube variant
 - [X] `chaocipher`: aka Chaocipher (two alphabets permuted after each letter)
+- [X] `cisco-type7`: aka Cisco IOS type 7 password encoding
 - [X] `citrix`: aka Citrix CTX1 password encoding
 - [X] `columnar`: aka Columnar Transposition Cipher (keyword-ordered columns ; a second keyword gives the double transposition)
 - [X] `enigma`: aka Enigma machine (Enigma I, M3 and M4, with reflector, rotors, rings, positions and plugboard)
 - [X] `foursquare`: aka Four-square Cipher (bigrams substituted with two keyed squares and two plain ones)
+- [X] `fractionated-morse`: aka Fractionated Morse Cipher (Morse code split into groups of three symbols, each replaced by a letter of a keyed alphabet)
 - [X] `gronsfeld`: aka Gronsfeld Cipher (variant of Vigenere Cipher with a numeric key)
 - [X] `hill`: aka Hill Cipher (blocks of letters multiplied by a key matrix modulo 26)
 - [X] `nihilist`: aka Nihilist Cipher (sums of the Polybius coordinates of the text and of a repeated key)
@@ -392,7 +394,10 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 - [X] `crypt`: Unix's crypt hash for passwords (Python 3 and Unix only ; relies on `crypt`)
 - [X] `fnv`: aka Fowler-Noll-Vo ; includes FNV-1 and FNV-1a in 32, 64, 128, 256, 512 and 1024 bits
 - [X] `keccak`: original Keccak (pre-SHA-3 padding, as used e.g. by Ethereum) in 224, 256, 384 and 512 bits
-- [X] `md`: aka Message Digest ; includes MD2, MD4 and MD5 (relies on `hashlib`), and MD6 (digest sizes multiple of 8, up to 512 bits)
+- [X] `lm`: aka LAN Manager hash, the legacy Windows password hash (with a pure Python DES)
+- [X] `md`: aka Message Digest ; includes MD2, MD4 (relies on `hashlib` when available, pure Python otherwise), MD5 (relies on `hashlib`) and MD6 (digest sizes multiple of 8, up to 512 bits)
+- [X] `mysql`: MySQL password hashes ; includes the MySQL 3.23 hash and the MySQL 4.1+ native password hash
+- [X] `ntlm`: aka NT hash, the Windows password hash (MD4 of the UTF-16LE password)
 - [X] `ripemd160`: aka RIPEMD-160 (relies on `hashlib` when available, pure Python otherwise)
 - [X] `sha`: aka Secure Hash Algorithms ; includes SHA0, SHA1, 224, 256, 384, 512 (Python2/3) but also SHA3-224, -256, -384 and -512 (Python 3 only ; relies on `hashlib`)
 - [X] `shake`: aka SHAKE hashing (Python 3 only ; relies on `hashlib`)

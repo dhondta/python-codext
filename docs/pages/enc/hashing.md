@@ -116,7 +116,7 @@ This one-way transformation function is the original Keccak, as submitted to the
 **Codec** | **Conversions** | **Aliases** | **Comment**
 :---: | :---: | --- | ---
 `md2` | data --> MD2(data) |  | 
-`md4` | data --> MD4(data) |  | relies on [`hashlib`](https://docs.python.org/3/library/hashlib.html)
+`md4` | data --> MD4(data) |  | relies on [`hashlib`](https://docs.python.org/3/library/hashlib.html) when available, pure Python otherwise
 `md5` | data --> MD5(data) |  | relies on [`hashlib`](https://docs.python.org/3/library/hashlib.html)
 `md6` | data --> MD6(data, size) | `md6-128`, `md6_512`, ... | parametrized ; *size* is a multiple of 8 in [8, 512] (default: 256) ; unkeyed, with the default tree height (64)
 
@@ -131,6 +131,24 @@ This one-way transformation function is the original Keccak, as submitted to the
 'dc29b9f3d9cd16cf27b71f915b386bdd8fc3daa5eb7476a3408442d52bf8d869'
 >>> codext.encode("This is a test string !", "md6-128")
 '091d9f116b997823999ac64cfe3bfbad'
+```
+
+-----
+
+### MySQL
+
+These one-way transformation functions compute the password hashes of MySQL: the custom 64-bit hash of MySQL 3.23 (spaces and tabs being ignored) and the native password hash of MySQL 4.1 and later (SHA-1 of the binary SHA-1 digest).
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`mysql323` | data --> MySQL323(data) | `mysql-3.23`, `mysql3` | 
+`mysql41` | data --> MySQL41(data) | `mysql-4.1`, `mysql4` | uppercase digest prefixed with `*`, as stored by MySQL
+
+```python
+>>> codext.encode("This is a test string !", "mysql323")
+'19a9b4171de94050'
+>>> codext.encode("This is a test string !", "mysql41")
+'*43782A96DB4DB788BFF188B26F633AFB47FDA7D0'
 ```
 
 -----
@@ -215,4 +233,22 @@ This one-way transformation function, adopted in ISO/IEC 10118-3, relies on [`ha
 ```python
 >>> codext.encode("This is a test string !", "whirlpool")
 '60c9fe1d138fcf42d73798223394d0decebb60b170b5250fd0d18116a9f5d9a0c183220315a65d2fe0c9c4f5a5c314949b64581b9928fa32462b4b3a7b096798'
+```
+
+-----
+
+### Windows
+
+These one-way transformation functions compute the password hashes of Windows: the legacy LAN Manager (LM) hash (uppercased password, truncated to 14 characters, whose halves are DES keys encrypting `KGS!@#$%` ; DES is implemented in pure Python) and the NT hash, i.e. the MD4 digest of the password encoded in UTF-16LE.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`lm` | data --> LM(data) | `lmhash`, `lm-hash` | 
+`ntlm` | data --> NT(data) | `nt`, `nthash`, `nt-hash` | 
+
+```python
+>>> codext.encode("This is a test string !", "lm")
+'62b4f4e39b2ef8637f8e43d4eb012c81'
+>>> codext.encode("This is a test string !", "ntlm")
+'9749468129a3b135d63d3371504d6d12'
 ```

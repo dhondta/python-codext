@@ -2,7 +2,8 @@
 """MD Hashing Codecs - string hashing with Message Digest (MD).
 
 The Message Digest algorithms were designed by Ronald Rivest: MD2 (1989, implemented here as it is not provided by
- hashlib anymore), MD4 (1990, only when available in hashlib) and MD5 (1991), all producing 128-bit digests ; they are
+ hashlib anymore), MD4 (1990, computed with hashlib when available and in pure Python otherwise, as OpenSSL 3 only
+ provides it in its legacy provider) and MD5 (1991), all producing 128-bit digests ; they are
  now considered broken for cryptographic use. MD6 (2008, submitted to the SHA-3 competition) is unrelated to them: it
  compresses blocks of 512 bytes into chaining values of 128 bytes along a 4-ary tree, which the last compression
  truncates to the digest size (from 8 to 512 bits, given with the codec name, e.g. "md6-512" ; it defaults to 256). It
@@ -65,6 +66,37 @@ def md2(data):
     return "".join("{:02x}".format(x) for x in digest[:16])
 
 
+def md4(data):
+    """ Pure Python implementation of MD4. """
+    d, m = b(data), 0xffffffff
+    rol = lambda v, n: (v << n | v >> (32 - n)) & m
+    d += b"\x80" + b"\x00" * (-(len(d) + 9) % 64) + (8 * len(d)).to_bytes(8, "little")
+    h = [0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476]
+    for i in range(0, len(d), 64):
+        x = [int.from_bytes(d[i+j:i+j+4], "little") for j in range(0, 64, 4)]
+        a, b_, c, d_ = h
+        # round 1 (F, words in order), round 2 (G, words by column) and round 3 (H, words in bit-reversed order)
+        for j in range(48):
+            r, k = j // 16, j % 16
+            if r == 0:
+                f, w, s = b_ & c | ~b_ & d_, k, (3, 7, 11, 19)[k % 4]
+            elif r == 1:
+                f, w, s = (b_ & c | b_ & d_ | c & d_) + 0x5a827999, k % 4 * 4 + k // 4, (3, 5, 9, 13)[k % 4]
+            else:
+                f, w, s = (b_ ^ c ^ d_) + 0x6ed9eba1, (0, 8, 4, 12, 2, 10, 6, 14, 1, 9, 5, 13, 3, 11, 7, 15)[k], \
+                          (3, 9, 11, 15)[k % 4]
+            a, b_, c, d_ = d_, rol((a + f + x[w]) & m, s), b_, c
+        h = [(v + w) & m for v, w in zip(h, (a, b_, c, d_))]
+    return b"".join(v.to_bytes(4, "little") for v in h).hex()
+
+
+def _md4(s, error="strict"):
+    try:
+        return hashlib.new("md4", b(s)).hexdigest(), len(s)
+    except ValueError:
+        return md4(s), len(s)
+
+
 # MD6 constants (see the specification, section 9): Q (15 words of the fractional part of sqrt(6)), the tap positions,
 #  the shift amounts and the round constants (initial value and mask)
 M64 = (1 << 64) - 1
@@ -117,7 +149,6 @@ def md6(n=""):
 
 add("md2", lambda s, error="strict": (md2(s), len(s)), guess=None)
 add("md5", lambda s, error="strict": (hashlib.new("md5", b(s)).hexdigest(), len(s)), guess=None)
-if "md4" in hashlib.algorithms_available:
-    add("md4", lambda s, error="strict": (hashlib.new("md4", b(s)).hexdigest(), len(s)), guess=None)
+add("md4", _md4, guess=None)
 
 add("md6", md6, pattern=r"^md6(?:[-_]?(\d+))?$", guess=None)

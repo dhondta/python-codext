@@ -239,6 +239,23 @@ The Chaocipher was invented by John F. Byrne in 1918 and only disclosed in 2010.
 
 -----
 
+### Cisco Type 7
+
+This implements the reversible Cisco IOS type 7 password encoding: each byte is XORed with a fixed key, starting at an offset given by the salt (from 0 to 15), and the result is the salt as two decimal digits followed by the XORed bytes in hexadecimal. Decoding reads the salt from the input.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`cisco-type7` | text <-> Cisco type 7 ciphertext | `cisco7`, `type7`, `cisco_type_7`, ... | parameterized with the salt used for encoding, e.g. `cisco-type7-8` (default: 0)
+
+```python
+>>> codext.encode("this is a test", "cisco-type7-8")
+'083544471A590C04520A4C102F3830'
+>>> codext.decode("0822455D0A16", "cisco-type7")
+'cisco'
+```
+
+-----
+
 ### Citrix CTX1
 
 This implements the Citrix CTX1 password encoding algorithm.
@@ -321,6 +338,25 @@ The Four-square cipher, invented by Felix Delastelle, substitutes pairs of lette
 'FYGMKYHOBXMFKKKIMD'
 >>> codext.encode("Hide the gold 2026", "foursquare-secret-key-6")
 'FFTAQFSIOGT1209T'
+```
+
+-----
+
+### Fractionated Morse Cipher
+
+The text is converted to Morse code, with "x" between the characters, "xx" between the words and a trailing "xx". This Morse string is split into groups of three symbols (the last one being padded with dots), and each group is replaced by a letter of an alphabet ordered with an optional keyword. Case and whitespace are not kept.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`fractionated-morse` | text <-> fractionated Morse ciphertext | `fmorse`, `fractionated_morse`, ... | parameterized with an optional keyword, e.g. `fractionated-morse-roundtable`
+
+```python
+>>> codext.encode("this is a test", "fractionated-morse")
+'PASSICAYRPSHY'
+>>> codext.encode("this is a test", "fractionated-morse-roundtable")
+'JRPPLURYMJPBY'
+>>> codext.decode("JRPPLURYMJPBY", "fmorse-roundtable")
+'this is a test'
 ```
 
 -----

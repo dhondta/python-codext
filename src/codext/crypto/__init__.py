@@ -7,10 +7,12 @@ from .barbie import *
 from .bazeries import *
 from .bifid import *
 from .chaocipher import *
+from .cisco import *
 from .citrix import *
 from .columnar import *
 from .enigma import *
 from .foursquare import *
+from .fractionatedmorse import *
 from .hill import *
 from .nihilist import *
 from .playfair import *
