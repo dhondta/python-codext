@@ -242,6 +242,16 @@ class TestCodecsBase(TestCase):
         self.assertRaises(ValueError, codecs.decode, b(B100)[1:], "base100")
         self.assertIsNotNone(codecs.decode(b(B100) + b"\n", "base100", "ignore"))
     
+    def test_codec_base69(self):
+        # a bad chunk (value of a group above 127, or incomplete chunk) is handled as a whole, other chunks being kept
+        enc = codecs.encode("ABCDEFGHIJKLMN", "base69")
+        bad = enc[:16] + "6C" + enc[18:]  # first group of the second chunk
+        self.assertRaises(ValueError, codecs.decode, bad, "base69")
+        self.assertEqual(codecs.decode(bad, "base69", "ignore"), "ABCDEFG")
+        self.assertEqual(codecs.decode(enc + "AA", "base69", "ignore"), "ABCDEFGHIJKLMN")
+        # non-Base69 characters are dropped
+        self.assertEqual(codecs.decode(enc[:5] + "!" + enc[5:], "base69", "ignore"), "ABCDEFGHIJKLMN")
+    
     def test_codec_base45(self):
         # RFC 9285 test vectors
         for s, b45 in [("AB", "BB8"), ("Hello!!", "%69 VD92EX0"), ("base-45", "UJCLQE7W581")]:

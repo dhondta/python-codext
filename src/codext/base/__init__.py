@@ -4,6 +4,7 @@ from types import MethodType
 
 from .base38 import *
 from .base45 import *
+from .base69 import *
 from .base85 import *
 from .base91 import *
 from .base100 import *

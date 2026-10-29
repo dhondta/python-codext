@@ -69,6 +69,7 @@ Note that for `base64`, it overwrites the native `base64_codec` to also support 
 `base58` | text <-> Base58 encoded text | `base[-_]?58(|[-_](bc|bitcoin|rp|ripple|fl|flickr|short[-]?url|url))` | Supports Bitcoin, Ripple and short URL
 `base62` | text <-> Base62 encoded text | `base[-_]?62(|[-_]inv(erted)?)` | 
 `base63` | text <-> Base63 encoded text | `base[-_]?63(|[-_]inv(erted)?)` | 
+`base69` | data <-> Base69 encoded text | `base[-_]?69` | [Base69](https://github.com/pshihn/base69) encoding (chunks of 7 bytes, 2 characters per 7 bits, `N=` for *N* padding bytes)
 `base91` | text <-> Base91 encoded text | `base[-_]?91(|[-_]inv(erted)?)` | 
 `base91-alt` | text <-> Alternate Base91 encoded text | `base[-_]?91[-_]alt(?:ernate)?(|[-_]inv(erted)?)` | Another version of Base91
 
@@ -98,6 +99,13 @@ Base38 is the encoding of the payloads of the [Matter](https://github.com/projec
 'AWE+EDH44.OEOCC7WE QEX0'
 >>> codext.decode('AWE+EDH44.OEOCC7WE QEX0', "base45")
 'this is a test!'
+```
+
+```python
+>>> codext.encode("Hello World!", "base69")
+'kAZAtABBeB8A-ASB3AXBIBBBhAEAAA2='
+>>> codext.decode("kAZAtABBeB8A-ASB3AXBIBBBhAEAAA2=", "base69")
+'Hello World!'
 ```
 
 ```python

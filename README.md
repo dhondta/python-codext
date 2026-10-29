@@ -279,6 +279,7 @@ CACTCGGTCGGCCATATGTTCGGCCATATGTTCGTCTGTTCACTCGCCCATACACT
 - [X] `base63`: similar to `base62` with the "`_`" added
 - [X] `base64`: classical conversion according to RFC4648 with its variant URL (or *file*) (it also holds a variant with letters and digits inverted)
 - [X] `base67`: custom conversion using some more special characters (also with a variant with letters and digits inverted)
+- [X] `base69`: [Base69](https://github.com/pshihn/base69) encoding (chunks of 7 bytes, 2 characters per 7 bits)
 - [X] `base85`: all variants of Base85 ([Ascii85](https://fr.wikipedia.org/wiki/Ascii85), [z85](https://rfc.zeromq.org/spec/32), [Adobe](https://dencode.com/string/ascii85), [(x)btoa](https://dencode.com/string/ascii85), [RFC1924](https://datatracker.ietf.org/doc/html/rfc1924), [XML](https://datatracker.ietf.org/doc/html/draft-kwiatkowski-base85-for-xml-00))
 - [X] `base91`: [Base91](http://base91.sourceforge.net) custom conversion
 - [X] `base100` (or *emoji*): [Base100](https://github.com/AdamNiederer/base100) custom conversion
