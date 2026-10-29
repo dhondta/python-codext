@@ -164,7 +164,11 @@ Each time a backend is loaded, it gets `lang_**` stop functions attached to the 
 
 ### Ranking Heuristic
 
+At each step of the search, the candidate encodings are decoded and ranked with a score, the best ones being tried first. The score combines characteristics of the input compared to those expected by each codec (length of its charset, padding, rate of printable characters, expansion factor and entropy) and a characteristic of the decoded output: how much it looks like a text.
+
+This "textness" depends on the script of the letters. For Latin letters, it is mainly given by the rate of common bigrams among the pairs of successive letters (around 70% for English texts, against around 15% for random letters ; most of these bigrams are also common in other Latin-script languages such as French, German, Spanish or Italian), weighted by the rates of printable characters and of letters and spaces, and by the number of distinct letters. For other scripts (e.g. Cyrillic, Greek, Arabic or CJK), it only relies on language-independent features: the rate of letters of the dominant script, the rate of letters, spaces and punctuation, and the length of the words (for the scripts that separate words with spaces). As these features cannot distinguish a text from a substitution of its characters, the outputs of such codecs are only rated from Latin letters. A bonus is given when the output looks like a text (textness above 0.5) and more than the input, which favours the right decoding over transformations that never fail (e.g. keyboard shifts) without favouring wrong decodings in a chain of encodings. Codecs that only substitute characters (e.g. `rot`, `xor`, `kbshift`) also get a penalty when their output looks less like a text than their input.
+
 !!! warning "Work in progress"
     
-    This part is still in progress and shall be improved with better features and/or using machine learning.
+    This part shall still be improved with better features and/or using machine learning. In particular, the default stop function (`text`) accepts any printable output with a low entropy, hence possibly an intermediate result of a chain of encodings.
 

@@ -8,6 +8,7 @@ import os
 import random
 import re
 import sys
+import unicodedata
 from encodings.aliases import aliases as ALIASES
 from functools import reduce, update_wrapper, wraps
 from importlib import import_module
@@ -43,6 +44,15 @@ CODECS_OVERWRITTEN = []
 CODECS_CATEGORIES = ["native", "custom"]
 CODECS_CACHE = {}
 PRINTABLES = frozenset(printable)
+# scoring of the decoded outputs: textness above which an output is considered as a text, and weight of its bonus
+TEXTNESS_THRESHOLD, TEXTNESS_WEIGHT = .5, 4
+# most common bigrams of English texts (a large part being common to other Latin-script languages)
+BIGRAMS = frozenset("th he in er an re on at en nd ti es or te of ed is it al ar st to nt ng se ha as ou io le ve co "
+                    "me de hi ri ro ic ne ea ra ce li ch ll be ma si om ur ca el ta la ns di fo ho pe ec pr no ct us "
+                    "ac ot il tr ly nc et ut ss so rs un lo wa ge ie wh ee wi em ad ol rt po we na ul ni ts mo ow pa "
+                    "im mi ai sh".split())
+# scripts of the letters (cache) and scripts whose words are not separated by spaces
+SCRIPTS, SCRIPTS_WITHOUT_SPACES = {}, {"CJK", "HIRAGANA", "KATAKANA", "THAI", "LAO", "KHMER", "MYANMAR", "TIBETAN"}
 LANG = getlocale()
 if LANG:
     LANG = (LANG[0] or "")[:2].lower()
@@ -78,6 +88,61 @@ def entropy(s):
     """ Shannon entropy of the given string or bytes, counting the characters in a single pass. """
     n, l = Counter(s), len(s)
     return -sum([p * log(p, 2) for p in [n[c] / l for c in set(s)]])
+
+
+def _script(c):
+    """ Get the script of a letter (e.g. "LATIN", "CYRILLIC" or "CJK"), from its Unicode name. """
+    try:
+        return SCRIPTS[c]
+    except KeyError:
+        SCRIPTS[c] = r = unicodedata.name(c, "?").split()[0]
+        return r
+
+
+def _textness(s, any_script=True):
+    """ Rate in [0, 1] how much the given string looks like a natural language text.
+    
+    For a text mostly made of Latin letters, this is mainly the rate of common bigrams among the pairs of successive
+     letters (around 70% for English texts, against around 15% for random letters), weighted by the rates of printable
+     characters and of letters and spaces, and by the number of distinct letters (a text uses many letters, unlike e.g.
+     digits shifted to letters) ; this distinguishes a text from a substitution of its letters (e.g. ROT13).
+    For a text in another script (e.g. Cyrillic, Greek or CJK), this only relies on language-independent features: the
+     rate of letters of the dominant script among the letters, the rate of letters, spaces and punctuation, the number
+     of distinct letters and the length of the words (for the scripts that separate words with spaces) ; as these
+     features cannot distinguish a text from a substitution of its characters, this can be disabled
+     (any_script=False), then rating 0. """
+    # a decoded output may hold the UTF-8 bytes of a text as Latin-1 characters
+    s = ensure_str(b(s))
+    if (n := len(s)) < 2:
+        return 0.
+    letters = [c for c in s if c.isalpha()]
+    if len(letters) == 0:
+        return 0.
+    scripts = Counter(map(_script, letters))
+    script, count = scripts.most_common(1)[0]
+    if script != "LATIN":
+        if not any_script:
+            return 0.
+        printables = sum(c.isprintable() or c.isspace() for c in s) / n
+        rate = sum(c.isalpha() or c.isspace() or unicodedata.category(c)[0] == "P" for c in s) / n
+        distinct = min(1., len(set(letters)) / min(10., len(letters) / 2))
+        r = printables * (count / len(letters)) ** 2 * rate * distinct
+        if script not in SCRIPTS_WITHOUT_SPACES:
+            # the mean length of the words is around 5 letters
+            words = s.split()
+            r *= 1. if 2 <= len(letters) / len(words) <= 12 else .3
+        return r
+    t = s.lower()
+    pairs = [t[i:i+2] for i in range(n - 1) if t[i].isalpha() and t[i+1].isalpha()]
+    if len(pairs) == 0:
+        return 0.
+    bigrams = min(1., sum(map(BIGRAMS.__contains__, pairs)) / len(pairs) / .7)
+    printables, rate = sum(map(PRINTABLES.__contains__, s)) / n, sum(c.isalpha() or c == " " for c in s) / n
+    # a text holds at least 10 distinct letters (or half of its letters if shorter), unlike e.g. digits shifted to
+    #  letters
+    distinct = set(c for c in t if c.isalpha())
+    expected = min(10., len(letters) / 2)
+    return printables * bigrams * (.5 + .5 * rate) * min(1., len(distinct) / expected)
 
 
 isb = lambda s: isinstance(s, bytes)
@@ -1413,7 +1478,7 @@ def __rank(prev_input, input, prev_encoding, encodings, heuristic=False, extende
 
 
 class _Text(object):
-    __slots__ = ["entropy", "lcharset", "len", "padding", "printables", "text"]
+    __slots__ = ["entropy", "lcharset", "len", "padding", "printables", "text", "textness"]
     
     def __init__(self, text, pad_char=None):
         self.text = ensure_str(text)
@@ -1426,6 +1491,7 @@ class _Text(object):
         self.lcharset = len(set(self.text))
         self.printables = float(sum(map(PRINTABLES.__contains__, self.text))) / self.len
         self.entropy = entropy(self.text)
+        self.textness = _textness(self.text)
 
 
 def __score(prev_input, input, prev_encoding, encoding, codec, heuristic=False, extended=False, texts=None):
@@ -1513,6 +1579,16 @@ def __score(prev_input, input, prev_encoding, encoding, codec, heuristic=False, 
                 bonus = bonus(obj, codec, encoding)
             if bonus:
                 s += .2
+        # eventually, give a bonus when the output looks like a text, and more than the input, as the characteristics
+        #  above only describe the input ; this favours the right decoding over transformations that never fail (e.g.
+        #  keyboard shifts), while not penalising intermediate decodings (e.g. into compressed data) nor favouring
+        #  wrong decodings that only look a bit more like a text (e.g. in a chain of encodings) ; transitive codecs
+        #  (substitutions of characters, e.g. rot or xor) also get a penalty when their output looks less like a text
+        # NB: the output of a transitive codec is only rated as a text from Latin letters, as a substitution of
+        #     characters of another script cannot be distinguished from a text without the knowledge of its language
+        t = _textness(new_input, not transitive)
+        s += TEXTNESS_WEIGHT * (max(0., t - max(obj.textness, TEXTNESS_THRESHOLD)) +
+                                (min(0., t - obj.textness) if transitive else 0.))
     else:
         s = 1.
     # exclude negative (and eventually null) scores as they are (hopefully) not relevant

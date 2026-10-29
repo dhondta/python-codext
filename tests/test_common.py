@@ -200,6 +200,27 @@ class TestCommon(TestCase):
         self.assertEqual(len(_g("base45-inv", include="base45", exclude="base45-inv")), 0)
         self.assertEqual(len(_g("base45-inv", include="base", exclude="base45")), 0)
     
+    def test_rank_textness(self):
+        from codext.__common__ import _textness
+        # a text rates high, while scrambled letters, digits shifted to letters and encoded data rate low
+        self.assertGreater(_textness("Hello world, this is a test"), .9)
+        self.assertGreater(_textness("flag{this_is_the_secret_flag}"), .5)
+        for s in ["Uryyb jbeyq, guvf vf n grfg", "oonorsosrosrosu", "SGVsbG8gd29ybGQ=", "\x1dy\xca\xf2", ".... . .-..",
+                  "a"]:
+            self.assertLess(_textness(s), .5)
+        # the right decoding is ranked first, before transformations that never fail (e.g. keyboard shifts) ; morse
+        #  decodes to lowercase
+        STR = "Hello world, this is a test"
+        for enc in ["base32", "base45-inv", "morse", "octal", "rot-13", "vigenere-key"]:
+            self.assertEqual(codext.rank(codext.encode(STR, enc), limit=1)[0][0][1].lower(), STR.lower())
+        self.assertEqual(list(codext.guess(codext.encode(STR, "rot-13"), max_depth=1).values()), [STR])
+        # texts in other scripts are rated from language-independent features, except for the outputs of substitutions
+        for s in ["Привет мир, это небольшая проверка", "Γεια σου κόσμε, αυτό είναι μια δοκιμή", "你好世界，这是一个简单的测试"]:
+            self.assertGreater(_textness(s), .9)
+            self.assertEqual(_textness(s, False), 0.)
+            self.assertEqual(codext.rank(codext.encode(s, "base32"), limit=1)[0][1], "base32")
+        self.assertLess(_textness("\u0434\u0434\u0434\u0434\u0434\u0434\u0434\u0434"), .5)
+    
     def test_rank_input(self):
         codext.remove("test_codec")
         self.assertRaises(LookupError, codext.encode, "TEST", "test")
