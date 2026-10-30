@@ -387,6 +387,7 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 - [X] `vic`: aka VIC Cipher
 - [X] `vigenere`: aka Vigenere Cipher
 - [X] `xorN`: XOR with a single byte (*N* belongs to [1,255])
+- [X] `zara128`: aka ZARA-128 (variant of AER-256 with additions only and smaller blocks)
 
 > :warning: Crypto functions are of course definitely **NOT** encoding functions ; they are implemented for leveraging the `.encode(...)` API from `codecs`.
 

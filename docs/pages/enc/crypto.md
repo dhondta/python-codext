@@ -813,3 +813,26 @@ This is a dynamic encoding, that is, it can be called with an integer to define 
 >>> codext.encode("~bcy*cy*k*~oy~", "xor-10")
 'this is a test'
 ```
+
+-----
+
+### ZARA-128
+
+This toy cipher, a variant of [AER-256](#aer-256), comes from online JavaScript encryption tools. It works the same way, but with blocks of a fifth of the key length (rounded), a single operation (the code of each character of the key is added to the number) and ` ` as the separator. As only integers are added, the resulting numbers are integers.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`zara128` | text <-> ZARA-128 ciphertext | `zara-128`, `zara_128` | parameterized with a mandatory key of at least 3 characters, e.g. `zara128-016359` (the default key of the online tools) ; only characters with a code below 256
+
+!!! warning "Precision"
+
+    As the computations are done with double-precision floats, as in JavaScript, keys of more than 32 characters give blocks that are too large to be decrypted exactly.
+
+```python
+>>> codext.encode("this is a test", "zara128-016359")
+'428 416 417 427 344 417 427 344 409 344 428 413 427 428'
+>>> codext.encode("this is a test", "zara128-secretkey")
+'30775 27970 9272 30447 25839 30772 30531'
+>>> codext.decode("428 413 427 428", "zara128-016359")
+'test'
+```

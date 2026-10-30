@@ -35,3 +35,4 @@ from .vic import *
 from .vernam import *
 from .vigenere import *
 from .xor import *
+from .zara128 import *
