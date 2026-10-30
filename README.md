@@ -368,6 +368,7 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 - [X] `feron74`: aka FERON-74 (Base64 with a shuffled alphabet, from online JavaScript tools)
 - [X] `foursquare`: aka Four-square Cipher (bigrams substituted with two keyed squares and two plain ones)
 - [X] `fractionated-morse`: aka Fractionated Morse Cipher (Morse code split into groups of three symbols, each replaced by a letter of a keyed alphabet)
+- [X] `gila7`: aka GILA7 (Base64 with a shuffled alphabet, from online JavaScript tools)
 - [X] `gronsfeld`: aka Gronsfeld Cipher (variant of Vigenere Cipher with a numeric key)
 - [X] `hill`: aka Hill Cipher (blocks of letters multiplied by a key matrix modulo 26)
 - [X] `nihilist`: aka Nihilist Cipher (sums of the Polybius coordinates of the text and of a repeated key)

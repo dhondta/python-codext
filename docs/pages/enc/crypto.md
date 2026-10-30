@@ -475,6 +475,23 @@ The text is converted to Morse code, with "x" between the characters, "xx" betwe
 
 -----
 
+### GILA7
+
+This toy cipher comes from online JavaScript encryption tools. Like [ATOM-128](#atom-128), it is Base64 with a shuffled alphabet, whose 65th character (`G`) is used for padding, and the text is first escaped with JavaScript's `escape()`, then unescaped after decoding.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`gila7` | text <-> GILA7 ciphertext | `gila-7`, `gila_7` | 
+
+```python
+>>> codext.encode("this is a test", "gila7")
+'3+1QqbzbB+Odcg=5v0zbBWfOqxyG'
+>>> codext.decode("3+1QqbzbB+Odcg=5v0zbBWfOqxyG", "gila-7")
+'this is a test'
+```
+
+-----
+
 ### Gronsfeld Cipher
 
 This is a variant of the [Vigenere Cipher](#vigenere-cipher) whose key is made of digits, each digit giving the shift of a letter (0 to 9). There is no default key, meaning that `gronsfeld` as the encoding scheme throws a `LookupError` indicating that the _key must be a non-empty numeric string_.

@@ -1,5 +1,6 @@
 # -*- coding: UTF-8 -*-
-"""Base64 variants, shared by the toy ciphers of online JavaScript encryption tools (ATOM-128, ESAB-46, FERON-74).
+"""Base64 variants, shared by the toy ciphers of online JavaScript encryption tools (ATOM-128, ESAB-46, FERON-74,
+ GILA7).
 
 These ciphers are Base64 with a shuffled alphabet of 65 characters, whose last one is used for padding. As in the
  original JavaScript, the text is first escaped with JavaScript's escape() (e.g. " " becoming "%20" and "é" becoming

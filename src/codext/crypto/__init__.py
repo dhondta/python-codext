@@ -19,6 +19,7 @@ from .ezip64 import *
 from .feron74 import *
 from .foursquare import *
 from .fractionatedmorse import *
+from .gila7 import *
 from .hill import *
 from .nihilist import *
 from .playfair import *
