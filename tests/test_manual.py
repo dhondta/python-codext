@@ -47,11 +47,15 @@ class ComplementaryTestCase(TestCase):
             self.assertEqual(codecs.decode("872 1172 1000 1022 1112 1082", "coquelet", e), r)
         self.assertRaises(ValueError, codecs.decode, "872 1172 1000", "coquelet")
         self.assertRaises(ValueError, codecs.decode, "872 1172 1000", "coquelet", "BAD_ERRORS")
-        # every character of both shifts, with the shifts inserted only when needed
+        # every character of both shifts with each variant, with the shifts inserted only when needed
         from codext.frequency._ita2 import CHARS
-        for chars in CHARS.values():
-            text = "".join(c for c in chars if c is not None)
-            self.assertEqual(codecs.decode(codecs.encode(text, "coquelet"), "coquelet"), text)
+        for v in ["coquelet", "coquelet-8"]:
+            for chars in CHARS.values():
+                text = "".join(c for c in chars if c is not None)
+                self.assertEqual(codecs.decode(codecs.encode(text, v), v), text)
+        # the idle sequence of Coquelet 8 has the tones of "M", while a misaligned one is resynchronised
+        self.assertEqual(codecs.decode("773 960 773 960 826 960", "coquelet8"), "MMT")
+        self.assertEqual(codecs.decode("960 773 960 826 960", "coquelet8", "ignore"), "MT")
         self.assertEqual(len(codecs.encode("A1B2", "coquelet").split()), 2 * 7)
     
     def test_codec_cow(self):

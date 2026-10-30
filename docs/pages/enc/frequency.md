@@ -6,19 +6,25 @@
 
 ### Coquelet
 
-[Coquelet](https://www.cryptomuseum.com/ref/coquelet/index.htm) is an MFSK system developed by ACEC in Belgium in the 1950s, used by the armies and police services of Belgium, France, Algeria and other countries. With Coquelet 13 (Mk 1), each character of the ITA-2 (Baudot) code is sent as two tones of 75 ms: the first one, out of the 8 tones of Group I (812 to 1022 Hz, every 30 Hz), gives its bits 3 to 5, while the second one, out of the 4 tones of Group II (1082 to 1172 Hz), gives its bits 1 and 2. A 1052 Hz tone is sent when idle. As with ITA-2, the LTR and FIG codes switch between the letters and the figures shifts.
+[Coquelet](https://www.cryptomuseum.com/ref/coquelet/index.htm) is an MFSK system developed by ACEC in Belgium in the 1950s, used by the armies and police services of Belgium, France, Algeria and other countries. With Coquelet 13 (Mk 1), each character of the ITA-2 (Baudot) code is sent as two tones of 75 ms: the first one, out of the 8 tones of Group I (812 to 1022 Hz, every 30 Hz), gives its bits 3 to 5, while the second one, out of the 4 tones of Group II (1082 to 1172 Hz), gives its bits 1 and 2. A 1052 Hz tone is sent when idle. As with ITA-2, the LTR and FIG codes switch between the letters and the figures shifts. With Coquelet 8 (Mk 2), a synchronous system mostly used in Algeria, the characters are sent the same way, but with 8 tones from 773 to 960 Hz (every 26.67 Hz), Group II being made of the last 4 of them, each tone lasting 37.5 or 75 ms ; tones 1 and 8 are sent alternately when idle.
 
 **Codec** | **Conversions** | **Aliases** | **Comment**
 :---: | :---: | --- | ---
-`coquelet` | text <-> Coquelet 13 tones (Hz) | `coquelet13`, `coquelet-13`, `coquelet-mk1` | letters uppercased ; letters shift assumed at the start ; idle tones ignored when decoding
+`coquelet` | text <-> Coquelet tones (Hz) | `coquelet13`, `coquelet-8`, `coquelet_mk1`, `coquelet-mk2`, ... | parametrized ; *variant* belongs to {13 (Mk1), 8 (Mk2)} (default: 13) ; letters uppercased ; letters shift assumed at the start ; idle tones of Coquelet 13 ignored when decoding
 
 !!! note "Character set"
 
-    The figures shift follows ITA-2, except for `;` instead of `=` (as with US teleprinters). Coquelet 8 (Mk 2) is not implemented, as its character table is not documented.
+    The figures shift follows ITA-2, except for `;` instead of `=` (as with US teleprinters). The frequencies of Coquelet 8 are those of [Wavecom's table](https://www.wavecom.ch/content/ext/DecoderOnlineHelp/worddocuments/coquelet8.htm), rounded to the hertz.
+
+!!! warning "Coquelet 8 idle sequence"
+
+    The idle sequence of Coquelet 8 (tones 1 and 8 alternately) is made of the same tones as `M`, which receivers tell apart by the timing of this synchronous system: as the text holds no timing, it is decoded as a series of `M`.
 
 ```python
 >>> codext.encode("SOS 123", "coquelet")
 '902 1112 842 1172 902 1112 902 1172 842 1082 932 1082 872 1082 1022 1112'
+>>> codext.encode("SOS 123", "coquelet-8")
+'853 907 800 960 853 907 853 960 800 880 880 880 826 880 960 907'
 >>> codext.decode("1052 872 1172 1052 1022 1112", "coquelet")
 'TE'
 ```

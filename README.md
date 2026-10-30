@@ -405,7 +405,7 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 
 #### [Frequency](https://python-codext.readthedocs.io/en/latest/enc/frequency.html)
 
-- [X] `coquelet`: Coquelet 13, radio teleprinter system sending each ITA-2 character as two audio tones (gives their frequencies in Hz)
+- [X] `coquelet`: Coquelet 13 and 8 (aka Mk 1 and Mk 2), radio teleprinter systems sending each ITA-2 character as two audio tones (gives their frequencies in Hz)
 - [X] `piccolo`: Piccolo I, II (aka Mk 6) and III, radio teleprinter systems sending each ITA-2 character as one or two audio tones (gives their frequencies in Hz)
 
 #### [Hashing](https://python-codext.readthedocs.io/en/latest/enc/hashing.html)
