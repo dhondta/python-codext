@@ -15,6 +15,7 @@ from .citrix import *
 from .columnar import *
 from .enigma import *
 from .esab46 import *
+from .ezip64 import *
 from .foursquare import *
 from .fractionatedmorse import *
 from .hill import *

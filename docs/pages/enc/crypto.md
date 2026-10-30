@@ -397,6 +397,27 @@ This toy cipher ("Base-64" reversed) comes from online JavaScript encryption too
 
 -----
 
+### EZIP-64
+
+This toy cipher, a variant of [ARMON-64](#armon-64), comes from online JavaScript encryption tools. It works the same way, but with blocks of a third of the key length (rounded), a factor of 0.02 in its fourth operation and `/` as the separator.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`ezip64` | text <-> EZIP-64 ciphertext | `ezip-64`, `ezip_64` | parameterized with a mandatory key of at least 3 characters, e.g. `ezip64-secret` ; only characters with a code below 256
+
+!!! warning "Precision"
+
+    As the computations are done with double-precision floats, as in JavaScript, keys of more than 19 characters give blocks that are too large to be decrypted exactly.
+
+```python
+>>> codext.encode("test", "ezip64-test")
+'-261.47089108910893/-261.81544554455445/-261.4938613861386/-261.47089108910893'
+>>> codext.decode("-261.47089108910893/-261.81544554455445", "ezip64-test")
+'te'
+```
+
+-----
+
 ### Four-square Cipher
 
 The Four-square cipher, invented by Felix Delastelle, substitutes pairs of letters using four squares arranged in a 2x2 matrix: the upper-left and lower-right ones hold the alphabet in order, while the upper-right and lower-left ones are filled with two keywords. The first letter of each pair is located in the upper-left square and the second one in the lower-right square ; they are replaced by the letters at the other corners of the rectangle they form (in the upper-right square, then in the lower-left one).

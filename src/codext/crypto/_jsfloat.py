@@ -1,13 +1,14 @@
 # -*- coding: UTF-8 -*-
-"""Floating-point block ciphers, shared by the toy ciphers of online JavaScript encryption tools (AER-256, ARMON-64).
+"""Floating-point block ciphers, shared by the toy ciphers of online JavaScript encryption tools (AER-256, ARMON-64,
+ EZIP-64).
 
-The text is split into blocks of half the key length (rounded up), each block being read as a big-endian number of its
- character codes. For each character of the key (at least 3), an operation with its code is applied to this number in
- turn (in floating-point arithmetic, cycling through the operations of the cipher), and the resulting numbers are
- written as JavaScript would (e.g. "123.456") and joined with a separator. Decryption applies the inverse operations in
- reverse order and rounds the result. As numbers are double-precision floats, blocks of more than 6 characters (i.e.
- keys of more than 12 characters) lose precision and generally cannot be fully decrypted. Only characters with a code
- below 256 can be encrypted, and null characters at the start of a block are lost.
+The text is split into blocks of a fraction of the key length (e.g. half of it, rounded), each block being read as a
+ big-endian number of its character codes. For each character of the key (at least 3), an operation with its code is
+ applied to this number in turn (in floating-point arithmetic, cycling through the operations of the cipher), and the
+ resulting numbers are written as JavaScript would (e.g. "123.456") and joined with a separator. Decryption applies the
+ inverse operations in reverse order and rounds the result. As numbers are double-precision floats, blocks of more than
+ 6 characters lose precision and generally cannot be fully decrypted. Only characters with a code below 256 can be
+ encrypted, and null characters at the start of a block are lost.
 """
 import re
 from math import floor, isfinite
@@ -15,12 +16,13 @@ from math import floor, isfinite
 from ..__common__ import ensure_str, handle_error
 
 
-# operations of the ciphers with their inverses, as (encryption, decryption) pairs
+# operations of the ciphers with their inverses, as (encryption, decryption) pairs ; the last one also takes the factor
+#  of the cipher (as in JavaScript, the factor and the key code are multiplied first)
 OPERATIONS = [
-    (lambda v, k: v + k, lambda v, k: v - k),
-    (lambda v, k: v / k, lambda v, k: v * k),
-    (lambda v, k: v - k, lambda v, k: v + k),
-    (lambda v, k: v * (.01 * k), lambda v, k: v / (.01 * k)),
+    (lambda v, k, f: v + k, lambda v, k, f: v - k),
+    (lambda v, k, f: v / k, lambda v, k, f: v * k),
+    (lambda v, k, f: v - k, lambda v, k, f: v + k),
+    (lambda v, k, f: v * (f * k), lambda v, k, f: v / (f * k)),
 ]
 
 
@@ -52,9 +54,9 @@ def js_str(x):
     return d[0] + ("." + d[1:] if k > 1 else "") + "e" + "+-"[n < 1] + str(abs(n - 1))
 
 
-def float_cipher(name, sep, n_ops):
-    """ Make the encoding and decoding function factories of a cipher, given its separator and its number of
-         operations. """
+def float_cipher(name, sep, n_ops, divisor=2, factor=.01):
+    """ Make the encoding and decoding function factories of a cipher, given its separator, its number of operations,
+         the divisor of the key length giving the block size and the factor of its fourth operation. """
     # the separator is not matched inside numbers in exponent notation (e.g. "1e+21")
     split = re.compile(r"(?<![eE])" + re.escape(sep))
 
@@ -62,7 +64,8 @@ def float_cipher(name, sep, n_ops):
         key = str(key or "")
         if len(key) < 3:
             raise LookupError(f"Bad parameter for encoding '{name}': key must be at least 3 characters long")
-        return [ord(c) for c in key], (len(key) + 1) // 2
+        # block size as given by Math.round(key.length / divisor)
+        return [ord(c) for c in key], (2 * len(key) + divisor) // (2 * divisor)
 
     def encode_factory(key=None):
         def encode(text, errors="strict"):
@@ -73,7 +76,7 @@ def float_cipher(name, sep, n_ops):
             for i in range(0, len(t), n):
                 v = float(int("".join(f"{ord(c):02x}" for c in t[i:i+n]), 16))
                 for j, kc in enumerate(k):
-                    v = OPERATIONS[j % n_ops][0](v, kc)
+                    v = OPERATIONS[j % n_ops][0](v, kc, factor)
                 r.append(js_str(v))
             return sep.join(r), len(text)
         return encode
@@ -89,7 +92,7 @@ def float_cipher(name, sep, n_ops):
                     r += _h(s, i)
                     continue
                 for j in range(len(k) - 1, -1, -1):
-                    v = OPERATIONS[j % n_ops][1](v, k[j])
+                    v = OPERATIONS[j % n_ops][1](v, k[j], factor)
                 # Math.round, then the hexadecimal digits of the number (nothing when it is not positive)
                 v = floor(v) + (v - floor(v) >= .5) if isfinite(v) else 0
                 h = f"{v:x}" if v > 0 else ""
