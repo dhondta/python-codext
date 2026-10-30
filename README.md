@@ -417,6 +417,7 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 - [X] `ripemd160`: aka RIPEMD-160 (relies on `hashlib` when available, pure Python otherwise)
 - [X] `sha`: aka Secure Hash Algorithms ; includes SHA0, SHA1, 224, 256, 384, 512 (Python2/3) but also SHA3-224, -256, -384 and -512 (Python 3 only ; relies on `hashlib`)
 - [X] `shake`: aka SHAKE hashing (Python 3 only ; relies on `hashlib`)
+- [X] `snefru`: aka Snefru (Merkle's hash function) in 32 to 480 bits, with 2 to 8 passes
 - [X] `whirlpool`: aka Whirlpool (relies on `hashlib` when available, pure Python otherwise)
 
 > :warning: Hash functions are of course definitely **NOT** encoding functions ; they are implemented for convenience with the `.encode(...)` API from `codecs` and useful for chaning codecs.

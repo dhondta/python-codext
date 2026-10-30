@@ -237,6 +237,25 @@ These one-way transformation functions rely on the native [`hashlib`](https://do
 
 -----
 
+### Snefru
+
+This one-way transformation function, designed by Ralph Merkle in 1990, is implemented in pure Python. Its number of passes was raised from 2 to 8 after it was broken with differential cryptanalysis ; PHP's `snefru` is `snefru-256` (with 8 passes), while CyberChef defaults to `snefru` (128 bits).
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`snefru` | data --> Snefru(data, size, passes) | `snefru128`, `snefru-256`, `snefru_256_4`, ... | parametrized ; *size* is a multiple of 32 from 32 to 480 (default: 128) and *passes* belongs to [2,8] (default: 8)
+
+```python
+>>> codext.encode("This is a test string !", "snefru")
+'b4c5c863defc053ad15be9bc01609c57'
+>>> codext.encode("This is a test string !", "snefru-256")
+'ba1e1a138b432e94547c46aaf5fd4851651d1ab75da937cd4cf349a02961edf4'
+>>> codext.encode("This is a test string !", "snefru-256-4")
+'6c6e9478662fe169dfb487af98e1667644cac8f3c5eadba5fbd437bfdf5c1f1a'
+```
+
+-----
+
 ### Whirlpool
 
 This one-way transformation function, adopted in ISO/IEC 10118-3, relies on [`hashlib`](https://docs.python.org/3/library/hashlib.html) when it provides it, and on a pure Python implementation otherwise (OpenSSL 3 only provides it in its legacy provider).

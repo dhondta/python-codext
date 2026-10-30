@@ -522,6 +522,34 @@ class ManualTestCase(TestCase):
                                                  "773b36d4edaf3175378b8df114e9496c833ef13606e7ab3d455681e98ecc818f")
         for e in ["ripemd160", "whirlpool"]:
             self.assertRaises(NotImplementedError, codecs.decode, STR, e)
+        # Snefru, with test vectors of crypto-api (used by CyberChef) for its four usual variants, and of PHP ("snefru"
+        #  being Snefru-256 with 8 passes) around the block boundaries (blocks of 32 bytes for Snefru-256)
+        for enc, v in {
+            'snefru|snefru128|snefru-128-8': {'': "8617f366566a011837f4fb4ba5bedea2",
+                                              '123456789\n': "6103721ccd8ad565d68e90b0f8906163"},
+            'snefru-128-2|snefru128_2': {'': "b67224738c99d0ef185f2e971eb762ae",
+                                         '123456789\n': "e699784944ed68a1c762ea1e90c77967"},
+            'snefru256-4': {'': "5148516ae7fc7e89ad8e0b0b8d76ac782498615818fb8eeb08cbab9f07c82a73",
+                            '123456789\n': "c22422491187baaa9472540008dffd5b38f015579f3f239050969991fdc1a810"},
+            'snefru256|snefru_256|snefru-256-8': {
+                '': "8617f366566a011837f4fb4ba5bedea2b892f3ed8b894023d16ae344b2be5881",
+                '123456789\n': "4ca72639e40e9ab9c0c3f523c4449b3911632d374c124d7702192ec2e4e0b7a3",
+                'The quick brown fox jumps over the lazy dog':
+                    "674caa75f9d8fd2089856b95e93a4fb42fa6c8702f8980e11d97a142d76cb358",
+                'a' * 62: "94682bc46e5fbb8417e2f3e10ed360484048d946bb8cbb0ea4cad2700dbeaab0",
+                'a' * 63: "c54c602ac46383716ee7200a76c9c90a7b435bbe31d13f04e0b00a7ea5c347fa",
+                'a' * 64: "7a8539c59e192e8d70b1ab82aa86a1b54560d42020bda4e00ddd6d048fe3bcaa",
+            },
+        }.items():
+            for e in enc.split("|"):
+                for s, r in v.items():
+                    self.assertEqual(codecs.encode(s, e), r)
+                    self.assertEqual(codecs.encode(b(s), e), b(r))
+        for n in [32, 480]:
+            self.assertEqual(len(codecs.encode(STR, f"snefru{n}")), n // 4)
+        for e in ["snefru0", "snefru-100", "snefru512", "snefru128-1", "snefru128-9"]:
+            self.assertRaises(LookupError, codecs.encode, STR, e)
+        self.assertRaises(NotImplementedError, codecs.decode, STR, "snefru")
         # MD4 (through hashlib when available, and in pure Python), the Windows LM and NT hashes (with a DES test vector
         #  of the pure Python implementation) and the MySQL password hashes
         from codext.hashing.md import md4

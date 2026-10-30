@@ -10,6 +10,7 @@ from .mysql import *
 from .ripemd import *
 from .sha import *
 from .shake import *
+from .snefru import *
 from .whirlpool import *
 from .windows import *
 
