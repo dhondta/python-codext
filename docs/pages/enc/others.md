@@ -48,6 +48,23 @@ CACTCGGTCGGCCATATGTTCGGCCATATGTTCGTCTGTTCACTCGCCCATACACT
 
 -----
 
+### Dvorak
+
+The [Dvorak Simplified Keyboard](https://en.wikipedia.org/wiki/Dvorak_keyboard_layout), patented in 1936, rearranges the letters and some punctuation of the QWERTY layout (US). Encoding replaces each character by the one of the same key with the Dvorak layout (as when typing with the QWERTY layout on a computer set to Dvorak), while decoding does the opposite. This [permutation of 35 keys](https://www.montefischer.com/2021/03/21/dvorak-group-action.html) (letters and the `-`, `=`, `[`, `]`, `;`, `'`, `,`, `.` and `/` keys, with their shifted characters) gets back to the text after 210 encodings.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`dvorak` | text <-> text typed with the Dvorak layout | `qwerty-dvorak`, `qwerty_to_dvorak` | other characters kept as is
+
+```python
+>>> codext.encode("Hello, World!", "dvorak")
+'D.nnrw <rpne!'
+>>> codext.decode("D.nnrw <rpne!", "dvorak")
+'Hello, World!'
+```
+
+-----
+
 ### Letter indices
 
 This encodes consonants and/or vowels with their respective indices. This codec is case insensitive, strips white spaces and only applies to letters.
@@ -92,6 +109,46 @@ This is only for "encoding" (converting) Markdown to HTML.
 ```python
 >>> codext.encode("# Test\nparagraph", "markdown")
 '<h1>Test</h1>\n\n<p>paragraph</p>\n'
+```
+
+-----
+
+### Soundex
+
+[Soundex](https://www.archives.gov/research/census/soundex) indexes names by their sound, as used by the US National Archives: each word is written as its first letter followed by three digits for its next consonants (B, F, P and V give 1 ; C, G, J, K, Q, S, X and Z give 2 ; D and T give 3 ; L gives 4 ; M and N give 5 ; R gives 6), the vowels being dropped, the consecutive consonants with the same digit (including the first letter, or separated by H or W) giving a single digit, and the code being padded with zeros or truncated. Encoding replaces each word by its code, keeping the other characters. As Soundex is not reversible, decoding replaces each code by the most frequent word with this code from an English word list (9850 words, from the [lists of Ciphey](https://github.com/Ciphey/CipheyDists)), or, with the `-all` variant, by all these words in order of frequency.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`soundex` | text <-> Soundex codes | | decoding gives the most frequent English word for each code ; codes without word handled with the errors handling
+`soundex-all` | text <-> Soundex codes | `soundex_all` | decoding gives all the English words for each code (e.g. `[world|worldwide|worlds]`)
+
+!!! warning "Decoding"
+
+    Decoding cannot give back the original words, only words with the same code (e.g. `Robert` gives `R163`, which gives `report`). Ciphey's own table of codes does not merge the first letter with the next consonant with the same digit (e.g. `cc` gives `C200` instead of `C000` and `Pfister` gives `P123` instead of `P236`), unlike the rules of the US National Archives followed by this codec.
+
+```python
+>>> codext.encode("Robert Rupert Pfister", "soundex")
+'R163 R163 P236'
+>>> codext.decode("R163 W643", "soundex")
+'report world'
+```
+
+-----
+
+### Telegraph
+
+The [Chinese telegraph code](https://en.wikipedia.org/wiki/Chinese_telegraph_code), designed in 1871, sends Chinese characters by telegraph as groups of four digits (from `0000` to `9999`), as given in a codebook. Mainland China (with the simplified characters) and Taiwan (with the traditional characters) use different codebooks, taken from the [Unihan database](https://www.unicode.org/reports/tr38/#kMainlandTelegraph) of Unicode. Encoding gives the groups of four digits of the characters, separated by spaces, while decoding accepts groups separated by whitespaces or not.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`telegraph` | Chinese text <-> groups of 4 digits | `chinese-telegraph`, `telegraph-mainland` | codebook of Mainland China (7078 characters)
+`telegraph-taiwan` | Chinese text <-> groups of 4 digits | `telegraph-tw` | codebook of Taiwan (9024 characters)
+
+```python
+>>> codext.encode("中文信息", "telegraph")
+'0022 2429 0207 1873'
+>>> codext.decode("5618 1947 0948", "telegraph-taiwan")
+'蕭愛國'
 ```
 
 -----

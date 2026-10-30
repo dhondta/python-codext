@@ -446,8 +446,11 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 
 - [X] `binhex`: BinHex 4.0 (`.hqx`), the binary-to-text encoding of the classic Mac OS
 - [X] `dna`: implements the 8 rules of DNA sequences (N belongs to [1,8])
+- [X] `dvorak`: text typed with the Dvorak keyboard layout instead of QWERTY
 - [X] `letter-indices`: encodes consonants and/or vowels with their corresponding indices
 - [X] `markdown`: unidirectional encoding from Markdown to HTML
+- [X] `soundex`: Soundex phonetic codes (decoding gives English words with the same codes)
+- [X] `telegraph`: Chinese telegraph code, with the codebooks of Mainland China and Taiwan
 - [X] `xx`: XXencode, a UUencode variant with an alphanumeric alphabet (`+`, `-`, digits and letters)
 - [X] `yenc`: Usenet binary-to-text encoding (raw, wrapped or framed with header, trailer and CRC32)
 

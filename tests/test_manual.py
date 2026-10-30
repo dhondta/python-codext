@@ -362,6 +362,44 @@ class ComplementaryTestCase(TestCase):
         self.assertRaises(ValueError, polybius_decode(), "441543441")
         self.assertEqual(codecs.decode("441543445", "polybius", "ignore"), "TEST")
     
+    def test_codec_soundex(self):
+        from codext.others.soundex import _soundex
+        # examples of the US National Archives (first letter with the same digit as the next consonant, consonants
+        #  separated by H or W, vowels separating consonants with the same digit)
+        for w, c in [("Washington", "W252"), ("Lee", "L000"), ("Gutierrez", "G362"), ("Pfister", "P236"),
+                     ("Jackson", "J250"), ("Tymczak", "T522"), ("Ashcraft", "A261"), ("Ashcroft", "A261"),
+                     ("Honeyman", "H555"), ("Robert", "R163"), ("Rupert", "R163"), ("Rubin", "R150")]:
+            self.assertEqual(_soundex(w), c)
+            self.assertEqual(codecs.encode(w.lower(), "soundex"), c)
+        # Ciphey's table differs only by not merging the first letter with the next consonant (e.g. "cc" giving "C200")
+        self.assertEqual(codecs.encode("cc czech", "soundex"), "C000 C200")
+        # with a non-strict errors handling, codes without word are replaced with "?", dropped or left as is
+        for e, r in [("replace", "report ?."), ("ignore", "report ."), ("leave", "report T522.")]:
+            self.assertEqual(codecs.decode("R163 T522.", "soundex", e), r)
+        self.assertRaises(ValueError, codecs.decode, "T522", "soundex")
+        self.assertRaises(ValueError, codecs.decode, "T522", "soundex", "BAD_ERRORS")
+        # codes within other tokens are left as is, as well as words without ASCII letters
+        self.assertEqual(codecs.decode("xR163 R1634 R163", "soundex"), "xR163 R1634 report")
+        self.assertEqual(codecs.encode("\u00c9mile \u65e5\u672c", "soundex"), "E540 \u65e5\u672c")
+        self.assertEqual(codecs.decode("W643", "soundex-all"), "[world|worldwide|worlds]")
+        self.assertEqual(codecs.decode("W643 T522", "soundex-all", "leave"), "[world|worldwide|worlds] T522")
+    
+    def test_codec_telegraph(self):
+        # examples of Wikipedia, the same name being written with simplified and traditional characters
+        self.assertEqual(codecs.encode("\u4e2d\u6587\u4fe1\u606f", "telegraph"), "0022 2429 0207 1873")
+        self.assertEqual(codecs.encode("\u8427\u7231\u56fd", "telegraph"), "5618 1947 0948")
+        self.assertEqual(codecs.encode("\u856d\u611b\u570b", "telegraph-taiwan"), "5618 1947 0948")
+        # the two characters with two codes in the codebook of Taiwan are encoded with the first one
+        self.assertEqual(codecs.encode("\u5875\u843c", "telegraph-taiwan"), "1057 5501")
+        self.assertEqual(codecs.decode("7775 9795", "telegraph-taiwan"), "\u5875\u843c")
+        # with a non-strict errors handling, unsupported characters and bad codes are replaced, dropped or left as is
+        for e, enc, dec in [("replace", "0022 ? 2429", "\u4e2d??"), ("ignore", "0022 2429", "\u4e2d"),
+                            ("leave", "0022 A 2429", "\u4e2d0024abc")]:
+            self.assertEqual(codecs.encode("\u4e2dA\u6587", "telegraph", e), enc)
+            self.assertEqual(codecs.decode("0022 0024 abc", "telegraph", e), dec)
+        self.assertRaises(ValueError, codecs.encode, "\u4e2dA", "telegraph", "BAD_ERRORS")
+        self.assertRaises(ValueError, codecs.decode, "0024", "telegraph", "BAD_ERRORS")
+    
     def test_codec_letter_indices(self):
         # bad characters are consumed when not raising an error (decoding used to loop forever)
         self.assertEqual(codecs.decode("1E!2", "consonant-index", "ignore"), "BEC")
