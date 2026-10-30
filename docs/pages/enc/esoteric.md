@@ -59,6 +59,30 @@ COW is made of 12 variations of the word "moo". Its memory is a tape of integer 
 
 -----
 
+### LOLCODE
+
+[LOLCODE](https://esolangs.org/wiki/LOLCODE) programs start with `HAI` and end with `KTHXBYE`, and work on dynamically typed variables (`I HAS A <var> ITZ <value>`, `<var> R <value>`) holding untyped values (`NOOB`), booleans (`WIN` and `FAIL`), integers, floats or strings (with escapes such as `:)` for a newline). The language has prefix operators (`SUM OF <x> AN <y>`, `BOTH SAEM <x> AN <y>`, `SMOOSH <x> AN <y> MKAY`, ...), conditionals (`O RLY?` and `WTF?`), loops (`IM IN YR <label> ... IM OUTTA YR <label>`) and functions (`HOW IZ I <name> ... IF U SAY SO`), and prints with `VISIBLE` (with a newline, unless ended with `!`). Encoding generates an ASCII program with one `VISIBLE` per line of the text. Programs are run according to the [1.2 specification](https://github.com/justinmeza/lolcode-spec/blob/master/v1.2/lolcode-spec-v1.2.md), with the behavior of the [reference interpreter](https://github.com/justinmeza/lci) (lci) where the specification says nothing.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`lolcode` | text <-> LOLCODE program | `lol` | syntax and runtime errors reported whatever the errors handling ; programs that do not halt within 1000 steps per token (with a minimum of 1 million) are stopped
+`lolcode-lower` | text <-> LOLCODE program with lowercase keywords | `lol_lower`, `lolcode-lowercase` | also decodes uppercase keywords ; lowercase keywords (e.g. `i` or `a`) cannot be used as identifiers
+
+!!! note "Differences with the reference interpreter"
+
+    Features of LOLCODE 1.3 (`BUKKIT` arrays, `SRS`, `'Z`, ...) are not supported. Without input, `GIMMEH` gives an empty string. The version after `HAI` is optional (as in former versions of the language). As in the specification, variables have the scope of the main program or of the function (instead of the block), and casting a string that is not a number (e.g. `"abc"` or `" 12"`) to a number is an error (lci gives 0 or parses it leniently). `WIN` and `FAIL` are printed as such (lci reports an error).
+
+```python
+>>> codext.encode("Hello\nWorld!", "lolcode")
+'HAI 1.2\nVISIBLE "Hello"\nVISIBLE "World!"!\nKTHXBYE'
+>>> codext.encode("Hello\nWorld!", "lolcode-lower")
+'hai 1.2\nvisible "Hello"\nvisible "World!"!\nkthxbye'
+>>> codext.decode('HAI 1.2\nIM IN YR loop UPPIN YR n TIL BOTH SAEM n AN 3\n  VISIBLE "KTHX " SUM OF n AN 1\nIM OUTTA YR loop\nKTHXBYE', "lolcode")
+'KTHX 1\nKTHX 2\nKTHX 3\n'
+```
+
+-----
+
 ### Ook!
 
 [Ook!](https://www.dangermouse.net/esoteric/ook.html) is an esoteric programming language derived from Brainfuck, designed to be read and written by orang-utans: each Brainfuck command is a pair of the words `Ook.`, `Ook?` and `Ook!` (e.g. `Ook. Ook?` for `>` and `Ook! Ook.` for `.`). Short Ook! only keeps the punctuation marks (e.g. `.?` for `>`). Encoding generates a program that prints the text (as UTF-8), while decoding runs the program (with 8-bit cells and no input) and returns its output.

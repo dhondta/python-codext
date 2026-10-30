@@ -62,6 +62,30 @@ class ComplementaryTestCase(TestCase):
         self.assertRaises(ValueError, codecs.decode, "+. comment", "brainfuck")
         self.assertRaises(ValueError, codecs.decode, "+. comment", "brainfuck", "BAD_ERRORS")
     
+    def test_codec_lolcode(self):
+        from codext.esoteric.lolcode import lolcode_run
+        run = lambda body, **kw: lolcode_run(f"HAI 1.2\n{body}\nKTHXBYE", **kw)
+        # leading and trailing newlines, a loop variable shadowing a variable, a unary function in a loop (with the
+        #  syntax of the reference interpreter) and casts from and to NOOB
+        self.assertEqual(lolcode_run("\n\nHAI\nVISIBLE 1\nKTHXBYE\n\n"), "1\n")
+        self.assertEqual(run('I HAS A i ITZ "x"\nIM IN YR l UPPIN YR i TIL BOTH SAEM i AN 2\nIM OUTTA YR l\nVISIBLE i'),
+                         "x\n")
+        self.assertEqual(run("HOW IZ I inc YR x\nSUM OF x AN 1\nIF U SAY SO\nIM IN YR l I IZ inc YR i MKAY WILE "
+                             "DIFFRINT i AN 3\nVISIBLE i!\nIM OUTTA YR l"), "012")
+        self.assertEqual(run("VISIBLE MAEK NOOB NUMBR AN MAEK NOOB A NUMBAR\nI HAS AN x ITZ 1, x IS NOW A NOOB\n"
+                             "BOTH SAEM x AN NOOB, VISIBLE IT"), "00.00\nWIN\n")
+        # syntax and runtime errors
+        for body in ['VISIBLE "a" ...\n\nVISIBLE "b"', "OBTW never closed", "OBTW x TLDR VISIBLE 1", 'VISIBLE "a"b',
+                     "VISIBLE 1 ! 2", "I HAS A 1x", "MAEK 1 A BUKKIT", "VISIBLE", "SUM OF 1 AN", "WTF?\nOMG x\nOIC",
+                     "WTF?\nOMG 1\nOMG 1\nOIC", "IM IN YR l I IZ f YR i\nIM OUTTA YR l", "VISIBLE SUM OF NOOB AN 1",
+                     'VISIBLE ":(41"', 'VISIBLE ":(XYZ)"', 'VISIBLE ":[NOT A CHARACTER NAME]"', 'VISIBLE ":{x}"',
+                     "I IZ f MKAY", "HOW IZ I f YR x\nIF U SAY SO\nI IZ f MKAY", "x R 1",
+                     "HOW IZ I f\nI IZ f MKAY\nIF U SAY SO\nI IZ f MKAY", "VISIBLE " + "NOT " * 5000 + "WIN"]:
+            self.assertRaises(ValueError, run, body)
+        self.assertRaises(ValueError, lolcode_run, "HAI 1.2\nVISIBLE 1\n")
+        self.assertRaises(ValueError, lolcode_run, "HAI 1.2\nVISIBLE 1\nKTHXBYE 2")
+        self.assertRaises(ValueError, run, "IM IN YR l\nIM OUTTA YR l", max_steps=100)
+    
     def test_codec_ook(self):
         # with a non-strict errors handling, other characters, an odd last word, "Ook? Ook?" and unmatched brackets are
         #  ignored

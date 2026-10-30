@@ -394,6 +394,7 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 - [X] `befunge`: Befunge-93, two-dimensional esoteric language (encoding generates a program printing the text)
 - [X] `brainfuck`: well-known esoteric programming language (encoding generates a program printing the text)
 - [X] `cow`: esoteric language made of variations of "moo" (Brainfuck-like, with a register and integer output)
+- [X] `lolcode`: esoteric language inspired by lolcats (encoding generates a program printing the text), also with lowercase keywords
 - [X] `ook`: Brainfuck derivative for orang-utans (`Ook.`, `Ook?` and `Ook!`), also in its short form
 - [X] `pikalang`: Brainfuck derivative using Pikachu's vocabulary
 
