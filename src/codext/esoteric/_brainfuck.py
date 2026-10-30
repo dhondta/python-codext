@@ -1,5 +1,6 @@
 # -*- coding: UTF-8 -*-
-"""Brainfuck core, shared by the codecs of Brainfuck and of the esoteric languages derived from it (e.g. Pikalang).
+"""Brainfuck core, shared by the codecs of Brainfuck and of the esoteric languages derived from it (e.g. Pikalang,
+ COW).
 
 Brainfuck works on a tape of 8-bit cells (wrapping around) with a data pointer, using 8 commands: "+" and "-"
  (increment and decrement the cell), ">" and "<" (move the pointer), "[" and "]" (loop while the cell is not null), "."
@@ -10,12 +11,19 @@ Brainfuck works on a tape of 8-bit cells (wrapping around) with a data pointer, 
 MIN_STEPS, STEPS_PER_COMMAND = 10 ** 6, 1000
 
 
-def bf_program(data):
+def bf_program(data, nonzero=False):
     """ Generate a Brainfuck program that prints the given bytes. It uses the first cell for the output and, for large
-         differences between successive bytes, the second one as the counter of a multiplication loop. """
+         differences between successive bytes, the second one as the counter of a multiplication loop.
+    
+    :param data:    bytes to be printed
+    :param nonzero: for languages whose cells are not reduced modulo 256 and that cannot print a null cell (e.g. COW),
+                     the first cell is kept away from 0 (a null byte being printed from 256 or -256)
+    """
     code, v = [], 0
     for t in data:
         d = (t - v + 128) % 256 - 128
+        if nonzero and v + d == 0:
+            d += 256 if d <= 0 else -256
         op, n = "+-"[d < 0], abs(d)
         # either add the difference directly, or as a * b + c with a loop of a iterations adding b
         best = op * n
@@ -26,7 +34,7 @@ def bf_program(data):
             if b > 0 and a + b + abs(c) + 7 < len(best):
                 best = ">" + "+" * a + "[<" + op * b + ">-]<" + ("+-"[(op == "-") != (c < 0)]) * abs(c)
         code.append(best + ".")
-        v = t
+        v = v + d if nonzero else t
     return "".join(code)
 
 

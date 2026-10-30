@@ -24,6 +24,20 @@ class ComplementaryTestCase(TestCase):
         self.assertEqual(codecs.decode("This is a test", "binhex", "ignore"), "")
         self.assertEqual(codecs.decode(":N!8:", "binhex", "ignore"), "")
     
+    def test_codec_cow(self):
+        # with a non-strict errors handling, other characters are comments and the program stops at a failing
+        #  instruction
+        for e in ["ignore", "replace", "leave"]:
+            self.assertEqual(codecs.decode("Comment: MoO OOM then moo OOM", "cow", e), "1\n")
+            self.assertEqual(codecs.decode("MoO Moo mOo Moo", "cow", e), "\x01")
+        self.assertRaises(ValueError, codecs.decode, "MoO OOM comment", "cow")
+        self.assertRaises(ValueError, codecs.decode, "MoO OOM comment", "cow", "BAD_ERRORS")
+        from codext.esoteric.cow import cow_run
+        # "MOO" with a non-null cell continues, then "moo" goes back to it forever (it skips the previous instruction,
+        #  hence the "MMM" in the loop)
+        self.assertRaises(ValueError, cow_run, [6, 7, 9, 0], max_steps=100)
+        self.assertEqual(cow_run([6, 10, 4], max_steps=100), (b"1\n\x01", None))
+    
     def test_codec_dna(self):
         self.assertEqual(codecs.decode("ABC", "dna-1", errors="ignore"), "\x02")
         self.assertEqual(codecs.decode("ABC", "dna-2", errors="replace"), "[00??01]")
