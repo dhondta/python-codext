@@ -83,6 +83,27 @@ COW is made of 12 variations of the word "moo". Its memory is a tape of integer 
 
 -----
 
+### Malbolge
+
+[Malbolge](https://esolangs.org/wiki/Malbolge) is an esoteric programming language designed to be as difficult to program in as possible. It runs on a ternary virtual machine with 59049 words of 10 trits, holding both the code and the data, and three registers (`A`, the accumulator, `C`, the code pointer, and `D`, the data pointer). The instruction executed depends on the character at `C` and on its position, among `j` (`D = [D]`), `i` (`C = [D]`), `*` (rotate `[D]` to the right), `p` ("crazy" tritwise operation of `A` and `[D]`), `<` (output `A`), `/` (input to `A`), `v` (stop) and `o` (nop), and the executed character is then enciphered. Encoding generates a program that prints the text (as UTF-8), searching for each byte the shortest sequence of instructions setting `A` to it, while decoding runs the program and returns its output. Programs are run as with the [reference interpreter](https://www.lscheffer.com/malbolge_interp.html) (`<` being the output), the cases it leaves undefined being handled as in the [specification](https://www.lscheffer.com/malbolge_spec.html).
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`malbolge` | text <-> Malbolge program | `mb` | at least two instructions ; whitespace ignored ; invalid characters only accepted with a non-strict errors handling ; programs that do not halt within 1000 steps per instruction (with a minimum of 1 million) are stopped
+
+!!! note "Undefined behaviors"
+
+    Executing a character that is not graphic ASCII ends the program, and a modified cell that is no longer graphic ASCII is not enciphered. Without input, `/` gives the end of file (59048).
+
+```python
+>>> codext.encode("Hi", "malbolge")
+'DCBA@?>=6;:981U543210/.-&%*#G4'
+>>> codext.decode("(=<`#9]~6ZY32Vx/4Rs+0No-&Jk)\"Fh}|Bcy?`=*z]Kw%oG4UUS0/@-ejc(:'8dc", "mb")
+'Hello World!'
+```
+
+-----
+
 ### Ook!
 
 [Ook!](https://www.dangermouse.net/esoteric/ook.html) is an esoteric programming language derived from Brainfuck, designed to be read and written by orang-utans: each Brainfuck command is a pair of the words `Ook.`, `Ook?` and `Ook!` (e.g. `Ook. Ook?` for `>` and `Ook! Ook.` for `.`). Short Ook! only keeps the punctuation marks (e.g. `.?` for `>`). Encoding generates a program that prints the text (as UTF-8), while decoding runs the program (with 8-bit cells and no input) and returns its output.

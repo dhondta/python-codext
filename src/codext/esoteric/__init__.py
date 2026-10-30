@@ -3,5 +3,6 @@ from .befunge import *
 from .brainfuck import *
 from .cow import *
 from .lolcode import *
+from .malbolge import *
 from .ook import *
 from .pikalang import *

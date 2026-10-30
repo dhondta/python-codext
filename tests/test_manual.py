@@ -86,6 +86,21 @@ class ComplementaryTestCase(TestCase):
         self.assertRaises(ValueError, lolcode_run, "HAI 1.2\nVISIBLE 1\nKTHXBYE 2")
         self.assertRaises(ValueError, run, "IM IN YR l\nIM OUTTA YR l", max_steps=100)
     
+    def test_codec_malbolge(self):
+        from codext.esoteric.malbolge import _value, malbolge_run, SIZE
+        from unittest.mock import patch
+        # with a non-strict errors handling, invalid characters are skipped
+        for e in ["ignore", "replace", "leave"]:
+            self.assertEqual(codecs.decode("D\xe9P", "malbolge", e), "")
+        # executing a character that is not graphic ASCII ends the program
+        self.assertEqual(malbolge_run([_value(0, "o"), 200]), b"")
+        self.assertRaises(ValueError, malbolge_run, [ord(c) for c in "(=BA#9\"=<;:3y7x54-21q/p-,+*)\"!h%B0/.~P<<:(8&66#\"!~}|{zyxwvugJ%"],
+                          max_steps=100)
+        self.assertRaises(ValueError, codecs.decode, "".join(chr(_value(i, "o")) for i in range(SIZE + 1)),
+                          "malbolge")
+        with patch("codext.esoteric.malbolge.SIZE", 10):
+            self.assertRaises(ValueError, codecs.encode, "Hello", "malbolge")
+    
     def test_codec_ook(self):
         # with a non-strict errors handling, other characters, an odd last word, "Ook? Ook?" and unmatched brackets are
         #  ignored
