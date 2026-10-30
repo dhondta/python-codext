@@ -380,6 +380,23 @@ The settings are given with the codec name as `enigma-[reflector]-[rotors]-[ring
 
 -----
 
+### ESAB-46
+
+This toy cipher ("Base-64" reversed) comes from online JavaScript encryption tools. Like [ATOM-128](#atom-128), it is Base64 with a shuffled alphabet, whose 65th character (`/`) is used for padding, and the text is first escaped with JavaScript's `escape()`, then unescaped after decoding.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`esab46` | text <-> ESAB-46 ciphertext | `esab-46`, `esb46`, `esb_46` | 
+
+```python
+>>> codext.encode("this is a test", "esab46")
+'9sRZ8i0ivsVj6z5gLy0iv4xV8nw/'
+>>> codext.decode("9sRZ8i0ivsVj6z5gLy0iv4xV8nw/", "esab-46")
+'this is a test'
+```
+
+-----
+
 ### Four-square Cipher
 
 The Four-square cipher, invented by Felix Delastelle, substitutes pairs of letters using four squares arranged in a 2x2 matrix: the upper-left and lower-right ones hold the alphabet in order, while the upper-right and lower-left ones are filled with two keywords. The first letter of each pair is located in the upper-left square and the second one in the lower-right square ; they are replaced by the letters at the other corners of the rectangle they form (in the upper-right square, then in the lower-left one).

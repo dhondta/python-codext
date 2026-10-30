@@ -363,6 +363,7 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 - [X] `citrix`: aka Citrix CTX1 password encoding
 - [X] `columnar`: aka Columnar Transposition Cipher (keyword-ordered columns ; a second keyword gives the double transposition)
 - [X] `enigma`: aka Enigma machine (Enigma I, M3 and M4, with reflector, rotors, rings, positions and plugboard)
+- [X] `esab46`: aka ESAB-46 (Base64 with a shuffled alphabet, from online JavaScript tools)
 - [X] `foursquare`: aka Four-square Cipher (bigrams substituted with two keyed squares and two plain ones)
 - [X] `fractionated-morse`: aka Fractionated Morse Cipher (Morse code split into groups of three symbols, each replaced by a letter of a keyed alphabet)
 - [X] `gronsfeld`: aka Gronsfeld Cipher (variant of Vigenere Cipher with a numeric key)
