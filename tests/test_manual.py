@@ -24,6 +24,18 @@ class ComplementaryTestCase(TestCase):
         self.assertEqual(codecs.decode("This is a test", "binhex", "ignore"), "")
         self.assertEqual(codecs.decode(":N!8:", "binhex", "ignore"), "")
     
+    def test_codec_church(self):
+        from codext.esoteric.church import church_run
+        # a program that does not give its list (e.g. an infinite list) is stopped, while deep terms do not recurse
+        self.assertRaises(ValueError, church_run, r"(\x.x x) (\x.x x)", max_steps=100)
+        self.assertRaises(ValueError, church_run, r"(\y.\c.\n.y y c n) (\y.\c.\n.c (\f.\x.x) (y y c n))")
+        self.assertEqual(church_run(r"(\x.x) (" * 3000 + r"\c.\n.n" + ")" * 3000), b"")
+        self.assertEqual(codecs.decode(codecs.encode("A" * 1000, "church"), "church"), "A" * 1000)
+        # syntax errors are reported whatever the errors handling, and numerals must be lower than 256
+        self.assertRaises(ValueError, codecs.decode, r"\c.\n.n x", "church", "ignore")
+        self.assertRaises(ValueError, church_run, r"\c.\n.c (\f.\x." + "f (" * 255 + "f x" + ")" * 255 + ") n")
+        self.assertEqual(church_run(r"\c.\n.c (\f.\x." + "f (" * 254 + "f x" + ")" * 254 + ") n"), b"\xff")
+    
     def test_codec_cow(self):
         # with a non-strict errors handling, other characters are comments and the program stops at a failing
         #  instruction

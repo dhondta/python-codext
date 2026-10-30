@@ -42,6 +42,26 @@ Befunge-93 programs are grids of 80x25 cells (wrapping around on the edges) wher
 
 -----
 
+### Church
+
+[Church encoding](https://en.wikipedia.org/wiki/Church_encoding) represents data in the untyped [lambda calculus](https://en.wikipedia.org/wiki/Lambda_calculus), whose terms are variables, abstractions (`\x.M` or `λx.M`, a function of `x`) and applications (`M N`). The natural number *n* is the numeral `\f.\x.f (f ... (f x))`, applying `f` *n* times to `x`, and the list `[a, b, ...]` is its right fold `\c.\n.c a (c b (... n))`. Encoding generates a program that evaluates to the list of the numerals of the bytes of the text (as UTF-8), while decoding evaluates the program and returns the bytes of the list it gives.
+
+The program is a single term: abstractions extend as far to the right as possible, applications are left-associative and `\x y.M` stands for `\x.\y.M`. It is evaluated lazily in normal order (call-by-need), so that only the list and its numerals are reduced, and must give a list of numerals lower than 256.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`church` | text <-> lambda term of a Church list of Church numerals | `church-encoding`, `lambda-calculus` | variables made of letters, digits, `_` and `'` (not starting with a digit), and bound ; syntax and evaluation errors reported whatever the errors handling ; programs that do not give their list within 1000 steps per token (with a minimum of 1 million) are stopped
+
+```python
+>>> codext.encode("\x01\x02", "church")
+'\\c.\\n.c (\\f.\\x.f x) (c (\\f.\\x.f (f x)) n)'
+>>> mult, n8, n9 = r"(\m n f.m (n f))", r"(\f x.f (f (f (f (f (f (f (f x))))))))", r"(\f x.f (f (f (f (f (f (f (f (f x)))))))))"
+>>> codext.decode(rf"\c n.c ({mult} {n8} {n9}) n", "church")
+'H'
+```
+
+-----
+
 ### COW
 
 COW is made of 12 variations of the word "moo". Its memory is a tape of integer cells with a register, and its instructions include those of Brainfuck (`MoO`, `MOo`, `moO`, `mOo`, `MOO`, `moo`, `Moo`), plus integer output and input (`OOM`, `oom`), reset (`OOO`), copy and paste through the register (`MMM`) and the execution of the value of the cell as an instruction (`mOO`). Programs are run as with the reference interpreter, including the quirks of its loops: when searching for their match, `MOO` skips the instruction that follows it and `moo` the one that precedes it.

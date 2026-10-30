@@ -394,6 +394,7 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 
 - [X] `befunge`: Befunge-93, two-dimensional esoteric language (encoding generates a program printing the text)
 - [X] `brainfuck`: well-known esoteric programming language (encoding generates a program printing the text)
+- [X] `church`: Church encoding in the lambda calculus (encoding generates a lambda term of the list of the numerals of the bytes)
 - [X] `cow`: esoteric language made of variations of "moo" (Brainfuck-like, with a register and integer output)
 - [X] `lolcode`: esoteric language inspired by lolcats (encoding generates a program printing the text), also with lowercase keywords
 - [X] `malbolge`: esoteric language designed to be as difficult to program in as possible (encoding generates a program printing the text)
