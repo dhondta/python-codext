@@ -1,6 +1,6 @@
 ## Frequency
 
-`codext` also implements radio teleprinter systems that send characters as audio tones (Multi Frequency-Shift Keying, MFSK) : encoding gives the frequencies of the tones in Hz, while decoding gives back the text.
+`codext` also implements radio teleprinter and telephone signaling systems that send characters as audio tones (e.g. Multi Frequency-Shift Keying, MFSK) : encoding gives the frequencies of the tones in Hz, while decoding gives back the text.
 
 -----
 
@@ -27,6 +27,33 @@
 '853 907 800 960 853 907 853 960 800 880 880 880 826 880 960 907'
 >>> codext.decode("1052 872 1172 1052 1022 1112", "coquelet")
 'TE'
+```
+
+-----
+
+### DTMF
+
+[Dual-Tone Multi-Frequency](https://www.itu.int/rec/T-REC-Q.23) (DTMF) signaling, standardised as ITU-T Q.23, is used by telephones to send the keys pressed on their keypad: each key is sent as the sum of two tones, one of the low group (697, 770, 852 and 941 Hz, for the rows of the keypad) and one of the high group (1209, 1336, 1477 and 1633 Hz, for its columns), giving 16 keys (`0` to `9`, `*`, `#` and `A` to `D`). With the `-wav` variant, encoding gives a WAV recording of the keys, while decoding detects the keys in a WAV recording with the [Goertzel algorithm](https://en.wikipedia.org/wiki/Goertzel_algorithm).
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`dtmf` | keys <-> DTMF tones (Hz) | | letters uppercased ; both tones of a key accepted in any order when decoding
+`dtmf-wav` | keys <-> WAV recording | `dtmf_wav` | recordings made at 8 kHz, 16 bits, mono, with tones of 100 ms followed by silences of 100 ms ; unsupported characters dropped with a non-strict errors handling
+
+!!! note "Detection"
+
+    Decoding accepts PCM recordings of any sample rate, sample width (8 to 32 bits) and number of channels. The keys are detected on blocks of 25.6 ms overlapping by half: the two tones of a key must hold a large enough share of the energy of a block, each tone being clearly stronger than the other tones of its group, and a key must last at least two blocks (about 40 ms, the minimal duration of ITU-T Q.24), a dropout of a single block being ignored. Tones are accepted up to about 3 % from their frequencies (ITU-T Q.24 requiring 1.5 %) and rejected from 4 %, with levels differing by up to 8 dB and noise down to a signal-to-noise ratio of about 5 dB.
+
+```python
+>>> codext.encode("*31#", "dtmf")
+'941 1209 697 1477 697 1209 941 1477'
+>>> codext.decode("1209 697 1336 770", "dtmf")
+'15'
+>>> wav = codext.encode(b"*31#", "dtmf-wav")
+>>> wav[:4]
+b'RIFF'
+>>> codext.decode(wav, "dtmf-wav")
+b'*31#'
 ```
 
 -----

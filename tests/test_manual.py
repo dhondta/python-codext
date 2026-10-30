@@ -76,6 +76,67 @@ class ComplementaryTestCase(TestCase):
         self.assertEqual(codecs.decode("ABC", "dna-1", errors="ignore"), "\x02")
         self.assertEqual(codecs.decode("ABC", "dna-2", errors="replace"), "[00??01]")
     
+    def test_codec_dtmf(self):
+        import math, random, wave
+        from io import BytesIO
+        # with a non-strict errors handling, unsupported characters are replaced with "?", dropped or left as is in the
+        #  frequencies, and dropped from a recording, while bad tones are skipped one at a time
+        for e, enc, dec in [("replace", "697 1209 ? 770 1336", "1?5?"), ("ignore", "697 1209 770 1336", "15"),
+                            ("leave", "697 1209 x 770 1336", "1x5697")]:
+            self.assertEqual(codecs.encode("1x5", "dtmf", e), enc)
+            self.assertEqual(codecs.decode("697 1209 x 770 1336 697", "dtmf", e), dec)
+            self.assertEqual(codecs.decode(codecs.encode(b"1x5", "dtmf-wav", e), "dtmf-wav"), b"15")
+        self.assertRaises(ValueError, codecs.decode, "697 1209 697", "dtmf")
+        self.assertRaises(ValueError, codecs.decode, "697 1209 697", "dtmf", "BAD_ERRORS")
+        # recordings made independently of the encoder, with various formats, frequency deviations, twists (levels of
+        #  the tones), noise, short tones and pauses, repeated keys and a dropout in a tone
+        from codext.frequency.dtmf import DTMF_TONES
+        def recording(keys, rate=8000, width=2, channels=1, tone=.1, pause=.1, drift=0., twist=0., snr=None,
+                      dropout=0):
+            rnd, s = random.Random(42), []
+            for k in keys:
+                f1, f2 = (f * (1 + drift) for f in DTMF_TONES[k])
+                a = .35 * 10 ** (twist / 20)
+                t = [.35 * math.sin(2 * math.pi * f1 * i / rate) + a * math.sin(2 * math.pi * f2 * i / rate)
+                     for i in range(int(tone * rate))]
+                if dropout:
+                    t[len(t) // 2:len(t) // 2 + int(dropout * rate)] = [0.] * int(dropout * rate)
+                s += t + [0.] * int(pause * rate)
+            if snr is not None:
+                s = [x + rnd.gauss(0, math.sqrt(.35 ** 2 / 10 ** (snr / 10))) for x in s]
+            full, out = 2 ** (8 * width - 1) - 1, bytearray()
+            for x in s:
+                v = round(max(-1, min(1, x * .9)) * full)
+                out += (bytes([v + 128]) if width == 1 else v.to_bytes(width, "little", signed=True)) * channels
+            buf = BytesIO()
+            with wave.open(buf, "wb") as w:
+                w.setnchannels(channels)
+                w.setsampwidth(width)
+                w.setframerate(rate)
+                w.writeframes(bytes(out))
+            return buf.getvalue()
+        for kw in [{}, {'rate': 44100, 'width': 3, 'channels': 2}, {'rate': 11025, 'width': 1}, {'width': 4},
+                   {'drift': .015}, {'drift': -.015}, {'twist': 6}, {'twist': -6}, {'snr': 10},
+                   {'tone': .04, 'pause': .04}, {'dropout': .01}]:
+            self.assertEqual(codecs.decode(recording("1A*#0D", **kw), "dtmf-wav"), b"1A*#0D")
+        self.assertEqual(codecs.decode(recording("1199", tone=.05, pause=.05), "dtmf-wav"), b"1199")
+        # tones off by more than 4%, noise and a dial tone (350 and 440 Hz) give no key
+        self.assertEqual(codecs.decode(recording("123", drift=.05), "dtmf-wav"), b"")
+        rate, rnd = 8000, random.Random(1)
+        dial = [.3 * (math.sin(2 * math.pi * 350 * i / rate) + math.sin(2 * math.pi * 440 * i / rate))
+                for i in range(rate)]
+        for s in [[rnd.gauss(0, .3) for _ in range(rate)], dial]:
+            buf = BytesIO()
+            with wave.open(buf, "wb") as w:
+                w.setnchannels(1)
+                w.setsampwidth(2)
+                w.setframerate(rate)
+                w.writeframes(b"".join(round(max(-1, min(1, x)) * 32767).to_bytes(2, "little", signed=True)
+                                       for x in s))
+            self.assertEqual(codecs.decode(buf.getvalue(), "dtmf-wav"), b"")
+        # invalid recordings are reported whatever the errors handling
+        self.assertRaises(ValueError, codecs.decode, b"RIFF\x00\x00", "dtmf-wav", "ignore")
+    
     def test_codec_morse(self):
         self.assertRaises(LookupError, codecs.encode, "test", "morse-AAB")
     
