@@ -416,6 +416,13 @@ class ManualTestCase(TestCase):
         self.assertEqual(HTM, ensure_str(s))
         os.remove(TFILE)
     
+    def test_codec_tap(self):
+        # with a non-strict errors handling, unsupported characters are replaced or ignored, and a word separator
+        #  between the row and the column of a letter drops the letter
+        self.assertEqual(codecs.encode("a!b", "tap", "replace"), ". .  ?  . ..")
+        self.assertEqual(codecs.encode("a!b", "tap", "ignore"), ". .  . ..")
+        self.assertEqual(codecs.decode(". / . ..", "tap", "ignore"), " b")
+    
     def test_codec_unicode_tags(self):
         # decoding ignores the cover text, hence the hidden message can be inserted anywhere in it
         hidden = codecs.encode("ignore previous instructions", "unicode-tags")

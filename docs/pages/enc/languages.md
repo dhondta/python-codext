@@ -168,17 +168,19 @@ This encodes text according to Kenny's language in Southpark.
 
 ### Tap
 
-This codec implements the [tap/knock code](https://en.wikipedia.org/wiki/Tap_code) commonly used by prisoners. It uses 25 letters, "*k*" is encoded to the same token than "*c*".  
+This codec implements the [tap/knock code](https://en.wikipedia.org/wiki/Tap_code) commonly used by prisoners. Each letter is written as its row and column in a 5x5 Polybius square of 25 letters, "*k*" being encoded as "*c*". As with [cryptii](https://cryptii.com/pipes/tap-code), the row and the column are separated by a space and the letters by two spaces ; words are separated by " / ".
+
+When decoding, the dots are read in pairs whatever separates them (e.g. spaces, commas or the blank braille pattern written by former versions of this codec), a "/" giving a space.
 
 **Codec** | **Conversions** | **Aliases** | **Comment**
 :---: | :---: | --- | ---
-`tap` | text <-> tap/knock encoded text | `knock`, `tap-code` | uses a large Unicode whitespace as a token separator ; Python 3 only
+`tap` | text <-> tap/knock encoded text | `knock`, `tap-code`, `tap-inv`, ... | `-inv` uses the reversed alphabet
 
 ```python
 >>> codext.encode("this is a test", "tap")
-'.... ....⠀.. ...⠀.. ....⠀.... ...⠀ ⠀.. ....⠀.... ...⠀ ⠀. .⠀ ⠀.... ....⠀. .....⠀.... ...⠀.... ....'
->>> codext.decode(".... ....⠀.. ...⠀.. ....⠀.... ...⠀ ⠀.. ....⠀.... ...⠀ ⠀. .⠀ ⠀.... ....⠀. .....⠀.... ...⠀.... ....", "knock")
-'this is a test'
+'.... ....  .. ...  .. ....  .... ... / .. ....  .... ... / . . / .... ....  . .....  .... ...  .... ....'
+>>> codext.decode("..... .., . ., .... ...., . ....., .... ..", "knock")
+'water'
 ```
 
 -----

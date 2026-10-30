@@ -425,7 +425,7 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 - [X] `radio`: aka NATO or radio phonetic alphabet
 - [X] `southpark`: converts letters to Kenny's language from Southpark (whitespace is also handled)
 - [X] `southpark-icase`: case insensitive variant of `southpark`
-- [X] `tap`: converts text to tap/knock code, commonly used by prisoners
+- [X] `tap`: converts text to tap/knock code, commonly used by prisoners (as written by cryptii)
 - [X] `tomtom`: similar to `morse`, using slashes and backslashes
 
 #### [Others](https://python-codext.readthedocs.io/en/latest/enc/others.html)
