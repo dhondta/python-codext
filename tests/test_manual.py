@@ -36,6 +36,24 @@ class ComplementaryTestCase(TestCase):
         self.assertRaises(ValueError, church_run, r"\c.\n.c (\f.\x." + "f (" * 255 + "f x" + ")" * 255 + ") n")
         self.assertEqual(church_run(r"\c.\n.c (\f.\x." + "f (" * 254 + "f x" + ")" * 254 + ") n"), b"\xff")
     
+    def test_codec_coquelet(self):
+        # with a non-strict errors handling, unsupported characters are replaced with "?" (in the figures shift), dropped
+        #  or left as is, while bad tones are skipped one at a time
+        self.assertEqual(codecs.encode("a#b", "coquelet", "replace"), "1022 1082 842 1082 842 1112 812 1082 842 1112")
+        self.assertEqual(codecs.decode(codecs.encode("a#b", "coquelet", "replace"), "coquelet"), "A?B")
+        self.assertEqual(codecs.encode("a#b", "coquelet", "ignore"), "1022 1082 842 1112")
+        self.assertEqual(codecs.encode("a#b", "coquelet", "leave"), "1022 1082 # 842 1112")
+        for e, r in [("replace", "T?E?"), ("ignore", "TE"), ("leave", "T1000E1082")]:
+            self.assertEqual(codecs.decode("872 1172 1000 1022 1112 1082", "coquelet", e), r)
+        self.assertRaises(ValueError, codecs.decode, "872 1172 1000", "coquelet")
+        self.assertRaises(ValueError, codecs.decode, "872 1172 1000", "coquelet", "BAD_ERRORS")
+        # every character of both shifts, with the shifts inserted only when needed
+        from codext.frequency.coquelet import CHARS
+        for chars in CHARS.values():
+            text = "".join(c for c in chars if c is not None)
+            self.assertEqual(codecs.decode(codecs.encode(text, "coquelet"), "coquelet"), text)
+        self.assertEqual(len(codecs.encode("A1B2", "coquelet").split()), 2 * 7)
+    
     def test_codec_cow(self):
         # with a non-strict errors handling, other characters are comments and the program stops at a failing
         #  instruction

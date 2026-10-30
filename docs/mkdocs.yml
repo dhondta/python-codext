@@ -17,6 +17,7 @@ nav:
     - Compressions: enc/compressions.md
     - Cryptography: enc/crypto.md
     - Esoteric: enc/esoteric.md
+    - Frequency: enc/frequency.md
     - Hashing: enc/hashing.md
     - Languages: enc/languages.md
     - Others: enc/others.md

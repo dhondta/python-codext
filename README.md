@@ -403,6 +403,10 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 - [X] `piet`: esoteric language whose programs are images looking like abstract paintings (encoding generates a PNG image of a program printing the text)
 - [X] `pikalang`: Brainfuck derivative using Pikachu's vocabulary
 
+#### [Frequency](https://python-codext.readthedocs.io/en/latest/enc/frequency.html)
+
+- [X] `coquelet`: Coquelet 13, radio teleprinter system sending each ITA-2 character as two audio tones (gives their frequencies in Hz)
+
 #### [Hashing](https://python-codext.readthedocs.io/en/latest/enc/hashing.html)
 
 - [X] `bcrypt`: aka bcrypt password hash (relies on `bcrypt` when available, e.g. with `pip install codext[bcrypt]`, pure Python otherwise)
