@@ -6,4 +6,5 @@ from .cow import *
 from .lolcode import *
 from .malbolge import *
 from .ook import *
+from .piet import *
 from .pikalang import *

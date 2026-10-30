@@ -143,6 +143,30 @@ COW is made of 12 variations of the word "moo". Its memory is a tape of integer 
 
 -----
 
+### Piet
+
+[Piet](https://www.dangermouse.net/esoteric/piet.html) programs are images looking like abstract paintings, made of codels (squares of pixels) of 20 colors: 18 colors of 6 hues in 3 lightnesses, white and black. Connected codels of the same color form color blocks, through which the interpreter moves according to a direction pointer and a codel chooser, sliding through white codels and being blocked by black codels and the edges ; it halts when it cannot leave a block. Moving from a block to another executes a command on a stack of integers, given by the change of hue and lightness (e.g. one step darker pushes the size of the block, five hues and two steps darker prints a character). Encoding generates a PNG image of a program that prints the text, while decoding reads a PNG, GIF or PPM image and runs the program, returning its output.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`piet` | text <-> Piet program (image) | `piet-N` (*N* being the codel size) | codel size 1 by default when encoding, guessed when decoding ; other colors only accepted (as white) with a non-strict errors handling ; programs that do not halt within 1000 steps per color block (with a minimum of 1 million) are stopped
+
+!!! note "Implementation choices"
+
+    Without input, `in(number)` and `in(char)` are ignored, as are the commands that cannot be performed (e.g. popping an empty stack or dividing by zero). Division rounds towards negative infinity and `mod` has the sign of the divisor. `out(char)` prints the character of the Unicode code point (the [npiet](https://www.bertnase.de/npiet/) interpreter only prints its lowest byte), so that the generated programs push code points rather than UTF-8 bytes.
+
+```python
+>>> png = codext.encode(b"Hello World!", "piet-10")
+>>> png[:8]
+b'\x89PNG\r\n\x1a\n'
+>>> codext.decode(png, "piet")
+b'Hello World!'
+>>> codext.decode("P3 4 2 255\n255 192 192  255 0 0  192 0 192  255 0 255\n255 192 192  0 0 0  255 0 255  255 0 255\n", "piet")
+'2'
+```
+
+-----
+
 ### Pikalang
 
 [Pikalang](https://github.com/groteworld/pikalang) is an esoteric programming language derived from Brainfuck, using the vocabulary of Pikachu: `pi` (`+`), `ka` (`-`), `pipi` (`>`), `pichu` (`<`), `pika` (`[`), `chu` (`]`), `pikachu` (`.`) and `pikapi` (`,`). Encoding generates a program that prints the text (as UTF-8), while decoding runs the program (with 8-bit cells and no input) and returns its output.

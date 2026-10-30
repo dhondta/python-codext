@@ -399,6 +399,7 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 - [X] `lolcode`: esoteric language inspired by lolcats (encoding generates a program printing the text), also with lowercase keywords
 - [X] `malbolge`: esoteric language designed to be as difficult to program in as possible (encoding generates a program printing the text)
 - [X] `ook`: Brainfuck derivative for orang-utans (`Ook.`, `Ook?` and `Ook!`), also in its short form
+- [X] `piet`: esoteric language whose programs are images looking like abstract paintings (encoding generates a PNG image of a program printing the text)
 - [X] `pikalang`: Brainfuck derivative using Pikachu's vocabulary
 
 #### [Hashing](https://python-codext.readthedocs.io/en/latest/enc/hashing.html)

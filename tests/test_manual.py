@@ -122,6 +122,125 @@ class ComplementaryTestCase(TestCase):
         self.assertRaises(ValueError, codecs.decode, "Ook. Ook. Ook! Ook.!", "ook")
         self.assertRaises(ValueError, codecs.decode, "Ook? Ook?", "ook", "BAD_ERRORS")
     
+    def test_codec_piet(self):
+        import struct, zlib
+        from codext.esoteric.piet import _COLORS, _commands, _program, _read_png, piet_run, BLACK, WHITE
+        
+        def ppm(rows, maxval=255):
+            n = 1 + (maxval > 255)
+            return f"P6\n{len(rows[0])} {len(rows)}\n{maxval}\n".encode() + \
+                   b"".join((_COLORS[i][k] * maxval // 255).to_bytes(n, "big") for r in rows for i in r for k in range(3))
+        
+        def png(rows, ctype=2, depth=8, interlace=0, mangle=lambda raw: raw):
+            # rows filtered with each filter type in turn, as an image with a palette, in grayscale or in true color
+            pal, chunk = sorted({i for r in rows for i in r}), lambda t, d: struct.pack(">I", len(d)) + t + d + b"CRC!"
+            px = lambda i: [pal.index(i)] if ctype == 3 else _COLORS[i][:1 + 2 * (ctype & 2)] + (255, ) * (ctype == 6)
+            channels, raw, f = {0: 1, 2: 3, 3: 1, 6: 4}[ctype], b"", 0
+            bpp = max(1, channels * depth // 8)
+            passes = [(0, 0, 8, 8), (4, 0, 8, 8), (0, 4, 4, 8), (2, 0, 4, 4), (0, 2, 2, 4), (1, 0, 2, 2), (0, 1, 1, 2)] \
+                     if interlace else [(0, 0, 1, 1)]
+            for x0, y0, dx, dy in passes:
+                sub = [r[x0::dx] for r in rows[y0::dy]]
+                if not sub or not sub[0]:
+                    continue
+                prev = None
+                for r in sub:
+                    samples = [s for i in r for s in px(i)]
+                    if depth < 8:
+                        samples = [s >> (8 - depth) if ctype == 0 else s for s in samples]
+                        bits = "".join(format(s, f"0{depth}b") for s in samples)
+                        line = int(bits.ljust((len(bits) + 7) // 8 * 8, "0"), 2).to_bytes((len(bits) + 7) // 8, "big")
+                    else:
+                        line = b"".join((s * 257 if depth == 16 else s).to_bytes(depth // 8, "big") for s in samples)
+                    prev, out = prev or bytes(len(line)), bytearray()
+                    for i, x in enumerate(line):
+                        a, b_, c = line[i-bpp] if i >= bpp else 0, prev[i], prev[i-bpp] if i >= bpp else 0
+                        p = a + b_ - c
+                        pa, pb, pc = abs(p - a), abs(p - b_), abs(p - c)
+                        out.append((x - [0, a, b_, (a + b_) // 2, a if pa <= pb and pa <= pc else b_ if pb <= pc else c][f])
+                                   & 255)
+                    raw += bytes([f]) + bytes(out)
+                    prev, f = line, (f + 1) % 5
+            return b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", struct.pack(">IIBBBBB", len(rows[0]), len(rows), depth, ctype, 0,
+                   0, interlace)) + (chunk(b"PLTE", bytes(v for i in pal for v in _COLORS[i])) if ctype == 3 else b"") + \
+                   chunk(b"tEXt", b"x") + chunk(b"IDAT", zlib.compress(mangle(raw))) + chunk(b"IEND", b"")
+        
+        def gif(rows, interlace=False, local=False):
+            # LZW compression, codes being written from the least significant bits
+            pal = sorted({i for r in rows for i in r})
+            n = max(2, (len(pal) - 1).bit_length())
+            clear, size, table, w, codes = 1 << n, n + 1, {bytes([i]): i for i in range(1 << n)}, b"", []
+            codes.append((clear, size))
+            order = [y for y0, dy in [(0, 8), (4, 8), (2, 4), (1, 2)] for y in range(y0, len(rows), dy)] if interlace \
+                    else range(len(rows))
+            for k in [pal.index(i) for y in order for i in rows[y]]:
+                if (wk := w + bytes([k])) in table:
+                    w = wk
+                    continue
+                codes.append((table[w], size))
+                table[wk], w = len(table) + 2, bytes([k])
+                if len(table) + 1 == 1 << size:
+                    size += 1
+            codes += [(table[w], size)]
+            if len(table) + 2 == 1 << size:
+                size += 1
+            codes += [(clear + 1, size)]
+            v = sum(c << sum(s for _, s in codes[:i]) for i, (c, _) in enumerate(codes))
+            data = v.to_bytes((sum(s for _, s in codes) + 7) // 8, "little")
+            colors = bytes(v for i in pal for v in _COLORS[i]).ljust(3 << n, b"\x00")
+            return b"GIF89a" + struct.pack("<HHBBB", len(rows[0]), len(rows), [0x80 | (n - 1), 0][local], 0, 0) + \
+                   (b"" if local else colors) + b"\x21\xf9\x04\x00\x00\x00\x00\x00" + b"\x2c" + \
+                   struct.pack("<HHHHB", 0, 0, len(rows[0]), len(rows), [0, 0x80 | (n - 1)][local] | 0x40 * interlace) + \
+                   (colors if local else b"") + bytes([n]) + \
+                   b"".join(bytes([len(data[i:i+255])]) + data[i:i+255] for i in range(0, len(data), 255)) + b"\x00;"
+        
+        run = lambda cmds, **kw: piet_run(ppm(_program(cmds)), **kw)
+        # image formats, codel sizes
+        rows = _program(_commands("Hi€"))
+        for image in [ppm(rows), ppm(rows, 65535), png(rows), png(rows, 6), png(rows, 2, 16), png(rows, 3),
+                      png(rows, 3, 4), png(rows, interlace=1), gif(rows), gif(rows, True, True), gif(_program(
+                      _commands("Lorem ipsum dolor sit amet, consectetur adipiscing elit")))[:-2] + b"\x00;"]:
+            self.assertIn(piet_run(image), ["Hi€", "Lorem ipsum dolor sit amet, consectetur adipiscing elit"])
+        self.assertEqual(piet_run(png(_program(_commands("Hi"), 3), 3, 8, 1)), "Hi")
+        self.assertEqual(piet_run(png(_program(_commands("Hi"), 3), 3, 8, 1), codel_size=3), "Hi")
+        self.assertEqual(_read_png(png([[WHITE, BLACK, BLACK]], 0, 1)), [[(255, 255, 255), (0, 0, 0), (0, 0, 0)]])
+        self.assertEqual(_read_png(png([[WHITE, BLACK]], 0, 16)), [[(255, 255, 255), (0, 0, 0)]])
+        self.assertEqual(piet_run(png([[BLACK]], interlace=1)), "")
+        # invalid images: unknown format, no image, truncated data, bad PNG filter or LZW code, missing palette
+        gif1 = lambda w, data: b"GIF89a" + struct.pack("<HHBBB", w, 1, 0x81, 0, 0) + bytes(12) + b"\x2c" + \
+                               struct.pack("<HHHHB", 0, 0, w, 1, 0) + b"\x02" + bytes([len(data)]) + data + b"\x00;"
+        self.assertEqual(piet_run(gif1(1, b"\x04\x01")), "")
+        for image in [b"GIF89a" + b"\x01\x00\x01\x00\x00\x00\x00;", gif(rows)[:-40], png(rows)[:-30], b"P6\n2 1\n255\n",
+                      b"P3 0 0 255\n", png(rows).replace(b"tEXt", b"IEND"), png(rows, mangle=lambda r: r[:-5]),
+                      png(rows, mangle=lambda r: b"\x09" + r[1:]), gif1(1, b"\x3c"), gif1(2, b"\x44\x01"),
+                      gif1(1, b"\x04\x01").replace(b"\x81", b"\x01", 1), b"BM"]:
+            self.assertRaises(ValueError, piet_run, image)
+        # commands, the commands that cannot be performed (e.g. division by zero) being ignored
+        for cmds, out in [([("push", 7), ("push", 3), ("sub", None), ("dup", None), ("outn", None), ("push", 3),
+                            ("greater", None), ("outn", None)], "41"),
+                          ([("push", 1), ("push", 3), ("sub", None), ("dup", None), ("push", 3), ("div", None),
+                            ("outn", None), ("push", 3), ("mod", None), ("outn", None)], "-11"),
+                          ([("push", 1), ("push", 2), ("push", 3), ("push", 3), ("push", 1), ("roll", None),
+                            ("outn", None), ("outn", None), ("outn", None)], "213"),
+                          ([("push", 5), ("push", 1), ("roll", None), ("outn", None), ("outn", None)], "15"),
+                          ([("pop", None), ("push", 5), ("push", 1), ("not", None), ("div", None), ("mod", None),
+                            ("outn", None), ("outn", None)], "05"),
+                          ([("push", 4), ("pointer", None), ("push", 2), ("switch", None), ("inn", None), ("inc", None),
+                            ("push", 1), ("not", None), ("push", 1), ("sub", None), ("outc", None), ("outn", None)],
+                           "-1")]:
+            self.assertEqual(run(cmds), out)
+        self.assertRaises(ValueError, run, [("push", 2)] + [("dup", None), ("mul", None)] * 18)
+        # halting on a black codel, when retracing a path through white codels, or not halting
+        self.assertEqual(piet_run(b"P3 1 1 255 0 0 0"), "")
+        self.assertEqual(piet_run(b"P3 2 1 255 255 255 255 0 0 0"), "")
+        self.assertRaises(ValueError, piet_run, b"P3 2 1 255 255 0 0 255 255 0", max_steps=1000)
+        self.assertRaises(ValueError, piet_run, b"P3 3 1 255 255 0 0 255 255 255 255 255 0", max_steps=1000)
+        self.assertRaises(ValueError, piet_run, b"P3 3 1 255" + b" 255" * 9, max_steps=2)
+        # with a non-strict errors handling, other colors are white
+        program = "P3 4 2 255\n255 192 192  255 0 0  192 0 192  255 0 255\n255 192 192  0 0 0  255 0 255  255 0 255\n"
+        self.assertEqual(codecs.decode(program.replace("255 0 0", "1 2 3"), "piet", "ignore"), "")
+        self.assertRaises(ValueError, codecs.decode, program.replace("255 0 0", "1 2 3"), "piet", "BAD_ERRORS")
+    
     def test_codec_pikalang(self):
         # with a non-strict errors handling, unknown words and unmatched brackets are ignored
         for e in ["ignore", "replace", "leave"]:
