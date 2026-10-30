@@ -208,7 +208,7 @@ Codecs can be listed with the `list` function, either the whole codecs or only s
     - `common`: common codecs not included in the native ones or simly added for the purpose of standardization (e.g. `octal`, `ordinal`)
     - `crypto`: codecs related to cryptography algorithms (e.g. `barbie`, `rot`, `xor`)
     - `esoteric`: esoteric programming languages (e.g. `brainfuck`, `pikalang`)
-    - `frequency`: radio teleprinter systems sending characters as audio tones (e.g. `coquelet`)
+    - `frequency`: radio teleprinter systems sending characters as audio tones (e.g. `coquelet`, `piccolo`)
     - `language`: language-related codecs (e.g. `morse`, `navajo`)
     - `other`: uncategorized codecs (e.g. `letters`, `url`)
     - `stegano`: steganography-related codecs (e.g. `sms`, `resistor`)

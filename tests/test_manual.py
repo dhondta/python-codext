@@ -48,7 +48,7 @@ class ComplementaryTestCase(TestCase):
         self.assertRaises(ValueError, codecs.decode, "872 1172 1000", "coquelet")
         self.assertRaises(ValueError, codecs.decode, "872 1172 1000", "coquelet", "BAD_ERRORS")
         # every character of both shifts, with the shifts inserted only when needed
-        from codext.frequency.coquelet import CHARS
+        from codext.frequency._ita2 import CHARS
         for chars in CHARS.values():
             text = "".join(c for c in chars if c is not None)
             self.assertEqual(codecs.decode(codecs.encode(text, "coquelet"), "coquelet"), text)
@@ -139,6 +139,27 @@ class ComplementaryTestCase(TestCase):
             self.assertEqual(codecs.decode("Comment: Ook. Ook. Ook! Ook.", "ook-short", e), "\x01")
         self.assertRaises(ValueError, codecs.decode, "Ook. Ook. Ook! Ook.!", "ook")
         self.assertRaises(ValueError, codecs.decode, "Ook? Ook?", "ook", "BAD_ERRORS")
+    
+    def test_codec_piccolo(self):
+        # with a non-strict errors handling, unsupported characters are replaced with "?" (in the figures shift), dropped
+        #  or left as is, while bad tones (or the first tone of a bad pair) are skipped one at a time
+        for e, enc, dec2, dec1 in [("replace", "460 560 560 560 560 480 540 560 560 480", "T?I??", "T?E"),
+                                   ("ignore", "460 560 560 480", "TI", "TE"),
+                                   ("leave", "460 560 # 560 480", "T520I480470", "T475E")]:
+            self.assertEqual(codecs.encode("a#b", "piccolo", e), enc)
+            self.assertEqual(codecs.decode("500 460 520 520 460 480 470", "piccolo", e), dec2)
+            self.assertEqual(codecs.decode("620 475 470", "piccolo1", e), dec1)
+        self.assertRaises(ValueError, codecs.decode, "500 460 520 520", "piccolo")
+        self.assertRaises(ValueError, codecs.decode, "500 460 460", "piccolo", "BAD_ERRORS")
+        # every code has its own pair of tones, and every character of both shifts round-trips with each variant
+        from codext.frequency._ita2 import CHARS
+        from codext.frequency.piccolo import PICCOLO_PAIRS
+        self.assertEqual(sorted(PICCOLO_PAIRS), list(range(32)))
+        self.assertEqual(len(set(PICCOLO_PAIRS.values())), 32)
+        for v in ["piccolo-i", "piccolo-ii", "piccolo-iii"]:
+            for chars in CHARS.values():
+                text = "".join(c for c in chars if c is not None)
+                self.assertEqual(codecs.decode(codecs.encode(text, v), v), text)
     
     def test_codec_piet(self):
         import struct, zlib

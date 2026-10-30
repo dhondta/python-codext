@@ -19,6 +19,7 @@ This codec:
 
 Reference: https://www.cryptomuseum.com/ref/coquelet/index.htm
 """
+from ._ita2 import ita2_decode, ita2_encode
 from ..__common__ import *
 
 
@@ -33,49 +34,33 @@ __examples__ = {
 __guess__ = ["coquelet"]
 
 
-# frequencies of the tones 1 to 8 (Group I) and 9 to 12 (Group II)
-TONES = [812 + 30 * i for i in range(8)] + [1082 + 30 * i for i in range(4)]
-IDLE = 1052
-# characters by (Group II tone - 9) * 8 + (Group I tone - 1), the first two codes being the LTR and FIG shifts
-CHARS = {
-    'letters': [None, None] + list("WUQKJAXBZSYFDEVGLIPCR\nMOT HN\r\x00"),
-    'figures': [None, None] + list("271(\x07-/?+'6!\x053;&)80:4\n.95 $,\r\x00"),
-}
-CODES = {shift: {c: i for i, c in enumerate(chars) if c is not None} for shift, chars in CHARS.items()}
+# frequencies of the tones of Group I by bits 3 to 5 of the codes (code >> 2) and of Group II by bits 1 and 2
+#  (code & 3), that is, tones 8, 4, 7, 6, 3, 5, 2, 1 and 12, 10, 11, 9 of Crypto Museum's table
+COQUELET_GROUP1 = [812 + 30 * (t - 1) for t in [8, 4, 7, 6, 3, 5, 2, 1]]
+COQUELET_GROUP2 = [1082 + 30 * (t - 9) for t in [12, 10, 11, 9]]
+COQUELET_IDLE = 1052
+COQUELET_PAIRS = {(str(COQUELET_GROUP1[c >> 2]), str(COQUELET_GROUP2[c & 3])): c for c in range(32)}
 
 
 def coquelet_encode(text, errors="strict"):
-    _h, tones, shift = handle_error("coquelet", errors), [], "letters"
-    for i, c in enumerate(ensure_str(text).upper()):
-        if c not in CODES['letters'] and c not in CODES['figures']:
-            # a replaced character is encoded as "?", while a left one is kept as is in the output
-            if (c := _h(c, i)) != "?":
-                tones.extend([c] if c else [])
-                continue
-        if c not in CODES[shift]:
-            shift = ["letters", "figures"][shift == "letters"]
-            tones.append(shift == "figures")
-        tones.append(CODES[shift][c])
-    return " ".join(t if isinstance(t, str) else f"{TONES[t % 8]} {TONES[8 + t // 8]}" for t in tones), len(text)
+    codes = ita2_encode("coquelet", ensure_str(text), errors)
+    tones = [c if isinstance(c, str) else f"{COQUELET_GROUP1[c >> 2]} {COQUELET_GROUP2[c & 3]}" for c in codes]
+    return " ".join(tones), len(text)
 
 
 def coquelet_decode(text, errors="strict"):
     _h, r, shift = handle_error("coquelet", errors, decode=True, kind="tone"), "", "letters"
-    tones = [(i, t) for i, t in enumerate(ensure_str(text).split()) if t != str(IDLE)]
-    idx = {str(f): n for n, f in enumerate(TONES)}
+    tones = [(i, t) for i, t in enumerate(ensure_str(text).split()) if t != str(COQUELET_IDLE)]
     j = 0
     while j < len(tones):
         (i, t1), t2 = tones[j], tones[j+1][1] if j + 1 < len(tones) else None
         # a tone of Group I must be followed by a tone of Group II ; otherwise, skip the first tone
-        if idx.get(t1, 8) >= 8 or idx.get(t2, 0) < 8:
+        if (t1, t2) not in COQUELET_PAIRS:
             r += _h(t1, i, r)
             j += 1
             continue
-        n, j = (idx[t2] - 8) * 8 + idx[t1], j + 2
-        if n < 2:
-            shift = ["letters", "figures"][n]
-        else:
-            r += CHARS[shift][n]
+        c, shift = ita2_decode(COQUELET_PAIRS[t1, t2], shift)
+        r, j = r + c, j + 2
     return r, len(text)
 
 
