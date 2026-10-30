@@ -414,6 +414,68 @@ class ComplementaryTestCase(TestCase):
 
 
 class ManualTestCase(TestCase):
+    def test_codec_asn1(self):
+        # a dump with big and negative integers, bit strings with unused bits or holding a DER structure, an unsorted
+        #  set (sorted in DER), tags of other classes (also above 30), strings of other encodings and an empty element
+        dump = "\n".join(["SEQUENCE {", "  INTEGER 0x00ffeeddccbbaa99887766554433221100", "  INTEGER -129",
+                          "  BIT STRING '101'B", "  BIT STRING {", "    SEQUENCE {", "      NULL", "    }", "  }",
+                          "  OCTET STRING {", "    SET {", '      UTF8String "b"', '      UTF8String "a"', "    }",
+                          "  }",
+                          "  [APPLICATION 5] 'CAFE'H", "  [PRIVATE 300] {", '    BMPString "\\u20ac"',
+                          '    UniversalString "\\ud83d\\ude00"', "  }", "  [0] {}", "  RELATIVE-OID 8.571",
+                          "  OBJECT IDENTIFIER 1.2.840.113549.1.1.11", '  GeneralizedTime "20260101120000Z"',
+                          "  OCTET STRING ''H", "}"])
+        der = bytes.fromhex("3063021100ffeeddccbbaa998877665544332211000202ff7f030205a003050030020500040831060c0161"
+                            "0c01624502cafeff822c0a1e0220ac1c040001f600a0000d0308843b06092a864886f70d01010b180f3230"
+                            "32363031303131323030" "30305a0400")
+        self.assertEqual(codecs.encode(dump.encode(), "asn1"), der)
+        back = codecs.decode(der, "asn1").decode()
+        self.assertIn('UTF8String "a"\n      UTF8String "b"', back)
+        self.assertIn("1.2.840.113549.1.1.11  -- sha256WithRSAEncryption", back)
+        self.assertEqual(codecs.encode(back.encode(), "asn1"), der)
+        # BER forms (indefinite lengths, constructed strings, non-minimal lengths and integers) are dumped by their
+        #  value, and encoded back to DER, while non-canonical contents are dumped in hexadecimal
+        ber = b"\x30\x80\x24\x80\x04\x01h\x04\x01i\x00\x00\x02\x02\x00\x05\x0c\x81\x02hi\x01\x01\x01\x00\x00"
+        self.assertEqual(codecs.decode(ber, "asn1"), b"SEQUENCE {\n  OCTET STRING '6869'H\n  INTEGER '0005'H\n"
+                                                     b"  UTF8String \"hi\"\n  BOOLEAN '01'H\n}")
+        self.assertEqual(codecs.encode(codecs.decode(ber, "asn1"), "asn1"),
+                         b"\x30\x0f\x04\x02hi\x02\x02\x00\x05\x0c\x02hi\x01\x01\x01")
+        self.assertEqual(codecs.decode(b"\x0c\x02\xff\xfe", "asn1"), b"UTF8String 'FFFE'H")
+        # the der and ber codecs: bit strings, segments of a constructed bit string and character strings of other
+        #  types
+        self.assertEqual(codecs.decode(b"\x03\x03\x00hi", "der"), b"hi")
+        self.assertRaises(ValueError, codecs.decode, b"\x03\x03\x01hi", "der")
+        self.assertEqual(codecs.decode(b"\x23\x08\x03\x02\x00h\x03\x02\x00i", "ber"), b"hi")
+        self.assertRaises(ValueError, codecs.decode, b"\x23\x08\x03\x02\x01h\x03\x02\x00i", "ber")
+        self.assertEqual(codecs.decode(b"\x1c\x08\x00\x00\x00h\x00\x00\x00i", "der"), b"hi")
+        self.assertEqual(codecs.decode(b"\x0c\x02\xc3\xa9", "der"), b"\xe9")
+        # malformed elements and dumps, whatever the errors handling
+        for bad in [b"\x30\x80\x02\x01\x05", b"\x24\x80\x02\x01\x05\x00\x00", b"\x02\x84\xff\xff\xff\xff",
+                    b"\x1f\x01\x00", b"\x30\x80" * 300]:
+            self.assertRaises(ValueError, codecs.decode, bad, "asn1", "ignore")
+        self.assertRaises(ValueError, codecs.decode, b"\x0c\x02hi\x0c\x00", "der")
+        self.assertRaises(ValueError, codecs.decode, b"\x1f\x01\x00", "der")
+        # truncated tag and length, indefinite length of a primitive element, constructed string in DER, bad BMPString
+        for bad, e in [(b"\x1f\x81", "asn1"), (b"\x04", "asn1"), (b"\x04\x80\x00\x00", "asn1"),
+                       (b"\x24\x04\x04\x02hi", "der"), (b"\x1e\x01h", "der")]:
+            self.assertRaises(ValueError, codecs.decode, bad, e)
+        from codext.others.asn1 import _parse, _raise
+        self.assertRaises(ValueError, _parse, b"\x1f\x80\x01\x00", False, _raise)
+        # non-canonical object identifiers, a string starting like a SEQUENCE but not holding one and elements of
+        #  universal types in an unexpected form are dumped in hexadecimal
+        for data, dump in [(b"\x06\x00", b"OBJECT IDENTIFIER ''H"),
+                           (b"\x06\x02\x80\x01", b"OBJECT IDENTIFIER '8001'H"),
+                           (b"\x04\x02\x30\x05", b"OCTET STRING '3005'H"), (b"\x10\x00", b"[UNIVERSAL 16] ''H"),
+                           (b"\x22\x00", b"[UNIVERSAL 2] {}")]:
+            self.assertEqual(codecs.decode(data, "asn1"), dump)
+            self.assertEqual(codecs.encode(dump, "asn1"), data)
+        self.assertEqual(codecs.encode(b"-- a comment\nNULL  -- another one", "asn1"), b"\x05\x00")
+        for bad, line in [("SEQUENCE {\n  INTEGER 1.2\n}", 2), ("SEQUENCE {\n  FOO 1\n}", 2), ("NULL 'zz'H", 1),
+                          ("OBJECT IDENTIFIER 3.1", 1), ("PrintableString \"\\u20ac\"", 1), ("INTEGER {", 1),
+                          ("SEQUENCE 5", 1), ("[0] \"x\"", 1), ("INTEGER", 1), ("NULL\nUTF8String \"\\x\"", 2)]:
+            with self.assertRaisesRegex(ValueError, f"line {line}"):
+                codecs.encode(bad, "asn1", "ignore")
+    
     def test_codec_aaencode(self):
         prog = codecs.encode("alert(1)", "aaencode")
         # lone surrogates, a program reformatted with other whitespaces and a program without its last semicolon

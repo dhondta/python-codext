@@ -444,7 +444,10 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 
 #### [Others](https://python-codext.readthedocs.io/en/latest/enc/others.html)
 
+- [X] `asn1`: readable dump of ASN.1 BER/DER elements (e.g. certificates and keys), encoded back to DER
+- [X] `ber`: text as an ASN.1 BER string element (decoding indefinite lengths and segmented strings)
 - [X] `binhex`: BinHex 4.0 (`.hqx`), the binary-to-text encoding of the classic Mac OS
+- [X] `der`: text as an ASN.1 DER string element (UTF8String)
 - [X] `dna`: implements the 8 rules of DNA sequences (N belongs to [1,8])
 - [X] `dvorak`: text typed with the Dvorak keyboard layout instead of QWERTY
 - [X] `letter-indices`: encodes consonants and/or vowels with their corresponding indices

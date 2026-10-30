@@ -4,6 +4,38 @@ All kinds of other codecs are categorized in "*Others*".
 
 -----
 
+### ASN.1 (BER and DER)
+
+[ASN.1](https://www.itu.int/rec/T-REC-X.680) describes data structures, that the Basic Encoding Rules (BER) and the Distinguished Encoding Rules (DER, a canonical subset of BER, used e.g. by X.509 certificates and keys), defined in [ITU-T X.690](https://www.itu.int/rec/T-REC-X.690), write as nested type-length-value elements. The `der` and `ber` codecs wrap the text as an encoded string, while the `asn1` codec decodes any BER or DER element to a readable dump, close to the ASN.1 value notation, and encodes such a dump to DER.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`der` | text <-> DER string element | | encodes a UTF8String ; decodes an element of a string type (e.g. `UTF8String`, `OCTET STRING`, `PrintableString`, `BMPString`), character strings giving text and octet and bit strings their bytes
+`ber` | text <-> BER string element | | as `der`, decoding also accepting indefinite lengths, strings split into segments and non-minimal lengths
+`asn1` | readable dump <-> DER elements | `asn.1`, `asn-1` | decodes BER and DER, encodes to DER ; malformed elements and dumps reported whatever the errors handling
+
+!!! note "Dumps"
+
+    Each element is written on a line, indented by its depth: its type (e.g. `SEQUENCE`, `INTEGER`, `OBJECT IDENTIFIER`, or `[0]`, `[APPLICATION 1]` and `[PRIVATE 2]` for the other classes of tags), followed by `{` and its elements (closed by `}`) for constructed elements, or by its value: `TRUE`/`FALSE`, numbers (hexadecimal with `0x` above 64 bits), dotted object identifiers (with the names of the common ones as comments, after `--`), JSON strings, `'...'H` for hexadecimal contents and `'...'B` for bit strings. Octet and bit strings holding a DER `SEQUENCE` or `SET` (e.g. the keys or the extensions of certificates) are dumped as constructed elements. Contents that are not canonical (e.g. BER integers with leading zeros) are dumped in hexadecimal, so that DER elements are encoded back to their original bytes, while BER forms are encoded to DER (and the elements of the sets are sorted).
+
+```python
+>>> codext.encode(b"hi", "der")
+b'\x0c\x02hi'
+>>> codext.decode(b"\x24\x80\x04\x01h\x04\x01i\x00\x00", "ber")
+b'hi'
+>>> der = codext.encode(b'SEQUENCE {\n  INTEGER 5\n  OBJECT IDENTIFIER 2.5.4.3\n  UTF8String "hi"\n}', "asn1")
+>>> der
+b'0\x0c\x02\x01\x05\x06\x03U\x04\x03\x0c\x02hi'
+>>> print(codext.decode(der, "asn1").decode())
+SEQUENCE {
+  INTEGER 5
+  OBJECT IDENTIFIER 2.5.4.3  -- commonName
+  UTF8String "hi"
+}
+```
+
+-----
+
 ### BinHex
 
 BinHex 4.0 (`.hqx`) is the binary-to-text encoding of the classic Mac OS. The data is stored as the data fork of a file (named "`-`", with unknown type and creator codes and an empty resource fork) whose header and forks are protected with CRCs. This stream is compressed with run-length encoding, then encoded with 6 bits per character, framed by "`:`" and wrapped in lines of 64 characters after the "`(This file must be converted with BinHex 4.0)`" line.

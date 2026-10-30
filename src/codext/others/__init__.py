@@ -1,4 +1,5 @@
 # -*- coding: UTF-8 -*-
+from .asn1 import *
 from .binhex import *
 from .dna import *
 from .dvorak import *
