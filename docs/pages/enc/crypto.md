@@ -137,6 +137,23 @@ It implements the monoalphabetic substitution cipher used for the Hebrew alphabe
 
 -----
 
+### ATOM-128
+
+This toy cipher comes from online JavaScript encryption tools. It is Base64 with a shuffled alphabet, whose 65th character (`C`) is used for padding. As in the original JavaScript, the text is first escaped with JavaScript's `escape()` (e.g. a whitespace becomes `%20`), and unescaped after decoding.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`atom128` | text <-> ATOM-128 ciphertext | `atom-128`, `atom_128` | 
+
+```python
+>>> codext.encode("this is a test", "atom128")
+'0IXBnsgsSI6tQfPqKDgsSoA6nmbC'
+>>> codext.decode("0IXBnsgsSI6tQfPqKDgsSoA6nmbC", "atom-128")
+'this is a test'
+```
+
+-----
+
 ### Autoclave/Autokey Cipher
 
 This is a variant of the [Vigenere Cipher](#vigenere-cipher) using a key stream generated from the primer key and the message appended.

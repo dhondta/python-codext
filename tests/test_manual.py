@@ -123,6 +123,12 @@ class ManualTestCase(TestCase):
         # example of parameters that cause mapping collisions
         self.assertRaises(LookupError, codecs.encode, STR, "affine-?l?u?d?s-6,8")
     
+    def test_codec_atom128(self):
+        # the padding is fixed when not in strict mode (an incomplete last character being dropped)
+        for s in ["0IHt0/C", "0IHt0/CCC", "0IHt0/C%"]:
+            self.assertEqual(codecs.decode(s, "atom128", "ignore"), "test")
+        self.assertEqual(codecs.decode("0IHt0/", "atom128", "replace"), "test")
+    
     def test_codec_atbash(self):
         STR = "This is a test"
         ATB1 = "Gsrh rh z gvhg"

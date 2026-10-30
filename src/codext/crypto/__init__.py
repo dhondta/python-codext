@@ -4,6 +4,7 @@ from .aer256 import *
 from .affine import *
 from .armon64 import *
 from .atbash import *
+from .atom128 import *
 from .bacon import *
 from .barbie import *
 from .bazeries import *

@@ -351,6 +351,7 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 - [X] `affine`: aka Affine Cipher
 - [X] `armon64`: aka ARMON-64 (variant of AER-256 with a fourth operation)
 - [X] `atbash`: aka Atbash Cipher
+- [X] `atom128`: aka ATOM-128 (Base64 with a shuffled alphabet, from online JavaScript tools)
 - [X] `autoclave`: aka Autoclave/Autokey Cipher (variant of Vigenere Cipher)
 - [X] `bacon`: aka Baconian Cipher
 - [X] `barbie-N`: aka Barbie Typewriter (*N* belongs to [1, 4])
