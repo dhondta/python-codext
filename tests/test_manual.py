@@ -315,6 +315,46 @@ class ComplementaryTestCase(TestCase):
 
 
 class ManualTestCase(TestCase):
+    def test_codec_aaencode(self):
+        prog = codecs.encode("alert(1)", "aaencode")
+        # lone surrogates, a program reformatted with other whitespaces and a program without its last semicolon
+        for s in ["\ud800", "a\udc00b", "\U0001f600"]:
+            self.assertEqual(codecs.decode(codecs.encode(s, "aaencode"), "aaencode"), s)
+        self.assertEqual(codecs.decode(prog.replace(" ", "").replace("+", "+\n  "), "aaencode"), "alert(1)")
+        self.assertEqual(codecs.decode(prog[:-1], "aaencode"), "alert(1)")
+        # the easter egg of the reference encoder is ignored while decoding
+        egg = "ひだまりスケッチ×365 来週も見てくださいね!"
+        self.assertIn("X=_=3;", codecs.encode(egg, "aaencode"))
+        self.assertEqual(codecs.decode(codecs.encode(egg, "aaencode"), "aaencode"), egg)
+        # truncated payload, unexpected token and invalid escape sequence ("\\u141", a JavaScript syntax error),
+        #  whatever the errors handling
+        for bad in [prog[:-30], prog.replace("(ﾟДﾟ)[ﾟεﾟ]+(ﾟΘﾟ)+", "(ﾟДﾟ)[ﾟεﾟ]+(ﾟΘﾟ)-", 1),
+                    prog.replace("(ﾟДﾟ)[ﾟεﾟ]+", "(ﾟДﾟ)[ﾟεﾟ]+(oﾟｰﾟo)+ ", 1)]:
+            self.assertRaises(ValueError, codecs.decode, bad, "aaencode")
+            self.assertRaises(ValueError, codecs.decode, bad, "aaencode", "ignore")
+        # without its first backslash, the escape sequence of the first character is read as digits
+        self.assertEqual(codecs.decode(prog.replace("(ﾟДﾟ)[ﾟεﾟ]+", "", 1), "aaencode"), "141lert(1)")
+    
+    def test_codec_jjencode(self):
+        prog = codecs.encode("alert(1)", "jjencode-abc")
+        # lone surrogates, the name of the variable read from the program and a program reformatted with whitespaces
+        for s in ["\ud800", "a\udc00b", "\U0001f600"]:
+            self.assertEqual(codecs.decode(codecs.encode(s, "jjencode"), "jjencode"), s)
+        self.assertTrue(prog.startswith("abc=~[];"))
+        self.assertEqual(codecs.decode(prog, "jjencode"), "alert(1)")
+        self.assertEqual(codecs.decode(prog.replace("+", "+\n  "), "jjencode-other"), "alert(1)")
+        self.assertEqual(codecs.decode(prog[:-1], "jjencode"), "alert(1)")
+        # unlike the reference encoder, the escape sequences are padded when needed
+        self.assertIn("\"\\\\\"+$.___+$.___+$.__$+$.__$+", codecs.encode("\x011", "jjencode"))
+        self.assertIn("\"\\\\\"+$._+$.___+$.___+$.$$$_+$.$__$+", codecs.encode("\xe9", "jjencode"))
+        # the reference encoder gives "\ue9" for "é", which is a JavaScript syntax error
+        self.assertRaises(ValueError, codecs.decode, codecs.encode("\xe9", "jjencode").replace("$.___+$.___+", "", 1),
+                          "jjencode")
+        # no variable initialization, truncated payload, unexpected token and unterminated string literal
+        for bad in [prog[8:], prog[:-12], prog.replace("abc.__+\"(\"", "abc.x+\"(\""),
+                    prog.replace("\"(\"+", "\"(+", 1)]:
+            self.assertRaises(ValueError, codecs.decode, bad, "jjencode")
+    
     def test_codec_aer256(self):
         from codext.crypto._jsfloat import js_str as _js_str
         # numbers formatted as with JavaScript's String(...), as given by Node.js

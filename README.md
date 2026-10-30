@@ -464,7 +464,9 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 
 #### [Web](https://python-codext.readthedocs.io/en/latest/enc/web.html)
 
+- [X] `aaencode`: JavaScript obfuscation with Japanese-style emoticons (encoding generates a program running the code)
 - [X] `html`: implements entities according to [this reference](https://dev.w3.org/html5/html-author/charref)
+- [X] `jjencode`: JavaScript obfuscation with only symbols (encoding generates a program running the code)
 - [X] `url`: aka URL encoding
 
 
