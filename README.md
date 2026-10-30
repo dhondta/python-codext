@@ -467,6 +467,7 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 - [X] `aaencode`: JavaScript obfuscation with Japanese-style emoticons (encoding generates a program running the code)
 - [X] `html`: implements entities according to [this reference](https://dev.w3.org/html5/html-author/charref)
 - [X] `jjencode`: JavaScript obfuscation with only symbols (encoding generates a program running the code)
+- [X] `jsfuck`: JavaScript with only six characters (`[]()!+`) ; encoding generates an expression giving the text, or a program running the code with `jsfuck-eval`
 - [X] `url`: aka URL encoding
 
 

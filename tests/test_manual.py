@@ -355,6 +355,72 @@ class ManualTestCase(TestCase):
                     prog.replace("\"(\"+", "\"(+", 1)]:
             self.assertRaises(ValueError, codecs.decode, bad, "jjencode")
     
+    def test_codec_jsfuck(self):
+        from codext.web.jsfuck import MAPPING, _jsfuck, jsfuck_run
+        S = lambda x: "(" + _jsfuck(x) + ")"
+        F = lambda via="at": f"[][{S(via)}][{S('constructor')}]"
+        # every character of the reference encoder's table, including those taken from the representation of RegExp,
+        #  which the reference encoder gets wrong
+        for c, expr in MAPPING.items():
+            self.assertEqual(jsfuck_run(expr), c)
+        for c in "ER:?\\":
+            self.assertIn(c, MAPPING)
+        # values as given by Node.js
+        for expr, value in [(f"(+{S('255')})[{S('toString')}](+{S('16')})", "ff"),
+                            (f"(+{S('-255')})[{S('toString')}](+{S('2')})", "-11111111"),
+                            (f"+{S('1e21')}+[]", "1e+21"), (f"+{S('1.5e-7')}+[]", "1.5e-7"),
+                            (f"+{S('0.1')}+(+{S('0.2')})", "0.30000000000000004"),
+                            (f"(+{S('123.456')})[{S('toFixed')}](+{S('1')})", "123.5"),
+                            (f"(+{S('2.5')})[{S('toFixed')}]()", "3"),
+                            (f"(+{S('-0.0001')})[{S('toFixed')}](+{S('2')})", "-0.00"),
+                            (f"+{S('0x1f')}", "31"), (f"+{S(' 12 ')}", "12"), (f"+{S('abc')}", "NaN"),
+                            ("[[]]+[[[]]]", ""), ("!![]+[][[]]", "NaN"), (f"[][{S('entries')}]()+[]",
+                                                                         "[object Array Iterator]"),
+                            (f"{S('abc')}[{S('at')}]({S('-1')})", "c"), (f"{S('abc')}[{S('charAt')}]({S('-1')})", ""),
+                            (f"{S('x')}[{S('fontcolor')}]({S('a' + chr(34) + 'b')})",
+                             "<font color=\"a&quot;b\">x</font>"),
+                            (f"{F()}({S('return escape')})()({S('<x> é€')})", "%3Cx%3E%20%E9%u20AC"),
+                            (f"{F()}({S('return unescape')})()({S('%41%u20AC')})", "A€"),
+                            (f"{F()}({S('return/x/')})()[{S('constructor')}]({S('a/b')})+[]", "/a\\/b/"),
+                            (f"{F()}({S('return/x/')})()[{S('constructor')}]()+[]", "/(?:)/"),
+                            (f"[+!+[]][{S('includes')}](+!+[])", "true"),
+                            (f"[+[![]]][{S('includes')}](+[![]])", "true"),
+                            (f"[+[![]]][{S('indexOf')}](+[![]])", "-1"),
+                            (f"[][{S('at')}][{S('call')}]({S('xyz')})", "x"),
+                            (f"[][{S('flat')}]+[]", "function flat() { [native code] }"),
+                            (f"{F()}({S('return' + chr(34) + 'q' + chr(34))})+[]",
+                             "function anonymous(\n) {\nreturn\"q\"\n}")]:
+            self.assertEqual(jsfuck_run(expr), value)
+        # other conversions and methods, and unsupported arguments
+        from unittest.mock import patch
+        for expr, value in [("![][[]]", "true"), ("!([]+[])", "true"), ("!(+[]+[])", "false"),
+                            (f"(+[![]])[{S('toString')}](+{S('2')})", "NaN"),
+                            (f"(+{S('1e21')})[{S('toFixed')}](+{S('2')})", "1e+21"),
+                            (f"(![]+[])[{S('length')}]", "5"),
+                            (f"([]+[])[{S('constructor')}][{S('fromCharCode')}](+{S('65')})", "A"),
+                            (f"[][{S('constructor')}](+{S('3')})", ",,"), (f"[][{S('constructor')}]({S('a')})", "a"),
+                            (f"{F()}({S('return/x/g')})()[{S('source')}]", "x"),
+                            (f"{F()}({S('return/x/')})()[{S('constructor')}]({F()}({S('return/y/i')})())", "/y/i")]:
+            self.assertEqual(jsfuck_run(expr), value)
+        for bad in [f"(+{S('1')})[{S('toString')}](+{S('37')})", f"(+{S('0.5')})[{S('toString')}](+{S('2')})",
+                    f"(+{S('1')})[{S('toFixed')}](+{S('101')})", f"[][{S('at')}][{S('call')}](+[])",
+                    f"[][{S('at')}][{S('call')}][{S('call')}]([])",
+                    f"{F()}({S('return' + chr(34) + chr(92) + 'x4' + chr(34))})"]:
+            self.assertRaises(ValueError, jsfuck_run, bad)
+        with patch("codext.web.jsfuck.MAX_LENGTH", 4):
+            self.assertRaises(ValueError, jsfuck_run, _jsfuck("abcde"))
+        # a program running some code gives this code, whatever the way it gets the Function constructor or eval
+        code = "alert(\"Hello, World!\")"
+        for prog in [codecs.encode(code, "jsfuck-eval"), f"{F()}({S('return eval')})()({S(code)})",
+                     f"{F('filter')}({S(code)})()", f"{F('fill')}({S(code)})()"]:
+            self.assertEqual(codecs.decode(prog, "jsfuck"), code)
+        self.assertEqual(codecs.decode(" \n".join(_jsfuck("hi")), "jsfuck"), "hi")
+        # unsupported calls, the result of some code being used, too deep a nesting and too large an array, whatever
+        #  the errors handling
+        for bad in [f"[][{S('map')}]([])", f"{F()}({S('x')})()+[]", "(" * 100000 + "[]" + ")" * 100000,
+                    f"[][{S('constructor')}](+{S('1e9')})", "[]()", "+[]-[]", "+[]+", "[x]"]:
+            self.assertRaises(ValueError, codecs.decode, bad, "jsfuck", "ignore")
+    
     def test_codec_aer256(self):
         from codext.crypto._jsfloat import js_str as _js_str
         # numbers formatted as with JavaScript's String(...), as given by Node.js

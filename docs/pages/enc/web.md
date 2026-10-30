@@ -62,6 +62,34 @@ This implements the full list of characters available at [this reference](https:
 
 -----
 
+### JSFuck
+
+[JSFuck](https://jsfuck.com), by Martin Kleppe, writes JavaScript with only six characters: `[`, `]`, `(`, `)`, `!` and `+`. It builds values from empty arrays (e.g. `+[]` is `0`, `![]` is `false` and `[][[]]` is `undefined`), takes characters from their string representations (e.g. `(![]+[])[+[]]` is `f`), gets methods by name (e.g. `[]["at"]`) and the `Function` constructor through their `constructor` property, and calls it to reach other values (e.g. `escape`) or to evaluate a string literal of escape sequences, for the characters it cannot build otherwise. Encoding gives an expression whose value is the text, or, with the `-eval` variant, a program that runs the text as JavaScript code. Decoding evaluates the expression with an interpreter of the subset of JavaScript that JSFuck relies on, without running any code: a program that runs some code gives this code.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`jsfuck` | text <-> JSFuck expression | | malformed or unsupported expressions reported whatever the errors handling
+`jsfuck-eval` | JavaScript code <-> JSFuck program running it | `jsfuck_eval` | decoding gives the code (as with `jsfuck`)
+
+!!! note "Differences with the reference encoder"
+
+    The reference encoder (version 0.5.0) gives a wrong expression in two cases, where this codec deviates: the characters taken from the string representation of `RegExp` (`E`, `R`, `:`, `?` and `\`, the latter also being used for the texts with several characters that cannot be built) contain a leftover `Function` name, and an octal escape sequence followed by a digit absorbs it (padded to three digits by this codec). Otherwise, encoding gives the same expression as the reference encoder.
+
+!!! warning "Decoding"
+
+    The interpreter supports the values, operators and methods used by the JSFuck encoders (e.g. `at`, `concat`, `entries`, `fontcolor`, `italics`, `split`, `toString` with a radix, `escape`, `Function("return ...")`), as given by V8 (Chrome, Node.js) ; `Date()` gives a fixed date in UTC. A program that gets the `Function` constructor or `eval` to run some code is decoded to this code instead of running it.
+
+```python
+>>> codext.encode("a", "jsfuck")
+'(![]+[])[+!+[]]'
+>>> codext.decode("[][(![]+[])[+[]]+(![]+[])[!+[]+!+[]]+(![]+[])[+!+[]]+(!![]+[])[+[]]]+[]", "jsfuck")
+'function flat() { [native code] }'
+>>> codext.decode(codext.encode("alert(1)", "jsfuck-eval"), "jsfuck")
+'alert(1)'
+```
+
+-----
+
 ### URL
 
 This handles URL encoding, regardless of the case when decoding and with no error.
