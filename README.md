@@ -418,7 +418,7 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 
 - [X] `braille`: well-known braille language (Python 3 only)
 - [X] `ipsum`: aka lorem ipsum
-- [X] `galactic`: aka galactic alphabet or Minecraft enchantment language (Python 3 only)
+- [X] `galactic`: aka Standard Galactic Alphabet or Minecraft enchantment language (as written by most online translators)
 - [X] `leetspeak`: based on minimalistic elite speaking rules
 - [X] `morse`: uses whitespace as a separator
 - [X] `navajo`: only handles letters (not full words from the Navajo dictionary)

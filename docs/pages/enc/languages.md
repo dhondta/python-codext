@@ -23,17 +23,19 @@ It supports letters, digits and some special characters.
 
 ### Galactic
 
-This implements the [Minecraft's enchanting table](https://www.thegamer.com/minecraft-enchantment-table-language-guide/) using resembling Unicode characters.
+This implements the Standard Galactic Alphabet, i.e. the language of [Minecraft's enchanting table](https://www.thegamer.com/minecraft-enchantment-table-language-guide/), using resembling Unicode characters as most online translators (e.g. LingoJam) do: one character for most letters, but `!¡` for *p*, `ℸ ̣ ` (with a combining dot below) for *t*, ` ̇/` (with a combining dot above) for *x* and `||` for *y*. Other ASCII characters are kept, except `!` and `|`.
+
+When decoding, other lookalike characters and the shorter forms of *p*, *t*, *x* and *y* are also accepted, and ASCII characters (e.g. capital letters, which translators leave unchanged) are kept.
 
 **Codec** | **Conversions** | **Aliases** | **Comment**
 :---: | :---: | --- | ---
-`galactic` | text <-> Minecraft enchantment symbols | `galactic-alphabet`, `minecraft_enchantment`, `minecraft-enchanting-language` | Python 3 only
+`galactic` | text <-> Minecraft enchantment symbols | `galactic-alphabet`, `minecraft_enchantment`, `minecraft-enchanting-language` | case-insensitive when encoding
 
 ```python
 >>> codext.encode("this is a test", "galactic")
-'ℸ₸╎߆ ╎߆ ᒋ ℸᒷ߆ℸ'
->>> codext.decode("ℸ₸╎߆ ╎߆ ᒋ ℸᒷ߆ℸ", "galactic")
-'this is a test'
+'ℸ ̣ ⍑╎ᓭ ╎ᓭ ᔑ ℸ ̣ ᒷᓭℸ ̣ '
+>>> codext.decode("T⍑ᒷ ᑑ⚍╎ᓵꖌ ʖ∷𝙹∴リ ⎓𝙹 ̇/ ⋮⚍ᒲ!¡ᓭ 𝙹⍊ᒷ∷ ℸ ̣ ⍑ᒷ ꖎᔑ⨅|| ↸𝙹⊣.", "galactic")
+'The quick brown fox jumps over the lazy dog.'
 ```
 
 -----
