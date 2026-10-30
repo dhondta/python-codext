@@ -3,6 +3,7 @@
 
 """
 import argparse
+import sys
 
 from .__common__ import *
 from .__info__ import __author__, __copyright__, __email__, __license__, __source__, __version__
@@ -25,6 +26,15 @@ def __format_list(items, include=True):
         d.setdefault(depth, [])
         d[depth].append(i.strip())
     return d
+
+
+def __is_binary(data):
+    """ Bytes are binary data if they are neither valid UTF-8 nor latin-1 text (as returned by text codecs). """
+    try:
+        data.decode("utf-8")
+        return False
+    except UnicodeDecodeError:
+        return any(b < 32 and b not in b"\t\n\r" or 127 <= b < 160 for b in data)
 
 
 def __print_tabular(lst, space=4):
@@ -200,6 +210,10 @@ def main():
             if args.outfile:
                 with codecs.open(args.outfile, 'wb') as f:
                     f.write(c)
+            elif isinstance(c, bytes) and __is_binary(c):
+                # write binary data as is, as printing it would re-encode as UTF-8 the bytes that are not valid UTF-8
+                sys.stdout.buffer.write(c)
+                sys.stdout.flush()
             else:
                 print(ensure_str(c or "Could not %scode :-(" % ["en", "de"][args.command == "decode"]), end="")
         elif args.command == "guess":

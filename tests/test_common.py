@@ -271,4 +271,21 @@ class TestCommon(TestCase):
         self.assertIsNone(codext.add_macro("VALID-MACRO", "lzma", "base64"))
         self.assertIsNone(codext.remove("VALID-MACRO"))
         self.assertRaises(ValueError, codext.add_macro, "SHALL-FAIL", "base26", "sms", "letter-indices")
-
+    
+    def test_main_binary_output(self):
+        import os, subprocess
+        src = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "src")
+        env = {**os.environ, 'PYTHONPATH': src + os.pathsep + os.environ.get('PYTHONPATH', "")}
+        cli = lambda inp, *args: subprocess.run([sys.executable, "-m", "codext"] + list(args), input=inp, env=env,
+                                                capture_output=True, check=True).stdout
+        # binary output (not valid UTF-8) is written as is, not re-encoded as UTF-8 (the gzip header holding the time,
+        #  at bytes 4 to 7)
+        skip = lambda codec, data: data[:4] + data[8:] if codec == "gzip" else data
+        for codec in ["gzip", "piet"]:
+            out = cli(b"test", "encode", codec)
+            self.assertEqual(skip(codec, out), skip(codec, codext.encode(b"test", codec)))
+            self.assertEqual(cli(out, "decode", codec), b"test")
+        # text output is unchanged, including latin-1 text, printed as UTF-8
+        self.assertEqual(cli(b"test", "encode", "base64"), b"dGVzdA==")
+        self.assertEqual(cli("caf\u00e9".encode(), "encode", "reverse"), "\u00e9fac".encode())
+        self.assertEqual(cli(b"test", "encode", "base100"), codext.encode(b"test", "base100"))
