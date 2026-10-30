@@ -759,6 +759,23 @@ Alphabet markers:
 
 -----
 
+### Vernam Cipher
+
+This is a dynamic encoding, that is, it holds the key. Each character of the text is XORed with the corresponding character of the repeated key ; with a random key as long as the text, used only once, it becomes the one-time pad. As XOR is its own inverse, decoding is the same as encoding. There is no default key, meaning that `vernam` as the encoding scheme throws a `LookupError` indicating that the _key must be a non-empty string_.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`vernam` | text <-> Vernam ciphertext | `vernam-key`, `vernam_cipher-My Secret!` | key is case-sensitive and may hold any character
+
+```python
+>>> codext.encode("this is a test", "vernam-key")
+'\x1f\r\x10\x18E\x10\x18E\x18K\x11\x1c\x18\x11'
+>>> codext.decode("\x1f\r\x10\x18E\x10\x18E\x18K\x11\x1c\x18\x11", "vernam-key")
+'this is a test'
+```
+
+-----
+
 ### Vigenere Cipher
 
 This is a dynamic encoding, that is, it holds the key. There is no default key, meaning that `vigenere` as the encoding scheme throws a `LookupError` indicating that the _key must be a non-empty alphabetic string_.

@@ -383,6 +383,7 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 - [X] `skip`: aka Skip Cipher (transposition reading every N-th character, looping on the text)
 - [X] `trithemius`: aka Trithemius Cipher (variant of Vigenere Cipher)
 - [X] `twosquare`: aka Two-square Cipher or Double Playfair (bigrams substituted with two keyed squares, vertically or horizontally)
+- [X] `vernam`: aka Vernam Cipher (XOR with a repeating key)
 - [X] `vic`: aka VIC Cipher
 - [X] `vigenere`: aka Vigenere Cipher
 - [X] `xorN`: XOR with a single byte (*N* belongs to [1,255])

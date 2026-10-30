@@ -32,5 +32,6 @@ from .shift import *
 from .skip import *
 from .twosquare import *
 from .vic import *
+from .vernam import *
 from .vigenere import *
 from .xor import *
