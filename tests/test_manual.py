@@ -45,6 +45,15 @@ class ComplementaryTestCase(TestCase):
     def test_codec_morse(self):
         self.assertRaises(LookupError, codecs.encode, "test", "morse-AAB")
     
+    def test_codec_befunge(self):
+        # with a non-strict errors handling, unsupported instructions are ignored
+        for e in ["ignore", "replace", "leave"]:
+            self.assertEqual(codecs.decode('"z"x,@', "befunge", e), "z")
+        self.assertRaises(ValueError, codecs.decode, '"z"x,@', "befunge")
+        from codext.esoteric.befunge import befunge_run
+        self.assertRaises(ValueError, befunge_run, b">", max_steps=100)
+        self.assertEqual(befunge_run(b"1.@", max_steps=100), b"1 ")
+    
     def test_codec_brainfuck(self):
         # with a non-strict errors handling, other characters are comments and unmatched brackets are ignored
         for e in ["ignore", "replace", "leave"]:

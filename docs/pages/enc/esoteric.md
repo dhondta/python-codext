@@ -2,6 +2,27 @@
 
 -----
 
+### Befunge
+
+Befunge-93 programs are grids of 80x25 cells (wrapping around on the edges) where an instruction pointer moves in four directions, working on a stack of integers. Encoding generates an ASCII program that pushes the text (in string mode for printable characters, as small arithmetic expressions for the other bytes) and prints it in a loop, with rows of 80 cells snaking downward. Programs are run as with the [reference interpreter](https://github.com/catseye/Befunge-93), cells holding signed characters.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`befunge` | text <-> Befunge-93 program | `befunge93`, `befunge-93` | programs read as UTF-8 ; executing an unsupported instruction only accepted with a non-strict errors handling ; programs that do not halt within 1000 steps per instruction (with a minimum of 1 million) are stopped
+
+!!! note "Deviations from the reference interpreter"
+
+    Without input, `&` and `~` push -1. A division or a modulo by zero gives 0 (the reference interpreter asks the user). `?` uses a seeded pseudo-random generator, so that decoding is reproducible. The playfield is extended for programs larger than 80x25, e.g. those generated for long texts, which the reference interpreter would truncate.
+
+```python
+>>> codext.encode("Hello, World!", "befunge")
+'"!dlroW ,olleH">:#,_@'
+>>> codext.decode('                 v\n>v"Hello world!"0<\n,:\n^_25*,@', "befunge")
+'Hello world!\n'
+```
+
+-----
+
 ### Brainfuck
 
 [Brainfuck](https://esolangs.org/wiki/Brainfuck) is an esoteric programming language working on a tape of 8-bit cells with 8 commands: `+` and `-` (increment and decrement the cell), `>` and `<` (move the pointer), `[` and `]` (loop while the cell is not null), `.` (output the cell) and `,` (input a byte). Encoding generates a program that prints the text (as UTF-8), while decoding runs the program (with no input) and returns its output.

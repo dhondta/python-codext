@@ -391,6 +391,7 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 
 #### [Esoteric](https://python-codext.readthedocs.io/en/latest/enc/esoteric.html)
 
+- [X] `befunge`: Befunge-93, two-dimensional esoteric language (encoding generates a program printing the text)
 - [X] `brainfuck`: well-known esoteric programming language (encoding generates a program printing the text)
 - [X] `cow`: esoteric language made of variations of "moo" (Brainfuck-like, with a register and integer output)
 - [X] `ook`: Brainfuck derivative for orang-utans (`Ook.`, `Ook?` and `Ook!`), also in its short form
