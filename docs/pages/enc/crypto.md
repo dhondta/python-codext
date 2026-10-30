@@ -418,6 +418,23 @@ This toy cipher, a variant of [ARMON-64](#armon-64), comes from online JavaScrip
 
 -----
 
+### FERON-74
+
+This toy cipher comes from online JavaScript encryption tools. Like [ATOM-128](#atom-128), it is Base64 with a shuffled alphabet, whose 65th character (`4`) is used for padding, and the text is first escaped with JavaScript's `escape()`, then unescaped after decoding.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`feron74` | text <-> FERON-74 ciphertext | `feron-74`, `feron_74` | 
+
+```python
+>>> codext.encode("this is a test", "feron74")
+'sbxMC161WbyZ/rSiNq61WcDyCnA4'
+>>> codext.decode("sbxMC161WbyZ/rSiNq61WcDyCnA4", "feron-74")
+'this is a test'
+```
+
+-----
+
 ### Four-square Cipher
 
 The Four-square cipher, invented by Felix Delastelle, substitutes pairs of letters using four squares arranged in a 2x2 matrix: the upper-left and lower-right ones hold the alphabet in order, while the upper-right and lower-left ones are filled with two keywords. The first letter of each pair is located in the upper-left square and the second one in the lower-right square ; they are replaced by the letters at the other corners of the rectangle they form (in the upper-right square, then in the lower-left one).
