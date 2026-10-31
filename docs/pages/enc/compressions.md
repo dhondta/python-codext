@@ -17,6 +17,23 @@
 
 -----
 
+### Huffman
+
+[Huffman coding](https://en.wikipedia.org/wiki/Huffman_coding) gives the frequent bytes shorter codes than the rare ones, with an optimal prefix code. This codec writes the code as a [canonical Huffman code](https://en.wikipedia.org/wiki/Canonical_Huffman_code) (given by the lengths of the codes only), in a self-describing format: the number of distinct bytes minus 1 (1 byte), each byte with the length of its code (2 bytes each), the number of padding bits at the end (1 byte), then the codes of the bytes of the text, from the most significant bit.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`huffman` | data <-> Huffman-coded data |  | malformed data replaced, dropped or left with a non-strict errors handling ; as the length of the text is not stored, data truncated at the end of a code gives a truncated text
+
+```python
+>>> codext.encode(b"abracadabra", "huffman")
+b'\x04a\x01b\x03c\x03d\x03r\x03\x01N\xac\x9c'
+>>> codext.decode(b"\x04a\x01b\x03c\x03d\x03r\x03\x01N\xac\x9c", "huffman")
+b'abracadabra'
+```
+
+-----
+
 ### Lempel-Ziv
 
 This implements the algorithm of Lempel and Ziv of 1977 and 1978.
@@ -105,4 +122,22 @@ This replaces each run of identical consecutive characters by its length followe
 'AA\x03B'
 >>> codext.decode("AA\x03B", "rle-escape")
 'AAAAAB'
+```
+
+-----
+
+### Zstandard
+
+[Zstandard](https://datatracker.ietf.org/doc/html/rfc8878) (zstd) combines LZ77-style matching with entropy coding, in frames starting with a magic number. This codec relies on the `compression.zstd` module of the standard library (Python 3.14 and later) or on its backport, the [`backports.zstd`](https://pypi.org/project/backports.zstd/) package, installed as a dependency for the previous versions of Python ; it is not available without them.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`zstd` | data <-> Zstandard-compressed data | `zstandard`, `zstd-1`, `zstd_19`, ... | parametrized with the compression level, from 1 to 22 (default: 3) ; decoding handles concatenated frames
+
+```python
+>>> data = codext.encode(b"This is a test " * 10, "zstd-19")
+>>> data[:4]
+b'(\xb5/\xfd'
+>>> codext.decode(data, "zstd")
+b'This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test This is a test '
 ```

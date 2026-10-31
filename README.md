@@ -338,12 +338,14 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 #### [Compression](https://python-codext.readthedocs.io/en/latest/enc/compressions.html)
 
 - [X] `gzip`: standard Gzip compression/decompression
+- [X] `huffman`: canonical Huffman coding of the bytes, with a self-describing header
 - [X] `lz77`: compresses the given data with the algorithm of Lempel and Ziv of 1977
 - [X] `lz78`: compresses the given data with the algorithm of Lempel and Ziv of 1978
 - [X] `pkzip_deflate`: standard Zip-deflate compression/decompression
 - [X] `pkzip_bzip2`: standard BZip2 compression/decompression
 - [X] `pkzip_lzma`: standard LZMA compression/decompression
 - [X] `rle`: compresses runs of identical characters with Run-Length Encoding (count before or after each character, compact, bytes or repeated-byte escape variants)
+- [X] `zstd`: Zstandard compression/decompression (relies on `compression.zstd` from Python 3.14, on `backports.zstd` before)
 
 > :warning: Compression functions are of course definitely **NOT** encoding functions ; they are implemented for leveraging the `.encode(...)` API from `codecs`.
 

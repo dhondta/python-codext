@@ -57,6 +57,7 @@ classifiers = [
   "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 dependencies = [
+  "backports.zstd; python_version < '3.14'",
   "legacycrypt; python_version >= '3.13'",
   "markdown2>=2.5.4",
 ]

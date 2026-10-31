@@ -1,9 +1,11 @@
 # -*- coding: UTF-8 -*-
 from .gzipp import *
+from .huffman import *
 from .lz77 import *
 from .lz78 import *
 from .pkzip import *
 from .rle import *
+from .zstd import *
 
 
 for e in list_encodings("compression"):

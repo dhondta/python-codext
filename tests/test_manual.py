@@ -768,6 +768,50 @@ class ManualTestCase(TestCase):
         self.assertEqual(codecs.encode(STR, "tokenize-2"), "th is  i s  a  te st")
         self.assertRaises(LookupError, codecs.encode, STR, "tokenize-200")
     
+    def test_codec_huffman(self):
+        import heapq
+        from collections import Counter
+        # optimal codes: the length of the codes is the sum of the weights of the merged groups
+        data = b"The quick brown fox jumps over the lazy dog " * 20
+        enc = codecs.encode(data, "huffman")
+        weights, total = list(Counter(data).values()), 0
+        heapq.heapify(weights)
+        while len(weights) > 1:
+            w = heapq.heappop(weights) + heapq.heappop(weights)
+            total += w
+            heapq.heappush(weights, w)
+        n = enc[0] + 1
+        self.assertEqual(8 * (len(enc) - 2 - 2 * n) - enc[1 + 2 * n], total)
+        # text with characters outside latin-1, and malformed data (truncated header, null code length, extra bits,
+        #  missing payload) reported with a precise message, or replaced, dropped or left as is (as with gzip and zstd)
+        self.assertEqual(codecs.decode(codecs.encode("caf\u00e9 \u20ac", "huffman"), "huffman"), "caf\u00e9 \u20ac")
+        for bad, msg in [(b"\x01a", "truncated header"), (b"\x01a\x00b\x01\x05 ", "bad code length"),
+                         (enc + b"\xff", "truncated code at the end"), (enc[:2 + 2 * n], "bad padding")]:
+            self.assertRaisesRegex(ValueError, msg, codecs.decode, bad, "huffman")
+            self.assertEqual(codecs.decode(bad, "huffman", "replace"), b"?")
+            self.assertEqual(codecs.decode(bad, "huffman", "ignore"), b"")
+            self.assertEqual(codecs.decode(bad, "huffman", "leave"), bad[:1])
+        self.assertRaises(ValueError, codecs.decode, b"\x01a", "huffman", "BAD_ERRORS")
+    
+    def test_codec_zstd(self):
+        try:
+            from compression import zstd
+        except ImportError:
+            try:
+                from backports import zstd
+            except ImportError:
+                self.skipTest("neither compression.zstd (Python 3.14+) nor backports.zstd is available")
+        # a frame with a raw block (magic number, frame header with the content size, block header), levels and errors
+        self.assertEqual(codecs.decode(b"\x28\xb5\x2f\xfd\x20\x04\x21\x00\x00test", "zstd"), b"test")
+        data = b"This is a test " * 100
+        self.assertLess(len(codecs.encode(data, "zstd-22")), len(data) // 10)
+        self.assertEqual(zstd.decompress(codecs.encode(data, "zstd-19")), data)
+        for e in ["zstd-0", "zstd-23"]:
+            self.assertRaises(LookupError, codecs.encode, data, e)
+        self.assertRaises(ValueError, codecs.decode, b"not zstd", "zstd")
+        self.assertEqual(codecs.decode(b"not zstd", "zstd", "ignore"), b"")
+        self.assertEqual(codecs.decode(b"not zstd", "zstd", "replace"), b"?")
+    
     def test_codec_hash_functions(self):
         STR = b"This is a test string!"
         for h in ["adler32", "md2", "md5", "sha1", "sha224", "sha256", "sha384", "sha512"]:
