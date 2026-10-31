@@ -434,6 +434,7 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 #### [Languages](https://python-codext.readthedocs.io/en/latest/enc/languages.html)
 
 - [X] `braille`: well-known braille language (Python 3 only)
+- [X] `fancy`: Unicode styled alphabets (mathematical bold, italic, script, fraktur, double-struck, ..., circled and parenthesized letters), also `fullwidth` and `smallcaps`
 - [X] `ipsum`: aka lorem ipsum
 - [X] `galactic`: aka Standard Galactic Alphabet or Minecraft enchantment language (as written by most online translators)
 - [X] `leetspeak`: based on minimalistic elite speaking rules
@@ -444,6 +445,7 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 - [X] `southpark-icase`: case insensitive variant of `southpark`
 - [X] `tap`: converts text to tap/knock code, commonly used by prisoners (as written by cryptii)
 - [X] `tomtom`: similar to `morse`, using slashes and backslashes
+- [X] `upsidedown`: upside-down (flip) text, with turned Unicode characters in reverse order
 
 #### [Others](https://python-codext.readthedocs.io/en/latest/enc/others.html)
 

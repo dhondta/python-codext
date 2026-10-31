@@ -965,6 +965,47 @@ class ManualTestCase(TestCase):
                 self.assertIsNotNone(codecs.encode(STR, h := f"crypt-{m}"))
                 self.assertRaises(NotImplementedError, codecs.decode, STR, h)
     
+    def test_codec_fancy_upsidedown(self):
+        import unicodedata
+        from string import ascii_letters, digits
+        from codext.languages.fancy import ALPHABETS
+        from codext.languages.upsidedown import _PAIRS, UPSIDE_DOWN, _VARIANTS
+        # complete alphabets (with the letters of the Letterlike Symbols block, e.g. "\u212c" for the script B), each
+        #  styled character being decoded back
+        math = [s for s in ALPHABETS if s not in ("circled", "parenthesized", "fullwidth", "smallcaps")]
+        for style in math + ["circled", "parenthesized"]:
+            self.assertTrue(all(c in ALPHABETS[style] for c in ascii_letters))
+        self.assertEqual(ALPHABETS["script"]["B"], "\u212c")
+        self.assertEqual(ALPHABETS["italic"]["h"], "\u210e")
+        self.assertEqual(ALPHABETS["double-struck"]["R"], "\u211d")
+        self.assertEqual(sorted(s for s in math if "0" in ALPHABETS[s]),
+                         ["bold", "double-struck", "monospace", "sans-serif", "sans-serif-bold"])
+        self.assertNotIn("x", ALPHABETS["smallcaps"])
+        text = "The quick brown fox jumps over the lazy dog 0123456789"
+        # the NFKC normalization also undoes the mathematical, circled and full-width styles, but not the parenthesized
+        #  one, the small capitals and the upside-down text
+        for style in ALPHABETS:
+            enc = codecs.encode(text, f"fancy-{style}")
+            self.assertEqual(codecs.decode(enc, f"fancy-{style}"), text)
+            self.assertEqual(codecs.decode(enc, "fancy"), text)
+            self.assertEqual(unicodedata.normalize("NFKC", enc) == text, style not in ("parenthesized", "smallcaps"))
+        self.assertNotEqual(unicodedata.normalize("NFKC", codecs.encode(text, "upsidedown")), text)
+        # a style is required for encoding, while decoding without a style handles mixed styles
+        self.assertRaises(LookupError, codecs.encode, text, "fancy")
+        mixed = "".join(codecs.encode(c, f"fancy-{s}") for c, s in zip("Hello", ALPHABETS))
+        self.assertEqual(codecs.decode(mixed, "fancy"), "Hello")
+        # small capitals for the lowercase letters only (there is no small capital x)
+        self.assertEqual(codecs.encode("Mixed CASE x", "smallcaps"), "M\u026ax\u1d07\u1d05 CASE x")
+        # upside-down: pairs of turned characters, used in both directions (turning twice gives the text back), and
+        #  the other turned versions of the online generators being decoded
+        self.assertEqual(len({c for p in _PAIRS for c in p}), 2 * len(_PAIRS))
+        for c in UPSIDE_DOWN:
+            if c not in _VARIANTS:
+                self.assertEqual(UPSIDE_DOWN[UPSIDE_DOWN[c]], c)
+        self.assertEqual(codecs.decode("\u2229\u02e5\ua7fd\u2200", "upsidedown"), "AMLU")
+        self.assertEqual(codecs.decode(codecs.encode(text, "upsidedown"), "upsidedown"), text)
+        self.assertEqual(codecs.encode(b"Hi!", "upside-down"), "\u00a1\u1d09H".encode("utf-8"))
+    
     def test_codec_markdown(self):
         HTM = "<h1>Test title</h1>\n\n<p>Test paragraph</p>\n"
         MD  = "# Test title\n\nTest paragraph"

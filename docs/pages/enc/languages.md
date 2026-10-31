@@ -21,6 +21,33 @@ It supports letters, digits and some special characters.
 
 -----
 
+### Fancy alphabets
+
+Unicode has styled versions of the Latin letters and of the digits, often used to write "fancy" text (e.g. in social networks) or to obfuscate text (e.g. to evade filters): the [mathematical alphanumeric symbols](https://www.unicode.org/charts/PDF/U1D400.pdf) (some letters being in the Letterlike Symbols block, e.g. `ℬ` or `ℎ`), the circled and parenthesized letters and digits, the full-width forms of ASCII and the small capitals. Encoding writes the letters and digits of the text in the given style, keeping the other characters, while decoding writes back the characters of this style ; `fancy` without a style decodes all of them at once (e.g. for text mixing several styles).
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`fancy` | text <-> styled text | `fancy-bold`, `fancy-italic`, `fancy-bold-italic`, `fancy-script`, `fancy-bold-script`, `fancy-fraktur`, `fancy-bold-fraktur`, `fancy-double-struck`, `fancy-sans-serif`, `fancy-sans-serif-bold`, `fancy-sans-serif-italic`, `fancy-sans-serif-bold-italic`, `fancy-monospace`, `fancy-circled`, `fancy-parenthesized` | parametrized with the style (required for encoding) ; digits only in the bold, double-struck, sans-serif, sans-serif bold, monospace, circled and parenthesized (except 0) styles
+`fullwidth` | text <-> full-width text | `full-width`, `fancy-fullwidth` | printable ASCII characters, the space being written as an ideographic space
+`smallcaps` | text <-> text with small capitals | `small-caps`, `fancy-smallcaps` | lowercase letters only (uppercase letters kept), except `x` that has no small capital
+
+!!! note "NFKC normalization"
+
+    The NFKC normalization (`unicodedata.normalize("NFKC", ...)`) also undoes the mathematical, circled and full-width styles, but not the parenthesized one (giving e.g. `(a)`) nor the small capitals. Unlike this codec, it changes other characters as well (e.g. ligatures and superscripts).
+
+```python
+>>> codext.encode("Hello World", "fancy-script")
+'ℋℯ𝓁𝓁ℴ 𝒲ℴ𝓇𝓁𝒹'
+>>> codext.encode("Hello World", "fancy-double-struck")
+'ℍ𝕖𝕝𝕝𝕠 𝕎𝕠𝕣𝕝𝕕'
+>>> codext.encode("Hello World", "smallcaps")
+'Hᴇʟʟᴏ Wᴏʀʟᴅ'
+>>> codext.decode("𝐇𝖊𝚕ⓛ⒪ ｗᴏʀʟᴅ", "fancy")
+'Hello world'
+```
+
+-----
+
 ### Galactic
 
 This implements the Standard Galactic Alphabet, i.e. the language of [Minecraft's enchanting table](https://www.thegamer.com/minecraft-enchantment-table-language-guide/), using resembling Unicode characters as most online translators (e.g. LingoJam) do: one character for most letters, but `!¡` for *p*, `ℸ ̣ ` (with a combining dot below) for *t*, ` ̇/` (with a combining dot above) for *x* and `||` for *y*. Other ASCII characters are kept, except `!` and `|`.
@@ -198,4 +225,21 @@ This codec is similar to morse. It converts text into slashes and backslashes.
 '\\\\/\\ /\\\\ /\\\\\\ \\/\\ | /\\\\\\ \\/\\ | / | \\\\/\\ /\\ \\/\\ \\\\/\\'
 >>> codext.decode("\\\\/\\ /\\\\ /\\\\\\ \\/\\ | /\\\\\\ \\/\\ | / | \\\\/\\ /\\ \\/\\ \\\\/\\", "tomtom")
 'THIS IS A TEST'
+```
+
+-----
+
+### Upside-down
+
+[Upside-down text](https://en.wikipedia.org/wiki/Transformation_of_text#Upside-down_text) (aka flip text) is written with Unicode characters that look like the letters, digits and punctuation turned by 180 degrees (e.g. `ɐ` for `a`, `ꓭ` for `B` or `¿` for `?`), in reverse order, so that the text reads normally when turned upside down. As turning the text twice gives it back, encoding and decoding are the same operation.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`upsidedown` | text <-> upside-down text | `upside-down`, `flip-text` | other characters kept as is ; decoding also accepts other turned characters of the online generators (e.g. `∀` for `A` or `∩` for `U`)
+
+```python
+>>> codext.encode("Hello World", "upsidedown")
+'pꞁɹoM oꞁꞁǝH'
+>>> codext.decode("pꞁɹoM oꞁꞁǝH", "upside-down")
+'Hello World'
 ```
