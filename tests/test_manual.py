@@ -968,6 +968,11 @@ class ManualTestCase(TestCase):
             ("sun-md5-crypt-0", bytes([38, 39, 40, 41, 42, 43, 44, 45]), "$md5$abcdefgh$$ZxccX5lio58EZKsCI/Peg0"),
             ("sun-md5-crypt-100", bytes([38, 39, 40, 41, 42, 43, 44, 45]),
              "$md5,rounds=100$abcdefgh$$M/k9.q5540c7/LWDsTI8I."),
+            # scrypt uses a 16-byte random salt and hashlib.scrypt (reference vectors of passlib)
+            ("scrypt", bytes(range(16)),
+             "$scrypt$ln=16,r=8,p=1$AAECAwQFBgcICQoLDA0ODw$jWPkcxERY25E9gwism7ggXZkARLbUPyOZiOM5ZQx95s"),
+            ("scrypt-10-4-2", bytes(range(16)),
+             "$scrypt$ln=10,r=4,p=2$AAECAwQFBgcICQoLDA0ODw$i6PwKXRFGHVv2momDm8VxbF0U/YH0gT8dlATuDEwOQQ"),
         ]
         for e, data, r in salted:
             with patch("os.urandom", fixed(data)):
@@ -976,7 +981,7 @@ class ManualTestCase(TestCase):
         self.assertNotEqual(codecs.encode(PW, "mssql2000"), codecs.encode(PW, "mssql2000"))
         for e in ["ldap-md5", "cisco-pix", "postgres-md5-x", "oracle10-x", "mscash-x", "mscash2-x", "mssql2000",
                   "mssql2005", "oracle11", "phpass", "bigcrypt", "crypt16", "bsdi-crypt", "bsd-nthash",
-                  "sun-md5-crypt"]:
+                  "sun-md5-crypt", "scrypt"]:
             self.assertRaises(NotImplementedError, codecs.decode, PW, e)
         # long passwords exercise the multi-block paths of bigcrypt and bsdi-crypt
         with patch("os.urandom", fixed(bytes([38, 39]))):
@@ -987,6 +992,8 @@ class ManualTestCase(TestCase):
         self.assertRaises(LookupError, codecs.encode, PW, "phpass-6")
         self.assertRaises(LookupError, codecs.encode, PW, "bsdi-crypt-0")
         self.assertRaises(LookupError, codecs.encode, "a" * 17, "cisco-pix")
+        self.assertRaises(LookupError, codecs.encode, PW, "scrypt-0")
+        self.assertRaises(LookupError, codecs.encode, PW, "scrypt-10-0")
     
     def test_codec_argon2(self):
         # Argon2, through the argon2-cffi package (skipped when it is not installed)

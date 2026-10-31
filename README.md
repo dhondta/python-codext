@@ -436,6 +436,7 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 - [X] `oracle10`: legacy Oracle 10g password hash (parametrized with the user name) ; `oracle11` for the 11g version
 - [X] `phpass`: portable PHP password hash (parametrized with the iteration count ; used e.g. by WordPress)
 - [X] `ripemd160`: aka RIPEMD-160 (relies on `hashlib` when available, pure Python otherwise)
+- [X] `scrypt`: aka scrypt (RFC 7914), parameterized with its cost ln, block size r and parallelism p (relies on `hashlib`)
 - [X] `sha`: aka Secure Hash Algorithms ; includes SHA0, SHA1, 224, 256, 384, 512 (Python2/3) but also SHA3-224, -256, -384 and -512 (Python 3 only ; relies on `hashlib`)
 - [X] `shake`: aka SHAKE hashing (Python 3 only ; relies on `hashlib`)
 - [X] `snefru`: aka Snefru (Merkle's hash function) in 32 to 480 bits, with 2 to 8 passes

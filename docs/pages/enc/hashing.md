@@ -362,6 +362,19 @@ This one-way transformation function, used e.g. in Bitcoin addresses, relies on 
 'f0c90bd665512fc158f3c47d6de76b58783c404c'
 ```
 
+### Scrypt
+
+These one-way transformation functions compute the scrypt password hash ([RFC 7914](https://datatracker.ietf.org/doc/html/rfc7914)), a memory-hard key derivation function. The result is written in the modular crypt format `$scrypt$ln=...,r=...,p=...$salt$digest` (as [passlib](https://passlib.readthedocs.io/en/stable/lib/passlib.hash.scrypt.html) does). The cost parameters are given with the codec name, in the order ln (the base-2 logarithm of the CPU/memory cost N), r (the block size) and p (the parallelism) ; they default to ln=16, r=8 and p=1. A random salt is generated each time. It relies on [`hashlib`](https://docs.python.org/3/library/hashlib.html).
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`scrypt` | data --> scrypt(data) | `scrypt-14`, `scrypt-14-8-2`, ... | parametrized with ln, r and p ; random salt
+
+```python
+>>> codext.encode("password", "scrypt")[:21]
+'$scrypt$ln=16,r=8,p=1'
+```
+
 -----
 
 ### Secure Hash Algorithm

@@ -20,6 +20,7 @@ from .oracle import *
 from .phpass import *
 from .postgres import *
 from .ripemd import *
+from .scrypt import *
 from .sha import *
 from .shake import *
 from .snefru import *
