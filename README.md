@@ -489,11 +489,14 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 - [X] `der`: text as an ASN.1 DER string element (UTF8String)
 - [X] `dna`: implements the 8 rules of DNA sequences (N belongs to [1,8])
 - [X] `dvorak`: text typed with the Dvorak keyboard layout instead of QWERTY
+- [X] `kbshift`: keyboard-row shift on multiple layouts (azerty, qwerty, dvorak, ...), parameterized with the layout and shift
 - [X] `letter-indices`: encodes consonants and/or vowels with their corresponding indices
 - [X] `markdown`: unidirectional encoding from Markdown to HTML
+- [X] `ns3`: ZyXEL NDMS V2 configuration password scrambling (aka NS3)
 - [X] `soundex`: Soundex phonetic codes (decoding gives English words with the same codes)
 - [X] `telegraph`: Chinese telegraph code, with the codebooks of Mainland China and Taiwan
 - [X] `xx`: XXencode, a UUencode variant with an alphanumeric alphabet (`+`, `-`, digits and letters)
+- [X] `xy`: binary written with two symbols, `x` and `y` by default (aka X-Y)
 - [X] `yenc`: Usenet binary-to-text encoding (raw, wrapped or framed with header, trailer and CRC32)
 
 #### [Steganography](https://python-codext.readthedocs.io/en/latest/enc/stegano.html)

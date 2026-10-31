@@ -97,6 +97,23 @@ The [Dvorak Simplified Keyboard](https://en.wikipedia.org/wiki/Dvorak_keyboard_l
 
 -----
 
+### Keyboard Shift
+
+Each character is replaced by the key N positions to its left on the same row of a keyboard layout (looping within the row), as when typing with the hands shifted ; decoding shifts to the right. The layout and the shift are given in the codec name (layouts: `azerty`, `azerty-be`, `azerty-fr`, `qwerty`, `qwerty-us`, `ansi` and `dvorak`), characters out of the layout being kept as is. Letter case is not preserved.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`kbshift` | text <-> keyboard-shifted text | `kbshift-qwerty-1`, `kbshift-azerty-2`, ... | parameterized with the layout and the shift
+
+```python
+>>> codext.encode("hello", "kbshift-qwerty-1")
+'gwkki'
+>>> codext.decode("gwkki", "kbshift-qwerty-1")
+'hello'
+```
+
+-----
+
 ### Letter indices
 
 This encodes consonants and/or vowels with their respective indices. This codec is case insensitive, strips white spaces and only applies to letters.
@@ -141,6 +158,23 @@ This is only for "encoding" (converting) Markdown to HTML.
 ```python
 >>> codext.encode("# Test\nparagraph", "markdown")
 '<h1>Test</h1>\n\n<p>paragraph</p>\n'
+```
+
+-----
+
+### NS3
+
+NS3, also called NDMS V2 or ZyXEL config, is the reversible password scrambling found in the running-config files of ZyXEL routers. The password is padded to 18, 36 or 72 bytes (the filler being derived from its MD5 digest), scrambled with two keystream passes keyed by the first two bytes of this digest, and these two key bytes are interleaved into the result before it is Base64-encoded. Passwords of more than 69 bytes cannot be encoded.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`ns3` | text <-> NS3 scrambled password |  | 
+
+```python
+>>> codext.encode("HackWare", "ns3")
+'HfNV/Uq8ubal+UXhXERgHRdO'
+>>> codext.decode("9IpS3eYkkEN3Vld3CXRZtnBz", "ns3")
+'Miloserdov'
 ```
 
 -----
@@ -198,6 +232,25 @@ XXencode works like UUencode, but with an alphabet made of "`+`", "`-`", digits 
 'begin 666 -\n1Eq3o\n+\nend\n'
 >>> codext.decode("1Eq3o", "xx")
 'Cat'
+```
+
+-----
+
+### X-Y
+
+The X-Y encoding (also called "X and Y") writes each byte as its 8 bits, with one symbol for 0 and another for 1, `x` and `y` by default. Two other symbols can be given in the codec name, e.g. `xy-AB` (A for 0 and B for 1) or `xy-01` (hence the plain binary of the text).
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`xy` | text <-> X-Y | `x-y`, `x_y`, `xy-AB` | parameterized with the two symbols
+
+```python
+>>> codext.encode("test", "xy")
+'xyyyxyxxxyyxxyxyxyyyxxyyxyyyxyxx'
+>>> codext.decode("xyyyxyxxxyyxxyxyxyyyxxyyxyyyxyxx", "xy")
+'test'
+>>> codext.encode("test", "xy-01")
+'01110100011001010111001101110100'
 ```
 
 -----
