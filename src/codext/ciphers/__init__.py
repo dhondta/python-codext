@@ -16,6 +16,7 @@ from .foursquare import *
 from .fractionatedmorse import *
 from .hill import *
 from .nihilist import *
+from .okto3 import *
 from .playfair import *
 from .phillips import *
 from .polybius import *

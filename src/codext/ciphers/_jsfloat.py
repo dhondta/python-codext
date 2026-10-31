@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 """Floating-point block ciphers, shared by the toy ciphers of online JavaScript encryption tools (AER-256, ARMON-64,
- EZIP-64).
+ EZIP-64, OKTO3, ZARA-128).
 
 The text is split into blocks of a fraction of the key length (e.g. half of it, rounded), each block being read as a
  big-endian number of its character codes. For each character of the key (at least 3), an operation with its code is

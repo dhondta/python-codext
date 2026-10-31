@@ -347,6 +347,7 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 - [X] `gronsfeld`: aka Gronsfeld Cipher (variant of Vigenere Cipher with a numeric key)
 - [X] `hill`: aka Hill Cipher (blocks of letters multiplied by a key matrix modulo 26)
 - [X] `nihilist`: aka Nihilist Cipher (sums of the Polybius coordinates of the text and of a repeated key)
+- [X] `okto3`: aka OKTO3 (variant of AER-256 with a fourth operation and smaller blocks)
 - [X] `playfair`: aka Playfair Cipher
 - [X] `phillips`: aka Phillips Cipher (polyalphabetic block cipher with 8 key squares)
 - [X] `polybius`: aka Polybius Square Cipher

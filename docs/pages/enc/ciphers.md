@@ -443,6 +443,25 @@ Each letter of the text and of the key is replaced by its coordinates (row and c
 '48 30 85 56 49'
 ```
 
+### OKTO3
+
+This toy cipher, a variant of [AER-256](#aer-256), comes from online JavaScript encryption tools. It works the same way, but with blocks of a sixth of the key length (rounded), a fourth operation (the number is multiplied by 500.005 times the code of the key character) and a newline as the separator.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`okto3` | text <-> OKTO3 ciphertext | `okto-3`, `okto_3` | parameterized with a mandatory key of at least 3 characters, e.g. `okto3-secret` ; only characters with a code below 256
+
+!!! warning "Precision"
+
+    As the computations are done with double-precision floats, as in JavaScript, keys of more than 36 characters give blocks that are too large to be decrypted exactly.
+
+```python
+>>> codext.encode("test", "okto3-test")
+'-6536837.644950495\n-6545451.592475248\n-6537411.908118811\n-6536837.644950495'
+>>> codext.decode("-6536837.644950495\n-6545451.592475248", "okto3-test")
+'te'
+```
+
 -----
 
 ### Phillips Cipher
