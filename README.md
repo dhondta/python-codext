@@ -307,12 +307,14 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 - [X] `bcd-extended0`: variant of `bcd` ; encodes characters from their (zero-left-padded) ordinals using prefix bits `0000`
 - [X] `bcd-extended1`: variant of `bcd` ; encodes characters from their (zero-left-padded) ordinals using prefix bits `1111`
 - [X] `chuck-norris`: Chuck Norris unary code (runs of the 7-bit ASCII bits written with blocks of zeros)
+- [X] `differential-manchester`: line code writing the bits as transitions at the start of their periods (also inverted)
 - [X] `elias-gamma`, `elias-delta`: Elias universal codes, encoding characters from their ordinals (or lists of integers with `-integers`)
 - [X] `excess3`: uses Excess-3 (aka Stibitz code) binary encoding to convert characters from their ordinals
 - [X] `fibonacci`: Fibonacci universal code, encoding characters from their ordinals (or lists of integers with `-integers`)
 - [X] `gray`: aka reflected binary code
 - [X] `manchester`: XORes each bit of the input with `01`
 - [X] `manchester-inverted`: variant of `manchester` ; XORes each bit of the input with `10`
+- [X] `nrzi`: Non-Return-to-Zero Inverted line code, writing 1 (or 0 with `nrzi-space`) as a transition
 - [X] `rotateN`: rotates characters by the specified number of bits (*N* belongs to [1, 7] ; Python 3 only)
 
 #### [Checksums](https://python-codext.readthedocs.io/en/latest/enc/hashing.html#checksums)

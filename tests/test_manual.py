@@ -140,6 +140,24 @@ class ComplementaryTestCase(TestCase):
     def test_codec_morse(self):
         self.assertRaises(LookupError, codecs.encode, "test", "morse-AAB")
     
+    def test_codec_nrzi_differential_manchester(self):
+        # these line codes do not depend on the polarity of the signal: the inverted signal gives the same bits, except
+        #  the first one (depending on the initial level)
+        data = bytes(range(256))
+        for e in ["nrzi", "nrzi-space", "differential-manchester", "differential-manchester-inverted"]:
+            inverted = bytes(x ^ 0xff for x in codecs.encode(data, e))
+            r = codecs.decode(inverted, e)
+            self.assertEqual(r[0] & 0x7f, data[0] & 0x7f)
+            self.assertEqual(r[1:], data[1:])
+        # differential Manchester requires a transition in the middle of each bit period and pairs of bytes ; with a
+        #  non-strict errors handling, decoding ignores the missing transitions and a trailing byte
+        with self.assertRaisesRegex(ValueError, "half-bits '11' in bit 4"):
+            codecs.decode(b"\x9d\x55", "differential-manchester")
+        self.assertRaisesRegex(ValueError, "in bit 16", codecs.decode, b"\x95\x55\x95", "differential-manchester")
+        for e in ["ignore", "replace", "leave"]:
+            self.assertEqual(codecs.decode(b"\x95\x55\x95", "differential-manchester", e), b"@")
+            self.assertIsNotNone(codecs.decode(b"\x9d\x55", "differential-manchester", e))
+    
     def test_codec_befunge(self):
         # with a non-strict errors handling, unsupported instructions are ignored
         for e in ["ignore", "replace", "leave"]:

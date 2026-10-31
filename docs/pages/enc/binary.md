@@ -190,10 +190,14 @@ Also called *reflected binary code*, it implements the Gray code applied to char
 
 This codec XORes each group of 4 bits of the input text with a 1-byte clock signal, e.g. `0x55` giving in binary `01010101`.
 
+[Differential Manchester](https://en.wikipedia.org/wiki/Differential_Manchester_encoding) code also has a transition in the middle of each bit period, but writes the bits as the presence or absence of a transition at the start of their period, hence it does not depend on the polarity of the signal: by default, 0 is written with a transition at the start and 1 without (as with IEEE 802.5, Token Ring), while the inverted variant writes 1 with a transition. The level starts low and each input byte gives two output bytes.
+
 **Codec** | **Conversions** | **Aliases** | **Comment**
 :---: | :---: | --- | ---
 `manchester` | text <-> manchester encoded text | | clock signal is `0x55` (`01010101`)
 `manchester-inverted` | text <-> manchester encoded text | `ethernet`, `ieee802.4` | clock signal is `0xaa` (`10101010`)
+`differential-manchester` | text <-> differential manchester encoded text | `diff-manchester`, `ieee802.5` | 0 written with a transition at the start of its period ; missing transitions in the middle of the periods only accepted with a non-strict errors handling
+`differential-manchester-inverted` | text <-> differential manchester encoded text | `diff-manchester-inverted` | 1 written with a transition at the start of its period
 
 ```python
 >>> codext.encode("This is a test!", "manchester")
@@ -204,6 +208,30 @@ This codec XORes each group of 4 bits of the input text with a 1-byte clock sign
 '\x99\x9a\x96j\x96i\x95¥¦ª\x96i\x95¥¦ª\x96©¦ª\x95\x9a\x96\x99\x95¥\x95\x9a¦©'
 >>> codext.decode("\x99\x9a\x96j\x96i\x95¥¦ª\x96i\x95¥¦ª\x96©¦ª\x95\x9a\x96\x99\x95¥\x95\x9a¦©", "ethernet")
 'This is a test!'
+>>> codext.encode(b"A", "differential-manchester")
+b'\x95V'
+>>> codext.decode(b"\x95V", "differential-manchester")
+b'A'
+```
+
+-----
+
+### NRZI
+
+[Non-Return-to-Zero Inverted](https://en.wikipedia.org/wiki/Non-return-to-zero#NRZI) (NRZI) is a line code where each bit gives the level of the signal during its period, a bit being written as a change of the level (a transition) or as no change, hence it does not depend on the polarity of the signal. By default, the convention NRZ-M ("mark") is used: 1 is written with a transition and 0 without, while the `-space` variant uses the convention NRZ-S, where 0 is written with a transition (as used e.g. by USB and HDLC, before their bit stuffing). The level starts low and each input byte gives an output byte.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`nrzi` | text <-> NRZI encoded text | `nrz-i`, `nrz-m`, `nrzi-mark` | 1 written with a transition
+`nrzi-space` | text <-> NRZI encoded text | `nrz-s` | 0 written with a transition
+
+```python
+>>> codext.encode(b"\xb2", "nrzi")
+b'\xdc'
+>>> codext.encode(b"\xb2", "nrzi-space")
+b'v'
+>>> codext.decode(b"\xdc", "nrzi")
+b'\xb2'
 ```
 
 -----

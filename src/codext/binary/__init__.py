@@ -7,5 +7,6 @@ from .excess3 import *
 from .fibonacci import *
 from .gray import *
 from .manchester import *
+from .nrzi import *
 from .rotate import *
 
