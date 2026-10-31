@@ -11,8 +11,11 @@ The following parameters are tunable:
 - `stop_func`: can be a function or a regular expression to be matched (automatically converted to a function that uses the `re` module) ; by default, checks if all input characters are printable.
 - `min_depth`: the minimum depth for the tree search (allows to avoid a bit of overhead while checking the current decoded output at a depth with the stop function when we are sure it should not be the right result) ; by default 0.
 - `max_depth`: the maximum depth for the tree search ; by default 5.
-- `codec_categories`: a string indicating a codec [category](features.md#list-codecs) or a list of [category](features.md#list-codecs) strings ; by default, `None`, meaning the whole [categories](features.md#list-codecs) (very slow).
+- `include`: the [categories](features.md#list-codecs), codecs or encodings to be considered, as a single name, a list of names or a dictionary of lists of names per depth (from 0, -1 meaning any depth) ; by default, `None`, meaning all of them (very slow).
+- `exclude`: the [categories](features.md#list-codecs), codecs or encodings not to be considered, in the same formats ; by default, `None`, meaning none of them.
 - `found`: a list or tuple of currently found encodings that can be used to save time if the first decoding steps are known ; by default, an empty tuple.
+
+The result is a dictionary of the decoded strings by tuple of encodings, in order of application.
 
 A simple example for a 1-stage base64-encoded string:
 
@@ -25,7 +28,7 @@ An example of a 2-stages base64- then base62-encoded string:
 
 ```python
 >>> codext.guess("CJG3Ix8bVcSRMLOqwDUg28aDsT7")
-{('base62',): 'VGhpcyBpcyBhIHRlc3Q='}
+{('chaocipher',): 'NGH3Hb8tYyJWGEEseSOq28aTtS7'}
 ```
 
 In the second example, we can see that the given encoded string is not decoded as expected. This is the case because the (default) stop condition is too broad and stops if all the characters of the output are printable. If we have a prior knowledge on what we should expect, we can input a simple string or a regex:
@@ -43,36 +46,42 @@ In the second example, we can see that the given encoded string is not decoded a
 {('base62', 'base64'): 'This is a test'}
 ```
 
-In this example, the string "*test*" is converted to a function that uses this string as regular expression. Instead of a string, we can also pass a function. For this purpose, standard [stop functions](#available-stop-functions) are predefined. So, we can for instance use `stopfunc.lang_en` to stop when we find something that is English. Note that working this way gives lots of false positives if the text is very short like in the example case. That's why the `codec_categories` argument is used to only consider baseX codecs. This is also demonstrated in the next examples.
+In this example, the string "*test*" is converted to a function that uses this string as regular expression. Instead of a string, we can also pass a function. For this purpose, standard [stop functions](#available-stop-functions) are predefined. So, we can for instance use `stopfunc.lang_en` to stop when we find something that is English. Note that working this way gives lots of false positives if the text is very short like in the example case. That's why the `include` argument is used to only consider baseX codecs. This is also demonstrated in the next examples.
 
 ```python
 >>> codext.stopfunc._reload_lang("langdetect")
->>> codext.guess("CJG3Ix8bVcSRMLOqwDUg28aDsT7", codext.stopfunc.lang_en, codec_categories="base")
-('This is a test', ('base62', 'base64'))
+>>> codext.guess("CJG3Ix8bVcSRMLOqwDUg28aDsT7", codext.stopfunc.lang_en, include="base")
+{('base62', 'base64'): 'This is a test'}
 ```
 
 If we know the first encoding, we can set this in the `found` parameter to save time:
 
 ```python
 >>> codext.guess("CJG3Ix8bVcSRMLOqwDUg28aDsT7", "test", found=["base62"])
-('This is a test', ('base62', 'base64'))
+{('base62', 'base64'): 'This is a test'}
 ```
 
-If we are sure that only `base` (which is a valid [category](features.md#list-codecs)) encodings are used, we can restrict the tree search using the `codec_categories` parameter to save time:
+If we are sure that only `base` (which is a valid [category](features.md#list-codecs)) encodings are used, we can restrict the tree search using the `include` parameter to save time, or even give the encodings to be considered at each depth, while the `exclude` parameter removes some of them:
 
 ```python
->>> codext.guess("CJG3Ix8bVcSRMLOqwDUg28aDsT7", "test", codec_categories="base")
-('This is a test', ('base62', 'base64'))
+>>> codext.guess("CJG3Ix8bVcSRMLOqwDUg28aDsT7", "test", include="base")
+{('base62', 'base64'): 'This is a test'}
+>>> codext.guess("CJG3Ix8bVcSRMLOqwDUg28aDsT7", "test", include={0: ["base62"], 1: ["base64"]})
+{('base62', 'base64'): 'This is a test'}
+>>> codext.guess("CJG3Ix8bVcSRMLOqwDUg28aDsT7", "test", include="base", exclude="base62")
+{}
 ```
 
 Another example of 2-stages encoded string:
 
 ```python
 >>> codext.guess("LSAuLi4uIC4uIC4uLiAvIC4uIC4uLiAvIC4tIC8gLSAuIC4uLiAt", "test")
-('this is a test', ('base64', 'morse'))
->>> codext.guess("LSAuLi4uIC4uIC4uLiAvIC4uIC4uLiAvIC4tIC8gLSAuIC4uLiAt", "test", codec_categories=["base", "language"])
-('this is a test', ('base64', 'morse'))
+{('base64', 'morse'): 'this is a test'}
+>>> codext.guess("LSAuLi4uIC4uIC4uLiAvIC4uIC4uLiAvIC4tIC8gLSAuIC4uLiAt", "test", include=["base", "language"])
+{('base64', 'morse'): 'this is a test'}
 ```
+
+With the [CLI tool](cli.md), these parameters are given with the `-i`/`--include` and `-e`/`--exclude` options, the names being possibly prefixed with a depth (e.g. `codext guess -i 0:base62 1:base64`).
 
 When multiple results are expected, `stop` and `show` arguments can be used respectively to avoid stopping while finding a result and to display the intermediate result.
 

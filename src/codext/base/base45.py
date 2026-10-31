@@ -89,6 +89,9 @@ def base45_decode(mode):
     return decode
 
 
-add("base45", base45_encode, base45_decode, r"^base[-_]?45(|[-_]inv(?:erted)?)$", expansion_factor=1.5)
+# the expansion factor is 1.5 for pairs of bytes, up to 2 for a single byte (hence the tolerance for short inputs),
+#  and the charset has 45 characters
+add("base45", base45_encode, base45_decode, r"^base[-_]?45(|[-_]inv(?:erted)?)$", expansion_factor=(1.5, .17),
+    len_charset=45)
 main = main(45, "<https://datatracker.ietf.org/doc/html/draft-faltstrom-base45-04.txt>")
 

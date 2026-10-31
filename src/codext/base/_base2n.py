@@ -69,7 +69,7 @@ def base2n_decode(string, charset, errors="strict"):
     :param charset: base-N characters set
     :param errors:  errors handling marker
     """
-    bs, r, n = "", "", len(charset)
+    bs, r, n, nbits = "", "", len(charset), 0
     # particular case: for hex, ensure the right case in the charset ; not that this way, if mixed cases are used, it
     #                   will trigger an error (this is the expected behavior)
     if n == 16:
@@ -81,6 +81,12 @@ def base2n_decode(string, charset, errors="strict"):
     # find the number of bits for the given character set and the number of padding characters
     nb_in = int(log(n, 2))
     n_pad = len(string) - len(string.rstrip("="))
+    def partial(pos):
+        """ Output decoded up to an error at the given position, as with GNU's base64 and base32: the whole bytes of the
+             bits of the characters before the error (excluding the padding characters), except that, with base32, a
+             group of 8 characters cut by the end of the input gives no output (as with gnulib's decode_8). """
+        out = (r + "".join(chr(int(bs[k:k+8], 2)) for k in range(0, len(bs) // 8 * 8, 8)))[:nbits // 8]
+        return out[:pos // 8 * 5] if n == 32 and len(string) - pos // 8 * 8 < 8 else out
     # iterate over the characters, mapping them to the character set and converting the resulting bits to 8-bits chars
     for i, c in enumerate(string):
         if c == "=":
@@ -88,9 +94,11 @@ def base2n_decode(string, charset, errors="strict"):
         else:
             try:
                 bs += ("{:0>%d}" % nb_in).format(_bin(charset.index(c))[2:])
+                nbits += nb_in
             except ValueError:
                 if errors == "strict":
                     e = Base2NDecodeError("'base%d' codec can't decode character '%s' in position %d" % (n, c, i))
+                    e.output = partial(i)
                     e.__cause__ = e  # block exceptions chaining
                     raise e
                 elif errors == "replace":
@@ -105,7 +113,9 @@ def base2n_decode(string, charset, errors="strict"):
     # if the number of bits is not multiple of 8 bits, it could mean a bad padding
     if len(bs) != 8:
         if errors == "strict":
-            raise Base2NDecodeError("Incorrect padding")
+            e = Base2NDecodeError("Incorrect padding")
+            e.output = partial(len(string))
+            raise e
         elif errors in ["replace", "ignore"]:
             pass
         else:

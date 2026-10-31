@@ -11,9 +11,10 @@ When N is not a power of 2, the whole input is converted as a single big integer
  does).
 """
 from argparse import ArgumentParser, RawTextHelpFormatter
+from functools import lru_cache
 from math import log
 from string import ascii_lowercase as lower, ascii_uppercase as upper, digits, printable
-from sys import stdout
+from sys import stderr, stdout
 from textwrap import wrap as wraptext
 from types import FunctionType, MethodType
 
@@ -116,10 +117,57 @@ def _get_charset(charset, p=""):
         # or simply rely on key ''
         if default is not None:
             return default
-    raise ValueError("Bad charset descriptor ('%s')" % p)
+    raise ValueError(f"Bad charset descriptor ('{p}')")
 
 
 # generic base en/decoding functions
+# conversions between integers and digits in base N split the numbers with powers of N (divide and conquer), as repeated
+#  divisions or multiplications by N take a quadratic time with large numbers ; below this number of digits, the
+#  simple loops are faster
+_SMALL = 64
+
+
+@lru_cache(maxsize=128)
+def _power(n, k):
+    return n ** k
+
+
+def _to_digits(i, n, width=0):
+    """ Digits of the integer i in base N (as indices in the charset), left-padded with zeros to the given width (by
+         default, the smallest power of 2 holding i, the leading zeros being then removed). """
+    if (width or _SMALL + 1) <= _SMALL or not width and i < _power(n, _SMALL):
+        d = []
+        while i:
+            i, c = divmod(i, n)
+            d.append(c)
+        return [0] * (width - len(d)) + d[::-1]
+    top = not width
+    if top:
+        width = 2 * _SMALL
+        while _power(n, width) <= i:
+            width *= 2
+    half = width // 2
+    hi, lo = divmod(i, _power(n, half))
+    d = _to_digits(hi, n, width - half) + _to_digits(lo, n, half)
+    if top:
+        k = 0
+        while d[k] == 0:
+            k += 1
+        d = d[k:]
+    return d
+
+
+def _from_digits(d, n):
+    """ Integer of the digits in base N (as indices in the charset), combining halves as hi * N^len(lo) + lo. """
+    if len(d) <= _SMALL:
+        i = 0
+        for c in d:
+            i = i * n + c
+        return i
+    half = len(d) // 2
+    return _from_digits(d[:half], n) * _power(n, len(d) - half) + _from_digits(d[half:], n)
+
+
 def base_encode(input, charset, errors="strict", exc=BaseEncodeError):
     """ Base-10 to base-N encoding.
     
@@ -128,18 +176,16 @@ def base_encode(input, charset, errors="strict", exc=BaseEncodeError):
     :param errors:  errors handling marker
     :param exc:     exception to be raised in case of error
     """
-    i, n, r = input if isinstance(input, int) else s2i(input), len(charset), ""
+    i, n = input if isinstance(input, int) else s2i(input) if input else 0, len(charset)
     if n == 1:
         if i > SIZE_LIMIT:
             raise InputSizeLimitError("Input exceeded size limit")
         return i * charset[0]
     # keep this fast-path only for a non-standard 10-character charset ; the digits
-    # charset uses the generic loop below (leading zeros, bignums, no str/int round-trip)
+    # charset uses the generic conversion below (leading zeros, bignums, no str/int round-trip)
     if n == 10 and charset != digits:
         return "".join(charset[int(x)] for x in str(i))
-    while i > 0:
-        i, c = divmod(i, n)
-        r = charset[c] + r
+    r = "".join(charset[c] for c in _to_digits(i, n)) if i > 0 else ""
     # preserve leading zero bytes: big-integer bases such as Base58 map each
     # leading null byte of the input to a leading charset[0] character
     if not isinstance(input, int):
@@ -155,18 +201,23 @@ def base_decode(input, charset, errors="strict", exc=BaseDecodeError):
     :param errors:  errors handling marker
     :param exc:     exception to be raised in case of error
     """
-    i, n, dec = 0, len(charset), lambda n: base_encode(n, [chr(x) for x in range(256)], errors, exc)
+    n = len(charset)
     if n == 1:
         return i2s(len(input))
     if n == 10 and charset != digits:
         return "".join(str(charset.index(c)) for c in input)
+    # index of each character (the first one, if the charset holds a character more than once)
+    index, d = {c: k for k, c in reversed(list(enumerate(charset)))}, []
     for k, c in enumerate(input):
         try:
-            i = i * n + charset.index(c)
-        except ValueError:
-            handle_error("base", errors, exc, decode=True)(c, k, dec(i), "base%d" % n)
+            d.append(index[c])
+        except KeyError:
+            # no output decoded up to the error, as the digits before it are not the beginning of the number
+            handle_error("base", errors, exc, decode=True)(c, k, "", f"base{n}")
+    i = _from_digits(d, n)
     # restore the leading zero bytes encoded as leading charset[0] characters
-    return chr(0) * (len(input) - len(input.lstrip(charset[0]))) + dec(i)
+    return chr(0) * (len(input) - len(input.lstrip(charset[0]))) + i.to_bytes((i.bit_length() + 7) // 8,
+                                                                              "big").decode("latin-1")
 
 
 # base codec factory functions
@@ -231,7 +282,7 @@ def base_generic():
         return _decode
     
     add("base", encode, decode, r"^base[-_]?([2-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(?:[-_]generic)?$",
-        guess=["base%d-generic" % i for i in range(2, 255)], entropy=lambda e, n: log(int(n.split("-")[0][4:]), 2),
+        guess=[f"base{i}-generic" for i in range(2, 255)], entropy=lambda e, n: log(int(n.split("-")[0][4:]), 2),
         len_charset=lambda n: int(n.split("-")[0][4:]), printables_rate=1., category="base-generic", penalty=.4,
         expansion_factor=lambda f, n: (EXPANSION_FACTOR(int(n.split("-")[0][4:])), .05))
 
@@ -294,7 +345,10 @@ Full documentation at: <https://python-codext.readthedocs.io/en/latest/enc/base.
             c = f(c, "base" + base + ["", "-inv"][getattr(args, "invert", False)],
                   ["strict", "ignore"][args.ignore_garbage])
         except Exception as err:
-            print("%sbase%s: invalid input" % (getattr(err, "output", ""), base))
+            # as GNU's base64, write the output decoded up to the error (if any), then report the error on stderr
+            stdout.buffer.write(b(getattr(err, "output", "") or ""))
+            stdout.flush()
+            print(f"base{base}: invalid input", file=stderr)
             return 1
         if args.decode:
             stdout.buffer.write(c)

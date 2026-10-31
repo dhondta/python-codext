@@ -3,6 +3,7 @@
 """Base codecs tests.
 
 """
+import codext
 import sys
 from unittest import TestCase
 
@@ -288,6 +289,10 @@ class TestCodecsBase(TestCase):
         self.assertEqual(codecs.decode(b"OBQR0", "base45"), b"\xcf\xb1\x1b")
         for data in [b"\xff\xfe", b"hello", b"\x00", b"\x80\x81\x82\x83\x84"]:
             self.assertEqual(codecs.decode(codecs.encode(data, "base45"), "base45"), data)
+        # the ranking heuristic puts base45 first, also for a single byte (whose expansion factor is 2 instead of 1.5)
+        for s in ["test", "The quick brown fox jumps over the lazy dog"]:
+            self.assertTrue(codext.rank(codecs.encode(s, "base45"), limit=1)[0][1].startswith("base45"))
+        self.assertTrue(any(n.startswith("base45") for _, n in codext.rank(codecs.encode("a", "base45"), limit=50)))
 
     def test_codec_base_generic(self):
         for n in range(2, 255):
@@ -296,6 +301,17 @@ class TestCodecsBase(TestCase):
         self.assertRaises(LookupError, codecs.decode, "test", "base0-generic")
         self.assertRaises(LookupError, codecs.decode, "test", "base1-generic")
         self.assertRaises(LookupError, codecs.decode, "test", "base256-generic")
+        # empty inputs, a known vector, integers and large inputs (converted by splitting with powers of the base)
+        self.assertEqual(codecs.encode("", "base58-generic"), "")
+        self.assertEqual(codecs.encode("Hello World!", "base58"), "2NEpo7TZRRrLZSi2U")
+        from codext.base._base import base_decode, base_encode
+        cs = _generate_charset(58)
+        for i in [0, 57, 58, 58 ** 200 - 1, 58 ** 200]:
+            self.assertEqual(base_decode(base_encode(i, cs), cs), i2s(i) if i else "")
+        data = "\x00\x00" + "".join(chr(x % 256) for x in range(20000))
+        for n in [3, 58, 200]:
+            bn = f"base{n}-generic"
+            self.assertEqual(codecs.decode(codecs.encode(data, bn), bn), data)
     
     def test_codec_base1024(self):
         bad = codecs.encode("Hello!", "ecoji-v1") + "\U0001f170\u23f0\U0001f170\U0001f170"
@@ -306,6 +322,26 @@ class TestCodecsBase(TestCase):
         # non-Ecoji characters are dropped
         bad = codecs.encode("Hello!", "ecoji").replace("\u2615", "!\u2615")
         self.assertEqual(codecs.decode(bad, "ecoji", "ignore"), "Hello!")
+    
+    def test_base_decoding_partial_output(self):
+        import subprocess
+        # as GNU's base64 and base32, the output decoded up to an error is given (with the exception), base32 giving no
+        #  output for a group of 8 characters cut by the end of the input, and big-integer bases giving none at all
+        for s, enc, out in [("SGVsbG8gV29ybGQ$IQ==", "base64", "Hello World"),
+                            ("SGVsbG8gV29ybGQh$", "base64", "Hello World!"), ("SGVsbG8=$$$$", "base64", "Hello"),
+                            ("SGVsbG8", "base64", "Hello"), ("S$GVs", "base64", ""), ("JBSWY3D$", "base32", "Hell"),
+                            ("JBSWY3DPEB$", "base32", "Hello"), ("JBSWY3D", "base32", ""),
+                            ("JBSWY3DPEBLW6$4TM", "base32", "Hello Wo"), ("2NEpo7TZ0RRrLZSi2U", "base58", "")]:
+            with self.assertRaises(ValueError) as cm:
+                codecs.decode(s, enc)
+            self.assertEqual(getattr(cm.exception, "output", ""), out)
+        # the CLI writes this output to stdout and the error to stderr
+        src = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "src")
+        env = {**os.environ, 'PYTHONPATH': src + os.pathsep + os.environ.get('PYTHONPATH', "")}
+        cmd = [sys.executable, "-c", "import sys ; from codext.base.baseN import main64 ; "
+               "sys.argv = ['base64', '-d'] ; sys.exit(main64())"]
+        r = subprocess.run(cmd, input=b"SGVsbG8gV29ybGQ$IQ==", capture_output=True, env=env)
+        self.assertEqual((r.stdout, r.stderr.strip(), r.returncode), (b"Hello World", b"base64: invalid input", 1))
     
     def test_base_main(self):
         tmp = sys.argv[:]
