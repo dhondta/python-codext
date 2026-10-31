@@ -863,6 +863,146 @@ class ManualTestCase(TestCase):
         self.assertEqual(codecs.decode(b"not zstd", "zstd", "ignore"), b"")
         self.assertEqual(codecs.decode(b"not zstd", "zstd", "replace"), b"?")
     
+    def test_codec_ctph(self):
+        # ssdeep, with test vectors of libfuzzy 2.14.1 (including the truncation of the hashes and the halving of the
+        #  block size), and CTPH, with test vectors of the ctph.js library (used by CyberChef)
+        STR, NUMS = "This is a test string !", "".join(map(str, range(5000)))
+        for s, r in [("", "3::"), ("a", "3:E:E"), (STR, "3:hMCEpFZnn:hurJn"),
+                     (bytes(range(256)) * 64, "192:z" + "n" * 62 + "b:n"),
+                     (NUMS, "384:Lpqp7xl6QPOGKs1iIhwCDHBmTSK0LLqg3vQkwvWgvVIy7uK:Fqp7eGt19HK7lhWoRaK")]:
+            self.assertEqual(codecs.encode(s, "ssdeep"), r if isinstance(s, str) else b(r))
+        for s, r in [("", "A::"), ("a", "A:F:F"), (STR, "A:4NUFkERB:4BMR"),
+                     (NUMS, "H:NAYBrZvwMhar5zhGBT46wNd5dzzzuzj2TkzSvzFp9YBM70t:wYBrKrthAWzBTnFgx0t")]:
+            self.assertEqual(codecs.encode(s, "ctph"), r)
+        for e in ["ssdeep", "ctph"]:
+            self.assertRaises(NotImplementedError, codecs.decode, STR, e)
+    
+    def test_codec_gosthash(self):
+        # Streebog (GOST R 34.11-2012), with the test vectors of CyberChef and the first example of RFC 6986 (whose
+        #  message and hash codes are written in the reverse byte order)
+        M1 = "012345678901234567890123456789012345678901234567890123456789012"
+        QB = "The quick brown fox jumps over the lazy dog"
+        vectors = {
+            'gosthash|gosthash-256|gost-hash256|streebog|streebog_256': {
+                '': "3f539a213e97c802cc229d474c6aa32a825a360b2a933a949fd925208d9ce1bb",
+                QB: "3e7dea7f2384b6c5a3d0e24aaa29c05e89ddd762145030ec22c71a6db8b2c1f4",
+                M1: "9d151eefd8590b89daa6ba6cb74af9275dd051026bb149a452fd84e5e57b5500",
+            },
+            'gosthash-512|gosthash512|streebog512': {
+                '': "8e945da209aa869f0455928529bcae4679e9873ab707b55315f56ceb98bef0a7362f715528356ee83cda5f2aac4c6ad2b"
+                    "a3a715c1bcd81cb8e9f90bf4c1c1a8a",
+                QB: "d2b793a0bb6cb5904828b5b6dcfb443bb8f33efc06ad09368878ae4cdc8245b97e60802469bed1e7c21a64ff0b179a"
+                    "6a1e0bb74d92965450a0adab69162c00fe",
+                M1: "1b54d01a4af5b9d5cc3d86d68d285462b19abc2475222f35c085122be4ba1ffa00ad30f8767b3a82384c6574f024c311"
+                    "e2a481332b08ef7f41797891c1646f48",
+            },
+        }
+        for enc, v in vectors.items():
+            for e in enc.split("|"):
+                for s, r in v.items():
+                    self.assertEqual(codecs.encode(s, e), r)
+        LONG = "The quick brown fox jumps over the lazy dog. " * 3  # > 64 bytes, exercising the block loop
+        self.assertEqual(codecs.encode(LONG, "gosthash-256"),
+                         "ad3f8045baea445baa48f7ab2eb875ab76a32241972504e357f4771f85f36a45")
+        self.assertEqual(codecs.encode(LONG, "gosthash-512"),
+                         "85cba09c50849b2e2999ca9c190333e7844015d96057f44ab212169b7aae96c5"
+                         "bafdcbaeebba2855fd7894b6b5f2e87dad7c3f68d27c10ebd85527785745465f")
+        self.assertRaises(LookupError, codecs.encode, "test", "gosthash-128")
+        self.assertRaises(NotImplementedError, codecs.decode, "test", "gosthash")
+    
+    def test_codec_hmac(self):
+        # HMAC, with the second test case of RFC 2202 (MD5, SHA-1) and of RFC 4231 (SHA-2)
+        D = "what do ya want for nothing?"
+        for e, r in [("hmac-md5-Jefe", "750c783e6ab0b503eaa86e310a5db738"),
+                     ("hmac_sha1_Jefe", "effcdf6ae5eb2fa2d27416d5f184df9c259a7c79"),
+                     ("hmac-sha224-Jefe", "a30e01098bc6dbbf45690f3a7e9e6d0f8bbea2a39e6148008fd05e44"),
+                     ("hmac-sha256-Jefe", "5bdcc146bf60754e6a042426089575c75a003f089d2739839dec58b964ec3843"),
+                     ("hmac-sha512-Jefe", "164b7a7bfcf819e2e395fbe73b56e0a387bd64222e831fd610270cd7ea2505549758bf75c05a99"
+                                          "4a6d034f65f8f0e6fdcaeab1a34d4a6b4b636e070a38bce737")]:
+            self.assertEqual(codecs.encode(D, e), r)
+            self.assertEqual(codecs.encode(b(D), e), b(r))
+        # the key is case-sensitive, may be made of digits (with leading zeros) or empty
+        import hmac
+        for k in ["Key", "1234", "0012", ""]:
+            for algo in ["sha3_256", "blake2s"]:
+                e = f"hmac-{algo.replace('_', '-')}" + (f"-{k}" if k else "")
+                self.assertEqual(codecs.encode("test", e), hmac.new(k.encode(), b"test", algo).hexdigest())
+        self.assertRaises(LookupError, codecs.encode, "test", "hmac-md4-key")
+        self.assertRaises(NotImplementedError, codecs.decode, "test", "hmac-sha256-key")
+    
+    def test_codec_password_hashes(self):
+        # LDAP, Cisco, PostgreSQL, Oracle, MS-CASH, MSSQL, phpass and the crypt(3) variants, with reference vectors of
+        #  passlib (the salted hashes being made deterministic by fixing the random source)
+        from unittest.mock import patch
+        PW = "password"
+        for e, r in [("ldap-md5", "{MD5}X03MO1qnZdYdgyfeuILPmQ=="),
+                     ("ldap-sha1", "{SHA}W6ph5Mm5Pz8GgiULbPgzG37mj9g="),
+                     ("cisco-pix", "NuLKvvWGg.x9HEKO"), ("cisco-asa", "NuLKvvWGg.x9HEKO"),
+                     ("cisco-pix-user", "A5XOy94YKDPXCo7U"), ("cisco-asa-user", "A5XOy94YKDPXCo7U"),
+                     ("postgres-md5-admin", "md580a19f669b02edfbc208a5386ab5036b"),
+                     ("oracle10-SYSTEM", "EED9B65CCECDB2E9"),
+                     ("mscash-Administrator", "25fd08fa89795ed54207e6e8442a6ca0"),
+                     ("mscash2-Administrator", "4c253e4b65c007a8cd683ea57bc43c76"),
+                     ("bsd-nthash", "$3$$8846f7eaee8fb117ad06bdd830b7586c")]:
+            self.assertEqual(codecs.encode(PW, e), r)
+            self.assertEqual(codecs.encode(b(PW), e), b(r))
+        # the username is case-sensitive and may be made of digits
+        self.assertEqual(codecs.encode("secret", "postgres-md5-0012"),
+                         codecs.encode("secret", "postgres_md5_0012"))
+        # salted hashes: os.urandom is patched to yield the salts of the passlib reference vectors
+        def fixed(data):
+            return lambda n: data
+        salted = [
+            ("ldap-salted-md5", b"\x01\x02\x03\x04", "{SMD5}nXuh5+7dhsJMIAfcer5MygECAwQ="),
+            ("ldap-salted-sha1", b"\x01\x02\x03\x04", "{SSHA}ouUZQtFbhkQrfIJ43qx176Wfj4YBAgME"),
+            ("mssql2000", bytes.fromhex("01234567"),
+             "0x010001234567B9A885497FAE83D470130CA23CBCA4639A9DF3BC1F93DA165CC051F59B15DD39FA68FA55DF187F83"),
+            ("mssql2005", bytes.fromhex("01234567"), "0x010001234567B9A885497FAE83D470130CA23CBCA4639A9DF3BC"),
+            ("oracle11", bytes.fromhex("0123456789ABCDEF0123"),
+             "S:AE921ED081C9797AEB259E2A298E046290C3A5880123456789ABCDEF0123"),
+            # phpass and the crypt variants map the random bytes to their alphabet, hence these byte values
+            ("phpass-11", bytes([2, 3, 4, 5, 6, 7, 8, 9]), "$P$901234567wC.Gp1jHwxCOz6bwcNIEy0"),
+            ("bigcrypt", bytes([38, 39]), "abJnggxhB/yWI"),
+            ("crypt16", bytes([38, 39]), "abMi9VfflX1iMmF1QH4PEr.E"),
+            ("bsdi-crypt-1001", bytes([38, 39, 40, 41]), "_dD..abcdX70A1RL1usU"),
+            ("sun-md5-crypt-0", bytes([38, 39, 40, 41, 42, 43, 44, 45]), "$md5$abcdefgh$$ZxccX5lio58EZKsCI/Peg0"),
+            ("sun-md5-crypt-100", bytes([38, 39, 40, 41, 42, 43, 44, 45]),
+             "$md5,rounds=100$abcdefgh$$M/k9.q5540c7/LWDsTI8I."),
+        ]
+        for e, data, r in salted:
+            with patch("os.urandom", fixed(data)):
+                self.assertEqual(codecs.encode(PW, e), r)
+        # the output of a salted hash differs between calls (random salt)
+        self.assertNotEqual(codecs.encode(PW, "mssql2000"), codecs.encode(PW, "mssql2000"))
+        for e in ["ldap-md5", "cisco-pix", "postgres-md5-x", "oracle10-x", "mscash-x", "mscash2-x", "mssql2000",
+                  "mssql2005", "oracle11", "phpass", "bigcrypt", "crypt16", "bsdi-crypt", "bsd-nthash",
+                  "sun-md5-crypt"]:
+            self.assertRaises(NotImplementedError, codecs.decode, PW, e)
+        # long passwords exercise the multi-block paths of bigcrypt and bsdi-crypt
+        with patch("os.urandom", fixed(bytes([38, 39]))):
+            self.assertEqual(codecs.encode("longpassword1234", "bigcrypt"), "abD6HAB6eqg.kjWpheVLzZOk")
+        with patch("os.urandom", fixed(bytes([38, 39, 40, 41]))):
+            self.assertEqual(codecs.encode("longpassword1234", "bsdi-crypt-5"), "_3...abcdzZpxxj5o8L.")
+        # bad parameters
+        self.assertRaises(LookupError, codecs.encode, PW, "phpass-6")
+        self.assertRaises(LookupError, codecs.encode, PW, "bsdi-crypt-0")
+        self.assertRaises(LookupError, codecs.encode, "a" * 17, "cisco-pix")
+    
+    def test_codec_argon2(self):
+        # Argon2, through the argon2-cffi package (skipped when it is not installed)
+        try:
+            import argon2  # noqa: F401
+        except ImportError:
+            self.skipTest("argon2-cffi is not installed")
+        for e, ident in [("argon2", "$argon2id$"), ("argon2i", "$argon2i$"), ("argon2d", "$argon2d$"),
+                         ("argon2id", "$argon2id$")]:
+            h = codecs.encode("password", e)
+            self.assertTrue(h.startswith(ident + "v=19$"))
+            # the hash validates the password it was made from, and the output is salted (differs between calls)
+            self.assertTrue(argon2.PasswordHasher().verify(h, "password") if e in ("argon2", "argon2id") else True)
+            self.assertNotEqual(codecs.encode("password", e), h)
+        self.assertRaises(NotImplementedError, codecs.decode, "password", "argon2")
+    
     def test_codec_hash_functions(self):
         STR = b"This is a test string!"
         for h in ["adler32", "md2", "md5", "sha1", "sha224", "sha256", "sha384", "sha512"]:

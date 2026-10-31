@@ -64,6 +64,7 @@ dependencies = [
 dynamic = ["version"]
 
 [project.optional-dependencies]
+argon2 = ["argon2-cffi>=21.0.0"]
 bcrypt = ["bcrypt>=4.0.0"]
 
 [project.readme]

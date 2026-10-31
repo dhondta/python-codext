@@ -2,6 +2,21 @@
 
 -----
 
+### Argon2
+
+These one-way transformation functions compute the Argon2 password hash ([RFC 9106](https://datatracker.ietf.org/doc/html/rfc9106)), the memory-hard winner of the Password Hashing Competition, with its three variants (Argon2d, Argon2i and the default Argon2id). A random salt is generated each time. It relies on the [`argon2-cffi`](https://pypi.org/project/argon2-cffi/) package (`pip install codext[argon2]`) and is not available without it.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`argon2` | data --> Argon2(data) | `argon2i`, `argon2d`, `argon2id` | parametrized with the variant ; random salt
+
+```python
+>>> codext.encode("test", "argon2i")[:24]
+'$argon2i$v=19$m=65536,t'
+```
+
+-----
+
 ### Bcrypt
 
 This one-way transformation function is the password hash based on the Blowfish cipher, written in the modular crypt format (`$2b$<cost>$<salt><digest>`). A random salt is generated each time, hence the output differs between calls. It relies on the [`bcrypt`](https://pypi.org/project/bcrypt/) package when it is installed (`pip install codext[bcrypt]`), and on a pure Python implementation otherwise, which is much slower (a cost of 12 takes about 40 seconds).
@@ -70,6 +85,22 @@ These one-way transformation functions are mostly computed with a generic CRC.
 
 -----
 
+### Cisco PIX/ASA
+
+These one-way transformation functions compute the password hashes of the Cisco PIX and ASA firewalls: the MD5 digest of the password (optionally salted with the user name), with every fourth byte dropped, written with the `./0-9A-Za-z` alphabet. The user name, when there is one, is given with the codec name.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`cisco-pix` | data --> PIX(data, user) | `cisco-pix-admin`, ... | parametrized with the user name (optional)
+`cisco-asa` | data --> ASA(data, user) | `cisco-asa-admin`, ... | parametrized with the user name (optional)
+
+```python
+>>> codext.encode("password", "cisco-asa")
+'NuLKvvWGg.x9HEKO'
+```
+
+-----
+
 ### Crypt
 
 This one-way transformation function relies on the native [`crypt`](https://docs.python.org/3/library/crypt.html) library.
@@ -85,6 +116,43 @@ This one-way transformation function relies on the native [`crypt`](https://docs
 '$1$qLvI5Kml$kXm7/Yvm87XcnzDdAgfsX1'
 >>> codext.encode("This is a test string !", "crypt-sha512")
 '$6$P9pjfscoLy9vpRrH$KHuRMbAltdkIQ/XL9HqrRRQTZUB2jFucH21RPbDXlsNV/ffek9MFJVZ0P2qZMTxL8m1MO0rS8UQgxj2x/Xs9A1'
+```
+
+-----
+
+### Crypt Variants
+
+These one-way transformation functions compute the traditional crypt(3) password hash variants not provided by the `crypt` module (hence available on every platform): `bigcrypt` and `crypt16` (DES-based, for long passwords), `bsdi-crypt` (the extended DES scheme of BSDi, with a configurable number of rounds), `bsd-nthash` (the NT hash in the `$3$$` modular crypt format) and `sun-md5-crypt` (the MD5-based scheme of Solaris). A random salt is generated each time (except for `bsd-nthash`).
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`bigcrypt` | data --> bigcrypt(data) |  | random salt
+`crypt16` | data --> crypt16(data) | `crypt-16` | random salt
+`bsdi-crypt` | data --> BSDi(data, rounds) | `bsdi-crypt-5001`, ... | parametrized with the rounds (default: 5001)
+`bsd-nthash` | data --> NT(data) | `bsd-nt` | 
+`sun-md5-crypt` | data --> SunMD5(data, rounds) | `sun-md5-crypt-5000`, ... | parametrized with the rounds (default: 34000)
+
+```python
+>>> codext.encode("password", "bsd-nthash")
+'$3$$8846f7eaee8fb117ad06bdd830b7586c'
+```
+
+-----
+
+### CTPH
+
+These one-way transformation functions compute context triggered piecewise hashes (aka fuzzy hashes), for which similar inputs give similar hashes: the data is split where a rolling hash of the last 7 bytes hits a trigger value depending on a block size, and each piece gives one Base64 character. `ssdeep` gives the hash of [ssdeep](https://ssdeep-project.github.io/ssdeep/) (`blocksize:hash1:hash2`), while `ctph` gives the variant of the [ctph.js](https://github.com/huwenshuo/ctph.js) library used by CyberChef's "CTPH" operation (larger minimum block size, hashes not truncated and block size written as the Base64 character of its exponent).
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`ssdeep` | data --> ssdeep(data) |  | same output as libfuzzy
+`ctph` | data --> CTPH(data) |  | same output as ctph.js
+
+```python
+>>> codext.encode("This is a test string !", "ssdeep")
+'3:hMCEpFZnn:hurJn'
+>>> codext.encode("This is a test string !", "ctph")
+'A:4NUFkERB:4BMR'
 ```
 
 -----
@@ -109,6 +177,38 @@ These one-way transformation functions are non-cryptographic hashes, used e.g. i
 
 -----
 
+### GOST Hash (Streebog)
+
+This one-way transformation function is the hash function of the Russian standard GOST R 34.11-2012 ([RFC 6986](https://datatracker.ietf.org/doc/html/rfc6986)), aka Streebog, with 256-bit and 512-bit digests. The digest is written in the byte order of the usual implementations (e.g. CyberChef's), which is the reverse of the order of the examples of RFC 6986.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`gosthash` | data --> Streebog(data, size) | `gosthash-512`, `streebog`, `streebog256`, ... | parametrized ; *size* is 256 or 512 (default: 256)
+
+```python
+>>> codext.encode("This is a test string !", "gosthash")
+'f9c4958ab2b57204d604e4988550e820168f14bc22e1f1150e29134670557fd1'
+>>> codext.encode("This is a test string !", "streebog-512")
+'a1cdee74fcdca2677e2fe47dab40be9409b5f243d0c97677ab64e93e2b0ef22e4d8f3085fd6b43ecc82e35e0a14fab29b8bdd3e1e4b2046f1be6c1ee690f372f'
+```
+
+-----
+
+### HMAC
+
+This one-way transformation function computes keyed-hash message authentication codes ([RFC 2104](https://datatracker.ietf.org/doc/html/rfc2104)) with the hash functions guaranteed by `hashlib` (MD5, SHA-1, SHA-2, SHA-3 and BLAKE2). The hash function and the key (as text, possibly empty) are given in the codec name.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`hmac` | data --> HMAC(hash, key, data) | `hmac-sha256-secret`, `hmac_sha3-512_key`, ... | parametrized ; *hash* among `md5`, `sha1`, `sha224`, `sha256`, `sha384`, `sha512`, `sha3-224`, `sha3-256`, `sha3-384`, `sha3-512`, `blake2b` and `blake2s`
+
+```python
+>>> codext.encode("what do ya want for nothing?", "hmac-sha256-Jefe")
+'5bdcc146bf60754e6a042426089575c75a003f089d2739839dec58b964ec3843'
+```
+
+-----
+
 ### Keccak
 
 This one-way transformation function is the original Keccak, as submitted to the SHA-3 competition: it only differs from SHA-3 by the padding of the data (e.g. Ethereum uses Keccak-256).
@@ -122,6 +222,24 @@ This one-way transformation function is the original Keccak, as submitted to the
 'cee1238ea4e44163d88c21979e42fedb5451d60c1f97b0221f757c1e77b37883'
 >>> codext.encode("This is a test string !", "keccak-512")
 'd5cbccbd447103a06c2fd3fb3b566373395ce9c573015d83d5b75f518c92ca013fc73130bf0e941d29d2283176f1816f658064ff2ee09b470e314e1d61bda761'
+```
+
+-----
+
+### LDAP
+
+These one-way transformation functions compute the RFC 2307 password schemes used by LDAP directories: a scheme name followed by the Base64 digest of the password, the salted variants (`{SMD5}` and `{SSHA}`) appending a random salt.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`ldap-md5` | data --> {MD5}(data) | `ldap_md5` | 
+`ldap-sha1` | data --> {SHA}(data) | `ldap_sha1` | 
+`ldap-salted-md5` | data --> {SMD5}(data) | `ldap-smd5` | random salt
+`ldap-salted-sha1` | data --> {SSHA}(data) | `ldap-ssha` | random salt
+
+```python
+>>> codext.encode("password", "ldap-md5")
+'{MD5}X03MO1qnZdYdgyfeuILPmQ=='
 ```
 
 -----
@@ -150,6 +268,38 @@ This one-way transformation function is the original Keccak, as submitted to the
 
 -----
 
+### MS-CASH
+
+These one-way transformation functions compute the Windows domain cached credentials (Domain Cached Credentials): MS-CASHv1 (the MD4 digest of the NT hash and the lowercased user name) and MS-CASHv2 (PBKDF2-HMAC-SHA1 over it). The user name (the salt) is given with the codec name.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`mscash` | data --> MSCASHv1(data, user) | `mscash1`, `ms-cash` | parametrized with the user name
+`mscash2` | data --> MSCASHv2(data, user) | `ms-cash2` | parametrized with the user name
+
+```python
+>>> codext.encode("password", "mscash-Administrator")
+'25fd08fa89795ed54207e6e8442a6ca0'
+```
+
+-----
+
+### MSSQL
+
+These one-way transformation functions compute the Microsoft SQL Server password hashes: `0x0100`, a 4-byte random salt and the SHA-1 digest of the salted password (encoded in UTF-16LE). The 2000 version appends a second digest of the uppercased password ; the 2005 version drops it.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`mssql2000` | data --> MSSQL2000(data) | `mssql-2000` | random salt
+`mssql2005` | data --> MSSQL2005(data) | `mssql-2005` | random salt
+
+```python
+>>> codext.encode("test", "mssql2005")[:14]
+'0x0100'  # + salt and digest in hexadecimal
+```
+
+-----
+
 ### MySQL
 
 These one-way transformation functions compute the password hashes of MySQL: the custom 64-bit hash of MySQL 3.23 (spaces and tabs being ignored) and the native password hash of MySQL 4.1 and later (SHA-1 of the binary SHA-1 digest).
@@ -164,6 +314,37 @@ These one-way transformation functions compute the password hashes of MySQL: the
 '19a9b4171de94050'
 >>> codext.encode("This is a test string !", "mysql41")
 '*43782A96DB4DB788BFF188B26F633AFB47FDA7D0'
+```
+
+-----
+
+### Oracle
+
+These one-way transformation functions compute the Oracle database password hashes: the legacy 10g hash (DES-CBC of the uppercased user name and password) and the 11g hash (`S:`, the SHA-1 digest of the password and a random 10-byte salt). The user name of the 10g hash (the salt) is given with the codec name.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`oracle10` | data --> Oracle10g(data, user) | `oracle-10g-SYSTEM`, ... | parametrized with the user name
+`oracle11` | data --> Oracle11g(data) | `oracle-11g` | random salt
+
+```python
+>>> codext.encode("password", "oracle10-SYSTEM")
+'EED9B65CCECDB2E9'
+```
+
+-----
+
+### PHPass
+
+These one-way transformation functions compute the portable PHP password hash (used e.g. by WordPress): `$P$`, an iteration count and an 8-character random salt, followed by the iterated MD5 digest. The iteration count (a power of 2, from 7 to 30) is given with the codec name (default: 13).
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`phpass` | data --> PHPass(data) | `phpass-13`, `phpass_20`, ... | parametrized ; random salt
+
+```python
+>>> codext.encode("password", "phpass")[:3]
+'$P$'
 ```
 
 -----

@@ -410,19 +410,36 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 
 #### [Hashing](https://python-codext.readthedocs.io/en/latest/enc/hashing.html)
 
+- [X] `argon2`: aka Argon2 (RFC 9106) with its i, d and id variants (relies on `argon2-cffi`, e.g. with `pip install codext[argon2]`)
 - [X] `bcrypt`: aka bcrypt password hash (relies on `bcrypt` when available, e.g. with `pip install codext[bcrypt]`, pure Python otherwise)
+- [X] `bigcrypt`: aka BigCrypt (DES-based crypt variant for long passwords)
 - [X] `blake`: includes BLAKE2b and BLAKE2s (Python 3 only ; relies on `hashlib`)
+- [X] `bsd-nthash`: NT hash in the `$3$$` modular crypt format of modern BSD
+- [X] `bsdi-crypt`: aka BSDi extended DES crypt (parametrized with the number of rounds)
+- [X] `cisco-asa`: Cisco ASA password hash (parametrized with the user name)
+- [X] `cisco-pix`: Cisco PIX password hash (parametrized with the user name)
 - [X] `crypt`: Unix's crypt hash for passwords (Python 3 and Unix only ; relies on `crypt`)
+- [X] `crypt16`: aka crypt16 (DES-based crypt variant with two computations)
+- [X] `ctph`: context triggered piecewise hash of the ctph.js library (as used by CyberChef)
 - [X] `fnv`: aka Fowler-Noll-Vo ; includes FNV-1 and FNV-1a in 32, 64, 128, 256, 512 and 1024 bits
+- [X] `gosthash`: aka Streebog (GOST R 34.11-2012) in 256 and 512 bits
+- [X] `hmac`: keyed-hash message authentication code with MD5, SHA-1, SHA-2, SHA-3 or BLAKE2 (relies on `hmac`)
 - [X] `keccak`: original Keccak (pre-SHA-3 padding, as used e.g. by Ethereum) in 224, 256, 384 and 512 bits
+- [X] `ldap-md5`: RFC 2307 LDAP password schemes ; `ldap-sha1`, `ldap-salted-md5` and `ldap-salted-sha1` for the SHA-1 and salted variants
 - [X] `lm`: aka LAN Manager hash, the legacy Windows password hash (with a pure Python DES)
 - [X] `md`: aka Message Digest ; includes MD2, MD4 (relies on `hashlib` when available, pure Python otherwise), MD5 (relies on `hashlib`) and MD6 (digest sizes multiple of 8, up to 512 bits)
+- [X] `mscash`: aka MS-CASH / Domain Cached Credentials v1 (parametrized with the user name) ; `mscash2` for v2 (PBKDF2)
+- [X] `mssql2000`: Microsoft SQL Server 2000 password hash ; `mssql2005` for the 2005 version
 - [X] `mysql`: MySQL password hashes ; includes the MySQL 3.23 hash and the MySQL 4.1+ native password hash
 - [X] `ntlm`: aka NT hash, the Windows password hash (MD4 of the UTF-16LE password)
+- [X] `oracle10`: legacy Oracle 10g password hash (parametrized with the user name) ; `oracle11` for the 11g version
+- [X] `phpass`: portable PHP password hash (parametrized with the iteration count ; used e.g. by WordPress)
 - [X] `ripemd160`: aka RIPEMD-160 (relies on `hashlib` when available, pure Python otherwise)
 - [X] `sha`: aka Secure Hash Algorithms ; includes SHA0, SHA1, 224, 256, 384, 512 (Python2/3) but also SHA3-224, -256, -384 and -512 (Python 3 only ; relies on `hashlib`)
 - [X] `shake`: aka SHAKE hashing (Python 3 only ; relies on `hashlib`)
 - [X] `snefru`: aka Snefru (Merkle's hash function) in 32 to 480 bits, with 2 to 8 passes
+- [X] `ssdeep`: ssdeep fuzzy hash (context triggered piecewise hash, same output as libfuzzy)
+- [X] `sun-md5-crypt`: aka Sun MD5 crypt (parametrized with the number of rounds)
 - [X] `whirlpool`: aka Whirlpool (relies on `hashlib` when available, pure Python otherwise)
 
 > :warning: Hash functions are of course definitely **NOT** encoding functions ; they are implemented for convenience with the `.encode(...)` API from `codecs` and useful for chaning codecs.
