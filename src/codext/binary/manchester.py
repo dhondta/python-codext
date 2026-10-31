@@ -93,7 +93,8 @@ def _differential(transition, decode=False):
                     _h(f"{h1}{h2}", 8 * j + 14 - 2 * i)
                 y, level = y << 1 | (transition if h1 != level else 1 - transition), h2
             r.append(y)
-        return bytes(r).decode("latin-1"), len(text)
+        # the decoded data is given as bytes (then as text if it was text)
+        return bytes(r), len(text)
     return _code
 
 

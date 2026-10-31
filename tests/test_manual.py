@@ -140,11 +140,39 @@ class ComplementaryTestCase(TestCase):
     def test_codec_morse(self):
         self.assertRaises(LookupError, codecs.encode, "test", "morse-AAB")
     
+    def test_codec_hamming(self):
+        import random
+        from itertools import combinations
+        from codext.binary.hamming import _codeword, _decoding
+        # example of Wikipedia, minimum distances (3 and 4), correction of all the single-bit errors and, with
+        #  Hamming(8,4), detection of all the double-bit errors (that Hamming(7,4) wrongly corrects)
+        self.assertEqual(_codeword(0b1011, False), 0b0110011)
+        for extended, n, distance in [(False, 7, 3), (True, 8, 4)]:
+            codewords, table = [_codeword(d, extended) for d in range(16)], _decoding(extended)
+            self.assertEqual(min(bin(a ^ c).count("1") for a, c in combinations(codewords, 2)), distance)
+            for d, c in enumerate(codewords):
+                self.assertTrue(all(table[c ^ 1 << i] == d for i in range(8)))
+                for i, j in combinations(range(n), 2):
+                    r = table[c ^ 1 << i ^ 1 << j]
+                    self.assertTrue(r is None if extended else r != d)
+        # a message with a flipped bit in each codeword is fully corrected
+        text, rnd = "The quick brown fox jumps over the lazy dog".encode() * 10, random.Random(1)
+        for e in ["hamming", "hamming84"]:
+            noisy = bytes(c ^ 1 << rnd.randrange(8 if e == "hamming84" else 7) for c in codecs.encode(text, e))
+            self.assertEqual(codecs.decode(noisy, e), text)
+        # with a non-strict errors handling, double-bit errors are replaced, dropped or left as is, as a trailing byte
+        for e, r in [("replace", b"A??"), ("ignore", b"A"), ("leave", b"A\x03\xc3\x01")]:
+            self.assertEqual(codecs.decode(b"\xcci\x03\xc3\x01", "hamming84", e), r)
+        self.assertRaises(ValueError, codecs.decode, b"\xcci\x03\xc3", "hamming84")
+        self.assertRaises(ValueError, codecs.decode, b"\xcci\x01", "hamming84", "BAD_ERRORS")
+    
     def test_codec_nrzi_differential_manchester(self):
         # these line codes do not depend on the polarity of the signal: the inverted signal gives the same bits, except
         #  the first one (depending on the initial level)
         data = bytes(range(256))
         for e in ["nrzi", "nrzi-space", "differential-manchester", "differential-manchester-inverted"]:
+            # text with characters outside latin-1 is given back
+            self.assertEqual(codecs.decode(codecs.encode("caf\u00e9 \u20ac", e), e), "caf\u00e9 \u20ac")
             inverted = bytes(x ^ 0xff for x in codecs.encode(data, e))
             r = codecs.decode(inverted, e)
             self.assertEqual(r[0] & 0x7f, data[0] & 0x7f)

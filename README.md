@@ -312,6 +312,7 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 - [X] `excess3`: uses Excess-3 (aka Stibitz code) binary encoding to convert characters from their ordinals
 - [X] `fibonacci`: Fibonacci universal code, encoding characters from their ordinals (or lists of integers with `-integers`)
 - [X] `gray`: aka reflected binary code
+- [X] `hamming`: Hamming(7,4) error-correcting code, correcting single-bit errors (and detecting double-bit errors with `hamming84`)
 - [X] `manchester`: XORes each bit of the input with `01`
 - [X] `manchester-inverted`: variant of `manchester` ; XORes each bit of the input with `10`
 - [X] `nrzi`: Non-Return-to-Zero Inverted line code, writing 1 (or 0 with `nrzi-space`) as a transition

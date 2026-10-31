@@ -43,7 +43,8 @@ def _nrzi(transition, decode=False):
                     level ^= bit == transition
                     y = y << 1 | level
             r.append(y)
-        return bytes(r).decode("latin-1"), len(text)
+        # the encoded levels are given as latin-1 text, the decoded data as bytes (then as text if it was text)
+        return (bytes(r) if decode else bytes(r).decode("latin-1")), len(text)
     return _code
 
 

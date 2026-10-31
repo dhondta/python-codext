@@ -186,6 +186,26 @@ Also called *reflected binary code*, it implements the Gray code applied to char
 
 -----
 
+### Hamming
+
+The [Hamming(7,4)](https://en.wikipedia.org/wiki/Hamming(7,4)) code, invented by Richard Hamming in 1950, writes 4 data bits with 3 parity bits, as the codeword `p1 p2 d1 p3 d2 d3 d4`, where `p1 = d1 ^ d2 ^ d4`, `p2 = d1 ^ d3 ^ d4` and `p3 = d2 ^ d3 ^ d4`: the parity checks of a received codeword give the position of a flipped bit, hence a single-bit error is corrected. The extended Hamming(8,4) code (aka SECDED) adds an overall parity bit, so that two flipped bits are detected instead of being wrongly corrected. Each half of a byte is encoded as a codeword in a byte (whose most significant bit is the overall parity bit with Hamming(8,4) and 0 with Hamming(7,4)), hence each input byte gives two output bytes.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`hamming` | data <-> Hamming(7,4) codewords | `hamming74`, `hamming-7-4` | single-bit errors silently corrected (two flipped bits in a codeword are wrongly corrected)
+`hamming84` | data <-> Hamming(8,4) codewords | `hamming-8-4`, `secded` | single-bit errors silently corrected ; double-bit errors (and a trailing byte) only replaced, dropped or left with a non-strict errors handling
+
+```python
+>>> codext.encode(b"Hi", "hamming84")
+b'\xcc\xf0f\x99'
+>>> codext.decode(b"\xc8\xf0f\x99", "hamming84")  # with a flipped bit in the first codeword
+b'Hi'
+>>> codext.decode(b"\x03\xc3", "hamming84", "replace")  # with two flipped bits in the first codeword
+b'?'
+```
+
+-----
+
 ### Manchester
 
 This codec XORes each group of 4 bits of the input text with a 1-byte clock signal, e.g. `0x55` giving in binary `01010101`.
