@@ -72,9 +72,17 @@ class TestCommon(TestCase):
         self.assertTrue(len(codext.list("other")) > 0)
         self.assertTrue(len(codext.list("native")) > 0)
         self.assertTrue(len(codext.list("non-native")) > 0)
-        self.assertTrue(len(codext.list("native", "non-native", "crypto", "base")) > 0)
-        self.assertTrue(len(codext.list("native", "language", "crypto")) > 0)
-        self.assertTrue(len(codext.list("~crypto")) > 0)
+        self.assertTrue(len(codext.list("native", "non-native", "cipher", "base")) > 0)
+        self.assertTrue(len(codext.list("native", "language", "cipher")) > 0)
+        self.assertTrue(len(codext.list("~cipher")) > 0)
+        self.assertIn("rot", codext.list("cipher"))
+        self.assertIn("zong22", codext.list("obfuscation"))
+        self.assertNotIn("zong22", codext.list("cipher"))
+        # the deprecated "crypto" category gives the codecs of the categories it was split into, with a warning
+        with self.assertWarns(DeprecationWarning):
+            self.assertEqual(set(codext.list("crypto")), set(codext.list("cipher", "obfuscation")))
+        with self.assertWarns(DeprecationWarning):
+            self.assertEqual(set(codext.list("~crypto")), set(codext.list("~cipher", "~obfuscation")))
         self.assertEqual(set(codext.list("~native")), set(codext.list("non-native")))
         self.assertEqual(set(codext.list()), set(codext.list("native") + codext.list("non-native")))
         self.assertRaises(ValueError, codext.list, "BAD_CATEGORY")
@@ -145,7 +153,9 @@ class TestCommon(TestCase):
         self.assertEqual(STR, _l(codext.guess("CJG3Ix8bVcSRMLOqwDUg28aDsT7", "a test", found=["base62"])))
         self.assertEqual(STR, _l(codext.guess("VGhpcyBpcyBhIHRlc3Q=", "a test", 0, 1, "base", scoring_heuristic=True,
                                               exclude=["base100"])))
-        self.assertEqual(STR, _l(codext.guess("VGhpcyBpcyBhIHRlc3Q=", "a test", 0, 1, ["base", "crypto"])))
+        self.assertEqual(STR, _l(codext.guess("VGhpcyBpcyBhIHRlc3Q=", "a test", 0, 1, ["base", "cipher"])))
+        with self.assertWarns(DeprecationWarning):
+            self.assertEqual(STR, _l(codext.guess("VGhpcyBpcyBhIHRlc3Q=", "a test", 0, 1, ["base", "crypto"])))
         self.assertEqual(len(codext.guess("NOT THE ENCODED TEST STRING", "a test", max_depth=1, exclude=None)), 0)
         self.assertIn("F1@9", _l(codext.guess("VGVzdCBGMUA5ICE=", codext.stopfunc.flag, max_depth=1, stop=False,
                                               show=True)))

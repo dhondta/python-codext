@@ -1,10 +1,10 @@
 # -*- coding: UTF-8 -*-
-"""URI encoding, shared by the toy ciphers of online JavaScript encryption tools that substitute the characters of the
- text encoded with JavaScript's encodeURIComponent() (ARABICA-2RS, CHINZO-72C, JAPOO-C2S).
+"""URI encoding, shared by the toy encodings of online JavaScript encryption tools that substitute the characters of the
+ text encoded with JavaScript's encodeURIComponent() (ARABICA-2RS, CHINZO-72C, HINDIA-4X, JAPOO-C2S, KOREX-3S).
 
 The text is encoded like encodeURIComponent() does (the UTF-8 bytes of the characters other than the letters, digits
  and "-_.!~*'()" being written as "%XX"), hence it is made of 72 distinct characters, each one being substituted by a
- character (or a short string) of the cipher ; decoding substitutes them back and decodes the text like
+ character (or a short string) of the encoding ; decoding substitutes them back and decodes the text like
  decodeURIComponent() does, malformed escape sequences and invalid UTF-8 being reported (or, with a non-strict errors
  handling, replaced).
 """
@@ -41,8 +41,8 @@ def uri_decode(text, ename, errors="strict"):
 
 
 def substitution(ename, table, decode_table=None):
-    """ Make the encoding and decoding functions of a cipher substituting the characters of the URI-encoded text, given
-         the substitutes of these characters. """
+    """ Make the encoding and decoding functions of an encoding substituting the characters of the URI-encoded text,
+         given the substitutes of these characters. """
     dtable = decode_table or {v: k for k, v in table.items()}
 
     def encode(text):

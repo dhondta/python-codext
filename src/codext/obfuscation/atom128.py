@@ -1,10 +1,10 @@
 # -*- coding: UTF-8 -*-
 """ATOM-128 Codec - ATOM-128 content encoding.
 
-ATOM-128 is a toy cipher found on online JavaScript encryption tools. It is Base64 with a shuffled alphabet, whose 65th
- character ("C") is used for padding. As in the original JavaScript, the text is first escaped with JavaScript's
- escape() (e.g. " " becoming "%20" and "é" becoming "%E9"), and unescaped after decoding ; ciphertexts made without this
- escaping (i.e. from the UTF-8 bytes of the text) are then decoded the same way.
+ATOM-128 is a toy encoding found on online JavaScript encryption tools. It is Base64 with a shuffled alphabet, whose
+ 65th character ("C") is used for padding. As in the original JavaScript, the text is first escaped with JavaScript's
+ escape() (e.g. " " becoming "%20" and "é" becoming "%E9"), and unescaped after decoding ; encoded texts made without
+ this escaping (i.e. from the UTF-8 bytes of the text) are then decoded the same way.
 
 This codec:
 - en/decodes strings from str to str

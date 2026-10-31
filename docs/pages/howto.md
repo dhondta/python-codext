@@ -75,7 +75,7 @@ This uses: [`codext.add`](https://github.com/dhondta/python-codext/blob/main/src
 
 This applies when the codec is more complex than a mapping, as defined in _[Case 2: Encoding map](#case-2-encoding-map)_.
 
-**Examples**: [`crypto/barbie`](https://github.com/dhondta/python-codext/blob/main/src/codext/crypto/barbie.py), [`crypto/railfence`](https://github.com/dhondta/python-codext/blob/main/src/codext/crypto/railfence.py), [`stegano/resistor`](https://github.com/dhondta/python-codext/blob/main/src/codext/stegano/resistor.py), [`stegano/whitespace`](https://github.com/dhondta/python-codext/blob/main/src/codext/stegano/whitespace.py)
+**Examples**: [`ciphers/barbie`](https://github.com/dhondta/python-codext/blob/main/src/codext/ciphers/barbie.py), [`ciphers/railfence`](https://github.com/dhondta/python-codext/blob/main/src/codext/ciphers/railfence.py), [`stegano/resistor`](https://github.com/dhondta/python-codext/blob/main/src/codext/stegano/resistor.py), [`stegano/whitespace`](https://github.com/dhondta/python-codext/blob/main/src/codext/stegano/whitespace.py)
 
 The following shall be considered:
 
@@ -154,7 +154,7 @@ The following options shall be considered:
 1. **Simple map**: In this case, the encoding map is a dictionary mapping each input character to an output one (see [`radio`](https://github.com/dhondta/python-codext/blob/main/src/codext/languages/radio.py) for an example).
 2. **List of maps**: In this case, encoding maps are put in a list and referenced by their order number starting from 1, meaning that the `pattern` shall define a capture group with values from 1 to the length of this list (see [`dna`](https://github.com/dhondta/python-codext/blob/main/src/codext/others/dna.py) for an example).
 3. **Parametrized map**: This variant defines a dictionary of regex-selected encoding maps, that is, a dictionary of dictionaries with keys matching the captured groups from codec's pattern.
-4. **Map factory function**: This one is implemented by a function that returns the composed encoding map. This function takes a single argument according to the capture group from the `pattern` (see [`affine`](https://github.com/dhondta/python-codext/blob/main/src/codext/crypto/affine.py) for an example).
+4. **Map factory function**: This one is implemented by a function that returns the composed encoding map. This function takes a single argument according to the capture group from the `pattern` (see [`affine`](https://github.com/dhondta/python-codext/blob/main/src/codext/ciphers/affine.py) for an example).
 
 !!! note "Mapping one input character to multiple output characters"
     

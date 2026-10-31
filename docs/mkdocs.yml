@@ -13,13 +13,14 @@ nav:
   - Encodings:
     - Base: enc/base.md
     - Binary: enc/binary.md
+    - Ciphers: enc/ciphers.md
     - Common: enc/common.md
     - Compressions: enc/compressions.md
-    - Cryptography: enc/crypto.md
     - Esoteric: enc/esoteric.md
     - Frequency: enc/frequency.md
     - Hashing: enc/hashing.md
     - Languages: enc/languages.md
+    - Obfuscation: enc/obfuscation.md
     - Others: enc/others.md
     - Steganography: enc/stegano.md
     - Web: enc/web.md

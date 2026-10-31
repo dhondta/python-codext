@@ -1,13 +1,13 @@
 # -*- coding: UTF-8 -*-
-"""CHINZO-72C Codec - CHINZO-72C content encryption.
+"""CHINZO-72C Codec - CHINZO-72C content encoding.
 
-CHINZO-72C is a toy cipher found on online JavaScript encryption tools. The pairs of letters "oo", "ii", "ee", "tt" and
- "rr" of the text are first replaced by Chinese characters ("讲", "邻", "头", "会" and "歷"), then the text is encoded like
- JavaScript's encodeURIComponent() does, and each of its characters (written as 4 digits in base 4 by the original
- JavaScript) is substituted by a Chinese character followed by a space, the ciphertext ending with "吴". Decoding gives
+CHINZO-72C is a toy encoding found on online JavaScript encryption tools. The pairs of letters "oo", "ii", "ee", "tt"
+ and "rr" of the text are first replaced by Chinese characters ("讲", "邻", "头", "会" and "歷"), then the text is encoded
+ like JavaScript's encodeURIComponent() does, and each of its characters (written as 4 digits in base 4 by the original
+ JavaScript) is substituted by a Chinese character followed by a space, the encoded text ending with "吴". Decoding gives
  back these pairs of letters, hence a text holding one of these 5 Chinese characters is not decoded as it was. As with
- the original JavaScript, the spaces are ignored when decoding ; unlike it, this codec encodes a text holding "吴"
- (that the original JavaScript leaves as is).
+ the original JavaScript, the spaces are ignored when decoding ; unlike it, this codec encodes a text holding "吴" (that
+ the original JavaScript leaves as is).
 
 This codec:
 - en/decodes strings from str to str

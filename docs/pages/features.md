@@ -205,11 +205,12 @@ Codecs can be listed with the `list` function, either the whole codecs or only s
     - `non-native`: this special category regroups all the categories mentioned hereafter
     - `base`: baseX codecs (e.g. `base`, `base100`)
     - `binary`: codecs working on strings but applying their algorithms on their binary forms (e.g. `baudot`, `manchester`)
+    - `cipher`: ciphers, i.e. cryptographic algorithms with a key, generally weak (e.g. `barbie`, `rot`, `xor`)
     - `common`: common codecs not included in the native ones or simly added for the purpose of standardization (e.g. `octal`, `ordinal`)
-    - `crypto`: codecs related to cryptography algorithms (e.g. `barbie`, `rot`, `xor`)
     - `esoteric`: esoteric programming languages (e.g. `brainfuck`, `pikalang`)
     - `frequency`: radio teleprinter and telephone signaling systems sending characters as audio tones (e.g. `coquelet`, `dtmf`, `piccolo`)
     - `language`: language-related codecs (e.g. `morse`, `navajo`)
+    - `obfuscation`: encodings presented as encryption but using no key (e.g. `atom128`, `cisco-type7`)
     - `other`: uncategorized codecs (e.g. `letters`, `url`)
     - `stegano`: steganography-related codecs (e.g. `sms`, `resistor`)
     

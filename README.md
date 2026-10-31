@@ -325,6 +325,47 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 - [X] `fletcher`: Fletcher-16, -32 and -64 checksums
 - [X] `luhn`: Luhn mod N algorithm
 
+#### [Ciphers](https://python-codext.readthedocs.io/en/latest/enc/ciphers.html)
+
+- [X] `adfgx`: aka ADFGX Cipher (Polybius square and columnar transposition) ; `adfgvx` for its 6x6 variant
+- [X] `aer256`: aka AER-256 (toy cipher with float arithmetic, from online JavaScript tools)
+- [X] `affine`: aka Affine Cipher
+- [X] `armon64`: aka ARMON-64 (variant of AER-256 with a fourth operation)
+- [X] `atbash`: aka Atbash Cipher
+- [X] `autoclave`: aka Autoclave/Autokey Cipher (variant of Vigenere Cipher)
+- [X] `bacon`: aka Baconian Cipher
+- [X] `barbie-N`: aka Barbie Typewriter (*N* belongs to [1, 4])
+- [X] `bazeries`: aka Bazeries Cipher (two Polybius grids and a transposition keyed by a number)
+- [X] `beaufort`: aka Beaufort Cipher (variant of Vigenere Cipher)
+- [X] `bifid`: aka Bifid Cipher (Delastelle's fractionation with a 5x5 Polybius square) ; `trifid` for its 3x3x3 cube variant
+- [X] `chaocipher`: aka Chaocipher (two alphabets permuted after each letter)
+- [X] `columnar`: aka Columnar Transposition Cipher (keyword-ordered columns ; a second keyword gives the double transposition)
+- [X] `enigma`: aka Enigma machine (Enigma I, M3 and M4, with reflector, rotors, rings, positions and plugboard)
+- [X] `ezip64`: aka EZIP-64 (variant of ARMON-64 with smaller blocks)
+- [X] `foursquare`: aka Four-square Cipher (bigrams substituted with two keyed squares and two plain ones)
+- [X] `fractionated-morse`: aka Fractionated Morse Cipher (Morse code split into groups of three symbols, each replaced by a letter of a keyed alphabet)
+- [X] `gronsfeld`: aka Gronsfeld Cipher (variant of Vigenere Cipher with a numeric key)
+- [X] `hill`: aka Hill Cipher (blocks of letters multiplied by a key matrix modulo 26)
+- [X] `nihilist`: aka Nihilist Cipher (sums of the Polybius coordinates of the text and of a repeated key)
+- [X] `playfair`: aka Playfair Cipher
+- [X] `phillips`: aka Phillips Cipher (polyalphabetic block cipher with 8 key squares)
+- [X] `polybius`: aka Polybius Square Cipher
+- [X] `porta`: aka Porta Cipher (reciprocal variant of Vigenere Cipher with 13 alphabets)
+- [X] `railfence`: aka Rail Fence Cipher
+- [X] `rotN`: aka Caesar cipher (*N* belongs to [1,25])
+- [X] `scytaleN`: encrypts using the number of letters on the rod (*N* belongs to [1,[)
+- [X] `shiftN`: shift ordinals (*N* belongs to [1,255])
+- [X] `skip`: aka Skip Cipher (transposition reading every N-th character, looping on the text)
+- [X] `trithemius`: aka Trithemius Cipher (variant of Vigenere Cipher)
+- [X] `twosquare`: aka Two-square Cipher or Double Playfair (bigrams substituted with two keyed squares, vertically or horizontally)
+- [X] `vernam`: aka Vernam Cipher (XOR with a repeating key)
+- [X] `vic`: aka VIC Cipher
+- [X] `vigenere`: aka Vigenere Cipher
+- [X] `xorN`: XOR with a single byte (*N* belongs to [1,255])
+- [X] `zara128`: aka ZARA-128 (variant of AER-256 with additions only and smaller blocks)
+
+> :warning: Ciphers are of course definitely **NOT** encoding functions ; they are implemented for leveraging the `.encode(...)` API from `codecs`.
+
 #### [Common](https://python-codext.readthedocs.io/en/latest/enc/common.html)
 
 - [X] `a1z26`: keeps words whitespace-separated and uses a custom character separator
@@ -348,57 +389,6 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 - [X] `zstd`: Zstandard compression/decompression (relies on `compression.zstd` from Python 3.14, on `backports.zstd` before)
 
 > :warning: Compression functions are of course definitely **NOT** encoding functions ; they are implemented for leveraging the `.encode(...)` API from `codecs`.
-
-#### [Cryptography](https://python-codext.readthedocs.io/en/latest/enc/crypto.html)
-
-- [X] `adfgx`: aka ADFGX Cipher (Polybius square and columnar transposition) ; `adfgvx` for its 6x6 variant
-- [X] `aer256`: aka AER-256 (toy cipher with float arithmetic, from online JavaScript tools)
-- [X] `affine`: aka Affine Cipher
-- [X] `arabica-2rs`: aka ARABICA-2RS (URI-encoded text substituted by Arabic letters, from online JavaScript tools)
-- [X] `armon64`: aka ARMON-64 (variant of AER-256 with a fourth operation)
-- [X] `atbash`: aka Atbash Cipher
-- [X] `atom128`: aka ATOM-128 (Base64 with a shuffled alphabet, from online JavaScript tools)
-- [X] `autoclave`: aka Autoclave/Autokey Cipher (variant of Vigenere Cipher)
-- [X] `bacon`: aka Baconian Cipher
-- [X] `barbie-N`: aka Barbie Typewriter (*N* belongs to [1, 4])
-- [X] `bazeries`: aka Bazeries Cipher (two Polybius grids and a transposition keyed by a number)
-- [X] `beaufort`: aka Beaufort Cipher (variant of Vigenere Cipher)
-- [X] `bifid`: aka Bifid Cipher (Delastelle's fractionation with a 5x5 Polybius square) ; `trifid` for its 3x3x3 cube variant
-- [X] `chaocipher`: aka Chaocipher (two alphabets permuted after each letter)
-- [X] `chinzo-72c`: aka CHINZO-72C (URI-encoded text substituted by Chinese characters, from online JavaScript tools)
-- [X] `cisco-type7`: aka Cisco IOS type 7 password encoding
-- [X] `citrix`: aka Citrix CTX1 password encoding
-- [X] `columnar`: aka Columnar Transposition Cipher (keyword-ordered columns ; a second keyword gives the double transposition)
-- [X] `enigma`: aka Enigma machine (Enigma I, M3 and M4, with reflector, rotors, rings, positions and plugboard)
-- [X] `esab46`: aka ESAB-46 (Base64 with a shuffled alphabet, from online JavaScript tools)
-- [X] `ezip64`: aka EZIP-64 (variant of ARMON-64 with smaller blocks)
-- [X] `feron74`: aka FERON-74 (Base64 with a shuffled alphabet, from online JavaScript tools)
-- [X] `foursquare`: aka Four-square Cipher (bigrams substituted with two keyed squares and two plain ones)
-- [X] `fractionated-morse`: aka Fractionated Morse Cipher (Morse code split into groups of three symbols, each replaced by a letter of a keyed alphabet)
-- [X] `gila7`: aka GILA7 (Base64 with a shuffled alphabet, from online JavaScript tools)
-- [X] `gronsfeld`: aka Gronsfeld Cipher (variant of Vigenere Cipher with a numeric key)
-- [X] `hill`: aka Hill Cipher (blocks of letters multiplied by a key matrix modulo 26)
-- [X] `japoo-c2s`: aka JAPOO-C2S (URI-encoded text substituted by Chinese and Japanese characters, from online JavaScript tools)
-- [X] `nihilist`: aka Nihilist Cipher (sums of the Polybius coordinates of the text and of a repeated key)
-- [X] `playfair`: aka Playfair Cipher
-- [X] `phillips`: aka Phillips Cipher (polyalphabetic block cipher with 8 key squares)
-- [X] `polybius`: aka Polybius Square Cipher
-- [X] `porta`: aka Porta Cipher (reciprocal variant of Vigenere Cipher with 13 alphabets)
-- [X] `railfence`: aka Rail Fence Cipher
-- [X] `rotN`: aka Caesar cipher (*N* belongs to [1,25])
-- [X] `scytaleN`: encrypts using the number of letters on the rod (*N* belongs to [1,[)
-- [X] `shiftN`: shift ordinals (*N* belongs to [1,255])
-- [X] `skip`: aka Skip Cipher (transposition reading every N-th character, looping on the text)
-- [X] `trithemius`: aka Trithemius Cipher (variant of Vigenere Cipher)
-- [X] `twosquare`: aka Two-square Cipher or Double Playfair (bigrams substituted with two keyed squares, vertically or horizontally)
-- [X] `vernam`: aka Vernam Cipher (XOR with a repeating key)
-- [X] `vic`: aka VIC Cipher
-- [X] `vigenere`: aka Vigenere Cipher
-- [X] `xorN`: XOR with a single byte (*N* belongs to [1,255])
-- [X] `zara128`: aka ZARA-128 (variant of AER-256 with additions only and smaller blocks)
-- [X] `zong22`: aka ZONG22 (Base64 with a shuffled alphabet, from online JavaScript tools)
-
-> :warning: Crypto functions are of course definitely **NOT** encoding functions ; they are implemented for leveraging the `.encode(...)` API from `codecs`.
 
 #### [Esoteric](https://python-codext.readthedocs.io/en/latest/enc/esoteric.html)
 
@@ -452,6 +442,23 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 - [X] `tap`: converts text to tap/knock code, commonly used by prisoners (as written by cryptii)
 - [X] `tomtom`: similar to `morse`, using slashes and backslashes
 - [X] `upsidedown`: upside-down (flip) text, with turned Unicode characters in reverse order
+
+#### [Obfuscation](https://python-codext.readthedocs.io/en/latest/enc/obfuscation.html)
+
+- [X] `arabica-2rs`: aka ARABICA-2RS (URI-encoded text substituted by Arabic letters, from online JavaScript tools)
+- [X] `atom128`: aka ATOM-128 (Base64 with a shuffled alphabet, from online JavaScript tools)
+- [X] `chinzo-72c`: aka CHINZO-72C (URI-encoded text substituted by Chinese characters, from online JavaScript tools)
+- [X] `cisco-type7`: aka Cisco IOS type 7 password encoding
+- [X] `citrix`: aka Citrix CTX1 password encoding
+- [X] `esab46`: aka ESAB-46 (Base64 with a shuffled alphabet, from online JavaScript tools)
+- [X] `feron74`: aka FERON-74 (Base64 with a shuffled alphabet, from online JavaScript tools)
+- [X] `gila7`: aka GILA7 (Base64 with a shuffled alphabet, from online JavaScript tools)
+- [X] `hindia-4x`: aka HINDIA-4X (URI-encoded text substituted by Bengali and Devanagari characters, from online JavaScript tools)
+- [X] `japoo-c2s`: aka JAPOO-C2S (URI-encoded text substituted by Chinese and Japanese characters, from online JavaScript tools)
+- [X] `korex-3s`: aka KOREX-3S (URI-encoded text substituted by Korean characters, from online JavaScript tools)
+- [X] `tigo-3fx`: aka TIGO-3FX (Base64 with a shuffled alphabet, from online JavaScript tools)
+- [X] `tripo-5`: aka TRIPO-5 (Base64 with a shuffled alphabet, from online JavaScript tools)
+- [X] `zong22`: aka ZONG22 (Base64 with a shuffled alphabet, from online JavaScript tools)
 
 #### [Others](https://python-codext.readthedocs.io/en/latest/enc/others.html)
 

@@ -1,4 +1,4 @@
-`codext` also implements several simple cryptographic ciphers. But how does it relate to encoding while a key is required ? `codext` focuses on ciphers that have a weak key. With dynamically named encodings, it is then possible to define a bunch of encodings, one for each value of the key. For instance, Barbie Typewriter has a key with only 4 possible values. The `barbie` codec can then be `barbie-1`, ..., `barbie-4`.
+`codext` also implements several simple cryptographic ciphers. But how does it relate to encoding while a key is required ? `codext` focuses on ciphers that have a weak key. With dynamically named encodings, it is then possible to define a bunch of encodings, one for each value of the key. For instance, Barbie Typewriter has a key with only 4 possible values. The `barbie` codec can then be `barbie-1`, ..., `barbie-4`. Encodings that use no key, even when they are presented as encryption (e.g. ATOM-128 or Cisco Type 7), are listed in [Obfuscation](obfuscation.md).
 
 !!! note "Available masks"
     
@@ -97,23 +97,6 @@ This codec implements the Affine monoalphabetic substitution cipher. It is param
 
 -----
 
-### ARABICA-2RS
-
-This toy cipher comes from online JavaScript encryption tools. The text is encoded like JavaScript's `encodeURIComponent()` does (e.g. a whitespace becomes `%20`), then each of its characters is substituted by an Arabic letter (or a similar character), the ciphertext ending with `ش`. The original JavaScript inserts random spaces, which are ignored when decoding ; this codec gives a ciphertext without spaces.
-
-**Codec** | **Conversions** | **Aliases** | **Comment**
-:---: | :---: | --- | ---
-`arabica-2rs` | text <-> ARABICA-2RS ciphertext | `arabica2rs`, `arabica_2rs` | the left-to-right marks around `ݣ` are optional when decoding
-
-```python
->>> codext.encode("this is a test", "arabica-2rs")
-'حرقطﺿأﺹقطﺿأﺹغﺿأﺹحبطحش'
->>> codext.decode("حرقطﺿأﺹقطﺿأﺹغﺿأﺹحبطحش", "arabica2rs")
-'this is a test'
-```
-
------
-
 ### ARMON-64
 
 This toy cipher, a variant of [AER-256](#aer-256), comes from online JavaScript encryption tools. It works the same way, but with a fourth operation (the number is multiplied by 0.01 times the code of the key character) and with `+` as the separator.
@@ -149,23 +132,6 @@ It implements the monoalphabetic substitution cipher used for the Hebrew alphabe
 >>> codext.encode("this is a test", "atbash-[?l?u?p?s]")
 '.^]/a]/a a.{/.'
 >>> codext.decode(".^]/a]/a a.{/.", "atbash_cipher_[?l?u?p?s]")
-'this is a test'
-```
-
------
-
-### ATOM-128
-
-This toy cipher comes from online JavaScript encryption tools. It is Base64 with a shuffled alphabet, whose 65th character (`C`) is used for padding. As in the original JavaScript, the text is first escaped with JavaScript's `escape()` (e.g. a whitespace becomes `%20`), and unescaped after decoding.
-
-**Codec** | **Conversions** | **Aliases** | **Comment**
-:---: | :---: | --- | ---
-`atom128` | text <-> ATOM-128 ciphertext | `atom-128`, `atom_128` | 
-
-```python
->>> codext.encode("this is a test", "atom128")
-'0IXBnsgsSI6tQfPqKDgsSoA6nmbC'
->>> codext.decode("0IXBnsgsSI6tQfPqKDgsSoA6nmbC", "atom-128")
 'this is a test'
 ```
 
@@ -315,61 +281,6 @@ The Chaocipher was invented by John F. Byrne in 1918 and only disclosed in 2010.
 
 -----
 
-### CHINZO-72C
-
-This toy cipher comes from online JavaScript encryption tools. The pairs of letters `oo`, `ii`, `ee`, `tt` and `rr` are first replaced by Chinese characters, then the text is encoded like JavaScript's `encodeURIComponent()` does and each of its characters is substituted by a Chinese character followed by a space, the ciphertext ending with `吴`.
-
-**Codec** | **Conversions** | **Aliases** | **Comment**
-:---: | :---: | --- | ---
-`chinzo-72c` | text <-> CHINZO-72C ciphertext | `chinzo72c`, `chinzo_72c` | spaces ignored when decoding
-
-!!! warning "Pairs of letters"
-
-    As decoding gives back the pairs of letters, a text holding one of the 5 Chinese characters replacing them (`讲`, `邻`, `头`, `会` and `歷`) is not decoded as it was.
-
-```python
->>> codext.encode("this is a test", "chinzo-72c")
-'岛 拉 玛 夫 题 防 呒 玛 夫 题 防 呒 法 题 防 呒 岛 伐 夫 岛 吴'
->>> codext.decode("岛 拉 玛 夫 题 防 呒 玛 夫 题 防 呒 法 题 防 呒 岛 伐 夫 岛 吴", "chinzo72c")
-'this is a test'
-```
-
------
-
-### Cisco Type 7
-
-This implements the reversible Cisco IOS type 7 password encoding: each byte is XORed with a fixed key, starting at an offset given by the salt (from 0 to 15), and the result is the salt as two decimal digits followed by the XORed bytes in hexadecimal. Decoding reads the salt from the input.
-
-**Codec** | **Conversions** | **Aliases** | **Comment**
-:---: | :---: | --- | ---
-`cisco-type7` | text <-> Cisco type 7 ciphertext | `cisco7`, `type7`, `cisco_type_7`, ... | parameterized with the salt used for encoding, e.g. `cisco-type7-8` (default: 0)
-
-```python
->>> codext.encode("this is a test", "cisco-type7-8")
-'083544471A590C04520A4C102F3830'
->>> codext.decode("0822455D0A16", "cisco-type7")
-'cisco'
-```
-
------
-
-### Citrix CTX1
-
-This implements the Citrix CTX1 password encoding algorithm.
-
-**Codec** | **Conversions** | **Aliases** | **Comment**
-:---: | :---: | --- | ---
-`citrix` | text <-> Citrix CTX1 ciphertext | `citrix`, `citrix-1`, `citrix_ctx1` | 
-
-```python
->>> codext.encode("this is a test", "citrix-ctx1")
-'NBBMNAAGIDEPJJBMNIFNIMEMJKEL'
->>> codext.decode("NBBMNAAGIDEPJJBMNIFNIMEMJKEL", "citrix-ctx1")
-'this is a test'
-```
-
------
-
 ### Columnar Transposition Cipher
 
 The text is written in rows under a keyword, then read column by column, in the alphabetical order of the keyword letters (from left to right for repeated letters). The last row may be incomplete (irregular columnar transposition) ; a regular transposition is obtained by padding the text beforehand. With a second keyword, the result is transposed again (double transposition). Every character is transposed, including whitespaces and punctuation.
@@ -418,23 +329,6 @@ The settings are given with the codec name as `enigma-[reflector]-[rotors]-[ring
 
 -----
 
-### ESAB-46
-
-This toy cipher ("Base-64" reversed) comes from online JavaScript encryption tools. Like [ATOM-128](#atom-128), it is Base64 with a shuffled alphabet, whose 65th character (`/`) is used for padding, and the text is first escaped with JavaScript's `escape()`, then unescaped after decoding.
-
-**Codec** | **Conversions** | **Aliases** | **Comment**
-:---: | :---: | --- | ---
-`esab46` | text <-> ESAB-46 ciphertext | `esab-46`, `esb46`, `esb_46` | 
-
-```python
->>> codext.encode("this is a test", "esab46")
-'9sRZ8i0ivsVj6z5gLy0iv4xV8nw/'
->>> codext.decode("9sRZ8i0ivsVj6z5gLy0iv4xV8nw/", "esab-46")
-'this is a test'
-```
-
------
-
 ### EZIP-64
 
 This toy cipher, a variant of [ARMON-64](#armon-64), comes from online JavaScript encryption tools. It works the same way, but with blocks of a third of the key length (rounded), a factor of 0.02 in its fourth operation and `/` as the separator.
@@ -452,23 +346,6 @@ This toy cipher, a variant of [ARMON-64](#armon-64), comes from online JavaScrip
 '-261.47089108910893/-261.81544554455445/-261.4938613861386/-261.47089108910893'
 >>> codext.decode("-261.47089108910893/-261.81544554455445", "ezip64-test")
 'te'
-```
-
------
-
-### FERON-74
-
-This toy cipher comes from online JavaScript encryption tools. Like [ATOM-128](#atom-128), it is Base64 with a shuffled alphabet, whose 65th character (`4`) is used for padding, and the text is first escaped with JavaScript's `escape()`, then unescaped after decoding.
-
-**Codec** | **Conversions** | **Aliases** | **Comment**
-:---: | :---: | --- | ---
-`feron74` | text <-> FERON-74 ciphertext | `feron-74`, `feron_74` | 
-
-```python
->>> codext.encode("this is a test", "feron74")
-'sbxMC161WbyZ/rSiNq61WcDyCnA4'
->>> codext.decode("sbxMC161WbyZ/rSiNq61WcDyCnA4", "feron-74")
-'this is a test'
 ```
 
 -----
@@ -513,23 +390,6 @@ The text is converted to Morse code, with "x" between the characters, "xx" betwe
 
 -----
 
-### GILA7
-
-This toy cipher comes from online JavaScript encryption tools. Like [ATOM-128](#atom-128), it is Base64 with a shuffled alphabet, whose 65th character (`G`) is used for padding, and the text is first escaped with JavaScript's `escape()`, then unescaped after decoding.
-
-**Codec** | **Conversions** | **Aliases** | **Comment**
-:---: | :---: | --- | ---
-`gila7` | text <-> GILA7 ciphertext | `gila-7`, `gila_7` | 
-
-```python
->>> codext.encode("this is a test", "gila7")
-'3+1QqbzbB+Odcg=5v0zbBWfOqxyG'
->>> codext.decode("3+1QqbzbB+Odcg=5v0zbBWfOqxyG", "gila-7")
-'this is a test'
-```
-
------
-
 ### Gronsfeld Cipher
 
 This is a variant of the [Vigenere Cipher](#vigenere-cipher) whose key is made of digits, each digit giving the shift of a letter (0 to 9). There is no default key, meaning that `gronsfeld` as the encoding scheme throws a `LookupError` indicating that the _key must be a non-empty numeric string_.
@@ -562,23 +422,6 @@ The letters (A=0, ..., Z=25) are taken in blocks of n, each block being multipli
 'ACT'
 >>> codext.encode("Cats!", "hill-gybnqkurp")
 'Finh!AE'
-```
-
------
-
-### JAPOO-C2S
-
-This toy cipher comes from online JavaScript encryption tools. The text is encoded like JavaScript's `encodeURIComponent()` does, then each of its characters is substituted by a Chinese or Japanese character followed by a space, some pairs of identical characters (e.g. `貴 貴 `) being then replaced by another character (e.g. `詞 `), and the ciphertext ends with `类`.
-
-**Codec** | **Conversions** | **Aliases** | **Comment**
-:---: | :---: | --- | ---
-`japoo-c2s` | text <-> JAPOO-C2S ciphertext | `japooc2s`, `japoo_c2s` | spaces ignored when decoding
-
-```python
->>> codext.encode("this is a test", "japoo-c2s")
-'徒 卵 語 簡 場 誰 貴 語 簡 場 誰 貴 是 場 誰 貴 徒 或 簡 徒 类'
->>> codext.decode("徒 卵 語 簡 場 誰 貴 語 簡 場 誰 貴 是 場 誰 貴 徒 或 簡 徒 类", "japooc2s")
-'this is a test'
 ```
 
 -----
@@ -890,21 +733,4 @@ This toy cipher, a variant of [AER-256](#aer-256), comes from online JavaScript 
 '30775 27970 9272 30447 25839 30772 30531'
 >>> codext.decode("428 413 427 428", "zara128-016359")
 'test'
-```
-
------
-
-### ZONG22
-
-This toy cipher comes from online JavaScript encryption tools. It is Base64 with a shuffled alphabet, whose 65th character (`2`) is used for padding. As in the original JavaScript, the text is first escaped with JavaScript's `escape()` (e.g. a whitespace becomes `%20`), and unescaped after decoding ; ciphertexts made from the UTF-8 bytes of the text (without escaping) are decoded as well.
-
-**Codec** | **Conversions** | **Aliases** | **Comment**
-:---: | :---: | --- | ---
-`zong22` | text <-> ZONG22 ciphertext | `zong-22`, `zong_22` | 
-
-```python
->>> codext.encode("this is a test", "zong22")
-'PyglpexeXyNFwd0QIbxeXfYNpz52'
->>> codext.decode("PyglpexeXyNFwd0QIbxeXfYNpz52", "zong-22")
-'this is a test'
 ```

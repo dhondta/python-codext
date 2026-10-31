@@ -1,11 +1,11 @@
 # -*- coding: UTF-8 -*-
-"""ARABICA-2RS Codec - ARABICA-2RS content encryption.
+"""ARABICA-2RS Codec - ARABICA-2RS content encoding.
 
-ARABICA-2RS is a toy cipher found on online JavaScript encryption tools. The text is encoded like JavaScript's
+ARABICA-2RS is a toy encoding found on online JavaScript encryption tools. The text is encoded like JavaScript's
  encodeURIComponent() does, then each of its characters (written as 5 digits in base 3 by the original JavaScript) is
- substituted by an Arabic letter (or a similar character), the ciphertext ending with "ش". The original JavaScript
+ substituted by an Arabic letter (or a similar character), the encoded text ending with "ش". The original JavaScript
  reverses the text before and after the substitution (which cancel each other) and inserts random spaces, which are
- ignored when decoding ; this codec gives a ciphertext without spaces, and encodes a text holding "ش" (that the
+ ignored when decoding ; this codec gives an encoded text without spaces, and encodes a text holding "ش" (that the
  original JavaScript leaves as is). When decoding, the left-to-right marks around "ݣ" (easily lost) are optional.
 
 This codec:

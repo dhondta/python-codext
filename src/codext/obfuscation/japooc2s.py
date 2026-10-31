@@ -1,10 +1,10 @@
 # -*- coding: UTF-8 -*-
-"""JAPOO-C2S Codec - JAPOO-C2S content encryption.
+"""JAPOO-C2S Codec - JAPOO-C2S content encoding.
 
-JAPOO-C2S is a toy cipher found on online JavaScript encryption tools. The text is encoded like JavaScript's
+JAPOO-C2S is a toy encoding found on online JavaScript encryption tools. The text is encoded like JavaScript's
  encodeURIComponent() does, then each of its characters (written as 6 digits in base 3 by the original JavaScript) is
  substituted by a Chinese or Japanese character followed by a space, some pairs of identical characters (e.g. "貴 貴 ")
- being then replaced by another character (e.g. "詞 "), and the ciphertext ends with "类". As with the original
+ being then replaced by another character (e.g. "詞 "), and the encoded text ends with "类". As with the original
  JavaScript, the spaces are ignored when decoding ; unlike it, this codec encodes a text holding "类" (that the original
  JavaScript leaves as is).
 

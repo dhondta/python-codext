@@ -9,6 +9,7 @@ import random
 import re
 import sys
 import unicodedata
+import warnings
 from encodings.aliases import aliases as ALIASES
 from functools import reduce, update_wrapper, wraps
 from importlib import import_module
@@ -42,6 +43,8 @@ __all__ = ["add", "add_macro", "add_map", "b", "clear", "codecs", "decode", "enc
 CODECS_REGISTRY = None
 CODECS_OVERWRITTEN = []
 CODECS_CATEGORIES = ["native", "custom"]
+# categories that were renamed or split, with the current categories of their codecs (still accepted, with a warning)
+DEPRECATED_CATEGORIES = {'crypto': ["cipher", "obfuscation"]}
 CODECS_CACHE = {}
 PRINTABLES = frozenset(printable)
 # scoring of the decoded outputs: textness above which an output is considered as a text, and weight of its bonus
@@ -756,10 +759,25 @@ def list_categories():
 list_categories()
 
 
+def _categories(names):
+    """ Replace the deprecated categories (possibly negated with "~") by the current categories of their codecs. """
+    r = []
+    for name in names:
+        neg = "~" if isinstance(name, str) and name.startswith("~") else ""
+        new = DEPRECATED_CATEGORIES.get(name[len(neg):]) if isinstance(name, str) else None
+        if new is None:
+            r.append(name)
+            continue
+        warnings.warn(f"Category '{name[len(neg):]}' is deprecated, use {' and '.join(map(repr, new))} instead",
+                      DeprecationWarning, stacklevel=3)
+        r.extend(neg + c for c in new if neg + c not in r)
+    return r
+
+
 def list_encodings(*categories):
     """ Get a list of all codecs. """
     # if "non-native" is in the input list, extend the list with the whole categories but "native"
-    categories, exclude = list(categories), []
+    categories, exclude = _categories(categories), []
     for c in categories[:]:
         if c == "non-native":
             for c in CODECS_CATEGORIES:
@@ -1437,6 +1455,7 @@ def __make_encodings_dict(include, exclude):
     def _develop(d, keep=True):
         d, names = d or {}, None
         for k, v in d.items():
+            v = _categories(v)
             l, cc, sc = [], [e for e in v if e in CODECS_CATEGORIES], [e for e in v if e not in CODECS_CATEGORIES]
             cn = list_encodings(*cc) if (len(cc) > 0 or keep) and len(sc) == 0 else []
             if len(sc) > 0 and names is None:

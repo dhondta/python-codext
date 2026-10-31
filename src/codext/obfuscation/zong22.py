@@ -1,10 +1,10 @@
 # -*- coding: UTF-8 -*-
-"""ZONG22 Codec - ZONG22 content encryption.
+"""ZONG22 Codec - ZONG22 content encoding.
 
-ZONG22 is a toy cipher found on online JavaScript encryption tools. It is Base64 with a shuffled alphabet, whose 65th
+ZONG22 is a toy encoding found on online JavaScript encryption tools. It is Base64 with a shuffled alphabet, whose 65th
  character ("2") is used for padding. As in the original JavaScript, the text is first escaped with JavaScript's
- escape() (e.g. " " becoming "%20" and "é" becoming "%E9"), and unescaped after decoding ; ciphertexts made without this
- escaping (i.e. from the UTF-8 bytes of the text, e.g. by https://gist.github.com/tunelko/49b7e64c1688d62d0ecd) are
+ escape() (e.g. " " becoming "%20" and "é" becoming "%E9"), and unescaped after decoding ; encoded texts made without
+ this escaping (i.e. from the UTF-8 bytes of the text, e.g. by https://gist.github.com/tunelko/49b7e64c1688d62d0ecd) are
  decoded as well, except that an ASCII text holding escape sequences (e.g. "%41") is then unescaped.
 
 This codec:

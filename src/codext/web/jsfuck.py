@@ -27,7 +27,7 @@ from decimal import Decimal, ROUND_HALF_UP
 from math import floor, inf, isfinite, nan, trunc
 
 from ._javascript import *
-from ..crypto._jsfloat import js_str
+from ..ciphers._jsfloat import js_str
 from ..__common__ import *
 
 

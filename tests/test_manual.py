@@ -402,7 +402,7 @@ class ComplementaryTestCase(TestCase):
         self.assertEqual(bf_run("+[-]+.", max_steps=100), b"\x01")
     
     def test_codec_polybius(self):
-        from codext.crypto.polybius import polybius_encode, polybius_decode
+        from codext.ciphers.polybius import polybius_encode, polybius_decode
         self.assertRaises(LookupError, polybius_encode, "ABC")
         self.assertRaises(ValueError, polybius_decode(), "BAD_")
         self.assertRaises(ValueError, polybius_decode(), "441543441")
@@ -629,7 +629,7 @@ class ManualTestCase(TestCase):
             self.assertRaises(ValueError, codecs.decode, bad, "jsfuck", "ignore")
     
     def test_codec_aer256(self):
-        from codext.crypto._jsfloat import js_str as _js_str
+        from codext.ciphers._jsfloat import js_str as _js_str
         # numbers formatted as with JavaScript's String(...), as given by Node.js
         for x, r in [(0., "0"), (-0., "0"), (1e21, "1e+21"), (123456789012345680000., "123456789012345680000"),
                      (1e-6, "0.000001"), (1e-7, "1e-7"), (-1.2345e-7, "-1.2345e-7"), (2**60, "1152921504606847000"),
@@ -689,8 +689,8 @@ class ManualTestCase(TestCase):
                 self.assertEqual(codecs.decode(c, e), r)
     
     def test_codec_arabica_chinzo_japoo(self):
-        from codext.crypto.arabica2rs import _TABLE as ARABICA
-        from codext.crypto.chinzo72c import CHINZO
+        from codext.obfuscation.arabica2rs import _TABLE as ARABICA
+        from codext.obfuscation.chinzo72c import CHINZO
         chinzo = {chr(int(code, 4)): s for code, s in CHINZO}
         # with a non-strict errors handling, unknown characters are replaced, dropped or left as is, and malformed
         #  escape sequences or invalid UTF-8 are replaced
@@ -706,6 +706,28 @@ class ManualTestCase(TestCase):
         # CHINZO-72C replaces pairs of letters by 5 Chinese characters, hence a text holding them is not decoded as it
         #  was
         self.assertEqual(codecs.decode(codecs.encode("\u8bb2 oo", "chinzo-72c"), "chinzo-72c"), "oo oo")
+    
+    def test_codec_hindia_korex(self):
+        from codext.obfuscation.hindia4x import HINDIA
+        hindia = {chr(int(code, 3)): s for code, s in HINDIA}
+        # the characters are substituted in reverse order, HINDIA-4X inserting a space every 4 characters (ignored when
+        #  decoding, as the other whitespaces)
+        self.assertEqual(codecs.encode("test", "hindia-4x"), "".join(hindia[c] for c in "tset") + "\u09ad")
+        self.assertEqual(codecs.encode("abcde", "hindia-4x").split(" ")[0], "".join(hindia[c] for c in "edcb"))
+        for e in ["hindia-4x", "korex-3s"]:
+            c = codecs.encode("Hello, World!", e)
+            self.assertEqual(codecs.decode("\n".join(c.replace(" ", "")), e), "Hello, World!")
+        # "\u0985\u0964" (the substitute of "5") is made of 2 characters, neither of them being a substitute
+        self.assertEqual(codecs.decode("\u0985\u0964\u0985\u0964\u09ad", "hindia-4x"), "55")
+        self.assertRaises(ValueError, codecs.decode, "\u0985\u09ad", "hindia-4x")
+        self.assertEqual(codecs.decode("\u0985\u0964\u0985\u09ad", "hindia-4x", "replace"), "?5")
+        # with a non-strict errors handling, malformed escape sequences are kept as is
+        bad = "".join(hindia[c] for c in "%t") + "\u09ad"
+        self.assertRaisesRegex(ValueError, "escape sequence", codecs.decode, bad, "hindia-4x")
+        self.assertEqual(codecs.decode(bad, "hindia-4x", "ignore"), "t%")
+        self.assertEqual(codecs.decode("\ud55cX \uc9c0", "korex-3s", "ignore"), "t")
+        # HINDIA-4X replaces pairs of letters by 5 characters, hence a text holding them is not decoded as it was
+        self.assertEqual(codecs.decode(codecs.encode("\u0259 ee", "hindia-4x"), "hindia-4x"), "ee ee")
     
     def test_codec_atbash(self):
         STR = "This is a test"

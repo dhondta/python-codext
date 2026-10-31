@@ -1,10 +1,10 @@
 # -*- coding: UTF-8 -*-
-"""Base64 variants, shared by the toy ciphers of online JavaScript encryption tools (ATOM-128, ESAB-46, FERON-74,
- GILA7, ZONG22).
+"""Base64 variants, shared by the toy encodings of online JavaScript encryption tools (ATOM-128, ESAB-46, FERON-74,
+ GILA7, TIGO-3FX, TRIPO-5, ZONG22).
 
-These ciphers are Base64 with a shuffled alphabet of 65 characters, whose last one is used for padding. As in the
+These encodings are Base64 with a shuffled alphabet of 65 characters, whose last one is used for padding. As in the
  original JavaScript, the text is first escaped with JavaScript's escape() (e.g. " " becoming "%20" and "é" becoming
- "%E9"), and unescaped after decoding ; ciphertexts made without this escaping (i.e. from the UTF-8 bytes of the text)
+ "%E9"), and unescaped after decoding ; encoded texts made without this escaping (i.e. from the UTF-8 bytes of the text)
  are decoded as well, except that an ASCII text holding escape sequences (e.g. "%41") is then unescaped.
 """
 import builtins
@@ -67,8 +67,8 @@ def js_base64(name, alphabet):
             r = r.replace("=", "")
             r = r[:len(r) - (len(r) % 4 == 1)]
             r = b64decode(r + "=" * (-len(r) % 4))
-        # escape() only gives ASCII characters, hence non-ASCII bytes come from a ciphertext made from the UTF-8 bytes
-        #  of the text, that is not to be unescaped
+        # escape() only gives ASCII characters, hence non-ASCII bytes come from an encoded text made from the UTF-8
+        #  bytes of the text, that is not to be unescaped
         if not r.isascii():
             try:
                 return r.decode("utf-8"), len(text)
