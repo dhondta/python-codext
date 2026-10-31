@@ -2,6 +2,7 @@
 from .adfgx import *
 from .aer256 import *
 from .affine import *
+from .arabica2rs import *
 from .armon64 import *
 from .atbash import *
 from .atom128 import *
@@ -10,6 +11,7 @@ from .barbie import *
 from .bazeries import *
 from .bifid import *
 from .chaocipher import *
+from .chinzo72c import *
 from .cisco import *
 from .citrix import *
 from .columnar import *
@@ -21,6 +23,7 @@ from .foursquare import *
 from .fractionatedmorse import *
 from .gila7 import *
 from .hill import *
+from .japooc2s import *
 from .nihilist import *
 from .playfair import *
 from .phillips import *
@@ -36,3 +39,4 @@ from .vernam import *
 from .vigenere import *
 from .xor import *
 from .zara128 import *
+from .zong22 import *

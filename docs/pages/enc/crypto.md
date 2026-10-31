@@ -97,6 +97,23 @@ This codec implements the Affine monoalphabetic substitution cipher. It is param
 
 -----
 
+### ARABICA-2RS
+
+This toy cipher comes from online JavaScript encryption tools. The text is encoded like JavaScript's `encodeURIComponent()` does (e.g. a whitespace becomes `%20`), then each of its characters is substituted by an Arabic letter (or a similar character), the ciphertext ending with `ش`. The original JavaScript inserts random spaces, which are ignored when decoding ; this codec gives a ciphertext without spaces.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`arabica-2rs` | text <-> ARABICA-2RS ciphertext | `arabica2rs`, `arabica_2rs` | the left-to-right marks around `ݣ` are optional when decoding
+
+```python
+>>> codext.encode("this is a test", "arabica-2rs")
+'حرقطﺿأﺹقطﺿأﺹغﺿأﺹحبطحش'
+>>> codext.decode("حرقطﺿأﺹقطﺿأﺹغﺿأﺹحبطحش", "arabica2rs")
+'this is a test'
+```
+
+-----
+
 ### ARMON-64
 
 This toy cipher, a variant of [AER-256](#aer-256), comes from online JavaScript encryption tools. It works the same way, but with a fourth operation (the number is multiplied by 0.01 times the code of the key character) and with `+` as the separator.
@@ -294,6 +311,27 @@ The Chaocipher was invented by John F. Byrne in 1918 and only disclosed in 2010.
 'WELLDONEISBETTERTHANWELLSAID'
 >>> codext.encode("Well done, is better than well said!", "chaocipher")
 'Oahq hcny, nx tszjrr hjby hqks oujy!'
+```
+
+-----
+
+### CHINZO-72C
+
+This toy cipher comes from online JavaScript encryption tools. The pairs of letters `oo`, `ii`, `ee`, `tt` and `rr` are first replaced by Chinese characters, then the text is encoded like JavaScript's `encodeURIComponent()` does and each of its characters is substituted by a Chinese character followed by a space, the ciphertext ending with `吴`.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`chinzo-72c` | text <-> CHINZO-72C ciphertext | `chinzo72c`, `chinzo_72c` | spaces ignored when decoding
+
+!!! warning "Pairs of letters"
+
+    As decoding gives back the pairs of letters, a text holding one of the 5 Chinese characters replacing them (`讲`, `邻`, `头`, `会` and `歷`) is not decoded as it was.
+
+```python
+>>> codext.encode("this is a test", "chinzo-72c")
+'岛 拉 玛 夫 题 防 呒 玛 夫 题 防 呒 法 题 防 呒 岛 伐 夫 岛 吴'
+>>> codext.decode("岛 拉 玛 夫 题 防 呒 玛 夫 题 防 呒 法 题 防 呒 岛 伐 夫 岛 吴", "chinzo72c")
+'this is a test'
 ```
 
 -----
@@ -524,6 +562,23 @@ The letters (A=0, ..., Z=25) are taken in blocks of n, each block being multipli
 'ACT'
 >>> codext.encode("Cats!", "hill-gybnqkurp")
 'Finh!AE'
+```
+
+-----
+
+### JAPOO-C2S
+
+This toy cipher comes from online JavaScript encryption tools. The text is encoded like JavaScript's `encodeURIComponent()` does, then each of its characters is substituted by a Chinese or Japanese character followed by a space, some pairs of identical characters (e.g. `貴 貴 `) being then replaced by another character (e.g. `詞 `), and the ciphertext ends with `类`.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`japoo-c2s` | text <-> JAPOO-C2S ciphertext | `japooc2s`, `japoo_c2s` | spaces ignored when decoding
+
+```python
+>>> codext.encode("this is a test", "japoo-c2s")
+'徒 卵 語 簡 場 誰 貴 語 簡 場 誰 貴 是 場 誰 貴 徒 或 簡 徒 类'
+>>> codext.decode("徒 卵 語 簡 場 誰 貴 語 簡 場 誰 貴 是 場 誰 貴 徒 或 簡 徒 类", "japooc2s")
+'this is a test'
 ```
 
 -----
@@ -835,4 +890,21 @@ This toy cipher, a variant of [AER-256](#aer-256), comes from online JavaScript 
 '30775 27970 9272 30447 25839 30772 30531'
 >>> codext.decode("428 413 427 428", "zara128-016359")
 'test'
+```
+
+-----
+
+### ZONG22
+
+This toy cipher comes from online JavaScript encryption tools. It is Base64 with a shuffled alphabet, whose 65th character (`2`) is used for padding. As in the original JavaScript, the text is first escaped with JavaScript's `escape()` (e.g. a whitespace becomes `%20`), and unescaped after decoding ; ciphertexts made from the UTF-8 bytes of the text (without escaping) are decoded as well.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`zong22` | text <-> ZONG22 ciphertext | `zong-22`, `zong_22` | 
+
+```python
+>>> codext.encode("this is a test", "zong22")
+'PyglpexeXyNFwd0QIbxeXfYNpz52'
+>>> codext.decode("PyglpexeXyNFwd0QIbxeXfYNpz52", "zong-22")
+'this is a test'
 ```

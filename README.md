@@ -354,6 +354,7 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 - [X] `adfgx`: aka ADFGX Cipher (Polybius square and columnar transposition) ; `adfgvx` for its 6x6 variant
 - [X] `aer256`: aka AER-256 (toy cipher with float arithmetic, from online JavaScript tools)
 - [X] `affine`: aka Affine Cipher
+- [X] `arabica-2rs`: aka ARABICA-2RS (URI-encoded text substituted by Arabic letters, from online JavaScript tools)
 - [X] `armon64`: aka ARMON-64 (variant of AER-256 with a fourth operation)
 - [X] `atbash`: aka Atbash Cipher
 - [X] `atom128`: aka ATOM-128 (Base64 with a shuffled alphabet, from online JavaScript tools)
@@ -364,6 +365,7 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 - [X] `beaufort`: aka Beaufort Cipher (variant of Vigenere Cipher)
 - [X] `bifid`: aka Bifid Cipher (Delastelle's fractionation with a 5x5 Polybius square) ; `trifid` for its 3x3x3 cube variant
 - [X] `chaocipher`: aka Chaocipher (two alphabets permuted after each letter)
+- [X] `chinzo-72c`: aka CHINZO-72C (URI-encoded text substituted by Chinese characters, from online JavaScript tools)
 - [X] `cisco-type7`: aka Cisco IOS type 7 password encoding
 - [X] `citrix`: aka Citrix CTX1 password encoding
 - [X] `columnar`: aka Columnar Transposition Cipher (keyword-ordered columns ; a second keyword gives the double transposition)
@@ -376,6 +378,7 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 - [X] `gila7`: aka GILA7 (Base64 with a shuffled alphabet, from online JavaScript tools)
 - [X] `gronsfeld`: aka Gronsfeld Cipher (variant of Vigenere Cipher with a numeric key)
 - [X] `hill`: aka Hill Cipher (blocks of letters multiplied by a key matrix modulo 26)
+- [X] `japoo-c2s`: aka JAPOO-C2S (URI-encoded text substituted by Chinese and Japanese characters, from online JavaScript tools)
 - [X] `nihilist`: aka Nihilist Cipher (sums of the Polybius coordinates of the text and of a repeated key)
 - [X] `playfair`: aka Playfair Cipher
 - [X] `phillips`: aka Phillips Cipher (polyalphabetic block cipher with 8 key squares)
@@ -393,6 +396,7 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 - [X] `vigenere`: aka Vigenere Cipher
 - [X] `xorN`: XOR with a single byte (*N* belongs to [1,255])
 - [X] `zara128`: aka ZARA-128 (variant of AER-256 with additions only and smaller blocks)
+- [X] `zong22`: aka ZONG22 (Base64 with a shuffled alphabet, from online JavaScript tools)
 
 > :warning: Crypto functions are of course definitely **NOT** encoding functions ; they are implemented for leveraging the `.encode(...)` API from `codecs`.
 

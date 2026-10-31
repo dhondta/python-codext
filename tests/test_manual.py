@@ -677,6 +677,35 @@ class ManualTestCase(TestCase):
         for s in ["0IHt0/C", "0IHt0/CCC", "0IHt0/C%"]:
             self.assertEqual(codecs.decode(s, "atom128", "ignore"), "test")
         self.assertEqual(codecs.decode("0IHt0/", "atom128", "replace"), "test")
+        # ciphertexts made from the UTF-8 bytes of the text (without escape()) are decoded as well (e.g. those of
+        #  https://gist.github.com/tunelko/49b7e64c1688d62d0ecd), the text being then unescaped only if it is ASCII
+        import base64
+        b64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/="
+        for e, alphabet in [("atom128", "/128GhIoPQROSTeUbADfgHijKLM+n0pFWXY456xyzB7=39VaqrstJklmNuZvwcdEC"),
+                            ("zong22", "ZKj9n+yf0wDVX1s/5YbdxSo=ILaUpPBCHg8uvNO4klm6iJGhQ7eFrWczAMEq3RTt2")]:
+            for s, r in [("caf\u00e9 \u20ac \U0001f600", "caf\u00e9 \u20ac \U0001f600"),
+                         ("Hello, World!", "Hello, World!"), ("x%41y", "xAy")]:
+                c = base64.b64encode(s.encode()).decode().translate(str.maketrans(b64, alphabet))
+                self.assertEqual(codecs.decode(c, e), r)
+    
+    def test_codec_arabica_chinzo_japoo(self):
+        from codext.crypto.arabica2rs import _TABLE as ARABICA
+        from codext.crypto.chinzo72c import CHINZO
+        chinzo = {chr(int(code, 4)): s for code, s in CHINZO}
+        # with a non-strict errors handling, unknown characters are replaced, dropped or left as is, and malformed
+        #  escape sequences or invalid UTF-8 are replaced
+        for e, r in [("replace", "t?st"), ("ignore", "tst"), ("leave", "tXst")]:
+            self.assertEqual(codecs.decode("\u5f92 X \u7c21 \u5f92 \u7c7b", "japoo-c2s", e), r)
+        self.assertRaises(ValueError, codecs.decode, "\u5f92 X \u7c7b", "japoo-c2s")
+        bad = " ".join(chinzo[c] for c in "t%") + " \u5434"
+        self.assertRaisesRegex(ValueError, "escape sequence", codecs.decode, bad, "chinzo-72c")
+        self.assertEqual(codecs.decode(bad, "chinzo-72c", "replace"), "t%")
+        bad = "".join(ARABICA[c] for c in "%C3%28") + "\u0634"
+        self.assertRaisesRegex(ValueError, "invalid UTF-8", codecs.decode, bad, "arabica-2rs")
+        self.assertEqual(codecs.decode(bad, "arabica-2rs", "replace"), "\ufffd(")
+        # CHINZO-72C replaces pairs of letters by 5 Chinese characters, hence a text holding them is not decoded as it
+        #  was
+        self.assertEqual(codecs.decode(codecs.encode("\u8bb2 oo", "chinzo-72c"), "chinzo-72c"), "oo oo")
     
     def test_codec_atbash(self):
         STR = "This is a test"
