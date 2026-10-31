@@ -11,6 +11,7 @@ nav:
   - Features: features.md
   - 'Guess mode': guessing.md
   - Encodings:
+    - Barcodes: enc/barcodes.md
     - Base: enc/base.md
     - Binary: enc/binary.md
     - Ciphers: enc/ciphers.md

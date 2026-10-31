@@ -36,6 +36,7 @@ This is a Polybius code with the trivial alphabetical distribution ("A" -> (1,1)
 
 -----
 
+
 ### Resistor Color Codes
 
 This uses the [electronic color code](https://en.wikipedia.org/wiki/Electronic_color_code#Resistor_color-coding) to encode digits, displaying colors in the terminal with ANSI color codes.
