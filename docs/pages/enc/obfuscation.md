@@ -142,6 +142,23 @@ This toy encoding comes from online JavaScript encryption tools. Like [ATOM-128]
 
 -----
 
+### HAZZ-15
+
+This toy encoding comes from online JavaScript encryption tools. It is Base64 with a shuffled alphabet, whose 65th character (`5`) is used for padding. As in the original JavaScript, the text is first escaped with JavaScript's `escape()` (e.g. a whitespace becomes `%20`), and unescaped after decoding ; encoded texts made from the UTF-8 bytes of the text (without escaping) are decoded as well.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`hazz15` | text <-> HAZZ-15 encoded text | `hazz-15`, `hazz_15` | 
+
+```python
+>>> codext.encode("this is a test", "hazz15")
+'3m7Vqbzb+mFdjgiGv0zb+6fFq=y5'
+>>> codext.decode("3m7Vqbzb+mFdjgiGv0zb+6fFq=y5", "hazz-15")
+'this is a test'
+```
+
+-----
+
 ### HINDIA-4X
 
 This toy encoding comes from online JavaScript encryption tools. The pairs of letters `oo`, `ii`, `ee`, `tt` and `rr` are first replaced by other characters, then the text is encoded like JavaScript's `encodeURIComponent()` does and its characters, in reverse order, are each substituted by a Bengali or Devanagari character, a space being inserted every 4 characters and the encoded text ending with `ভ`.
@@ -192,6 +209,23 @@ This toy encoding comes from online JavaScript encryption tools. The text is enc
 >>> codext.encode("this is a test", "korex-3s")
 '지 등 대 지 고 이 南 국 고 이 南 등 주 고 이 南 등 주 선 지 한'
 >>> codext.decode("지 등 대 지 고 이 南 국 고 이 南 등 주 고 이 南 등 주 선 지 한", "korex3s")
+'this is a test'
+```
+
+-----
+
+### MEGAN-35
+
+This toy encoding comes from online JavaScript encryption tools. It is Base64 with a shuffled alphabet, whose 65th character (`5`) is used for padding. As in the original JavaScript, the text is first escaped with JavaScript's `escape()` (e.g. a whitespace becomes `%20`), and unescaped after decoding ; encoded texts made from the UTF-8 bytes of the text (without escaping) are decoded as well.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`megan35` | text <-> MEGAN-35 encoded text | `megan-35`, `megan_35` | 
+
+```python
+>>> codext.encode("this is a test", "megan35")
+'nLX0msesRL1tOdNqicesRM=1mxb5'
+>>> codext.decode("nLX0msesRL1tOdNqicesRM=1mxb5", "megan-35")
 'this is a test'
 ```
 
