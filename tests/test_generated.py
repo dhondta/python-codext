@@ -6,6 +6,7 @@
 from itertools import chain
 from random import randint
 from string import printable
+from types import FunctionType
 from unittest import TestCase
 
 from codext.__common__ import *
@@ -43,6 +44,10 @@ def make_test(**params):
                         continue
                     # unhandled character error tests
                     encmap = params.get('encmap')
+                    # a function building the encoding map from the parameter of the encoding name gives its default
+                    #  map without parameter
+                    if isinstance(encmap, FunctionType):
+                        encmap = encmap(None)
                     if encmap and params['intype'] not in ["bin", "ord"] and not params['no_error']:
                         if not isinstance(encmap, list):
                             encmap = [encmap]

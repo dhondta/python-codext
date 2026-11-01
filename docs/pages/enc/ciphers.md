@@ -156,18 +156,27 @@ This is a variant of the [Vigenere Cipher](#vigenere-cipher) using a key stream 
 
 ### Baconian Cipher
 
-It support only letters.
+This writes each letter as a group of 5 symbols among two ("`a`" and "`b`"). It supports letters and spaces only, with two alphabets, as on [dCode](https://www.dcode.fr/bacon-cipher):
+
+- the original 24-letter alphabet (default, or `bacon-24`), in which I and J, as well as U and V, share the same code (hence decoded as I and U) ;
+- the 26-letter alphabet (`bacon-26`), in which each letter has its own code (e.g. J is `abaab` and V is `babab`).
 
 **Codec** | **Conversions** | **Aliases** | **Comment**
 :---: | :---: | --- | ---
-`bacon` | text <-> Bacon ciphertext | `bacon-cipher`, `baconian_cipher`, `bacon-01`, `bacon-10` | Dynamic tokens mapping ; we can define a mapping of encoding's tokens (original tokens: `ab`)
+`bacon` | text <-> Bacon ciphertext | `bacon-cipher`, `baconian_cipher`, `bacon-01`, `bacon-10`, `bacon-26`, `bacon26-01` | Dynamic tokens mapping ; we can define a mapping of encoding's tokens (original tokens: `ab`), after the alphabet if any (e.g. `bacon-26-01`)
 
 ```python
 >>> codext.encode("this is a test", "bacon")
-'baaba aabbb abaaa baaab  abaaa baaab  aaaaa  baaba aabaa baaab baaba'
+'baabaaabbbabaaabaaab abaaabaaab aaaaa baabaaabaabaaabbaaba'
 >>> codext.encode("this is a test", "bacon_01")
-'10010 00111 01000 10001  01000 10001  00000  10010 00100 10001 10010'
->>> codext.decode("-..-. ..--- .-... -...-  .-... -...-  .....  -..-. ..-.. -...- -..-.", "bacon_.-")
+'10010001110100010001 0100010001 00000 10010001001000110010'
+>>> codext.encode("jv", "bacon"), codext.decode("abaaabaabb", "bacon")
+('abaaabaabb', 'IU')
+>>> codext.encode("this is a test", "bacon-26")
+'baabbaabbbabaaabaaba abaaabaaba aaaaa baabbaabaabaababaabb'
+>>> codext.encode("jv", "bacon-26"), codext.decode("abaabbabab", "bacon-26")
+('abaabbabab', 'JV')
+>>> codext.decode("-..--..---.-...-..-. .-...-..-. ..... -..--..-..-..-.-..--", "bacon26_.-")
 'THIS IS A TEST'
 ```
 

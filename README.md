@@ -341,7 +341,7 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 - [X] `armon64`: aka ARMON-64 (variant of AER-256 with a fourth operation)
 - [X] `atbash`: aka Atbash Cipher
 - [X] `autoclave`: aka Autoclave/Autokey Cipher (variant of Vigenere Cipher)
-- [X] `bacon`: aka Baconian Cipher
+- [X] `bacon`: aka Baconian Cipher (original 24-letter and 26-letter alphabets)
 - [X] `barbie-N`: aka Barbie Typewriter (*N* belongs to [1, 4])
 - [X] `bazeries`: aka Bazeries Cipher (two Polybius grids and a transposition keyed by a number)
 - [X] `beaufort`: aka Beaufort Cipher (variant of Vigenere Cipher)
