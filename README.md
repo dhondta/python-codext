@@ -511,6 +511,7 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 
 - [X] `hexagram`: uses Base64 and encodes the result to a charset of [I Ching hexagrams](https://en.wikipedia.org/wiki/Hexagram_%28I_Ching%29) (as implemented [here](https://github.com/qntm/hexagram-encode))
 - [X] `klopf`: aka Klopf code ; Polybius square with trivial alphabetical distribution
+- [X] `png-idat`: compresses data into the IDAT chunks of a PNG image (also extracts the raw pixel data of a whole PNG image)
 - [X] `resistor`: aka resistor color codes
 - [X] `rick`: aka Rick cipher (in reference to Rick Astley's song "*Never gonna give you up*")
 - [X] `sms`: also called _T9 code_ ; uses "`-`" as a separator for encoding, "`-`" or "`_`" or whitespace for decoding

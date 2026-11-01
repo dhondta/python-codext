@@ -37,6 +37,27 @@ This is a Polybius code with the trivial alphabetical distribution ("A" -> (1,1)
 -----
 
 
+### PNG IDAT
+
+This compresses the input with zlib (the DEFLATE algorithm, i.e. LZ77 and Huffman coding) and wraps it into the [IDAT chunks](https://www.w3.org/TR/png-3/#5Chunk-layout) that hold the pixels of a PNG image: each chunk is made of the length of its data, its type ("`IDAT`"), its data (a part of the zlib stream, with its header and its Adler-32 checksum) and the CRC-32 of its type and data. Decoding concatenates the data of the IDAT chunks and decompresses it ; the input can also be a whole PNG image, its other chunks being ignored, which gives its raw pixel data (the scanlines, each preceded by its filter type byte).
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`png-idat` | data <-> IDAT chunk(s) | `idat`, `pngidat` | `png-idat-N` splits the zlib stream into chunks holding at most N bytes each (e.g. `png-idat-8192`) ; a chunk whose CRC-32 does not match is an error, unless errors are not handled strictly
+
+```python
+>>> codext.encode("this is a test", "png-idat")
+'\x00\x00\x00\x14IDATxÚ+ÉÈ,V\x00¢D\x85\x92Ôâ\x12\x00&3\x05\x16\x19XHm'
+>>> codext.decode(_, "idat")
+'this is a test'
+>>> codext.encode(b"this is a test", "png-idat-8").count(b"IDAT")
+3
+>>> codext.decode(open("image.png", "rb").read(), "png-idat")  # the raw pixel data of the image
+b'...'
+```
+
+-----
+
 ### Resistor Color Codes
 
 This uses the [electronic color code](https://en.wikipedia.org/wiki/Electronic_color_code#Resistor_color-coding) to encode digits, displaying colors in the terminal with ANSI color codes.
