@@ -209,3 +209,52 @@ A compatible sample is chosen automatically ; a specific one can be given with t
 !!! note "Not cryptographic strength"
     
     This measures resistance to codext's guessing/ranking and to casual inspection, not cryptographic security. The per-layer ranking is used on purpose instead of the full recursive guess, which is combinatorially expensive on some chains.
+
+### Chain Composition
+
+The compose feature builds a strong chain of codecs from the answers to a few assessment questions, available as `codext.compose.questions`:
+
+Question | Choices | Default
+--- | --- | ---
+`input`: what will be encoded | `text`, `binary` (any data) | `text`
+`alphabet`: characters the output may contain | `any`, `printable`, `alphanumeric`, `letters` | `printable`
+`expansion`: how many times larger the output may be | `2`, `5`, `20`, `any` | `5`
+`layers`: number of layers | `2` to `5` | `3`
+`disguise`: whether the output shall look like text | `no`, `yes` | `no`
+`key`: secret key for a keyed layer (letters only, at least 4) | free | none
+
+The chain is built layer by layer: at each layer, codecs are tried in a random order on a few samples (as text and as bytes), keeping those that round-trip exactly on all of them and meet the constraints, preferably of a category not used yet (e.g. not two substitutions of bytes, which compose into a single one). Among these candidates, the one that the [ranking heuristic](#ranking-heuristic) ranks the lowest on its own output is selected, one that it does not surface at all being the best (e.g. a code page such as `cp500`, which the guesser never tries). When a key is given, a keyed cipher (`autoclave`, `beaufort`, `columnar`, `porta`, `vernam` or `vigenere`) with this key is inserted at a random layer, which the guesser cannot follow without the key. The chain is finally rated with the [strength evaluation](#strength-evaluation):
+
+```python
+>>> r = codext.compose({'alphabet': "alphanumeric", 'key': "mysecret"}, seed=42)
+>>> r['chain'], r['score'], r['grade'], r['expansion']
+(['vernam-mysecret', 'binhex', 'octal'], 100, 'A', 4.81)
+>>> codext.decode(codext.encode("A secret message", r['chain'][0]), r['chain'][0])
+'A secret message'
+```
+
+The chain is drawn at random, so that it cannot be predicted from the answers, unless a `seed` is given (a same seed gives a same chain for a same set of available codecs, which depends on the version of `codext` and on the installed optional dependencies). The `sample` argument adds an input the chain must work with, on which the ranking, the expansion and the strength are then measured ; it should be representative of the inputs, as the guesser misses some codecs on short ones. The `include`/`exclude` arguments select the categories, codecs or encodings that may be used in the chain (by default, all but the lossy ones, i.e. checksums and hashes), while `candidates` sets the number of codecs compared at each layer (more is stronger but slower).
+
+With the [CLI tool](cli.md), `codext compose` asks the questions that are not answered with an option (`-b`/`--binary`, `-a`/`--alphabet`, `-x`/`--expansion`, `-l`/`--layers`, `-d`/`--disguise`, `-k`/`--key`, the key being asked without echo), unless `-n`/`--non-interactive` is given or a sample is piped. It prints the chain with its strength and the commands to encode and decode with it, and `-m NAME`/`--macro NAME` saves it as a [macro](features.md#add-a-macro):
+
+```sh
+$ codext compose -a alphanumeric -k mysecret -s 42 -n -m mychain
+chain: vernam-mysecret · binhex · octal
+strength: 100/100  (A)
+  layer ranks : [None, None, None]
+  blind layers: 3 / 3
+  expansion   : x4.81
+  disguised   : True
+  note        : layers the guesser cannot follow: vernam-mysecret, binhex, octal
+  note        : the output still looks like text, which may evade casual notice
+  note        : the chain holds the secret key ('vernam-mysecret') ; keep it secret
+encode with: codext encode vernam-mysecret binhex octal
+decode with: codext decode octal binhex vernam-mysecret
+saved as macro 'mychain': codext encode mychain / codext decode mychain
+$ echo -n "A secret message" | codext encode mychain | codext decode mychain
+A secret message
+```
+
+!!! warning "Secret key"
+    
+    The key is part of the name of the keyed encoding (e.g. `vernam-mysecret`), hence of the chain: keep the chain secret, and note that a macro stores it in plain text in `~/.codext-macros.json`.

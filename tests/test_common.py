@@ -8,6 +8,8 @@ import json
 import random
 import sys
 from codext.__common__ import *
+from functools import reduce
+from string import printable
 from codext.__common__ import CODECS_OVERWRITTEN, PERS_MACROS, PERS_MACROS_FILE
 from unittest import TestCase
 
@@ -362,6 +364,66 @@ class TestCommon(TestCase):
         self.assertRaises(ValueError, codext.strength, [])
         self.assertRaises(LookupError, codext.strength, ["does_not_exist_xyz"])
 
+    def test_compose_chains(self):
+        from codext.compose import report
+        self.assertEqual([q['name'] for q in codext.compose.questions],
+                         ["input", "alphabet", "expansion", "layers", "disguise", "key"])
+        msg = "Hello, World! This is a message that was not among the samples."
+        _rt = lambda chain, s: self.assertEqual(reduce(lambda x, e: codext.decode(x, e), chain[::-1],
+                                                       reduce(lambda x, e: codext.encode(x, e), chain, s)), s)
+        # default answers (except for the number of layers, for the sake of speed): a reversible chain
+        r = codext.compose({'layers': "2"}, seed=1, candidates=2)
+        self.assertEqual(set(r), {"chain", "answers", "score", "grade", "strength", "notes", "expansion"})
+        self.assertEqual(r['answers'], {'input': "text", 'alphabet': "printable", 'expansion': "5", 'layers': "2",
+                                        'disguise': "no", 'key': ""})
+        self.assertEqual(len(r['chain']), 2)
+        self.assertTrue(r['strength']['reversible'])
+        self.assertTrue(0 <= r['score'] <= 100)
+        self.assertLessEqual(r['expansion'], 5)
+        self.assertTrue(set(reduce(lambda x, e: codext.encode(x, e), r['chain'], msg)) <= set(printable))
+        for s in [msg, msg.encode()]:
+            _rt(r['chain'], s)
+        self.assertIn("decode with: codext decode " + " ".join(r['chain'][::-1]), report(r))
+        # restricted output alphabet, expansion and number of layers
+        r = codext.compose({'alphabet': "letters", 'expansion': "2", 'layers': "2"}, seed=2, candidates=3)
+        self.assertEqual(len(r['chain']), 2)
+        self.assertTrue(reduce(lambda x, e: codext.encode(x, e), r['chain'], msg).isalpha())
+        self.assertLessEqual(r['expansion'], 2)
+        # a secret key adds a keyed layer that the guesser cannot follow
+        r = codext.compose({'key': "mysecret", 'layers': "2"}, seed=3, candidates=3)
+        # the same seed gives the same chain
+        self.assertEqual(r['chain'], codext.compose({'key': "mysecret", 'layers': "2"}, seed=3, candidates=3)['chain'])
+        i = next(i for i, e in enumerate(r['chain']) if e.endswith("-mysecret"))
+        self.assertIsNone(r['strength']['correct_ranks'][i])
+        self.assertTrue(any("secret" in n for n in r['notes']))
+        _rt(r['chain'], msg)
+        # binary input, restricted codecs
+        r = codext.compose({'input': "binary", 'layers': "2"}, seed=4, candidates=3)
+        _rt(r['chain'], bytes(range(256)))
+        r = codext.compose({'layers': "2"}, include="base", exclude="base64", seed=5, candidates=3)
+        self.assertTrue(all(codext.lookup(e).parameters['category'] == "base" for e in r['chain']))
+        self.assertNotIn("base64", [codext.lookup(e).parameters['name'] for e in r['chain']])
+        # bad answers and impossible constraints
+        for answers in [{'alphabet': "emoji"}, {'unknown': "x"}, {'key': "abc"}, {'key': "s3cret"}]:
+            self.assertRaises(ValueError, codext.compose, answers)
+        self.assertRaises(ValueError, codext.compose, candidates=0)
+        self.assertRaises(ValueError, codext.compose, {'alphabet': "alphanumeric", 'layers': "2"}, include="rot",
+                          tries=1)
+        # the composed chain can be saved as a macro (here, from the command line)
+        import os, subprocess, tempfile
+        src = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "src")
+        with tempfile.TemporaryDirectory() as home:
+            env = {**os.environ, 'PYTHONPATH': src + os.pathsep + os.environ.get('PYTHONPATH', ""), 'HOME': home}
+            cli = lambda inp, *args: subprocess.run([sys.executable, "-m", "codext"] + list(args), input=inp, env=env,
+                                                    capture_output=True, check=True).stdout
+            out = cli(b"", "compose", "-n", "-l", "2", "-a", "alphanumeric", "-s", "6", "-m", "composed")
+            self.assertIn(b"saved as macro 'composed'", out)
+            self.assertEqual(cli(cli(msg.encode(), "encode", "composed"), "decode", "composed"), msg.encode())
+            r = subprocess.run([sys.executable, "-m", "codext", "compose", "-n", "-k", "abc"], input=b"", env=env,
+                               capture_output=True)
+            self.assertEqual(r.returncode, 1)
+            self.assertIn(b"at least 4 letters", r.stderr)
+    
     def test_handle_macros(self):
         MACRO = "test-macro-f2ca1bb6c7e907d06dafe4687e579fce76b37e4e93b7605022da52e6ccc26fd2"
         STR = "this is a test"
@@ -397,6 +459,11 @@ class TestCommon(TestCase):
         self.assertIsNone(codext.add_macro("VALID-MACRO", "lzma", "base64"))
         self.assertIsNone(codext.remove("VALID-MACRO"))
         self.assertRaises(ValueError, codext.add_macro, "SHALL-FAIL", "base26", "sms", "letter-indices")
+        # the chain is checked with the examples that its first encoding accepts (rle rejects digits, which some
+        #  examples of its codec hold for rle-bytes ; aztec rejects too long inputs, held by its examples)
+        for first in ["rle", "aztec", "baudot", "base122"]:
+            self.assertIsNone(codext.add_macro("VALID-MACRO", first, "base64"))
+            self.assertIsNone(codext.remove("VALID-MACRO"))
     
     def test_main_binary_output(self):
         import os, subprocess

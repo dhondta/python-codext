@@ -4,8 +4,11 @@
 """
 import argparse
 import sys
+from getpass import getpass
 
 from .__common__ import *
+from .__common__ import PERS_MACROS_FILE
+from .compose import QUESTIONS, report as compose_report
 from .guess import stopfunc
 from .__info__ import __author__, __copyright__, __email__, __license__, __source__, __version__
 
@@ -65,6 +68,28 @@ def __print_tabular(lst, space=4):
         print(", ".join(lst) + "\n")
 
 
+def __ask(question, given=None):
+    """ Ask an assessment question of the compose feature on the terminal, unless it was answered with an option. """
+    if given is not None:
+        return given
+    if question['choices'] is None:
+        # free answer, here the secret key (hence not echoed)
+        return getpass(f"[?] {question['question']} ").strip()
+    choices = list(question['choices'].items())
+    print(f"[?] {question['question']}", file=sys.stderr)
+    for i, (value, descr) in enumerate(choices, 1):
+        print(f"    {i}) {descr}{['', ' (default)'][value == question['default']]}", file=sys.stderr)
+    while True:
+        a = input("    > ").strip()
+        if a == "":
+            return question['default']
+        if a.isdigit() and 1 <= int(a) <= len(choices):
+            return choices[int(a) - 1][0]
+        if a in question['choices']:
+            return a
+        print(f"    please answer with a number from 1 to {len(choices)}", file=sys.stderr)
+
+
 def main():
     class _CustomFormatter(argparse.RawTextHelpFormatter):
         def __init__(self, prog, **kwargs):
@@ -94,6 +119,8 @@ def main():
         "echo -en \"test\" | codext encode upper reverse base32 base64 morse",
         "echo -en \"test\" | codext encode base64 gzip | codext guess",
         "echo -en \"test\" | codext encode base64 gzip | codext guess gzip -c base",
+        "codext compose",
+        "codext compose -a alphanumeric -l 4 -k mysecret -m mychain -n",
     ])
     kw = {'formatter_class': _CustomFormatter}
     parser = argparse.ArgumentParser(prog="codext", description=descr, epilog=examples, **kw)
@@ -168,6 +195,29 @@ def main():
                           help="stop function for the guessing adversary (default: text)")
     strength.add_argument("-i", "--include", nargs="*", action="extend", metavar="CAT|COD|ENC",
                           help="categories, codecs and encodings the guessing adversary may use")
+    compose = sparsers.add_parser("compose", help="compose a strong chain of codecs from a few assessment questions",
+                                  **kw)
+    compose.add_argument("-a", "--alphabet", choices=list(QUESTIONS[1]['choices']),
+                         help="characters the encoded output may contain (default: printable)")
+    compose.add_argument("-b", "--binary", action="store_const", const="binary", dest="input",
+                         help="the input is any data (bytes) rather than text (default: text)")
+    compose.add_argument("-d", "--disguise", action="store_const", const="yes",
+                         help="the output shall look like text rather than encoded data (default: no)")
+    compose.add_argument("-e", "--exclude", nargs="*", action="extend", metavar="CAT|COD|ENC",
+                         help="categories, codecs and encodings not to be used in the chain")
+    compose.add_argument("-i", "--include", nargs="*", action="extend", metavar="CAT|COD|ENC",
+                         help="categories, codecs and encodings that may be used in the chain (default: all but the "
+                              "lossy ones)")
+    compose.add_argument("-k", "--key",
+                         help="secret key for a keyed layer, needed to decode (letters only, at least 4)")
+    compose.add_argument("-l", "--layers", choices=list(QUESTIONS[3]['choices']),
+                         help="number of layers (default: 3)")
+    compose.add_argument("-m", "--macro", metavar="NAME", help="save the chain as a macro with the given name")
+    compose.add_argument("-n", "--non-interactive", action="store_true",
+                         help="do not ask the questions, using the default answers for the options not given")
+    compose.add_argument("-s", "--seed", type=int, help="seed for drawing the chain (default: random)")
+    compose.add_argument("-x", "--expansion", choices=list(QUESTIONS[2]['choices']),
+                         help="how many times larger than the input the output may be (default: 5)")
     search = sparsers.add_parser("search", help="search for codecs")
     search.add_argument("pattern", nargs="+", help="encoding pattern to search")
     listi = sparsers.add_parser("list", help="list items")
@@ -210,6 +260,37 @@ def main():
             print(codecs.strength_report(args.encoding, sample=sample,
                                          stop_func=getattr(stopfunc, args.stop_function, stopfunc.default),
                                          include=args.include, exclude=args.exclude))
+            return 0
+        # compose a chain of codecs from the answers to the assessment questions, given as options or asked on the
+        #  terminal (a sample to be encoded may be given from a file or from a pipe, then not asking the questions)
+        elif args.command == "compose":
+            sample = None
+            if args.infile:
+                sample = _input(args.infile)
+            elif not sys.stdin.isatty():
+                sample, args.non_interactive = _input(None), True
+            interactive = not args.non_interactive
+            answers = {}
+            for q in QUESTIONS:
+                given = getattr(args, q['name'])
+                if interactive:
+                    given = __ask(q, given)
+                if given is not None:
+                    answers[q['name']] = given
+            print("[*] Composing the chain (this may take a while)...", file=sys.stderr)
+            try:
+                r = codecs.compose(answers, sample=sample or None, include=args.include, exclude=args.exclude,
+                                   seed=args.seed)
+            except ValueError as e:
+                print(f"codext: {e}", file=sys.stderr)
+                return 1
+            print(compose_report(r))
+            if args.macro:
+                add_macro(args.macro, *r['chain'])
+                print(f"saved as macro '{args.macro}': codext encode {args.macro} / codext decode {args.macro}")
+                if r['answers']['key']:
+                    print(f"warning: the macro holds the secret key, in plain text in {PERS_MACROS_FILE}",
+                          file=sys.stderr)
             return 0
         # list encodings or macros
         elif args.command == "list":
@@ -278,4 +359,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

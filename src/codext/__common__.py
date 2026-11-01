@@ -72,17 +72,25 @@ class CodecMacro(tuple):
             raise ValueError(f"bad macro list: {self.codecs}")
         self.codecs = [lookup(e, False) for e in self.codecs]  # lookup(e, False)
         self.parameters = {'name': name, 'category': "macro"}  #             ^  means that macros won't be nestable
-        # test examples to check that the chain of encodings works
+        # test examples to check that the chain of encodings works ; only the inputs that its first encoding accepts are
+        #  used, as the examples of a codec also hold inputs for its other encodings (e.g. digits for rle-bytes, while
+        #  rle rejects them) and inputs that it shall reject (e.g. too long ones)
+        def _check(s):
+            try:
+                self.codecs[0].encode(s)
+            except Exception:
+                return
+            self.encode(s)
         for action, examples in (self.codecs[0].parameters.get('examples', {}) or {'enc-dec(': ["T3st str!"]}).items():
             if re.match(r"enc(-dec)?\(", action):
-                for e in (examples.keys() if action.startswith("enc(") else examples or []):
-                    rd = re.match(r"\@(i?)random(?:\{(\d+(?:,(\d+))*?)\})?$", e)
+                for e in ((examples or {}).keys() if action.startswith("enc(") else examples or []):
+                    rd = re.match(r"\@(i?)random(?:\{(\d+(?:,(\d+))*?)\})?$", e) if isinstance(e, str) else None
                     if rd:
                         for n in (rd.group(2) or "512").split(","):
                             s = "".join(chr(randint(0, 255)) for i in range(int(n)))
-                            self.encode(s.lower() if rd.group(1) else s)
+                            _check(s.lower() if rd.group(1) else s)
                         continue
-                    self.encode(e)
+                    _check(e)
         
         class Codec:
             decode = self.decode

@@ -5,6 +5,7 @@
 from .__common__ import *
 from .guess import *  # the guess/rank/stopfunc feature (wires codecs.guess and codecs.rank on import)
 from .strength import *  # the strength feature (wires codecs.strength on import)
+from .compose import *  # the compose feature (wires codecs.compose on import)
 from .__info__ import __author__, __copyright__, __email__, __license__, __source__, __version__
 
 

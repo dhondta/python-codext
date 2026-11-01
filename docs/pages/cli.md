@@ -49,6 +49,8 @@ usage examples:
 - echo -en "test" | codext encode base64 gzip | codext guess gzip -c base
 - codext strength base64 gzip
 - echo -en "secret" | codext strength base64 rot-13
+- codext compose
+- codext compose -a alphanumeric -l 4 -k mysecret -m mychain -n
 ```
 
 !!! note "Input/output"
