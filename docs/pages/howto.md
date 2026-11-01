@@ -2,8 +2,8 @@ The purpose of this section is to provide a tutorial for creating new codecs acc
 
 As explained in [this section](features.md), `codext` provides the possibility to add new codecs in two ways:
 
-1. [`add`](https://github.com/dhondta/python-codext/blob/main/src/codext/__common__.py#L56): using this function, the *encode* and *decode* functions must be given as arguments.
-2. [`add_map`](https://github.com/dhondta/python-codext/blob/main/src/codext/__common__.py#L160): using this function, an *encoding map* must be given but can be formatted in different ways to handle various use cases.
+1. [`add`](https://github.com/dhondta/python-codext/blob/main/src/codext/__common__.py#L147): using this function, the *encode* and *decode* functions must be given as arguments.
+2. [`add_map`](https://github.com/dhondta/python-codext/blob/main/src/codext/__common__.py#L322): using this function, an *encoding map* must be given but can be formatted in different ways to handle various use cases.
 
 In both cases, a *pattern* is given in argument and aims to define the set of all strings that aim to select this codec.
 
@@ -49,29 +49,29 @@ Whatever solution is chosen, the following arguments shall be considered:
 
 ### Which `add` function ?
 
-At this point, it is necessary to determine what kind of codec you want. If it is a simple map of characters, you should definitely use [`add_map`](https://github.com/dhondta/python-codext/blob/main/src/codext/__common__.py#L160). If it is more complex and cannot be handled using [`add_map`](https://github.com/dhondta/python-codext/blob/main/src/codext/__common__.py#L160)'s options, then you should use [`add`](https://github.com/dhondta/python-codext/blob/main/src/codext/__common__.py#L56) and define the encode/decode functions yourself.
+At this point, it is necessary to determine what kind of codec you want. If it is a simple map of characters, you should definitely use [`add_map`](https://github.com/dhondta/python-codext/blob/main/src/codext/__common__.py#L322). If it is more complex and cannot be handled using [`add_map`](https://github.com/dhondta/python-codext/blob/main/src/codext/__common__.py#L322)'s options, then you should use [`add`](https://github.com/dhondta/python-codext/blob/main/src/codext/__common__.py#L147) and define the encode/decode functions yourself.
 
 A few examples:
 
-- `morse` is a simple map that does not handle case ; it then uses [`add_map`](https://github.com/dhondta/python-codext/blob/main/src/codext/__common__.py#L160) with `ignore_case` set to "`encode`" (not "`both`" for encoding and decoding as it does not matter anyway for decoding)
-- `whitespace` has 2 codecs defined ; the simple one is a simple bit encoding map, therefore using [`add_map`](https://github.com/dhondta/python-codext/blob/main/src/codext/__common__.py#L160) with `intype` set to "`bin`" (for pre-converting characters to bits before applying the encoding map), and the complex one uses [`add`](https://github.com/dhondta/python-codext/blob/main/src/codext/__common__.py#L56) with its specific endocde/decode functions
+- `morse` is a simple map that does not handle case ; it then uses [`add_map`](https://github.com/dhondta/python-codext/blob/main/src/codext/__common__.py#L322) with `ignore_case` set to "`encode`" (not "`both`" for encoding and decoding as it does not matter anyway for decoding)
+- `whitespace` has 2 codecs defined ; the simple one is a simple bit encoding map, therefore using [`add_map`](https://github.com/dhondta/python-codext/blob/main/src/codext/__common__.py#L322) with `intype` set to "`bin`" (for pre-converting characters to bits before applying the encoding map), and the complex one uses [`add`](https://github.com/dhondta/python-codext/blob/main/src/codext/__common__.py#L147) with its specific endocde/decode functions
 - `atbash` defines a dynamic map with a "factory" function, that creates the encoding map according to the parameters supplied in the codec name
 
 So, before going further, determine the following:
 
-- What does the new codec map from and to ? E.g. if binary input and ordinal output, you can use [`add_map`](https://github.com/dhondta/python-codext/blob/main/src/codext/__common__.py#L160) with `intype="bin"` and `outype="ord"`.
-- Is this codec ignoring case ? If so, you can use [`add_map`](https://github.com/dhondta/python-codext/blob/main/src/codext/__common__.py#L160) and specify which operation(s) should ignore case, e.g. `ignore_case="both"` or `ignore_case="decode"`.
-- Should this codec handle no error ? If so, you can use [`add_map`](https://github.com/dhondta/python-codext/blob/main/src/codext/__common__.py#L160) do not forget to specify `no_error=True`.
-- Does the codec yields variable-length encoded tokens ? If so, you can still use [`add_map`](https://github.com/dhondta/python-codext/blob/main/src/codext/__common__.py#L160) but you should define `sep` (separator) as `codext` will not be able to handle ambiguities.
+- What does the new codec map from and to ? E.g. if binary input and ordinal output, you can use [`add_map`](https://github.com/dhondta/python-codext/blob/main/src/codext/__common__.py#L322) with `intype="bin"` and `outype="ord"`.
+- Is this codec ignoring case ? If so, you can use [`add_map`](https://github.com/dhondta/python-codext/blob/main/src/codext/__common__.py#L322) and specify which operation(s) should ignore case, e.g. `ignore_case="both"` or `ignore_case="decode"`.
+- Should this codec handle no error ? If so, you can use [`add_map`](https://github.com/dhondta/python-codext/blob/main/src/codext/__common__.py#L322) do not forget to specify `no_error=True`.
+- Does the codec yields variable-length encoded tokens ? If so, you can still use [`add_map`](https://github.com/dhondta/python-codext/blob/main/src/codext/__common__.py#L322) but you should define `sep` (separator) as `codext` will not be able to handle ambiguities.
 
-If you find aspects that are not covered in these questions, you shall use [`add`](https://github.com/dhondta/python-codext/blob/main/src/codext/__common__.py#L56), then refering to [Case 1](#case-1-generic-encoding-definition). Otherwise, you can use [`add_map`](https://github.com/dhondta/python-codext/blob/main/src/codext/__common__.py#L160) and refer 
+If you find aspects that are not covered in these questions, you shall use [`add`](https://github.com/dhondta/python-codext/blob/main/src/codext/__common__.py#L147), then refering to [Case 1](#case-1-generic-encoding-definition). Otherwise, you can use [`add_map`](https://github.com/dhondta/python-codext/blob/main/src/codext/__common__.py#L322) and refer 
 to [Case 2](#case-2-encoding-map).
 
 -----
 
 ### Case 1: Generic encoding definition
 
-This uses: [`codext.add`](https://github.com/dhondta/python-codext/blob/main/src/codext/__common__.py#L56)
+This uses: [`codext.add`](https://github.com/dhondta/python-codext/blob/main/src/codext/__common__.py#L147)
 
 This applies when the codec is more complex than a mapping, as defined in _[Case 2: Encoding map](#case-2-encoding-map)_.
 
@@ -129,7 +129,7 @@ _handle_error(token, position)
 
 ### Case 2: Encoding map
 
-This uses: [`codext.add_map`](https://github.com/dhondta/python-codext/blob/main/src/codext/__common__.py#L160)
+This uses: [`codext.add_map`](https://github.com/dhondta/python-codext/blob/main/src/codext/__common__.py#L322)
 
 This applies when the codec can be defined a simple mapping between source and destination tokens.
 

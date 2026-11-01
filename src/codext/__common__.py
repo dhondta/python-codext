@@ -1,4 +1,11 @@
 # -*- coding: UTF-8 -*-
+"""Codecs registry - adding, looking up, searching and listing the codecs.
+
+This module holds the registry of codext (``add``, ``add_map``, ``add_macro``, ``lookup``, ``register``,
+ ``search``, ``list_encodings``, ...) and hooks it into the ``codecs`` module. The helpers it relies on live in
+ ``utils`` (conversions, error handling, platform constants), ``text`` (text rating) and ``regex`` (generation of
+ strings from a pattern) ; they are re-exported here for the codecs, which import everything from this module.
+"""
 import _codecs
 import builtins
 import codecs
@@ -7,32 +14,22 @@ import json
 import os
 import random
 import re
-import sys
-import unicodedata
 import warnings
 from encodings.aliases import aliases as ALIASES
-from functools import reduce, update_wrapper, wraps
+from functools import reduce, update_wrapper
 from importlib import import_module
-from importlib.util import find_spec
 from inspect import currentframe
-from collections import Counter
 from io import BytesIO
-from itertools import chain, product
-from locale import getlocale
-from math import log
-from platform import system
 from random import randint
-from string import *
-from types import FunctionType, ModuleType
-try:
-    import re._parser as sre_parse
-except ImportError:
-    import sre_parse
+from types import FunctionType
 
-# from Python 3.11, 'sre_parse' is bound as '_parser' ; monkey-patch it for backward-compatibility
-re.sre_parse = sre_parse
-
-maketrans = str.maketrans
+# the helpers and constants moved to dedicated modules are re-exported, so that the codecs (through the star import of
+#  this module) and the other modules can still import them from here
+from .regex import generate_string_from_regex, generate_strings_from_regex
+from .text import *
+from .text import _textness
+from .utils import *
+from .utils import _human_keys, _input, _set_exc, _stripl
 
 
 __all__ = ["add", "add_macro", "add_map", "b", "clear", "codecs", "decode", "encode", "ensure_str", "examples",
@@ -46,30 +43,6 @@ CODECS_CATEGORIES = ["native", "custom"]
 # categories that were renamed or split, with the current categories of their codecs (still accepted, with a warning)
 DEPRECATED_CATEGORIES = {'crypto': ["cipher", "obfuscation"]}
 CODECS_CACHE = {}
-PRINTABLES = frozenset(printable)
-# scoring of the decoded outputs: textness above which an output is considered as a text, and weight of its bonus
-TEXTNESS_THRESHOLD, TEXTNESS_WEIGHT = .5, 4
-# most common bigrams of English texts (a large part being common to other Latin-script languages)
-BIGRAMS = frozenset("th he in er an re on at en nd ti es or te of ed is it al ar st to nt ng se ha as ou io le ve co "
-                    "me de hi ri ro ic ne ea ra ce li ch ll be ma si om ur ca el ta la ns di fo ho pe ec pr no ct us "
-                    "ac ot il tr ly nc et ut ss so rs un lo wa ge ie wh ee wi em ad ol rt po we na ul ni ts mo ow pa "
-                    "im mi ai sh".split())
-# scripts of the letters (cache) and scripts whose words are not separated by spaces
-SCRIPTS, SCRIPTS_WITHOUT_SPACES = {}, {"CJK", "HIRAGANA", "KATAKANA", "THAI", "LAO", "KHMER", "MYANMAR", "TIBETAN"}
-LANG = getlocale()
-if LANG:
-    LANG = (LANG[0] or "")[:2].lower()
-MASKS = {
-    'a': printable,
-    'b': "".join(chr(i) for i in range(256)),
-    'd': digits,
-    'h': digits + "abcdef",
-    'H': digits + "ABCDEF",
-    'l': ascii_lowercase,
-    'p': punctuation,
-    's': " ",
-    'u': ascii_uppercase,
-}
 
 __codecs_registry = []
 # caches depending on the state of the registry (cleared whenever it changes)
@@ -80,85 +53,6 @@ __lookup_cache = {}
 MACROS = {}
 PERS_MACROS = {}
 PERS_MACROS_FILE = os.path.expanduser("~/.codext-macros.json")
-
-DARWIN = system() == "Darwin"
-LINUX = system() == "Linux"
-UNIX = DARWIN or LINUX
-WINDOWS = system() == "Windows"
-
-
-def entropy(s):
-    """ Shannon entropy of the given string or bytes, counting the characters in a single pass. """
-    n, l = Counter(s), len(s)
-    return -sum([p * log(p, 2) for p in [n[c] / l for c in set(s)]])
-
-
-def _script(c):
-    """ Get the script of a letter (e.g. "LATIN", "CYRILLIC" or "CJK"), from its Unicode name. """
-    try:
-        return SCRIPTS[c]
-    except KeyError:
-        SCRIPTS[c] = r = unicodedata.name(c, "?").split()[0]
-        return r
-
-
-def _textness(s, any_script=True):
-    """ Rate in [0, 1] how much the given string looks like a natural language text.
-    
-    For a text mostly made of Latin letters, this is mainly the rate of common bigrams among the pairs of successive
-     letters (around 70% for English texts, against around 15% for random letters), weighted by the rates of printable
-     characters and of letters and spaces, and by the number of distinct letters (a text uses many letters, unlike e.g.
-     digits shifted to letters) ; this distinguishes a text from a substitution of its letters (e.g. ROT13).
-    For a text in another script (e.g. Cyrillic, Greek or CJK), this only relies on language-independent features: the
-     rate of letters of the dominant script among the letters, the rate of letters, spaces and punctuation, the number
-     of distinct letters and the length of the words (for the scripts that separate words with spaces) ; as these
-     features cannot distinguish a text from a substitution of its characters, this can be disabled
-     (any_script=False), then rating 0. """
-    # a decoded output may hold the UTF-8 bytes of a text as Latin-1 characters
-    s = ensure_str(b(s))
-    if (n := len(s)) < 2:
-        return 0.
-    letters = [c for c in s if c.isalpha()]
-    if len(letters) == 0:
-        return 0.
-    scripts = Counter(map(_script, letters))
-    script, count = scripts.most_common(1)[0]
-    if script != "LATIN":
-        if not any_script:
-            return 0.
-        printables = sum(c.isprintable() or c.isspace() for c in s) / n
-        rate = sum(c.isalpha() or c.isspace() or unicodedata.category(c)[0] == "P" for c in s) / n
-        distinct = min(1., len(set(letters)) / min(10., len(letters) / 2))
-        r = printables * (count / len(letters)) ** 2 * rate * distinct
-        if script not in SCRIPTS_WITHOUT_SPACES:
-            # the mean length of the words is around 5 letters
-            words = s.split()
-            r *= 1. if 2 <= len(letters) / len(words) <= 12 else .3
-        return r
-    t = s.lower()
-    pairs = [t[i:i+2] for i in range(n - 1) if t[i].isalpha() and t[i+1].isalpha()]
-    if len(pairs) == 0:
-        return 0.
-    bigrams = min(1., sum(map(BIGRAMS.__contains__, pairs)) / len(pairs) / .7)
-    printables, rate = sum(map(PRINTABLES.__contains__, s)) / n, sum(c.isalpha() or c == " " for c in s) / n
-    # a text holds at least 10 distinct letters (or half of its letters if shorter), unlike e.g. digits shifted to
-    #  letters
-    distinct = set(c for c in t if c.isalpha())
-    expected = min(10., len(letters) / 2)
-    return printables * bigrams * (.5 + .5 * rate) * min(1., len(distinct) / expected)
-
-
-isb = lambda s: isinstance(s, bytes)
-iss = lambda s: isinstance(s, str)
-fix = lambda x, ref: b(x) if isb(ref) else ensure_str(x) if iss(ref) else x
-
-s2i = lambda s: int(codecs.encode(s, "base16"), 16)
-exc_name = lambda e: "".join(t.capitalize() for t in re.split(r"[-_+]", e))
-
-
-def i2s(input):
-    h = hex(input)[2:].rstrip("eL")
-    return codecs.decode(h.zfill(len(h) + len(h) % 2), "hex")
 
 
 class CodecMacro(tuple):
@@ -242,42 +136,6 @@ class Repr(object):
     
     def __repr__(self):
         return f"<search-function {self.__name} at {id(self):#x}>"
-
-
-def __stdin_pipe():
-    """ Stdin pipe read function. """
-    try:
-        with open(0, 'rb') as f:
-            for l in f:
-                yield l
-    except TypeError:
-        for l in sys.stdin:
-            yield l
-
-
-def _input(infile):
-    # handle input file or stdin
-    if infile:
-        with open(infile, 'rb') as f:
-            return f.read()
-    return b("").join(__stdin_pipe())
-
-
-def _set_exc(name, etype="ValueError"):
-    if not hasattr(builtins, name):
-        ns = {}
-        exec(f"class {name}({etype}): __module__ = 'builtins'", {}, ns)
-        setattr(builtins, name, ns[name])
-_set_exc("InputSizeLimitError")
-_set_exc("ParameterError")
-
-
-def _stripl(s, st_lines, st_crlf):
-    if st_crlf:
-        s = s.replace(b"\r\n", b"") if isb(s) else s.replace("\r\n", "")
-    if st_lines:
-        s = s.replace(b"\n", b"") if isb(s) else s.replace("\n", "")
-    return s
 
 
 def _with_repr(name):
@@ -417,8 +275,8 @@ def add(ename, encode=None, decode=None, pattern=None, text=True, add_to_codecs=
         ci.parameters['guess'] = kwargs.get('guess', glob.get('__guess__', [ename])) or []
         ci.parameters['module'] = kwargs.get('module', glob.get('__name__'))
         ci.parameters.setdefault("scoring", {})
-        for attr in ["bonus_func", "entropy", "expansion_factor", "len_charset", "penalty", "printables_rate",
-                     "padding_char", "transitive"]:
+        for attr in ["bonus_func", "entropy", "expansion_factor", "len_charset", "len_multiple", "penalty",
+                     "printables_rate", "padding_char", "transitive"]:
             a = kwargs.pop(attr, None)
             if a is not None:
                 ci.parameters['scoring'][attr] = a
@@ -883,105 +741,6 @@ def reset():
 codecs.reset = reset
 
 
-# conversion functions
-def b(s):
-    """ Non-crashing bytes conversion function. """
-    try:
-        return s.encode("latin-1")
-    except:
-        pass
-    try:
-        return s.encode("utf-8")
-    except:
-        pass
-    return s
-
-
-def ensure_str(s, encoding="utf-8", errors='strict'):
-    """ Dummy str conversion function. """
-    if isinstance(s, bytes):
-        try:
-            return s.decode(encoding, errors)
-        except:
-            return s.decode("latin-1")
-    return s
-
-
-# make conversion functions compatible with input/output strings/bytes
-def fix_inout_formats(f):
-    """ This decorator ensures that the first output of f will have the same text format as the first input (str or
-         bytes). """
-    @wraps(f)
-    def _wrapper(*args, **kwargs):
-        a0 = args[0]
-        a0_isb = isb(a0)
-        a0 = ensure_str(a0) if iss(a0) or a0_isb else a0
-        r = f(a0, *args[1:], **kwargs)
-        # special case: input is in bytes ; ensure that the returned length is this of the bytes, not this processed by
-        #                the decode/encode function
-        if isinstance(r, (tuple, list)) and isinstance(r[1], int) and a0_isb:
-            r = tuple([list(r)[0]] + [len(args[0])] + list(r)[2:])
-        return (fix(r[0], args[0]), ) + r[1:] if isinstance(r, (tuple, list)) else fix(r, args[0])
-    return _wrapper
-
-
-# alphabet generation function from a given mask
-def get_alphabet_from_mask(mask):
-    """ This function generates an alphabet from the given mask. The style used is similar to Hashcat ; group keys are
-         marked with a heading "?". """
-    i, alphabet = 0, ""
-    while i < len(mask):
-        c = mask[i]
-        if c == "?" and i < len(mask) - 1 and mask[i+1] in MASKS.keys():
-            for c in MASKS[mask[i+1]]:
-                if c not in alphabet:
-                    alphabet += c
-            i += 1
-        elif c not in alphabet:
-            alphabet += c
-        i += 1
-    return alphabet
-
-
-# generic error handling function
-def handle_error(ename, errors, sep="", repl_char="?", repl_minlen=1, decode=False, kind="character", item="position"):
-    """ This shortcut function allows to handle error modes given some tuning parameters.
-    
-    :param ename:       encoding name
-    :param errors:      error handling mode
-    :param sep:         token separator
-    :param repl_char:   replacement character (for use when errors="replace")
-    :param repl_minlen: repeat number for the replacement character
-    :param decode:      whether we are encoding or decoding
-    :param item:        position item description (for describing the error ; e.g. "group" or "token")
-    """
-    exc = f"{exc_name(ename)}{['En','De'][decode]}codeError"
-     
-    def _handle_error(token, position, output="", eename=None):
-        """ This handles an encoding/decoding error according to the selected handling mode.
-        
-        :param token:    input token to be encoded/decoded
-        :param position: token position index
-        :param output:   output, as decoded up to the position of the error
-        """
-        if errors == "strict":
-            token = f"{token[:7]}..." if len(token := ensure_str(token)) > 10 else token
-            err = getattr(builtins, exc)(f"'{eename or ename}' codec can't {['en','de'][decode]}code {kind} '{token}' "
-                                         f"in {item} {position}")
-            err.output = output
-            err.__cause__ = err
-            raise err
-        elif errors == "leave":
-            return token + sep
-        elif errors == "replace":
-            return repl_char * repl_minlen + sep
-        elif errors == "ignore":
-            return ""
-        else:
-            raise ValueError(f"Unsupported error handling '{errors}'")
-    return _handle_error
-
-
 # codecs module hooks
 __orig_lookup   = _codecs.lookup
 __orig_register = _codecs.register
@@ -1165,129 +924,3 @@ def search(encoding_regex, extended=True):
                         break
     return sorted(list(set(matches)), key=_human_keys)
 codecs.search = search
-
-
-# utility function for the search feature
-CATEGORIES = {
-    'digit':     digits,
-    'not_digit': reduce(lambda x, c: x.replace(c, ""), digits, printable),
-    'space':     whitespace,
-    'not_space': reduce(lambda x, c: x.replace(c, ""), whitespace, printable),
-    'word':      ascii_letters + digits + '_',
-    'not_word':  reduce(lambda x, c: x.replace(c, ""), ascii_letters + digits + '_', printable),
-}
-REPEAT_MAX    = 10
-STAR_PLUS_MAX = 10
-YIELD_MAX     = 100
-
-
-def __gen_str_from_re(regex, star_plus_max, repeat_max, yield_max, parsed=False):
-    """ Recursive function to generate strings from a regex pattern. """
-    if regex is None:
-        return
-    __groups = {}
-    tokens = []
-    negate, last_rand = False, None
-    for state in (regex if parsed else re.sre_parse.parse(b(getattr(regex, "pattern", regex)))):
-        code = getattr(state[0], "name", state[0]).lower()
-        value = getattr(state[1], "name", state[1])
-        value = value.lower() if isinstance(value, str) else value
-        if code in ["assert_not", "at"]:
-            continue
-        elif code == "any":
-            charset = list(printable.replace("\n", ""))
-            while charset[0] == last_rand and len(charset) > 1:
-                random.shuffle(charset)
-            last_rand = charset[0]
-            tokens.append(charset)  # should be ord(x) with x belongs to [0, 256[
-        elif code == "assert":
-            tokens.append(list(__gen_str_from_re(value[1], star_plus_max, repeat_max, yield_max, True)))
-        elif code == "branch":
-            result = []
-            for r in value[1]:
-                result += list(__gen_str_from_re(r, star_plus_max, repeat_max, yield_max, True)) or [""]
-            tokens.append(result)
-        elif code == "category":
-            charset = list(CATEGORIES[value[9:]])
-            if negate:
-                negate = False
-                charset = list(set(printable).difference(charset))
-            while charset[0] == last_rand and len(charset) > 1:
-                random.shuffle(charset)
-            last_rand = charset[0]
-            tokens.append(charset)
-        elif code == "groupref":
-            tokens.extend(__groups[value])
-        elif code == "in":
-            subtokens = list(__gen_str_from_re(value, star_plus_max, repeat_max, yield_max, True))
-            subtokens = [x for l in subtokens for x in l]
-            tokens.append(subtokens)
-        elif code == "literal":
-            tokens.append(chr(value))
-        elif code in ["max_repeat", "min_repeat"]:
-            start, end = value[:2]
-            end = min(end, star_plus_max)
-            start = min(start, end)
-            charset = list(__gen_str_from_re(value[-1], star_plus_max, repeat_max, yield_max, True))
-            subtokens = []
-            if start == 0 and end == 1:
-                subtokens.append("")
-                subtokens.extend(charset)
-            elif len(charset) ** end > repeat_max:
-                for i in range(min(repeat_max, 10 * len(charset))):
-                    n = random.randint(start, end + 1)
-                    token = "" if n == 0 else "".join(random.choice(charset) for i in range(n))
-                    if token not in subtokens:
-                        subtokens.append(token)
-                    else:
-                        i -= 1
-            else:
-                for n in range(start, end + 1):
-                    for c in product(charset, repeat=n):
-                        subtokens.append("".join(c))
-            tokens.append(subtokens)
-        elif code == "negate":
-            negate = True
-        elif code == "not_literal":
-            charset = list(printable.replace(chr(value), ""))
-            while charset[0] == last_rand and len(charset) > 1:
-                random.shuffle(charset)
-            last_rand = charset[0]
-            tokens.append(charset)
-        elif code == "range":
-            tokens.append("".join(chr(i) for i in range(value[0], value[1] + 1)))
-        elif code == "subpattern":
-            result = list(__gen_str_from_re(value[-1], star_plus_max, repeat_max, yield_max, True))
-            if value[0]:
-                __groups[value[0]] = result
-            tokens.append(result)
-        else:
-            raise NotImplementedError(f"Unhandled code '{code}'")
-    if len(tokens) == 0:
-        tokens = [""]
-    i = 0
-    for result in product(*tokens):
-        yield "".join(result)
-        i += 1
-        if i >= yield_max:
-            break
-
-
-def _human_keys(text):
-    """ Sorting function for considering strings with numbers (e.g. base2, base10, base100) """
-    tokens = []
-    for s in re.split(r"(\d+|\D+)", text):
-        tokens.append(int(s) if s.isdigit() else s)
-    return tokens
-
-
-def generate_string_from_regex(regex):
-    """ Utility function to generate a single string from a regex pattern. """
-    if regex:
-        return list(generate_strings_from_regex(regex, yield_max=1))[0]
-
-
-def generate_strings_from_regex(regex, star_plus_max=STAR_PLUS_MAX, repeat_max=REPEAT_MAX, yield_max=YIELD_MAX):
-    """ Utility function to generate strings from a regex pattern. """
-    for r in __gen_str_from_re(regex, star_plus_max, repeat_max, yield_max):
-        yield r

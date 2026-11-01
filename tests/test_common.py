@@ -210,8 +210,22 @@ class TestCommon(TestCase):
         self.assertEqual(len(_g("base45-inv", include="base45", exclude="base45-inv")), 0)
         self.assertEqual(len(_g("base45-inv", include="base", exclude="base45")), 0)
     
+    def test_moved_helpers(self):
+        import codext.__common__ as common
+        from codext import regex, text, utils
+        # the helpers moved out of __common__ are still available from it (e.g. for the codecs importing them from
+        #  there), as the very same objects
+        for mod, names in [(utils, utils.__all__ + ["_human_keys", "_input", "_set_exc", "_stripl"]),
+                           (text, text.__all__ + ["_textness"]),
+                           (regex, regex.__all__)]:
+            for n in names:
+                self.assertIs(getattr(common, n), getattr(mod, n), n)
+        self.assertTrue(set(common.__all__) <= set(dir(common)))
+        self.assertEqual(sorted(["base10", "base2", "base100"], key=utils._human_keys), ["base2", "base10", "base100"])
+        self.assertIn(regex.generate_string_from_regex(r"base(?:64|32)"), ["base64", "base32"])
+    
     def test_rank_textness(self):
-        from codext.__common__ import _textness
+        from codext.text import _textness
         # a text rates high, while scrambled letters, digits shifted to letters and encoded data rate low
         self.assertGreater(_textness("Hello world, this is a test"), .9)
         self.assertGreater(_textness("flag{this_is_the_secret_flag}"), .5)
@@ -231,6 +245,68 @@ class TestCommon(TestCase):
             self.assertEqual(codext.rank(codext.encode(s, "base32"), limit=1)[0][1], "base32")
         self.assertLess(_textness("\u0434\u0434\u0434\u0434\u0434\u0434\u0434\u0434"), .5)
     
+    def test_guess_bounds(self):
+        STR = "This is a test"
+        ENC = codext.encode(codext.encode(STR, "base64"), "rot13")
+        # the search is bounded by a timeout, a number of expanded nodes or a beam, returning what was found so far
+        inc = ["base64", "rot-13"]
+        self.assertEqual(codext.guess(ENC, "a test", max_depth=2, include=inc), {("rot-13", "base64"): STR})
+        self.assertEqual(codext.guess(ENC, "a test", max_depth=2, include=inc, max_nodes=1, debug=True), {})
+        self.assertEqual(codext.guess(ENC, "a test", max_depth=3, timeout=1e-9), {})
+        # rot-13 is ranked after the base64 variants, hence out of a beam of 1
+        self.assertEqual(codext.guess(ENC, "a test", max_depth=2, include=inc, beam=1), {})
+        self.assertIn(STR, codext.guess(codext.encode(STR, "base64"), "a test", max_depth=1, beam=1).values())
+        for kw in ["timeout", "max_nodes", "beam"]:
+            self.assertRaises(ValueError, codext.guess, ENC, **{kw: 0})
+        # the strict text stop function rejects encoded-looking strings, which the text one accepts
+        for s in ["VGhpcyBpcyBhIHRlc3Q=", "fAtjzNGMsdq"]:
+            self.assertTrue(codext.stopfunc.text(s))
+            self.assertFalse(codext.stopfunc.text_strict(s))
+        self.assertTrue(codext.stopfunc.text_strict(STR))
+        self.assertEqual(list(codext.guess(ENC, codext.stopfunc.text_strict, max_depth=2, include=inc).values()), [STR])
+
+    def test_rank_textness_features(self):
+        from codext.text import _textness
+        # function words distinguish a text from a reversed text, which holds the same bigrams
+        STR = "occaecat cupidatat non proident, sunt in culpa qui officia"
+        self.assertGreater(_textness(STR), _textness(STR[::-1]) + .2)
+        self.assertGreater(_textness("The cat sat on the mat and it was not happy at all"), .9)
+        # a single long run of letters (e.g. digits shifted to letters) or tokens that are not words (e.g. a keyboard
+        #  shift of an encoded string) is not a text, while words, numbers and identifiers are
+        for s in ["dkjeeeeehedeedmdgfedieefeeieekedmdgfedde", "qe_<?zd<?zd_r_i+?0eed9fele_+rel8a:jurea+f:i8?wu\\",
+                  "bCdR_[>R_[>dEDah_\"ec^!;c`CdhEC` <:o\\EC<h;:a _it,", "E!2A2BE`5b5R5 E4UrEPUd1F"]:
+            self.assertLess(_textness(s), .5)
+        for s in ["I paid $1,234.56 on 2024-01-02 for 3 items.", "Don't panic: it's only 42% done.", "The NASA mission",
+                  "flag{this_is_a_secret_flag}"]:
+            self.assertGreater(_textness(s), .5)
+        # the reversed text is ranked among the first decodings (it was ranked far behind keyboard shifts)
+        self.assertIn(STR, [out for (_, out), _ in codext.rank(STR[::-1], limit=3)])
+
+    def test_rank_padding_and_quanta(self):
+        import sys
+        g = sys.modules['codext.guess']
+        # the padding is not counted in the characteristics of the input
+        t = g._Text("VGhpcyBpcyBhIHRlc3Q=", "=")
+        self.assertTrue(t.padding)
+        self.assertEqual((t.len, t.len_raw, t.text[-1]), (19, 20, "Q"))
+        self.assertEqual(g._Text("====", "=").len, 4)
+        # the bases whose N is a power of 2 declare their quantum, giving a bonus to whole quanta and a penalty to
+        #  misaligned padded data
+        for e, n in [("base2", 8), ("base16", 2), ("base32", 8), ("base64", 4)]:
+            self.assertEqual(codext.lookup(e).parameters['scoring']['len_multiple'], n)
+        sc = codext.lookup("base64").parameters['scoring']
+        _s = lambda: codext.rank("VGhpcyBpcyBhIHRlc3Q=", include="base64")[0][0][0]
+        with_quanta = _s()
+        sc.pop('len_multiple')
+        try:
+            self.assertAlmostEqual(with_quanta - _s(), .1)
+        finally:
+            sc['len_multiple'] = 4
+        # rank accepts a single item to be included and returns every result by default
+        _r = lambda s, inc: [e for _, e in codext.rank(s, include=inc)]
+        self.assertEqual(_r("VGhpcyBpcyBhIHRlc3Q=", "base64"), ["base64", "base64-url", "base64-inv"])
+        self.assertEqual(_r("ITucplOcplOuVUEyp3D=", ["base64", "rot-13"])[-1], "rot-13")
+
     def test_rank_input(self):
         codext.remove("test_codec")
         self.assertRaises(LookupError, codext.encode, "TEST", "test")

@@ -15,7 +15,8 @@ Each run of identical consecutive characters is replaced by its length followed 
    extra repeats as a single character (code point 0 to 255, e.g. "AAAAAB" gives "AA\x03B"), longer runs being split ;
    this variant can encode any input and does not expand text without repeats
 
-When decoding the textual variants, a character without length is taken once, so that both forms are decoded.
+When decoding the textual variants, a character without length is taken once, so that both forms are decoded, while
+ an output longer than 2^26 characters is handled as an error.
 
 This codec:
 - en/decodes strings from str to str
@@ -32,12 +33,16 @@ from string import digits as DG
 from ..__common__ import *
 
 
+# maximum length of a decoded output with the textual variants, whose lengths are not bounded (e.g. "9999999999A") ; a
+#  longer run is handled as an error, avoiding to exhaust the memory (e.g. while guessing on random digits)
+MAX_LENGTH = 2 ** 26
+
 __examples__ = {
     'enc(rle|run-length|runlength|run_length_encoding)': {
         'WWWWWWWWWWWWBWWWWWWWWWWWWBBBWWWWWWWWWWWWWWWWWWWWWWWWBWWWWWWWWWWWWWW': "12W1B12W3B24W1B14W"},
     'enc(rle-compact)':  {'WWWWWWWWWWWWBWWWWWWWWWWWWBBBWWWWWWWWWWWWWWWWWWWWWWWWBWWWWWWWWWWWWWW': "12WB12W3B24WB14W"},
     'enc(rle)':          {'Room 101': None},
-    'dec(rle)':          {'12WB3!': "WWWWWWWWWWWWB!!!", '3A0B': None, '3A2': None},
+    'dec(rle)':          {'12WB3!': "WWWWWWWWWWWWB!!!", '3A0B': None, '3A2': None, '99999999999A': None},
     'enc(rle-suffix|run-length-suffix)': {'AAABB C': "A3B2 1C1"},
     'enc(rle-compact-suffix)': {'AAABB C': "A3B2 C"},
     'dec(rle-suffix)':   {'W12B!3': "WWWWWWWWWWWWB!!!", 'A3B0': None, '2A3': None},
@@ -104,7 +109,7 @@ def rle_decode(binary=None, compact=None, suffix=None):
         else:
             for m in token.finditer(text):
                 c, n = m.group(1, 2) if suffix else m.group(2, 1)
-                if m.group(3) or n and int(n) == 0:
+                if m.group(3) or n and (int(n) == 0 or len(r) + int(n) > MAX_LENGTH):
                     r += _h(m.group(), m.start(), r)
                 else:
                     r += c * int(n or 1)

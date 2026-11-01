@@ -2,16 +2,18 @@
 """Guess feature - automated decoding without the knowledge of the codec(s).
 
 This module holds the ``stopfunc`` helpers and the scoring/search engine behind the ``guess`` and ``rank``
- functions. It depends on the codec registry and helpers from ``__common__`` (one-directional) and is wired into
- the ``codecs`` module on import.
+ functions. It depends on the codec registry and helpers from ``__common__`` (one-directional) and on the text rating
+ functions from ``text``, and is wired into the ``codecs`` module on import.
 """
 from importlib.util import find_spec
 from itertools import chain
+from time import perf_counter
 from types import FunctionType, ModuleType
 
 from .__common__ import *
-from .__common__ import CODECS_CACHE, CODECS_CATEGORIES, PRINTABLES, TEXTNESS_THRESHOLD, TEXTNESS_WEIGHT, \
-                        _categories, _textness, entropy, __guess_lists
+from .__common__ import CODECS_CACHE, CODECS_CATEGORIES, _categories, __guess_lists
+from .text import TEXTNESS_THRESHOLD, TEXTNESS_WEIGHT, _textness, entropy
+from .utils import PRINTABLES
 
 
 __all__ = ["guess", "rank", "stopfunc"]
@@ -36,6 +38,8 @@ stopfunc = ModuleType("stopfunc", """
     - `printables`: checks that every output character is in the set of printables
     - `regex`:      takes one argument, the regular expression, for checking a string against the given pattern
     - `text`:       checks for printables and an entropy less than 4.6 (empirically determined)
+    - `text_strict`: checks for `text` and a textness of at least TEXTNESS_THRESHOLD (rejects encoded-looking strings
+                     such as Base64, hence searches deeper ; best used with a bound, e.g. guess(..., timeout=60))
 """)
 stopfunc.printables = lambda s: PRINTABLES.issuperset(ensure_str(s))
 stopfunc.printables.__name__ = stopfunc.printables.__qualname__ = "printables"
@@ -43,6 +47,8 @@ stopfunc.regex = lambda p: lambda s: re.search(p, ensure_str(s)) is not None
 stopfunc.regex.__name__ = stopfunc.regex.__qualname__ = "regex"
 stopfunc.text = lambda s: stopfunc.printables(s) and entropy(s) < 4.6
 stopfunc.text.__name__ = stopfunc.text.__qualname__ = "text"
+stopfunc.text_strict = lambda s: stopfunc.text(s) and _textness(s) >= TEXTNESS_THRESHOLD
+stopfunc.text_strict.__name__ = stopfunc.text_strict.__qualname__ = "text_strict"
 stopfunc.flag = lambda x: re.search(r"[Ff][Ll1][Aa4@][Gg96]", ensure_str(x)) is not None
 stopfunc.flag.__name__ = stopfunc.flag.__qualname__ = "flag"
 stopfunc.default = stopfunc.text
@@ -135,27 +141,68 @@ def _validate(stop_function, lang_backend="none"):
 stopfunc._validate = _validate
 
 
-def __guess(prev_input, input, stop_func, depth, max_depth, min_depth, encodings, result, found=(),
-            stop=True, show=False, scoring_heuristic=False, extended=False, debug=False):
-    """ Perform a breadth-first tree search using a ranking logic to select and prune the list of codecs. """
-    if depth > min_depth and stop_func(input):
-        if not stop and (show or debug) and found not in result:
-            s = repr(input)
-            s = s[2:-1] if s.startswith("b'") and s.endswith("'") else s
-            s = f"[+] {', '.join(found)}: {s}"
-            print(s if len(s) <= 80 else f"{s[:77]}...")
-        result[found] = input
-    if depth >= max_depth or len(result) > 0 and stop:
-        return
-    prev_enc = found[-1] if len(found) > 0 else ""
-    e = encodings.get(depth, encodings.get(-1, []))
-    for new_input, encoding in __rank(prev_input, input, prev_enc, e, scoring_heuristic, extended):
-        if len(result) > 0 and stop:
-            return
-        if debug:
-            print(f"[*] Depth {depth+1:0{len(str(max_depth))}}/{max_depth}: {encoding}")
-        __guess(input, new_input, stop_func, depth+1, max_depth, min_depth, encodings, result, found + (encoding, ),
-                stop, show, scoring_heuristic, extended, debug)
+def __guess(input, stop_func, min_depth, max_depth, encodings, result, found=(), stop=True, show=False,
+            scoring_heuristic=False, extended=False, debug=False, timeout=None, max_nodes=None, beam=None):
+    """ Perform a breadth-first search using a ranking logic to select and prune the list of codecs.
+    
+    Each level holds the candidate decodings in the order of the ranking of their parents, then of their own ranking,
+     so that the first solution found is the same as with a depth-first search with iterative deepening, while every
+     node is only decoded and ranked once. A same output reached through different chains is only expanded once (the
+     first, hence best-ranked, chain), while still being checked against the stop function for every chain. The nodes
+     of the next level are not kept with their outputs (only with those of their parents), these being decoded again
+     when expanded.
+    
+    The search can be bounded with a timeout (in seconds), a maximum number of expanded nodes (each expansion tries
+     every encoding on a node) and a beam (only the best-ranked children of each node are kept). It returns True when
+     it was interrupted by one of these bounds.
+    """
+    deadline = None if timeout is None else perf_counter() + timeout
+    frontier, seen, nodes, w = [("", input, tuple(found))], {hash(b(input))}, 0, len(str(max_depth))
+    for depth in range(max_depth):
+        e, next_frontier = encodings.get(depth, encodings.get(-1, [])), []
+        for prev_input, inp, path in frontier:
+            # the nodes of a level only hold a reference to the output of their parent, their own output being decoded
+            #  again when they are expanded ; this keeps the memory bounded by the number of nodes, not by the size of
+            #  their outputs (a level can hold millions of them)
+            if inp is None:
+                try:
+                    inp = CODECS_CACHE[path[-1]].decode(prev_input)[0]
+                except Exception:
+                    continue
+            if deadline is not None and perf_counter() >= deadline or max_nodes is not None and nodes >= max_nodes:
+                if debug:
+                    print("[!] Search bound reached")
+                return True
+            nodes += 1
+            try:
+                children = list(__rank(prev_input, inp, path[-1] if path else "", e, scoring_heuristic, extended,
+                                       deadline=deadline))
+            except _SearchBound:
+                if debug:
+                    print("[!] Search bound reached")
+                return True
+            for i, (new_input, encoding) in enumerate(children):
+                if beam is not None and i >= beam:
+                    break
+                if debug:
+                    print(f"[*] Depth {depth+1:0{w}}/{max_depth}: {encoding}")
+                p = path + (encoding, )
+                if depth >= min_depth and stop_func(new_input):
+                    if not stop and (show or debug) and p not in result:
+                        s = repr(new_input)
+                        s = s[2:-1] if s.startswith("b'") and s.endswith("'") else s
+                        s = f"[+] {', '.join(p)}: {s}"
+                        print(s if len(s) <= 80 else f"{s[:77]}...")
+                    result[p] = new_input
+                    if stop:
+                        return False
+                # the last level is only checked against the stop function, not kept for further decoding
+                if depth + 1 < max_depth and (h := hash(b(new_input))) not in seen:
+                    seen.add(h)
+                    next_frontier.append((inp, None, p))
+        if len(frontier := next_frontier) == 0:
+            break
+    return False
 
 
 def __guess_list(encoding):
@@ -200,11 +247,20 @@ def __make_encodings_dict(include, exclude):
     return {k: [x for x in v if x not in _excl.get(k, [])] for k, v in _incl.items()}
 
 
-def __rank(prev_input, input, prev_encoding, encodings, heuristic=False, extended=False, yield_score=False):
+class _SearchBound(Exception):
+    """ Raised when the deadline of the search is reached while ranking the encodings of a candidate. """
+
+
+def __rank(prev_input, input, prev_encoding, encodings, heuristic=False, extended=False, yield_score=False,
+           deadline=None):
     """ Filter valid encodings and rank them by relevance. """
     # characteristics of the input text, computed once per padding character (see __score)
     ranking, texts = {}, {}
     for e in encodings:
+        # trying every encoding on a candidate can take long, hence the deadline is also checked here (a single
+        #  decoding cannot be interrupted though)
+        if deadline is not None and perf_counter() >= deadline:
+            raise _SearchBound
         try:
             codec = CODECS_CACHE[e]
         except KeyError:
@@ -220,15 +276,16 @@ def __rank(prev_input, input, prev_encoding, encodings, heuristic=False, extende
 
 
 class _Text(object):
-    __slots__ = ["entropy", "lcharset", "len", "padding", "printables", "text", "textness"]
+    __slots__ = ["entropy", "lcharset", "len", "len_raw", "padding", "printables", "text", "textness"]
     
     def __init__(self, text, pad_char=None):
-        self.text = ensure_str(text)
-        c = self.text[-1]
-        pad_char, last_char = (chr(pad_char), chr(c)) if isinstance(c, int) else (pad_char, c)
-        self.padding = pad_char is not None and last_char == pad_char
-        if self.padding:
-            text = text.rstrip(b(pad_char) if isinstance(text, bytes) else pad_char)
+        text = ensure_str(text)
+        # length of the encoded data as written, with its padding but without line breaks or spaces (e.g. for checking
+        #  whether it is made of whole quanta, as for base64)
+        self.len_raw = len(re.sub(r"\s", "", text))
+        self.padding = pad_char is not None and text[-1] == pad_char
+        # the characteristics below describe the encoded data, hence without its padding
+        self.text = (text.rstrip(pad_char) or text) if self.padding else text
         self.len = len(self.text)
         self.lcharset = len(set(self.text))
         self.printables = float(sum(map(PRINTABLES.__contains__, self.text))) / self.len
@@ -269,10 +326,19 @@ def __score(prev_input, input, prev_encoding, encoding, codec, heuristic=False, 
         lcs = sc.get('len_charset', 256)
         if isinstance(lcs, type(lambda: None)):
             lcs = int(lcs(encoding))
-        if (pad and obj.padding and lcs + 1 >= obj.lcharset) or lcs >= obj.lcharset:
+        # NB: the padding character is not counted in the input text's charset (see _Text)
+        if lcs >= obj.lcharset:
             s += max(.0, round(.6 * (.99 ** (lcs - obj.lcharset)), 5) - .1)
-        elif (pad and obj.padding and lcs + 1 < obj.lcharset) or lcs < obj.lcharset:
+        else:
             s -= .2  # this can occur for encodings with no_error set to True
+        # then, check that the input text is made of whole quanta when the encoding uses them, giving a bonus when
+        #  it is the case, and a penalty when it is not while being padded (unpadded data is tolerated by the decoders)
+        lm = sc.get('len_multiple')
+        if lm:
+            if obj.len_raw % lm == 0:
+                s += .1
+            elif obj.padding:
+                s -= .3
         # then, take padding into account, giving a bonus if padding is to be encountered and effectively present,
         #  or a penalty when it should not be encountered but it is present
         if pad and obj.padding:
@@ -339,7 +405,8 @@ def __score(prev_input, input, prev_encoding, encoding, codec, heuristic=False, 
 
 
 def guess(input, stop_func=stopfunc.default, min_depth=0, max_depth=5, include=None, exclude=None, found=(),
-          stop=True, show=False, scoring_heuristic=True, extended=False, debug=False):
+          stop=True, show=False, scoring_heuristic=True, extended=False, debug=False, timeout=None, max_nodes=None,
+          beam=None):
     """ Try decoding without the knowledge of the encoding(s).
     
     :param input:             input text to be guessed
@@ -357,6 +424,12 @@ def guess(input, stop_func=stopfunc.default, min_depth=0, max_depth=5, include=N
                                meaning that every non-failing encoding will be considered with no order of precedence)
     :param extended:          whether to also consider null scores with the heuristic
     :param debug:             whether to show each attempt at each depth during computation
+    :param timeout:           maximum duration of the search in seconds (nothing means no limit)
+    :param max_nodes:         maximum number of expanded nodes, each expansion trying every encoding on a candidate
+                               (nothing means no limit)
+    :param beam:              number of best-ranked decodings kept per candidate for the next depth (nothing means all)
+    
+    When a bound (timeout, max_nodes) is reached, the search stops and returns the solutions found so far.
     """
     if len(input) == 0:
         return ""
@@ -396,13 +469,12 @@ def guess(input, stop_func=stopfunc.default, min_depth=0, max_depth=5, include=N
             raise ValueError("Include argument shall be a list or a dictionary with integer keys")
     # precompute encodings lists per depth and cache the related CodecInfo objects
     encodings, result = __make_encodings_dict(include, exclude), {}
+    for n, v in zip(["timeout", "max_nodes", "beam"], [timeout, max_nodes, beam]):
+        if v is not None and v <= 0:
+            raise ValueError(f"{n} must be a positive number")
     try:
-        # breadth-first search
-        for d in range(max_depth):
-            __guess("", input, stop_func, 0, d+1, min_depth, encodings, result, tuple(found), stop, show,
-                    scoring_heuristic, extended, debug)
-            if stop and len(result) > 0:
-                break
+        __guess(input, stop_func, min_depth, max_depth, encodings, result, found, stop, show, scoring_heuristic,
+                extended, debug, timeout, max_nodes, beam)
     except KeyboardInterrupt:
         pass
     CODECS_CACHE.clear()
@@ -416,13 +488,16 @@ def rank(input, extended=False, limit=-1, include=None, exclude=None):
     :param input:    input text to be evaluated
     :param extended: whether to consider null scores too (NB: negative scores are not output !)
     :param limit:    number of encodings to be returned (-1 means all of them)
-    :param include:  inclusion list with category, codec or encoding names (nothing means include every encoding)
-    :param exclude:  exclusion list with category, codec or encoding names (nothing means exclude no encoding)
+    :param include:  inclusion item OR list with category, codec or encoding names (nothing means include every
+                      encoding)
+    :param exclude:  exclusion item OR list with category, codec or encoding names (nothing means exclude no encoding)
     """
+    # a single item (category, codec or encoding name) means a list with this item, as for guess
+    include, exclude = [[x] if isinstance(x, str) else x for x in (include, exclude)]
     encodings = __make_encodings_dict(include if isinstance(include, dict) else {-1: include or CODECS_CATEGORIES},
                                       exclude if isinstance(exclude, dict) else {-1: exclude or []})
     r = list(__rank(None, input, "", encodings[-1], True, extended, True))
     CODECS_CACHE.clear()
-    return r[:limit] if len(r) > 1 else r
+    return r if limit < 0 else r[:limit]
 codecs.rank = rank
 

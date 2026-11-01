@@ -14,6 +14,11 @@ The following parameters are tunable:
 - `include`: the [categories](features.md#list-codecs), codecs or encodings to be considered, as a single name, a list of names or a dictionary of lists of names per depth (from 0, -1 meaning any depth) ; by default, `None`, meaning all of them (very slow).
 - `exclude`: the [categories](features.md#list-codecs), codecs or encodings not to be considered, in the same formats ; by default, `None`, meaning none of them.
 - `found`: a list or tuple of currently found encodings that can be used to save time if the first decoding steps are known ; by default, an empty tuple.
+- `timeout`: the maximum duration of the search, in seconds ; by default, `None`, meaning no limit.
+- `max_nodes`: the maximum number of expanded candidates, each expansion decoding a candidate with every considered encoding ; by default, `None`, meaning no limit.
+- `beam`: the number of best-ranked decodings of each candidate that are kept for the next depth ; by default, `None`, meaning all of them.
+
+When the `timeout` or `max_nodes` bound is reached, the search stops and returns the results found so far. The search decodes and ranks each candidate only once, level by level, and expands a decoded output only once even when several chains of encodings lead to it (the best-ranked chain is kept).
 
 The result is a dictionary of the decoded strings by tuple of encodings, in order of application.
 
@@ -81,7 +86,7 @@ Another example of 2-stages encoded string:
 {('base64', 'morse'): 'this is a test'}
 ```
 
-With the [CLI tool](cli.md), these parameters are given with the `-i`/`--include` and `-e`/`--exclude` options, the names being possibly prefixed with a depth (e.g. `codext guess -i 0:base62 1:base64`).
+With the [CLI tool](cli.md), these parameters are given with the `-i`/`--include` and `-e`/`--exclude` options, the names being possibly prefixed with a depth (e.g. `codext guess -i 0:base62 1:base64`), while the bounds of the search are given with the `-t`/`--timeout`, `-n`/`--max-nodes` and `-b`/`--beam` options.
 
 When multiple results are expected, `stop` and `show` arguments can be used respectively to avoid stopping while finding a result and to display the intermediate result.
 
@@ -98,7 +103,7 @@ A few stop functions are predefined in the `stopfunc` submodule.
 ```python
 >>> import codext
 >>> dir(codext.stopfunc)
-['LANG_BACKEND', 'LANG_BACKENDS', ..., '_reload_lang', 'default', 'flag', ..., 'printables', 'regex', 'text']
+['LANG_BACKEND', 'LANG_BACKENDS', ..., '_reload_lang', 'default', 'flag', ..., 'printables', 'regex', 'text', 'text_strict']
 ```
 
 Currently, the following stop functions are provided:
@@ -108,6 +113,7 @@ Currently, the following stop functions are provided:
 - `printables`:     checks that every output character is in the set of printables
 - `regex(pattern)`: takes one argument, the regular expression, for checking a string against the given pattern
 - `text`:           checks for printables and an entropy less than 4.6 (empirically determined)
+- `text_strict`:    checks for `text` and a [textness](#ranking-heuristic) of at least 0.5, hence rejects encoded-looking strings (e.g. Base64) that `text` accepts ; as the search then goes deeper, it is best used with a bound (e.g. `timeout=60`), while flags are better found with `flag`
 
 A stop function can be used as the second argument of the `guess` function or as a keyword-argument, as shown in the following examples:
 
@@ -173,13 +179,13 @@ Each time a backend is loaded, it gets `lang_**` stop functions attached to the 
 
 ### Ranking Heuristic
 
-At each step of the search, the candidate encodings are decoded and ranked with a score, the best ones being tried first. The score combines characteristics of the input compared to those expected by each codec (length of its charset, padding, rate of printable characters, expansion factor and entropy) and a characteristic of the decoded output: how much it looks like a text.
+At each step of the search, the candidate encodings are decoded and ranked with a score, the best ones being tried first. The score combines characteristics of the input compared to those expected by each codec (length of its charset, padding, whole quanta for the bases whose N is a power of 2, e.g. 4 characters for Base64, rate of printable characters, expansion factor and entropy, the padding being left out of these characteristics) and a characteristic of the decoded output: how much it looks like a text.
 
-This "textness" depends on the script of the letters. For Latin letters, it is mainly given by the rate of common bigrams among the pairs of successive letters (around 70% for English texts, against around 15% for random letters ; most of these bigrams are also common in other Latin-script languages such as French, German, Spanish or Italian), weighted by the rates of printable characters and of letters and spaces, and by the number of distinct letters. For other scripts (e.g. Cyrillic, Greek, Arabic or CJK), it only relies on language-independent features: the rate of letters of the dominant script, the rate of letters, spaces and punctuation, and the length of the words (for the scripts that separate words with spaces). As these features cannot distinguish a text from a substitution of its characters, the outputs of such codecs are only rated from Latin letters. A bonus is given when the output looks like a text (textness above 0.5) and more than the input, which favours the right decoding over transformations that never fail (e.g. keyboard shifts) without favouring wrong decodings in a chain of encodings. Codecs that only substitute characters (e.g. `rot`, `xor`, `kbshift`) also get a penalty when their output looks less like a text than their input.
+This "textness" depends on the script of the letters. For Latin letters, it is mainly given by the rate of common bigrams among the pairs of successive letters (around 70% for English texts, against around 15% for random letters ; most of these bigrams are also common in other Latin-script languages such as French, German, Spanish or Italian), weighted by the rate of printable characters, the rate of letters and spaces (at least 60% in a text), the number of distinct letters, the length of the words, the rate of tokens that are words or numbers (unlike e.g. a keyboard shift of an encoded string) and the function words such as "the", "et" or "und" (a reversed text, which holds the same bigrams, holds reversed function words such as "eht" instead). For other scripts (e.g. Cyrillic, Greek, Arabic or CJK), it only relies on language-independent features: the rate of letters of the dominant script, the rate of letters, spaces and punctuation, and the length of the words (for the scripts that separate words with spaces). As these features cannot distinguish a text from a substitution of its characters, the outputs of such codecs are only rated from Latin letters. A bonus is given when the output looks like a text (textness above 0.5) and more than the input, which favours the right decoding over transformations that never fail (e.g. keyboard shifts) without favouring wrong decodings in a chain of encodings. Codecs that only substitute characters (e.g. `rot`, `xor`, `kbshift`) also get a penalty when their output looks less like a text than their input.
 
 !!! warning "Work in progress"
     
-    This part shall still be improved with better features and/or using machine learning. In particular, the default stop function (`text`) accepts any printable output with a low entropy, hence possibly an intermediate result of a chain of encodings.
+    This part shall still be improved with better features and/or using machine learning. In particular, the default stop function (`text`) accepts any printable output with a low entropy, hence possibly an intermediate result of a chain of encodings ; `text_strict` avoids this at the cost of a deeper, hence longer, search.
 
 ### Strength Evaluation
 

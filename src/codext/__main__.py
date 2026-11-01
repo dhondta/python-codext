@@ -112,6 +112,8 @@ def main():
                         help="error handling (default: strict)")
     guess = sparsers.add_parser("guess", help="try guessing the decoding codecs", **kw)
     guess.add_argument("encoding", nargs="*", help="list of known encodings to apply (default: none)")
+    guess.add_argument("-b", "--beam", type=int, metavar="INT",
+                       help="number of best-ranked decodings kept per candidate for the next depth (default: all)")
     guess.add_argument("-e", "--exclude", nargs="*", action="extend", metavar="CAT|COD|ENC",
                        help="categories, codecs and encodings to be explicitely not used ;\n "
                             "format: [category|codec|encoding] OR depth:[category|codec|encoding]")
@@ -120,8 +122,9 @@ def main():
     lng = "lang_%s" % LANG
     def_func = lng if getattr(stopfunc, lng, None) else "text"
     guess.add_argument("-f", "--stop-function", default=def_func, metavar="FUNC", help="result checking function "
-                       "(default: %s) ; format: printables|text|flag|lang_[bigram]|[regex]\nNB: [regex] is case-"
-                       "sensitive ; add -i to force it as case-insensitive or add '(?i)' in front of the expression"
+                       "(default: %s) ; format: printables|text|text_strict|flag|lang_[bigram]|[regex]\nNB: [regex] "
+                       "is case-sensitive ; add -i to force it as case-insensitive or add '(?i)' in front of the "
+                       "expression"
                        % def_func)
     guess.add_argument("-H", "--no-heuristic", action="store_true", help="DO NOT use the scoring heuristic ; slows down"
                        " the search but may be more accurate (default: False)")
@@ -138,8 +141,13 @@ def main():
                        help="minimum codec search depth before triggering results (default: 0)")
     guess.add_argument("-M", "--max-depth", default=5, type=int, metavar="INT",
                        help="maximum codec search depth (default: 5)")
+    guess.add_argument("-n", "--max-nodes", type=int, metavar="INT",
+                       help="maximum number of candidates to be decoded with every encoding (default: no limit)")
     guess.add_argument("-s", "--do-not-stop", action="store_true",
                        help="do not stop if a valid output is found (default: False)")
+    guess.add_argument("-t", "--timeout", type=float, metavar="SECONDS",
+                       help="maximum duration of the search, then returning the results found so far (default: no "
+                            "limit)")
     guess.add_argument("-v", "--verbose", action="store_true",
                        help="show guessing information and steps (default: False)")
     rank = sparsers.add_parser("rank", help="rank the most probable encodings based on the given input", **kw)
@@ -246,7 +254,8 @@ def main():
             r = codecs.guess(c,
                              getattr(stopfunc, s, ["", "(?i)"][args.icase] + s), args.min_depth, args.max_depth,
                              args.include, args.exclude, args.encoding, not args.do_not_stop, True,  # show
-                             not args.no_heuristic, args.extended, args.verbose)
+                             not args.no_heuristic, args.extended, args.verbose, args.timeout, args.max_nodes,
+                             args.beam)
             for i, o in enumerate(r.items()):
                 e, out = o
                 if len(e) > 0:

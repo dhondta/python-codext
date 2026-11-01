@@ -12,7 +12,7 @@ When N is not a power of 2, the whole input is converted as a single big integer
 """
 from argparse import ArgumentParser, RawTextHelpFormatter
 from functools import lru_cache
-from math import log
+from math import lcm, log
 from string import ascii_lowercase as lower, ascii_uppercase as upper, digits, printable
 from sys import stderr, stdout
 from textwrap import wrap as wraptext
@@ -254,6 +254,10 @@ def base(charset, pattern, pow2=False, encode_template=base_encode, decode_templ
         return _decode
     
     kwargs['len_charset'] = n
+    # the (padded) output of a base whose N is a power of 2 is made of quanta of a whole number of bytes (e.g. 4
+    #  characters for 3 bytes with base64)
+    if pow2:
+        kwargs.setdefault('len_multiple', lcm(int(nb), 8) // int(nb))
     kwargs['printables_rate'] = float(len([c for c in cs if c in printable])) / len(cs)
     kwargs['expansion_factor'] = kwargs.pop('expansion_factor', (EXPANSION_FACTOR(n), .05))
     n = "base{}".format(n) if name is None else name

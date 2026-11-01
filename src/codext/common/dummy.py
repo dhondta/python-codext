@@ -26,7 +26,7 @@ def replace(pair, *args):
 add("replace", replace, replace, r"^replace[-_]?((?!.*(.).*\2)..)$", guess=None)
 # important note:                                              ^
 #                                           using "{2}" here instead will break the codec
-#  this is due to the fact the codext.__common__.generate_string_from_regex DOES NOT handle ASSERT_NOT (?!) and will
+#  this is due to the fact the codext.regex.generate_string_from_regex DOES NOT handle ASSERT_NOT (?!) and will
 #   fail to generate a valid instance in lookup(...) when an encoding name is to be generated to get the CodecInfo
 
 
