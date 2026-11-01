@@ -47,6 +47,8 @@ usage examples:
 - echo -en "test" | codext encode upper reverse base32 base64 morse
 - echo -en "test" | codext encode base64 gzip | codext guess
 - echo -en "test" | codext encode base64 gzip | codext guess gzip -c base
+- codext strength base64 gzip
+- echo -en "secret" | codext strength base64 rot-13
 ```
 
 !!! note "Input/output"

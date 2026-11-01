@@ -181,3 +181,25 @@ This "textness" depends on the script of the letters. For Latin letters, it is m
     
     This part shall still be improved with better features and/or using machine learning. In particular, the default stop function (`text`) accepts any printable output with a low entropy, hence possibly an intermediate result of a chain of encodings.
 
+### Strength Evaluation
+
+While the guess mode tries to *reverse* an unknown chain of codecs, the strength feature does the opposite: given a chain, it estimates how hard that chain is to reverse. It rates resistance to codext's own guessing heuristic and to casual recognition - not cryptographic strength.
+
+It encodes a sample through the chain, then walks the true decoding path and, at each layer, uses the ranking heuristic (see above) to measure how high the correct codec is ranked. A layer ranked first is an obvious give-away ; a deeply-ranked or non-surfaced ("blind") layer, e.g. one whose codec opts out of guessing, cannot be greedily followed. It also flags an output that still looks like a text (a disguise) and a lossy chain (e.g. a hash) whose plaintext cannot be recovered at all.
+
+The result is a score from 0 (trivially reversible) to 100 (resists the guesser) with a letter grade, the per-layer ranks and notes pointing at the weakest layer:
+
+```python
+>>> codext.strength(["base64"])
+{'chain': ['base64'], 'reversible': True, 'length': 1, 'score': 12, 'grade': 'F', 'blind_layers': 0,
+ 'worst_rank': 1, 'disguised': False, 'correct_ranks': [1],
+ 'notes': ['every layer is ranked first by the guesser: trivially peelable']}
+>>> codext.strength(["gzip", "xor-173", "base64"])["grade"]
+'C'
+```
+
+A compatible sample is chosen automatically ; a specific one can be given with the `sample` keyword-argument. The `include`/`exclude` arguments scope the codecs the guesser may use, exactly like for the guess mode. With the [CLI tool](cli.md), the chain is given as arguments and the sample is read from stdin or a file (a default is used otherwise): `codext strength base64 gzip`.
+
+!!! note "Not cryptographic strength"
+    
+    This measures resistance to codext's guessing/ranking and to casual inspection, not cryptographic security. The per-layer ranking is used on purpose instead of the full recursive guess, which is combinatorially expensive on some chains.

@@ -6,6 +6,7 @@ import argparse
 import sys
 
 from .__common__ import *
+from .guess import stopfunc
 from .__info__ import __author__, __copyright__, __email__, __license__, __source__, __version__
 
 
@@ -151,6 +152,14 @@ def main():
                       help="categories, codecs and encodings to be explicitely used ;\n "
                            "format: [category|codec|encoding] OR depth:[category|codec|encoding]")
     rank.add_argument("-l", "--limit", type=int, default=10, help="limit the number of displayed results")
+    strength = sparsers.add_parser("strength", help="evaluate the strength of a chain of codecs", **kw)
+    strength.add_argument("encoding", nargs="+", help="list of encodings forming the chain to evaluate")
+    strength.add_argument("-e", "--exclude", nargs="*", action="extend", metavar="CAT|COD|ENC",
+                          help="categories, codecs and encodings the guessing adversary may not use")
+    strength.add_argument("-f", "--stop-function", default="text", metavar="FUNC",
+                          help="stop function for the guessing adversary (default: text)")
+    strength.add_argument("-i", "--include", nargs="*", action="extend", metavar="CAT|COD|ENC",
+                          help="categories, codecs and encodings the guessing adversary may use")
     search = sparsers.add_parser("search", help="search for codecs")
     search.add_argument("pattern", nargs="+", help="encoding pattern to search")
     listi = sparsers.add_parser("list", help="list items")
@@ -164,7 +173,7 @@ def main():
     remm = sparsers.add_parser("remove-macro", help="remove a macro from the registry")
     remm.add_argument("name", help="macro's name")
     args = parser.parse_args()
-    if args.command in ["guess", "rank"]:
+    if args.command in ["guess", "rank", "strength"]:
         args.include, args.exclude = __format_list(args.include), __format_list(args.exclude, False)
     try:
         # if a search pattern is given, only handle it
@@ -180,6 +189,19 @@ def main():
             return 0
         elif args.command == "remove-macro":
             remove_macro(args.name)
+            return 0
+        # evaluate the strength of a chain of codecs (sample from a file, from a pipe, or a default one)
+        elif args.command == "strength":
+            sample = None
+            if args.infile:
+                sample = _input(args.infile)
+            elif not sys.stdin.isatty():
+                sample = _input(None)
+            if sample is not None:
+                sample = (sample.rstrip("\r\n") if isinstance(sample, str) else sample.rstrip(b"\r\n")) or None
+            print(codecs.strength_report(args.encoding, sample=sample,
+                                         stop_func=getattr(stopfunc, args.stop_function, stopfunc.default),
+                                         include=args.include, exclude=args.exclude))
             return 0
         # list encodings or macros
         elif args.command == "list":

@@ -246,6 +246,46 @@ class TestCommon(TestCase):
         self.assertIsNotNone(codext.rank(ENC, include=["base"], exclude=["does_not_exist"])[0][0][1], STR)
         self.assertIsNotNone(codext.rank("TEST=", include=["test", "base"])[0][0][1], "TEST")
     
+    def test_strength_chains(self):
+        # trivially reversible single codec: low score, grade F, no blind layer, ranked first
+        r = codext.strength(["base64"])
+        self.assertEqual(set(r), {"chain", "reversible", "length", "score", "grade", "blind_layers", "worst_rank",
+                                  "disguised", "correct_ranks", "notes"})
+        self.assertTrue(r["reversible"])
+        self.assertEqual(r["grade"], "F")
+        self.assertEqual(r["worst_rank"], 1)
+        self.assertEqual(r["blind_layers"], 0)
+        self.assertTrue(0 <= r["score"] <= 100)
+        # a lossy chain (hash) cannot be recovered -> maximal score
+        r = codext.strength("md5")
+        self.assertFalse(r["reversible"])
+        self.assertEqual((r["score"], r["grade"]), (100, "A"))
+        self.assertIn("lossy", r["notes"][0])
+        # an output that still looks like text is flagged as disguised
+        r = codext.strength(["rot-13"])
+        self.assertTrue(r["disguised"])
+        self.assertTrue(any("looks like" in n for n in r["notes"]))
+        # multi-codec chain, explicit sample, include/exclude scoping
+        self.assertEqual(codext.strength(["base64", "base64"])["length"], 2)
+        self.assertTrue(codext.strength(["base64"], sample="hello")["reversible"])
+        self.assertIsNotNone(codext.strength(["base64"], exclude=["rot"])["score"])
+        # a reversible codec the guesser cannot follow (guess disabled) is a "blind" layer
+        codext.add("blind_codec", lambda x, e="strict": (x[::-1], len(x)),
+                   lambda x, e="strict": (x[::-1], len(x)), "^blind$", guess=None)
+        r = codext.strength(["blind"])
+        self.assertEqual(r["blind_layers"], 1)
+        self.assertIsNone(r["worst_rank"])
+        self.assertTrue(any("cannot follow" in n for n in r["notes"]))
+        codext.remove("blind_codec")
+        # report is a human-readable string ; invalid inputs raise
+        self.assertIn("strength:", codext.codecs.strength_report(["base64"]))
+        # no sample can be encoded through the chain -> ValueError
+        codext.add("fail_codec", lambda x, e="strict": (x / 0, 0), lambda x, e="strict": (x, len(x)), "^fail$")
+        self.assertRaises(ValueError, codext.strength, ["fail"])
+        codext.remove("fail_codec")
+        self.assertRaises(ValueError, codext.strength, [])
+        self.assertRaises(LookupError, codext.strength, ["does_not_exist_xyz"])
+
     def test_handle_macros(self):
         MACRO = "test-macro-f2ca1bb6c7e907d06dafe4687e579fce76b37e4e93b7605022da52e6ccc26fd2"
         STR = "this is a test"
