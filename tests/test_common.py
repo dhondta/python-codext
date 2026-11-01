@@ -465,6 +465,33 @@ class TestCommon(TestCase):
             self.assertIsNone(codext.add_macro("VALID-MACRO", first, "base64"))
             self.assertIsNone(codext.remove("VALID-MACRO"))
     
+    def test_main_show(self):
+        import os, subprocess
+        src = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "src")
+        env = {**os.environ, 'PYTHONPATH': src + os.pathsep + os.environ.get('PYTHONPATH', "")}
+        cli = lambda *args: subprocess.run([sys.executable, "-m", "codext", "show"] + list(args), input=b"", env=env,
+                                           capture_output=True)
+        # a codec is described by the docstring of its module, an encoding by the one of its codec
+        r = cli("rle")
+        self.assertEqual(r.returncode, 0)
+        self.assertIn(b"codec    : rle (compression)", r.stdout)
+        self.assertIn(b"Run-Length Encoding Codec", r.stdout)
+        r = cli("base64-url")
+        self.assertIn(b"encoding : base64-url", r.stdout)
+        self.assertIn(b"module   : codext.base.baseN", r.stdout)
+        # a native codec is described by its module from the encodings package, a macro by its chain
+        self.assertIn(b"module   : encodings.cp500", cli("cp500").stdout)
+        r = cli("rot-13", "example-macro")
+        self.assertIn(b"-" * 80, r.stdout)
+        self.assertIn("chain    : gzip · base62".encode(), r.stdout)
+        # unknown names are reported with similar ones, while the known ones are still shown
+        r = cli("vigener", "rle")
+        self.assertEqual(r.returncode, 1)
+        self.assertIn(b"unknown encoding: vigener (similar: vigenere)", r.stderr)
+        self.assertIn(b"Run-Length Encoding Codec", r.stdout)
+        # the codecs made by the base factory are documented by the module that declares them
+        self.assertEqual(codext.lookup("base32").parameters['module'], "codext.base.baseN")
+    
     def test_main_binary_output(self):
         import os, subprocess
         src = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "src")

@@ -51,6 +51,8 @@ usage examples:
 - echo -en "secret" | codext strength base64 rot-13
 - codext compose
 - codext compose -a alphanumeric -l 4 -k mysecret -m mychain -n
+- codext show rle
+- codext show base64-url rot-13 example-macro
 ```
 
 !!! note "Input/output"
@@ -62,6 +64,10 @@ usage examples:
 !!! note "Encodings chaining"
     
     Encodings can be chained as shown in the last examples of the help message. This can be practical for quickly manipulating data.
+
+!!! note "Codecs documentation"
+    
+    `codext show` displays the documentation of the given codecs, encodings or macros: the codec's name, category and module, then the docstring of this module (for a native codec, the one of its module from the `encodings` package), or the chain of encodings of a macro. An unknown name is reported with similar names (e.g. `codext show vigener` suggests `vigenere`).
 
 ### Execution examples
 

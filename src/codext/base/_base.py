@@ -12,6 +12,7 @@ When N is not a power of 2, the whole input is converted as a single big integer
 """
 from argparse import ArgumentParser, RawTextHelpFormatter
 from functools import lru_cache
+from inspect import currentframe
 from math import lcm, log
 from string import ascii_lowercase as lower, ascii_uppercase as upper, digits, printable
 from sys import stderr, stdout
@@ -266,6 +267,11 @@ def base(charset, pattern, pow2=False, encode_template=base_encode, decode_templ
     except AttributeError:
         g = [n]
     kwargs['guess'] = kwargs.get('guess', g)
+    # the codec is documented by the module that declares it (e.g. baseN for base64), not by this factory
+    f = currentframe().f_back
+    while f.f_globals.get('__name__') in (__name__, __name__ + "2n"):
+        f = f.f_back
+    kwargs.setdefault('module', f.f_globals.get('__name__'))
     add(n, encode, decode, pattern, entropy=nb, **kwargs)
 
 

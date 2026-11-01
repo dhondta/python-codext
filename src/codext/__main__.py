@@ -4,8 +4,13 @@
 """
 import argparse
 import sys
+from difflib import get_close_matches
+from encodings import normalize_encoding
+from encodings.aliases import aliases
 from getpass import getpass
+from importlib import import_module
 
+from . import __common__
 from .__common__ import *
 from .__common__ import PERS_MACROS_FILE
 from .compose import QUESTIONS, report as compose_report
@@ -90,6 +95,30 @@ def __ask(question, given=None):
         print(f"    please answer with a number from 1 to {len(choices)}", file=sys.stderr)
 
 
+def __show(name):
+    """ Describe a codec, an encoding or a macro: its name, its category, its module and the docstring of this module,
+         which documents the codec ; a macro is described by its chain of encodings. """
+    ci = lookup(name)
+    if isinstance(ci, CodecMacro):
+        pers = name in __common__.PERS_MACROS
+        chain = (__common__.PERS_MACROS if pers else __common__.MACROS)[name]
+        return f"macro    : {name} ({f'personal, in {PERS_MACROS_FILE}' if pers else 'embedded'})\n" \
+               f"chain    : {' · '.join(chain)}"
+    p = ci.parameters
+    codec, cat, module = p.get('name', ci.name), p.get('category'), p.get('module')
+    # the native codecs are documented by their module from the encodings package (e.g. encodings.cp500)
+    if cat == "native":
+        n = normalize_encoding(ci.name).lower()
+        module = f"encodings.{aliases.get(n, n)}"
+    try:
+        doc = (import_module(module).__doc__ or "").strip()
+    except (ImportError, TypeError, ValueError):
+        doc = ""
+    lines = [f"codec    : {codec} ({cat})"] + ([f"encoding : {name}"] if name != codec else []) + \
+            [f"module   : {module}", "", doc or "No description available."]
+    return "\n".join(lines)
+
+
 def main():
     class _CustomFormatter(argparse.RawTextHelpFormatter):
         def __init__(self, prog, **kwargs):
@@ -121,6 +150,8 @@ def main():
         "echo -en \"test\" | codext encode base64 gzip | codext guess gzip -c base",
         "codext compose",
         "codext compose -a alphanumeric -l 4 -k mysecret -m mychain -n",
+        "codext show rle",
+        "codext show base64-url rot-13 example-macro",
     ])
     kw = {'formatter_class': _CustomFormatter}
     parser = argparse.ArgumentParser(prog="codext", description=descr, epilog=examples, **kw)
@@ -218,6 +249,8 @@ def main():
     compose.add_argument("-s", "--seed", type=int, help="seed for drawing the chain (default: random)")
     compose.add_argument("-x", "--expansion", choices=list(QUESTIONS[2]['choices']),
                          help="how many times larger than the input the output may be (default: 5)")
+    show = sparsers.add_parser("show", help="show the documentation of codecs, encodings or macros")
+    show.add_argument("encoding", nargs="+", help="names of codecs, encodings or macros")
     search = sparsers.add_parser("search", help="search for codecs")
     search.add_argument("pattern", nargs="+", help="encoding pattern to search")
     listi = sparsers.add_parser("list", help="list items")
@@ -241,6 +274,20 @@ def main():
                 results.extend(codecs.search(enc))
             print(", ".join(results) or "No encoding found")
             return 0
+        # show the documentation of codecs, encodings or macros
+        elif args.command == "show":
+            status, out = 0, []
+            for name in args.encoding:
+                try:
+                    out.append(__show(name))
+                except LookupError as e:
+                    status = 1
+                    similar = get_close_matches(name, list_encodings() + list_macros(), 5, .7)
+                    print(f"codext: {str(e)[0].lower()}{str(e)[1:]}" +
+                          (f" (similar: {', '.join(similar)})" if similar else ""), file=sys.stderr)
+            if out:
+                print(("\n\n" + "-" * 80 + "\n\n").join(out))
+            return status
         # add/remove macros (not requiring to input a file or text)
         elif args.command == "add-macro":
             add_macro(args.name, *args.encoding)
