@@ -28,6 +28,7 @@ nav:
   - 'String manipulations': manipulations.md
   - 'CLI tool': cli.md
   - 'Create your codec': howto.md
+  - Comparison: comparison.md
   - Contributing: contributing.md
 extra:
   generator: false
@@ -61,7 +62,6 @@ theme:
         name: Switch to light mode
   features:
     - content.code.copy
-    - navigation.sections
     - navigation.top
     - toc.follow
 use_directory_urls: false
