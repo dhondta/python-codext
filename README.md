@@ -264,6 +264,7 @@ CACTCGGTCGGCCATATGTTCGGCCATATGTTCGTCTGTTCACTCGCCCATACACT
 - [X] `aztec`: real (scannable) Aztec code (ISO/IEC 24778) ; optimal high-level compaction, error correction percentage given in the name (e.g. `aztec-33` ; 23% by default), rendered as an image or, with `aztec-text`, as plain text ; decoding applies Reed-Solomon error correction
 - [X] `datamatrix`: real (scannable) Data Matrix barcode (ISO/IEC 16022, ECC200) ; most compact of the ASCII, C40, Text, X12 and EDIFACT schemes, square or rectangular (`datamatrix-rect`), rendered as an image or, with `datamatrix-text`, as plain text ; decoding applies Reed-Solomon error correction
 - [X] `fakeqr`: hides the input bits as the modules of something that looks like a QR code but is not one, either an image or, with the `fakeqr-text` variant, plain text (the 8 QR masks are available as `fakeqr-0` to `fakeqr-7`)
+- [X] `pdf417`: real (scannable) PDF417 stacked barcode (ISO/IEC 15438) ; most compact of the Text, Byte and Numeric modes, error correction level given in the name (e.g. `pdf417-5` ; 2 by default), rendered as an image or, with `pdf417-text`, as plain text ; decoding applies Reed-Solomon error correction
 - [X] `qr`: real (scannable) QR code ; byte mode, error correction level given in the name (`qr-l`, `qr-m`, `qr-q`, `qr-h` ; M by default), rendered as an image or, with `qr-text`, as plain text ; decoding applies Reed-Solomon error correction
 
 #### [BaseXX](https://python-codext.readthedocs.io/en/latest/enc/base.html)
