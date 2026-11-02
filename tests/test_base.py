@@ -233,6 +233,27 @@ class TestCodecsBase(TestCase):
         self.assertRaises(ValueError, codecs.decode, "a\xff", "base91")
         self.assertIsNotNone(codecs.encode("\x00\x00", "base91-alt"))
     
+    def test_codec_base92(self):
+        # the actual Base92 takes the name, while the generic base remains available
+        self.assertEqual(codecs.lookup("base92").parameters['name'], "base92")
+        self.assertEqual(codecs.lookup("base92-generic").parameters['name'], "base")
+        self.assertNotEqual(codecs.encode(STR, "base92"), codecs.encode(STR, "base92-generic"))
+        # invalid characters, pairs and single characters are skipped when errors are not handled strictly
+        self.assertEqual(codecs.decode('Fc_$aOTd"KnsM*k', "base92", "ignore"), "hello world")
+        self.assertEqual(codecs.decode("F", "base92", "ignore"), "")
+        self.assertEqual(codecs.decode("}}Fc_$aOTdKnsM*k", "base92", "ignore"), "hello world")
+        # the CLI tool
+        import os, subprocess
+        src = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "src")
+        env = {**os.environ, 'PYTHONPATH': src + os.pathsep + os.environ.get('PYTHONPATH', "")}
+        args = lambda *a: "".join(", %r" % x for x in a)
+        cmd = lambda *a: [sys.executable, "-c", "import sys ; from codext.base.base92 import main92 ; "
+                                                "sys.argv = ['base92'%s] ; sys.exit(main92())" % args(*a)]
+        r = subprocess.run(cmd(), input=b"hello world", capture_output=True, env=env)
+        self.assertEqual(r.stdout.strip(), b"Fc_$aOTdKnsM*k")
+        r = subprocess.run(cmd("-d"), input=b"Fc_$aOTdKnsM*k", capture_output=True, env=env)
+        self.assertEqual(r.stdout, b"hello world")
+    
     def test_codec_base100(self):
         B100 = "\U0001f46b\U0001f45f\U0001f460\U0001f46a\U0001f417\U0001f460\U0001f46a\U0001f417\U0001f458\U0001f417" \
                "\U0001f46b\U0001f45c\U0001f46a\U0001f46b"

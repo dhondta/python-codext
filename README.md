@@ -290,6 +290,7 @@ CACTCGGTCGGCCATATGTTCGGCCATATGTTCGTCTGTTCACTCGCCCATACACT
 - [X] `base69`: [Base69](https://github.com/pshihn/base69) encoding (chunks of 7 bytes, 2 characters per 7 bits)
 - [X] `base85`: all variants of Base85 ([Ascii85](https://fr.wikipedia.org/wiki/Ascii85), [z85](https://rfc.zeromq.org/spec/32), [Adobe](https://dencode.com/string/ascii85), [(x)btoa](https://dencode.com/string/ascii85), [RFC1924](https://datatracker.ietf.org/doc/html/rfc1924), [XML](https://datatracker.ietf.org/doc/html/draft-kwiatkowski-base85-for-xml-00))
 - [X] `base91`: [Base91](http://base91.sourceforge.net) custom conversion
+- [X] `base92`: [Base92](https://github.com/thenoviceoof/base92) custom conversion
 - [X] `base100` (or *emoji*): [Base100](https://github.com/AdamNiederer/base100) custom conversion
 - [X] `base122`: [Base122](http://blog.kevinalbs.com/base122) custom conversion
 - [X] `base128`: conversion to the ASCII charset (with control characters)

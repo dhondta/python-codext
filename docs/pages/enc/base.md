@@ -72,6 +72,7 @@ Note that for `base64`, it overwrites the native `base64_codec` to also support 
 `base69` | data <-> Base69 encoded text | `base[-_]?69` | [Base69](https://github.com/pshihn/base69) encoding (chunks of 7 bytes, 2 characters per 7 bits, `N=` for *N* padding bytes)
 `base91` | text <-> Base91 encoded text | `base[-_]?91(|[-_]inv(erted)?)` | 
 `base91-alt` | text <-> Alternate Base91 encoded text | `base[-_]?91[-_]alt(?:ernate)?(|[-_]inv(erted)?)` | Another version of Base91
+`base92` | data <-> Base92 encoded text | `base[-_]?92` | [Base92](https://github.com/thenoviceoof/base92) encoding (13 bits per pair of characters, `~` for an empty string) ; same alphabet and bit packing as `base91-alt`, which however neither encodes the empty string as `~` nor checks the pairs when decoding
 
 ```python
 >>> codext.encode("test", "base3")
@@ -129,6 +130,10 @@ Base38 is the encoding of the payloads of the [Matter](https://github.com/projec
 'nX,<:WRT%yxth90oZB^C'
 >>> codext.encode("This is a test !", "base91-alt")
 '?a&[jv4S3Wg>,71@Jo#K'
+>>> codext.encode("This is a test !", "base92")
+'?a&[jv4S3Wg>,71@Jo#K'
+>>> codext.encode("", "base92")
+'~'
 ```
 
 !!! note "Generic encodings"
