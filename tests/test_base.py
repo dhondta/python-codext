@@ -240,6 +240,14 @@ class TestCodecsBase(TestCase):
             self.assertEqual(codecs.decode(b64, enc), STR)
             self.assertEqual(codecs.decode(b(b64), enc), b(STR))
     
+    def test_codec_modhex(self):
+        # YubiKey's alphabet for the hexadecimal digits, the case and delimiters being ignored when decoding
+        self.assertEqual(codecs.encode(STR, "modhex"), codecs.encode(STR, "base16").lower().translate(
+                         str.maketrans("0123456789abcdef", "cbdefghijklnrtuv")))
+        self.assertEqual(codecs.decode(codecs.encode(STR, "modhex").upper(), "modhex"), STR)
+        # invalid characters and an incomplete byte are dropped when errors are not handled strictly
+        self.assertEqual(codecs.decode("cl?bfb", "modhex", "ignore"), "\n\x14")
+    
     def test_codec_base91(self):
         for b91, enc in zip([",X,<:WRT%yxth90oZB", ",N,<:MHJ%onjXzqeP1", "Jx&[jv4S3Wg>,71@Jk", "yJy^\\IDFsdc?Tof:L#"],
                             ["base91", "base91-inv", "base91-alt", "base91-alt-inv"]):

@@ -183,6 +183,7 @@ This encoding implements various different versions of Base85.
 
 **Codec** | **Conversions** | **Aliases** | **Comment**
 :---: | :---: | --- | ---
+`modhex` | data <-> ModHex encoded text | `mod-hex`, `base16-modhex`, `yubikey-modhex` | [ModHex](https://developers.yubico.com/yubico-c/Manuals/modhex.1.html), the hexadecimal of YubiKeys with the digits `cbdefghijklnrtuv` ; decoding ignores the case, whitespaces and the delimiters `%`, `,`, `;` and `:`
 `base100` | text <-> Base100 encoded text | `base[-_]?100|emoji` | Python 3 only
 `base122` | text <-> Base122 encoded text | `base[-_]?122` | Python 3 only
 `base128` | text <-> Base128 encoded text | `base[-_]?128` | Relies on the ASCII charset
@@ -197,6 +198,13 @@ This encoding implements various different versions of Base85.
 `base32768` | data <-> Base32768 encoded text | `base[-_]?32768` | 15 bits per character, optimised for UTF-16
 `base65536` | data <-> Base65536 encoded text | `base[-_]?65536` | 16 bits per character, optimised for UTF-32
 `base131072` | data <-> Base131072 encoded text | `base[-_]?131072` | 17 bits per character, variant of the [base131072](https://docs.rs/base131072) Rust crate
+
+```python
+>>> codecs.encode("this is a test", "modhex")
+'ifhjhkiedchkiedchbdcifhgieif'
+>>> codecs.decode("IF:HJ:HK:IE", "modhex")
+'this'
+```
 
 ```python
 >>> codecs.encode("this is a test", "base100")

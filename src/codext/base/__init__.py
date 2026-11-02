@@ -19,6 +19,7 @@ from .base65536 import *
 from .base131072 import *
 from .baseN import *
 from .leb128 import *
+from .modhex import *
 from ..__common__ import *
 from ..__info__ import __version__
 

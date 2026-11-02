@@ -277,6 +277,7 @@ CACTCGGTCGGCCATATGTTCGGCCATATGTTCGTCTGTTCACTCGCCCATACACT
 - [X] `base10`: simple conversion to decimal
 - [X] `base11`: conversion to digits with a "*a*"
 - [X] `base16`: simple conversion to hexadecimal (with a variant holding an alphabet with digits and letters inverted)
+- [X] `modhex`: [ModHex](https://developers.yubico.com/yubico-c/Manuals/modhex.1.html), the hexadecimal of YubiKeys (digits as `cbdefghijklnrtuv`)
 - [X] `base26`: conversion to alphabet letters
 - [X] `base32`: classical conversion according to the RFC4648 with all its variants ([zbase32](https://philzimmermann.com/docs/human-oriented-base-32-encoding.txt), extended hexadecimal, [geohash](https://en.wikipedia.org/wiki/Geohash), [Crockford](https://www.crockford.com/base32))
 - [X] `base36`: [Base36](https://en.wikipedia.org/wiki/Base36) conversion to letters and digits (with a variant inverting both groups)
