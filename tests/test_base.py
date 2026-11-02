@@ -205,6 +205,27 @@ class TestCodecsBase(TestCase):
         self.assertEqual(codecs.encode(b("\x00abc"), "base58"), b("1ZiCa"))
         self.assertEqual(codecs.decode(b("1ZiCa"), "base58"), b("\x00abc"))
 
+    def test_codec_base58_monero(self):
+        # encoding by blocks of 8 bytes, unlike Bitcoin's Base58 which encodes the input as a whole
+        self.assertEqual(codecs.encode("\xff" * 9, "base58-monero"), "jpXCZedGfVQ5Q")
+        self.assertNotEqual(codecs.encode("\xff" * 9, "base58-monero"), codecs.encode("\xff" * 9, "base58-bitcoin"))
+        self.assertEqual(len(codecs.encode("\x00" * 16, "base58-monero")), 22)
+        # invalid characters and blocks are skipped when errors are not handled strictly
+        self.assertEqual(codecs.decode("jpXCZedGfVQ!5Q", "base58-monero", "ignore"), "\xff" * 9)
+        self.assertEqual(codecs.decode("jpXCZedGfVQ1", "base58-monero", "ignore"), "\xff" * 8)
+        self.assertEqual(codecs.decode("jpXCZedGfVR5Q", "base58-monero", "ignore"), "\xff")  # overflowing block skipped
+        # the CLI tool
+        import os, subprocess
+        src = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "src")
+        env = {**os.environ, 'PYTHONPATH': src + os.pathsep + os.environ.get('PYTHONPATH', "")}
+        args = lambda *a: "".join(", %r" % x for x in a)
+        cmd = lambda *a: [sys.executable, "-c", "import sys ; from codext.base.base58monero import main58xmr ; "
+                                                "sys.argv = ['base58-monero'%s] ; sys.exit(main58xmr())" % args(*a)]
+        r = subprocess.run(cmd(), input=b"\xff" * 9, capture_output=True, env=env)
+        self.assertEqual(r.stdout.strip(), b"jpXCZedGfVQ5Q")
+        r = subprocess.run(cmd("-d"), input=b"jpXCZedGfVQ5Q", capture_output=True, env=env)
+        self.assertEqual(r.stdout, b"\xff" * 9)
+    
     def test_codec_base62(self):
         for b62, enc in zip(["CsoB4HQ5gmgMyCenF7E", "M2yLERaFqwqW8MoxPHO"], ["base62", "base62-inv"]):
             self.assertEqual(codecs.encode(STR, enc), b62)

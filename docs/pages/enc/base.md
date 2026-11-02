@@ -67,6 +67,7 @@ Note that for `base64`, it overwrites the native `base64_codec` to also support 
 `base38` | data <-> Base38 encoded text | `base[-_]?38` | Matter QR code payload encoding (chunks of 3 bytes)
 `base45` | text <-> Base45 encoded text | `base[-_]?45(|[-_]inv(erted)?)` | 
 `base58` | text <-> Base58 encoded text | `base[-_]?58(|[-_](bc|bitcoin|rp|ripple|fl|flickr|short[-]?url|url))` | Supports Bitcoin, Ripple and short URL
+`base58-monero` | data <-> Base58 Monero encoded text | `base[-_]?58[-_]?(monero|xmr|cryptonote)` | [Monero](https://github.com/monero-project/monero/blob/master/src/common/base58.cpp)'s Base58 (Bitcoin alphabet), by blocks of 8 bytes written with 11 characters, hence an output length fixed by the input length
 `base62` | text <-> Base62 encoded text | `base[-_]?62(|[-_]inv(erted)?)` | 
 `base63` | text <-> Base63 encoded text | `base[-_]?63(|[-_]inv(erted)?)` | 
 `base69` | data <-> Base69 encoded text | `base[-_]?69` | [Base69](https://github.com/pshihn/base69) encoding (chunks of 7 bytes, 2 characters per 7 bits, `N=` for *N* padding bytes)
@@ -123,6 +124,13 @@ Base38 is the encoding of the payloads of the [Matter](https://github.com/projec
 '289lyu'
 >>> codecs.encode("this is a test", "base62")
 'CsoB4HQ5gmgMyCenF7E'
+```
+
+```python
+>>> codext.encode("This is a test", "base58-monero")
+'F7rzexGfWcX1qNFE5utf'
+>>> codext.encode("This is a test", "base58-bitcoin")
+'Y2oxCuAXwVJduYPTmsZ'
 ```
 
 ```python
