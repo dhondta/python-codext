@@ -317,6 +317,7 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 - [X] `bcd-extended0`: variant of `bcd` ; encodes characters from their (zero-left-padded) ordinals using prefix bits `0000`
 - [X] `bcd-extended1`: variant of `bcd` ; encodes characters from their (zero-left-padded) ordinals using prefix bits `1111`
 - [X] `chuck-norris`: Chuck Norris unary code (runs of the 7-bit ASCII bits written with blocks of zeros)
+- [X] `cobs`: aka Consistent Overhead Byte Stuffing ; removes the zero bytes of the data (with a variant adding the packet delimiter)
 - [X] `differential-manchester`: line code writing the bits as transitions at the start of their periods (also inverted)
 - [X] `elias-gamma`, `elias-delta`: Elias universal codes, encoding characters from their ordinals (or lists of integers with `-integers`)
 - [X] `excess3`: uses Excess-3 (aka Stibitz code) binary encoding to convert characters from their ordinals

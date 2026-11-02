@@ -98,6 +98,30 @@ Each character is written with the 7 bits of its ASCII code, then the resulting 
 
 -----
 
+### Consistent Overhead Byte Stuffing (COBS)
+
+[COBS](https://en.wikipedia.org/wiki/Consistent_Overhead_Byte_Stuffing) removes the zero bytes of the data, so that a zero byte can delimit packets: each block of non-zero bytes is preceded by a code byte giving its length plus one (the distance to the next zero byte), a block of 254 bytes being written with the code 255 and followed by no zero byte. The overhead is of 1 byte per 254 bytes at most. As CyberChef, encoding does not add the zero byte delimiting the packet and decoding rejects any zero byte ; the `-delimited` variant adds it when encoding and requires it when decoding.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`cobs` | data <-> COBS encoded data | `consistent-overhead-byte-stuffing` | without the packet delimiter
+`cobs-delimited` | data <-> COBS encoded packet | `cobs_delimited` | with the packet delimiter (a final zero byte)
+
+```python
+>>> codext.encode(b"\x11\x22\x00\x33", "cobs")
+b'\x03\x11"\x023'
+>>> codext.encode(b"\x11\x22\x00\x33", "cobs-delimited")
+b'\x03\x11"\x023\x00'
+>>> codext.decode(b"\x03\x11\x22\x02\x33", "cobs")
+b'\x11"\x003'
+```
+
+!!! note "Guessing"
+
+    As the COBS encoding of a data without zero byte only differs from it by a code byte every 254 bytes, guessing it relies on the structure of the code bytes only, hence it is not reliably ranked first.
+
+-----
+
 ### Elias Gamma/Delta Codes
 
 These universal codes write positive integers as self-delimiting codewords, hence concatenated without separator:

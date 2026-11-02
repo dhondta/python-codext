@@ -58,6 +58,13 @@ class ComplementaryTestCase(TestCase):
         self.assertEqual(codecs.decode("960 773 960 826 960", "coquelet8", "ignore"), "MT")
         self.assertEqual(len(codecs.encode("A1B2", "coquelet").split()), 2 * 7)
     
+    def test_codec_cobs(self):
+        # the output holds no zero byte, the zero bytes being removed when decoding if errors are not handled strictly
+        self.assertNotIn(b"\x00", codecs.encode(b"\x00" * 300 + bytes(range(256)) * 3, "cobs"))
+        self.assertEqual(codecs.decode(b"\x03\x11\x22\x00\x02\x33", "cobs", "ignore"), b"\x11\x22\x00\x33")
+        # a missing delimiter is tolerated if errors are not handled strictly
+        self.assertEqual(codecs.decode(b"\x03\x11\x22", "cobs-delimited", "ignore"), b"\x11\x22")
+    
     def test_codec_cow(self):
         # with a non-strict errors handling, other characters are comments and the program stops at a failing
         #  instruction

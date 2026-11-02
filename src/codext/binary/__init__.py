@@ -2,6 +2,7 @@
 from .baudot import *
 from .bcd import *
 from .chucknorris import *
+from .cobs import *
 from .elias import *
 from .excess3 import *
 from .fibonacci import *
