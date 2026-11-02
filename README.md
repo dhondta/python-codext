@@ -363,6 +363,7 @@ This category also contains `ascii85`, `adobe`, `[x]btoa`, `zeromq` with the `ba
 - [X] `porta`: aka Porta Cipher (reciprocal variant of Vigenere Cipher with 13 alphabets)
 - [X] `railfence`: aka Rail Fence Cipher
 - [X] `rotN`: aka Caesar cipher (*N* belongs to [1,25])
+- [X] `routeN`: aka Route Cipher ; transposition along a route (spiral, rows, columns or snakes) in a grid of *N* columns
 - [X] `scytaleN`: encrypts using the number of letters on the rod (*N* belongs to [1,[)
 - [X] `shiftN`: shift ordinals (*N* belongs to [1,255])
 - [X] `skip`: aka Skip Cipher (transposition reading every N-th character, looping on the text)

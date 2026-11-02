@@ -546,6 +546,27 @@ This implements the Rail Fence encoding algorithm, using 3 rails and offset 0 as
 ```
 
 -----
+### Route Cipher
+
+This writes the text in a grid of N columns, by rows (or down the columns with `-down`), then reads it along a route starting from a corner (`tl` by default, `tr`, `bl` or `br`): an inward spiral, clockwise (`spiral`, the default) or counter-clockwise (`spiral-ccw`), row by row or column by column in the same direction (`rows`, `columns`, the "lines" of [dCode](https://www.dcode.fr/route-cipher)) or alternating directions (`snake-rows`, `snake-columns`, the "routes" of dCode). The last cells of the grid remain empty when the text does not fill it and are skipped by the route ; padding the text beforehand (e.g. with "`.`" as dCode) gives a full grid.
+
+**Codec** | **Conversions** | **Aliases** | **Comment**
+:---: | :---: | --- | ---
+`route` | text <-> route ciphertext | `route-N`, `route-N-down`, `route-N-spiral-ccw-br`, `route_cipher_N_snake_rows`, ... | `N` (number of columns) is required
+
+```python
+>>> codext.encode("this is a test", "route-4")
+'this etsa ist '
+>>> codext.decode("this etsa ist ", "route-4")
+'this is a test'
+>>> codext.encode("WEAREDISCOVEREDFLEEATONCEJX", "route-9-down-spiral-tr")  # example of Wikipedia
+'EJXCTEDECDAEWRIORFEONALEVSE'
+>>> codext.encode("DCODEROUTE..", "route-4-snake-columns")  # example of dCode
+'DETERCOO..UD'
+```
+
+-----
+
 ### ROT N
 
 This is a dynamic encoding, that is, it can be called with an integer to define the ROT offset. Encoding will apply a positive offset, decoding will apply a negative one.

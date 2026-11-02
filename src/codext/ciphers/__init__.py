@@ -22,6 +22,7 @@ from .phillips import *
 from .polybius import *
 from .railfence import *
 from .rot import *
+from .route import *
 from .scytale import *
 from .shift import *
 from .skip import *
