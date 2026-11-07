@@ -79,5 +79,5 @@ def xx_decode(text, errors="strict"):
     return r, len(r)
 
 
-add("xx", xx_encode, xx_decode, r"^xx(?:[-_]?encode|[-_]codec)?$",
+add("xx", xx_encode, xx_decode, plain="bytes", pattern=r"^xx(?:[-_]?encode|[-_]codec)?$",
     bonus_func=lambda o, *a: re.match(r"^begin [0-7]{3,4} .*\n(?:.*\n)*\+\nend$", ensure_str(o.text).strip(), re.M))

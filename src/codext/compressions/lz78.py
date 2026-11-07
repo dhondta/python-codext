@@ -84,5 +84,5 @@ def lz78_decompress(input, errors="strict"):
     return "".join(chr(i) for i in out), len(out)
 
 
-add("lz78", lz78_compress, lz78_decompress)
+add("lz78", lz78_compress, lz78_decompress, plain="text")
 

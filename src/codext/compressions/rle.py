@@ -118,4 +118,5 @@ def rle_decode(binary=None, compact=None, suffix=None):
 
 
 add("rle", rle_encode, rle_decode,
-    r"^(?:rle|run[-_]?length(?:[-_]encoding)?)(?:[-_](bytes|escape)|(?:[-_](compact))?(?:[-_](suffix))?)$")
+    r"^(?:rle|run[-_]?length(?:[-_]encoding)?)(?:[-_](bytes|escape)|(?:[-_](compact))?(?:[-_](suffix))?)$",
+    plain="text", encoded="text")

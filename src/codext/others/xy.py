@@ -26,5 +26,6 @@ __examples__ = {
 __guess__ = ["xy"]
 
 
-add_map("xy", {'0': "x", '1': "y"}, intype="bin", pattern=r"^x[-_]?y(|[-_].{2})$", entropy=1., printables_rate=1.,
+add_map("xy", {'0': "x", '1': "y"}, plain="bytes", intype="bin", pattern=r"^x[-_]?y(|[-_].{2})$", entropy=1.,
+        printables_rate=1.,
         expansion_factor=8.)

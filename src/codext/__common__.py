@@ -43,6 +43,11 @@ CODECS_CATEGORIES = ["native", "custom"]
 # categories that were renamed or split, with the current categories of their codecs (still accepted, with a warning)
 DEPRECATED_CATEGORIES = {'crypto': ["cipher", "obfuscation"]}
 CODECS_CACHE = {}
+# categories whose codecs handle data (bytes) on their plain side, and on their encoded side
+PLAIN_BYTES_CATEGORIES = ["base", "base-generic", "binary", "checksum", "compression", "hashing"]
+ENCODED_DEFAULTS = {'binary': "bytes", 'compression': "bytes",
+                    # a barcode gives an image, unless its "-text" variant gives it as text
+                    'barcode': lambda name: "text" if re.search(r"[-_](?:text|txt)(?:$|[-_])", name) else "bytes"}
 
 __codecs_registry = []
 # caches depending on the state of the registry (cleared whenever it changes)
@@ -164,6 +169,10 @@ def add(ename, encode=None, decode=None, pattern=None, text=True, add_to_codecs=
     :param add_to_codecs: also add the search function to the native registry
                            NB: this will make the codec available in the built-in open(...) but will make it impossible
                                 to remove the codec later
+    :param plain:         kind of the plain side (what is encoded): "bytes" (data, handled byte for byte) or "text"
+                           (characters, read from and written to bytes as UTF-8), or a function giving it from the
+                           encoding name ; by default, depending on the category
+    :param encoded:       kind of the encoded side, as for plain
     """
     remove(ename)
     if encode:
@@ -187,12 +196,20 @@ def add(ename, encode=None, decode=None, pattern=None, text=True, add_to_codecs=
     for c in [cat, category]:
         if c not in CODECS_CATEGORIES:
             CODECS_CATEGORIES.append(c)
+    # kinds of the plain and encoded sides of the codec, deciding how bytes are read and written (see fix_inout_formats)
+    plain = kwargs.pop('plain', None) or ["text", "bytes"][category in PLAIN_BYTES_CATEGORIES]
+    encoded = kwargs.pop('encoded', None) or ENCODED_DEFAULTS.get(category, "text")
+    for side in [plain, encoded]:
+        if not callable(side) and side not in ["bytes", "text"]:
+            raise ValueError(f"Bad kind of side for codec '{ename}': {side} (shall be 'bytes' or 'text')")
     # search function for the new encoding
     @_with_repr(ename)
     def getregentry(encoding):
         if encoding != ename and not (rx and rx.match(encoding)):
             return
         fenc, fdec, name = encode, decode, encoding
+        # the kinds of the sides may depend on the encoding name (e.g. "qr" gives an image, while "qr-text" gives text)
+        p_kind, e_kind = [k(encoding) if callable(k) else k for k in (plain, encoded)]
         # prepare CodecInfo input arguments
         if pattern:
             m, args, i = rx.match(encoding), [], 1
@@ -222,10 +239,10 @@ def add(ename, encode=None, decode=None, pattern=None, text=True, add_to_codecs=
                     fenc = fenc(*args) if fenc else fenc
                     fdec = fdec(*args) if fdec else fdec
         if fenc:
-            fenc = fix_inout_formats(fenc)
+            fenc = fix_inout_formats(fenc, p_kind, e_kind)
         if fdec:
             sl, sc = getattr(fdec, '__strip__', (False, False))
-            fdec = fix_inout_formats(fdec)
+            fdec = fix_inout_formats(fdec, e_kind, p_kind)
             if sl or sc:
                 def _striplines(f):
                     def __wrapper(input, *a, **kw):
@@ -279,6 +296,7 @@ def add(ename, encode=None, decode=None, pattern=None, text=True, add_to_codecs=
         ci.parameters['pattern'] = pattern
         ci.parameters['text'] = text
         ci.parameters['category'] = category
+        ci.parameters['plain'], ci.parameters['encoded'] = p_kind, e_kind
         ci.parameters['examples'] = kwargs.get('examples', glob.get('__examples__'))
         ci.parameters['guess'] = kwargs.get('guess', glob.get('__guess__', [ename])) or []
         ci.parameters['module'] = kwargs.get('module', glob.get('__name__'))

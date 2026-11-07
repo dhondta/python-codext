@@ -59,6 +59,6 @@ def uu_decode(text, errors="strict"):
     return r, len(r)
 
 
-add("uu", uu_encode, uu_decode, pattern=r"^uu(?:[-_]?encode|[-_]codec)?$",
+add("uu", uu_encode, uu_decode, plain="bytes", pattern=r"^uu(?:[-_]?encode|[-_]codec)?$",
     bonus_func=lambda o, *a: re.match(b"^begin [1-7]{3} .*\n.*\nend$", b(o.text).strip(b"\n"), re.M))
 

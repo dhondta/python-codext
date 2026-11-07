@@ -121,5 +121,5 @@ def binhex_decode(text, errors="strict"):
             _f("CRC", name)
     return (r := bytes(s[hlen+2:hlen+2+dlen])), len(r)
 
-add("binhex", binhex_encode, binhex_decode, r"^(?:binhex(?:[-_]?4(?:\.0)?)?|hqx)$",
+add("binhex", binhex_encode, binhex_decode, plain="bytes", pattern=r"^(?:binhex(?:[-_]?4(?:\.0)?)?|hqx)$",
     bonus_func=lambda o, *a: INTRO in ensure_str(o.text))

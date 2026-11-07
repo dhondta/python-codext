@@ -62,4 +62,4 @@ def fibonacci_dec(bits, i):
 
 add("fibonacci", universal("fibonacci", fibonacci_enc, fibonacci_dec), universal("fibonacci", fibonacci_enc,
     fibonacci_dec, True), r"^fib(?:onacci(?:[-_]cod(?:e|ing))?)?" + PATTERN_INTEGERS, examples=__examples__,
-    guess=__guess__)
+    guess=__guess__, plain="text")

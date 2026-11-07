@@ -80,21 +80,52 @@ def ensure_str(s, encoding="utf-8", errors='strict'):
 
 
 # make conversion functions compatible with input/output strings/bytes
-def fix_inout_formats(f):
+def fix_inout_formats(f, inkind=None, outkind=None):
     """ This decorator ensures that the first output of f will have the same text format as the first input (str or
-         bytes). """
+         bytes).
+    
+    The kinds of the input and output sides ("bytes" or "text") tell how a bytes input is passed to f and how the output
+     of f is turned back into bytes:
+    - a "bytes" side holds data, passed byte for byte (as a str of the characters 0 to 255, which b(...) turns back into
+       the same bytes) ;
+    - a "text" side holds characters, read from UTF-8 (or Latin-1 if not valid UTF-8) and written in UTF-8 ; if both
+       sides are "text" and the input was not valid UTF-8, the output is written like the input was read, in Latin-1.
+    Without kinds, the input is read as UTF-8 (or Latin-1) and the output written with b(...) (Latin-1 or UTF-8). """
     @wraps(f)
     def _wrapper(*args, **kwargs):
         a0 = args[0]
-        a0_isb = isb(a0)
-        a0 = ensure_str(a0) if iss(a0) or a0_isb else a0
+        a0_isb, kinds, okind = isb(a0), inkind is not None and outkind is not None, outkind
+        if a0_isb and kinds:
+            if inkind == "bytes":
+                a0 = a0.decode("latin-1")
+            else:
+                try:
+                    a0 = a0.decode("utf-8")
+                except UnicodeDecodeError:
+                    a0 = a0.decode("latin-1")
+                    # not UTF-8 text ; text-to-text codecs give it back in the form it was read
+                    okind = "bytes"
+        elif iss(a0) and kinds and inkind == "bytes" and any(ord(c) > 255 for c in a0):
+            # a str on a bytes side is handled as its bytes form (b(...), hence UTF-8 when not in Latin-1)
+            x = b(a0)
+            a0 = x.decode("latin-1") if isb(x) else a0
+        else:
+            a0 = ensure_str(a0) if iss(a0) or a0_isb else a0
         r = f(a0, *args[1:], **kwargs)
         # special case: input is in bytes ; ensure that the returned length is this of the bytes, not this processed by
         #                the decode/encode function
         if isinstance(r, (tuple, list)) and isinstance(r[1], int) and a0_isb:
             r = tuple([list(r)[0]] + [len(args[0])] + list(r)[2:])
-        return (fix(r[0], args[0]), ) + r[1:] if isinstance(r, (tuple, list)) else fix(r, args[0])
+        _fix = (lambda x: _to_bytes(x, okind)) if a0_isb and kinds else (lambda x: fix(x, args[0]))
+        return (_fix(r[0]), ) + tuple(r[1:]) if isinstance(r, (tuple, list)) else _fix(r)
     return _wrapper
+
+
+def _to_bytes(x, kind):
+    """ Write an output of the given kind as bytes: byte for byte for "bytes", in UTF-8 for "text". """
+    if not iss(x):
+        return x
+    return b(x) if kind == "bytes" else x.encode("utf-8", "surrogatepass")
 
 
 # alphabet generation function from a given mask

@@ -61,5 +61,6 @@ def cisco7_decode(salt=None):
     return decode
 
 
-add("cisco-type7", cisco7_encode, cisco7_decode, r"^(?:cisco[-_]?(?:type[-_]?)?|type[-_]?)7(?:[-_](\d{1,2}))?$",
+add("cisco-type7", cisco7_encode, cisco7_decode, plain="bytes",
+    pattern=r"^(?:cisco[-_]?(?:type[-_]?)?|type[-_]?)7(?:[-_](\d{1,2}))?$",
     entropy=4., printables_rate=1., expansion_factor=2.)

@@ -12,12 +12,30 @@ from unittest import TestCase
 from codext.__common__ import *
 
 
+def _read(x):
+    """ Text read from bytes on a text side: UTF-8, or Latin-1 if not valid UTF-8. """
+    try:
+        return x.decode("utf-8")
+    except UnicodeDecodeError:
+        return x.decode("latin-1")
+
+
 def make_test(**params):
     """ Test factory function for auto-creating tests for encodings having __examples__ defined. """
     def _template(self):
         tfile = "test-codec-%s.txt" % params['name']
         icase = params.get('ignore_case')
         icdec = lambda s: s.lower() if icase in ["decode", "both"] else s
+        # bytes form of a plain value: byte for byte on a bytes plain side, UTF-8 on a text plain side (whose bytes
+        #  input is read as UTF-8, or Latin-1 if not valid UTF-8, then written as UTF-8)
+        text = params.get('plain') == "text"
+        pform = lambda x: x if isinstance(x, bytes) else x.encode("utf-8") if text else b(x)
+        # bytes expected after a round trip on a text plain side: as UTF-8, unless the decoder gets a text side that is
+        #  not valid UTF-8, in which case it gives back what it read (Latin-1)
+        def rt_form(x, encoded):
+            if params.get('encoded') == "text" and encoded != _read(encoded).encode("utf-8"):
+                return x
+            return _read(x).encode("utf-8")
         icenc = lambda s: s.lower() if icase in ["encode", "both"] else s
         # first, define if only encode is used ; if so, decoding must occur right after encode tests, otherwise just
         #  execute the defined decode tests
@@ -90,18 +108,20 @@ def make_test(**params):
                                     examples.append(s.lower() if rd.group(1) else s)
                         for s in [""] + examples:
                             self.assertEqual(icdec(f2(icenc(f1(s, ename)), ename)), icdec(s))
-                            self.assertEqual(icdec(f2(icenc(f1(b(s), ename)), ename)), b(icdec(s)))
+                            encoded = f1(b(s), ename)
+                            expected = icdec(rt_form(b(s), encoded)) if text else b(icdec(s))
+                            self.assertEqual(icdec(f2(icenc(encoded), ename)), expected)
                             # important note: with respect to the original design,
                             #  IncrementalEncoder(...).encode(...) gives bytes
                             #  IncrementalDecoder(...).encode(...) gives str
                             self.assertEqual(icdec(incr_f2(icenc(incr_f1(s, ename)), ename)), icdec(s))
-                            self.assertEqual(icdec(incr_f2(icenc(incr_f1(b(s), ename)), ename)), icdec(s))
+                            self.assertEqual(icdec(incr_f2(icenc(incr_f1(b(s), ename)), ename)), icdec(_read(b(s))))
                             # file tests
                             with codecs.open(tfile, 'wb', encoding=ename) as f:
                                 f.write(b(s))
                             with codecs.open(tfile, 'rb', encoding=ename) as f:
                                 s2 = f.read()
-                            self.assertEqual(b(icdec(s2)), b(icdec(s)))
+                            self.assertEqual(b(icdec(s2)), expected)
                             os.remove(tfile)
                     # - "enc" and "dec" tests (uses a dictionary with the value to be encoded and the expected encoded
                     #    value)
@@ -135,7 +155,7 @@ def make_test(**params):
                                     f.write(b(s1))
                                 with codecs.open(tfile, 'rb', encoding=ename) as f:
                                     s = f.read()
-                                self.assertEqual(b(icdec(f2(s2, ename))), b(icdec(s)))
+                                self.assertEqual(pform(icdec(f2(s2, ename))), b(icdec(s)))
                                 os.remove(tfile)
     return _template
 

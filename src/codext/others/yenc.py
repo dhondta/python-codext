@@ -117,5 +117,5 @@ def __fields(line):
     return {k: v for k, v in re.findall(r"(\w+)=(\S*)", line.split(" name=")[0])}
 
 
-add("yenc", yenc_encode, yenc_decode, r"^y[-_]?enc(?:[-_]([1-9][0-9]*))?([-_]full)?$",
+add("yenc", yenc_encode, yenc_decode, plain="bytes", pattern=r"^y[-_]?enc(?:[-_]([1-9][0-9]*))?([-_]full)?$",
     bonus_func=lambda o, *a: re.search(r"^=ybegin .*\n(?:.*\n)*=yend ", ensure_str(o.text), re.M))

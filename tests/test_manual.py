@@ -501,7 +501,8 @@ class ManualTestCase(TestCase):
         self.assertEqual(codecs.decode(b"\x23\x08\x03\x02\x00h\x03\x02\x00i", "ber"), b"hi")
         self.assertRaises(ValueError, codecs.decode, b"\x23\x08\x03\x02\x01h\x03\x02\x00i", "ber")
         self.assertEqual(codecs.decode(b"\x1c\x08\x00\x00\x00h\x00\x00\x00i", "der"), b"hi")
-        self.assertEqual(codecs.decode(b"\x0c\x02\xc3\xa9", "der"), b"\xe9")
+        # the text of a UTF8String decoded from bytes is given in UTF-8
+        self.assertEqual(codecs.decode(b"\x0c\x02\xc3\xa9", "der"), b"\xc3\xa9")
         # malformed elements and dumps, whatever the errors handling
         for bad in [b"\x30\x80\x02\x01\x05", b"\x24\x80\x02\x01\x05\x00\x00", b"\x02\x84\xff\xff\xff\xff",
                     b"\x1f\x01\x00", b"\x30\x80" * 300]:

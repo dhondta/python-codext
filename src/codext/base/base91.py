@@ -81,7 +81,8 @@ def base91_decode(mode):
     def decode(text, errors="strict"):
         t, s, bits, alt = b(_stripl(text, True, True)), "", "", re.search(r'[-_]alt(ernate)?$', mode) is not None
         ehandler = handle_error("base91", errors, decode=True)
-        for i in range(0, len(t), 2):
+        # with the alternate variant, a last single character holds 6 bits, handled after the pairs
+        for i in range(0, len(t) - (alt and len(t) % 2), 2):
             try:
                 n = b91[__chr(t[i])] * [1, 91][alt]
             except KeyError:

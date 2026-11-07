@@ -92,5 +92,6 @@ def pngidat_decode(size=None):
     return decode
 
 
-add("png-idat", pngidat_encode, pngidat_decode, r"^(?:png[-_]?)?idat(?:[-_]([1-9][0-9]*))?$", expansion_factor=None,
+add("png-idat", pngidat_encode, pngidat_decode, plain="bytes", encoded="bytes",
+    pattern=r"^(?:png[-_]?)?idat(?:[-_]([1-9][0-9]*))?$", expansion_factor=None,
     bonus_func=lambda o, *a: o.text[4:8] == "IDAT" or b(o.text).startswith(SIGNATURE))

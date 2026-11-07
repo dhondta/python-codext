@@ -36,7 +36,8 @@ __guess2__ = ["whitespace+after-before", "whitespace-after+before"]
 
 
 ENCMAP = {r'': {'0': "\t", '1': " "}, r'[-_]inv(erted)?': {'0': " ", '1': "\t"}}
-add_map("whitespace", ENCMAP, intype="bin", pattern=r"^whitespaces?([-_]inv(?:erted)?)?$", examples=__examples1__,
+add_map("whitespace", ENCMAP, plain="bytes", intype="bin", pattern=r"^whitespaces?([-_]inv(?:erted)?)?$",
+        examples=__examples1__,
         guess=__guess1__, entropy=1., printables_rate=1., expansion_factor=8.)
 
 

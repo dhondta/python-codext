@@ -73,6 +73,6 @@ def delta_dec(bits, i):
 
 
 add("elias-gamma", universal("elias-gamma", gamma_enc, gamma_dec), universal("elias-gamma", gamma_enc, gamma_dec, True),
-    r"^(?:elias[-_]?)?gamma" + PATTERN_INTEGERS, examples=__examples1__, guess=__guess1__)
+    r"^(?:elias[-_]?)?gamma" + PATTERN_INTEGERS, examples=__examples1__, guess=__guess1__, plain="text")
 add("elias-delta", universal("elias-delta", delta_enc, delta_dec), universal("elias-delta", delta_enc, delta_dec, True),
-    r"^(?:elias[-_]?)?delta" + PATTERN_INTEGERS, examples=__examples2__, guess=__guess2__)
+    r"^(?:elias[-_]?)?delta" + PATTERN_INTEGERS, examples=__examples2__, guess=__guess2__, plain="text")

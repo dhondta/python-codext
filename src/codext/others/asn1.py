@@ -477,6 +477,6 @@ der_encode, der_decode = string_encode("der"), string_decode("der")
 ber_encode, ber_decode = string_encode("ber"), string_decode("ber")
 
 
-add("der", der_encode, der_decode, r"^der$", examples=__examples1__, guess=["der"])
-add("ber", ber_encode, ber_decode, r"^ber$", examples=__examples2__, guess=["ber"])
-add("asn1", asn1_encode, asn1_decode, r"^asn[-_.]?1$", examples=__examples3__, guess=None)
+add("der", der_encode, der_decode, r"^der$", examples=__examples1__, guess=["der"], encoded="bytes")
+add("ber", ber_encode, ber_decode, r"^ber$", examples=__examples2__, guess=["ber"], encoded="bytes")
+add("asn1", asn1_encode, asn1_decode, r"^asn[-_.]?1$", examples=__examples3__, guess=None, encoded="bytes")

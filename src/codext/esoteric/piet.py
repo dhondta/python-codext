@@ -427,4 +427,5 @@ def piet_decode(codel_size=None):
     return decode
 
 
-add("piet", piet_encode, piet_decode, r"^piet(?:[-_]([1-9][0-9]*))?$", guess=__guess__, expansion_factor=None)
+add("piet", piet_encode, piet_decode, encoded="bytes", pattern=r"^piet(?:[-_]([1-9][0-9]*))?$", guess=__guess__,
+    expansion_factor=None)
