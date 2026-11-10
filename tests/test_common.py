@@ -510,3 +510,16 @@ class TestCommon(TestCase):
         self.assertEqual(cli(b"test", "encode", "base64"), b"dGVzdA==")
         self.assertEqual(cli("caf\u00e9".encode(), "encode", "reverse"), "\u00e9fac".encode())
         self.assertEqual(cli(b"test", "encode", "base100"), codext.encode(b"test", "base100"))
+
+    def test_main_missing_input_file(self):
+        import os, subprocess
+        src = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "src")
+        env = {**os.environ, 'PYTHONPATH': src + os.pathsep + os.environ.get('PYTHONPATH', "")}
+        # a missing input file is reported as a clean one-line CLI error, not an unhandled traceback
+        r = subprocess.run([sys.executable, "-m", "codext", "-i", "does-not-exist.txt", "encode", "base64"],
+                           input=b"", env=env, capture_output=True)
+        self.assertEqual(r.returncode, 1)
+        self.assertIn(b"codext: ", r.stderr)
+        self.assertIn(b"does-not-exist.txt", r.stderr)
+        self.assertNotIn(b"Traceback", r.stderr)
+        self.assertNotIn(b"Traceback", r.stdout)
