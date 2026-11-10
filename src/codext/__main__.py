@@ -400,9 +400,9 @@ def main():
                 s = "[+] %.5f: %s" % (i[0], e)
                 print(s if len(s) <= 80 else s[:77] + "...")
     except Exception as e:
-        raise e
-        m = str(e)
-        print("codext: " + m[0].lower() + m[1:])
+        m = str(e) or type(e).__name__
+        print("codext: " + m[0].lower() + m[1:], file=sys.stderr)
+        return 1
 
 
 if __name__ == "__main__":
