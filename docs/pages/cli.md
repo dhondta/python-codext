@@ -36,7 +36,7 @@ optional arguments:
 
 usage examples:
 - codext search bitcoin
-- codext decode base32 -i file.b32
+- codext -i file.b32 decode base32
 - codext encode morse < to_be_encoded.txt
 - echo "test" | codext encode base100
 - echo -en "test" | codext encode braille -o test.braille
@@ -53,6 +53,10 @@ usage examples:
 - codext compose -a alphanumeric -l 4 -k mysecret -m mychain -n
 - codext show rle
 - codext show base64-url rot-13 example-macro
+- codext -i secret.bin analyze
+- echo -en "test" | codext encode vigenere-rainbow | codext analyze
+- codext -i ciphertext.txt crack vigenere
+- echo -en "rglpxoiodltueosefdomerndat" | codext crack columnar -l 3
 ```
 
 !!! note "Input/output"
@@ -68,6 +72,10 @@ usage examples:
 !!! note "Codecs documentation"
     
     `codext show` displays the documentation of the given codecs, encodings or macros: the codec's name, category and module, then the docstring of this module (for a native codec, the one of its module from the `encodings` package), or the chain of encodings of a macro. An unknown name is reported with similar names (e.g. `codext show vigener` suggests `vigenere`).
+
+!!! note "Analysis and cracking"
+    
+    `codext analyze` reports the statistical properties of the input (alphabet, randomness, letter frequencies, ...) with hints on what it may be, and `codext crack` recovers the key of a keyed cipher (e.g. `vigenere`, `vernam` or `columnar`) from the input ; see [Analysis and cracking](analysis.md).
 
 ### Execution examples
 

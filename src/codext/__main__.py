@@ -13,7 +13,9 @@ from importlib import import_module
 from . import __common__
 from .__common__ import *
 from .__common__ import PERS_MACROS_FILE
+from .analyze import report as analyze_report
 from .compose import QUESTIONS, report as compose_report
+from .crack import report as crack_report
 from .guess import stopfunc
 from .__info__ import __author__, __copyright__, __email__, __license__, __source__, __version__
 
@@ -137,7 +139,7 @@ def main():
             .format(__version__, __author__, __email__, __copyright__, __license__, __source__)
     examples = "usage examples:\n- " + "\n- ".join([
         "codext search bitcoin",
-        "codext decode base32 -i file.b32",
+        "codext -i file.b32 decode base32",
         "codext encode morse < to_be_encoded.txt",
         "echo \"test\" | codext encode base100",
         "echo -en \"test\" | codext encode braille -o test.braille",
@@ -152,6 +154,10 @@ def main():
         "codext compose -a alphanumeric -l 4 -k mysecret -m mychain -n",
         "codext show rle",
         "codext show base64-url rot-13 example-macro",
+        "codext -i secret.bin analyze",
+        "echo -en \"test\" | codext encode vigenere-rainbow | codext analyze",
+        "codext -i ciphertext.txt crack vigenere",
+        "echo -en \"rglpxoiodltueosefdomerndat\" | codext crack columnar -l 3",
     ])
     kw = {'formatter_class': _CustomFormatter}
     parser = argparse.ArgumentParser(prog="codext", description=descr, epilog=examples, **kw)
@@ -249,6 +255,18 @@ def main():
     compose.add_argument("-s", "--seed", type=int, help="seed for drawing the chain (default: random)")
     compose.add_argument("-x", "--expansion", choices=list(QUESTIONS[2]['choices']),
                          help="how many times larger than the input the output may be (default: 5)")
+    analyze = sparsers.add_parser("analyze", help="analyze the statistical properties of the input (alphabet, "
+                                  "randomness, letter frequencies, ...)", **kw)
+    crack = sparsers.add_parser("crack", help="recover the key of a keyed cipher from the input (ciphertext only)",
+                                **kw)
+    crack.add_argument("cipher", help="cipher to be cracked (e.g. vigenere, beaufort, gronsfeld, vernam, columnar), or "
+                                      "any codec\nwhose encodings tried by the guess mode are ranked (e.g. railfence)")
+    crack.add_argument("-k", "--max-key-length", type=int, metavar="INT",
+                       help="maximum key length (default: 20 letters for vigenere, beaufort and gronsfeld,\n 32 "
+                            "characters for vernam, 7 columns for columnar)")
+    crack.add_argument("-l", "--limit", type=int, default=5, help="limit the number of displayed results (default: 5)")
+    crack.add_argument("-t", "--timeout", type=float, metavar="SECONDS",
+                       help="maximum duration of the key search (default: no limit)")
     show = sparsers.add_parser("show", help="show the documentation of codecs, encodings or macros")
     show.add_argument("encoding", nargs="+", help="names of codecs, encodings or macros")
     search = sparsers.add_parser("search", help="search for codecs")
@@ -395,6 +413,17 @@ def main():
                         print(ensure_str(out))
             if len(r) == 0:
                 print("Could not decode :-(")
+        elif args.command == "analyze":
+            print(analyze_report(codecs.analyze(c)))
+        elif args.command == "crack":
+            r = codecs.crack(c, args.cipher, args.limit, args.max_key_length, args.timeout)
+            if args.outfile and len(r) > 0:
+                # the best output is written to the output file
+                with codecs.open(args.outfile, 'wb') as f:
+                    f.write(r[0][2])
+                print(f"[+] {r[0][0]:.5f}: {r[0][1]}")
+            else:
+                print(crack_report(r))
         elif args.command == "rank":
             for i, e in codecs.rank(c, args.extended, args.limit, args.include, args.exclude):
                 s = "[+] %.5f: %s" % (i[0], e)

@@ -35,6 +35,8 @@ STOPWORDS = frozenset("the and of to in is it that for on with as was are be by 
 #  and "no")
 STOPWORDS = frozenset(w for w in STOPWORDS if w[::-1] not in STOPWORDS)
 # a clean word of a text: letters (with an eventual apostrophe, e.g. "don't") or a number (e.g. "1,234.56" or "50%")
+# a change from a lowercase to an uppercase letter in a word starting with a lowercase letter (e.g. "gsThe")
+CASE_CHANGE = re.compile(r"(?<![A-Za-z])[a-z]+[A-Z]")
 TOKEN = re.compile(r"[^\W\d_]+(?:'[^\W\d_]+)?|[$€£]?\d[\d.,:/]*%?")
 # scripts of the letters (cache) and scripts whose words are not separated by spaces
 SCRIPTS, SCRIPTS_WITHOUT_SPACES = {}, {"CJK", "HIRAGANA", "KATAKANA", "THAI", "LAO", "KHMER", "MYANMAR", "TIBETAN"}
@@ -102,7 +104,12 @@ def _textness(s, any_script=True):
     pairs = [t[i:i+2] for i in range(n - 1) if t[i].isalpha() and t[i+1].isalpha()]
     if len(pairs) == 0:
         return 0.
-    bigrams = min(1., sum(map(BIGRAMS.__contains__, pairs)) / len(pairs) / .7)
+    # a lowercase letter followed by an uppercase one in a word starting with a lowercase letter (e.g. "sT" in "gsThe",
+    #  from a rotation of a text, unlike "JavaScript") does not form a bigram of a text, hence it is not counted as a
+    #  common bigram, while it still counts as a pair
+    changes = [m.end() - 2 for m in CASE_CHANGE.finditer(s)]
+    bigrams = sum(map(BIGRAMS.__contains__, pairs)) - sum(t[i:i+2] in BIGRAMS for i in changes)
+    bigrams = min(1., bigrams / len(pairs) / .7)
     printables, rate = sum(map(PRINTABLES.__contains__, s)) / n, sum(c.isalpha() or c == " " for c in s) / n
     # a text holds at least 10 distinct letters (or half of its letters if shorter), unlike e.g. digits shifted to
     #  letters
@@ -121,6 +128,10 @@ def _textness(s, any_script=True):
         tokens = [w for w in s.split() for w in re.split(r"[_\-]+", w) if w]
         clean = sum(len(w) for w in tokens if _clean_token(w)) / sum(map(len, tokens))
         r *= min(1., clean / .7)
+    # such a change of case in a word is rare in a text (only in some names, e.g. "iPhone"), while it reveals a
+    #  rearrangement of a text that moved its first letter after its last ones (e.g. "gsThe quick ... lazy do")
+    if len(changes) > 0:
+        r *= max(.5, 1. - .1 * len(changes))
     # a reversed text holds reversed function words (e.g. "eht" or "dna") rather than function words, while a text
     #  without any of them (e.g. a short one) is not penalised
     words = re.findall(r"[^\W\d_]+", t)
@@ -129,3 +140,50 @@ def _textness(s, any_script=True):
         r *= .6 + .4 * sw / rsw
     return r
 
+
+# frequencies of the letters "a" to "z" in English texts (in %) ; other Latin-script languages share most of the frequent
+#  letters (e.g. lorem ipsum, French, German or Spanish)
+LETTER_FREQUENCIES = [8.2, 1.5, 2.8, 4.3, 12.7, 2.2, 2., 6.1, 7., .15, .8, 4., 2.4, 6.7, 7.5, 1.9, .1, 6., 6.3, 9.1, 2.8, 1.,
+                      2.4, .15, 2., .07]
+
+
+def _letter_frequencies(s, normalize=True):
+    """ Get the number of Latin letters of the given string and their mean frequencies (in English texts) for its 26
+         shifts (the first one being the string itself), or None if it has no Latin letter. The letters with diacritics
+         count as their base letters (e.g. "\u00e9" as "e") unless normalize is False. """
+    counts, s = [0] * 26, ensure_str(b(s)).lower()
+    for c in (unicodedata.normalize("NFKD", s) if normalize else s):
+        if "a" <= c <= "z":
+            counts[ord(c) - 97] += 1
+    if (n := sum(counts)) == 0:
+        return
+    return n, [sum(c * LETTER_FREQUENCIES[(i + k) % 26] for i, c in enumerate(counts)) / n for k in range(26)]
+
+
+def _letter_frequency(s, ref=None):
+    """ Rate in [0, 1] how much the letters of the given string are distributed as in a text, relatively to the other
+         shifts of its letters (as for cracking a Caesar cipher) and to the ones of the reference string if given.
+    
+    This is the mean frequency (in English texts) of the letters of the string divided by the best one among the 26
+     shifts of these letters (and of the letters of the reference string), squared ; a text is rated 1. (or close to
+     it), as it is mostly the best-distributed of its shifts, while a shift of a text gets a lower rate. Unlike the
+     bigrams of the textness, this distinguishes a text from the other shifts of its letters, even for a short text
+     whose letters happen to form common bigrams once shifted ; and, unlike the mean frequency itself, this does not
+     penalise a text with uncommon letters (e.g. "The quick brown fox jumps over the lazy dog"). With the input of a
+     decoding as the reference, this also lowers the rate of an output that is not a shift of the input and whose
+     letters are distributed worse than the best shift of the input (e.g. the output of a wrong substitution when the
+     input is a Caesar cipher) ; the reference only counts its ASCII letters and is only considered when it holds at
+     least as many letters as the string, as the shifts of a few letters (e.g. of binary data) can get a better mean
+     frequency than a text by chance. A string without Latin letters is rated 1. (not distinguished).
+    
+    The string and the reference can also be given as their letter frequencies (see _letter_frequencies), e.g. for
+     computing these of an input only once. """
+    f = s if isinstance(s, tuple) or s is None else _letter_frequencies(s)
+    if f is None:
+        return 1.
+    if ref is not None and not isinstance(ref, tuple):
+        ref = _letter_frequencies(ref, False)
+    (n, f), best = f, max(f[1])
+    if ref is not None and ref[0] >= n:
+        best = max(best, max(ref[1]))
+    return (f[0] / best) ** 2

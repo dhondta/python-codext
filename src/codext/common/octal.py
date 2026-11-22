@@ -2,7 +2,8 @@
 """Octal Codec - octal content encoding.
 
 Each character is replaced by its ordinal written in base 8: with 3 digits each and without separator by default, or
- with as many digits as needed and separated by spaces with the "-spaced" variant.
+ with as many digits as needed and separated by spaces with the "-spaced" variant. When decoding, the "-spaced" variant
+ also accepts ordinals padded with leading zeros (e.g. "040" for a space, as given by "od -b").
 
 This codec:
 - en/decodes strings from str to str
@@ -23,7 +24,8 @@ __examples2__ = {
 
 oct2 = lambda i: oct(i).lstrip("0").replace("o", "")
 
-ENCMAP1 = {chr(i): oct2(i) for i in range(256)}
+# the first value is used for encoding, the zero-padded ones are also accepted for decoding
+ENCMAP1 = {chr(i): list(dict.fromkeys(oct2(i).zfill(n) for n in range(1, 4))) for i in range(256)}
 ENCMAP2 = {chr(i): oct2(i).zfill(3) for i in range(256)}
 
 

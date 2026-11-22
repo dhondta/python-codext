@@ -29,7 +29,7 @@ __examples__ = {
     'dec(skip-2)':                  {'SISI': None},
     'enc-dec(skip-1|skip-3|skip-9-5|skip-11-100)': ["", "a", "DCODE", "Hello, World!", "Attack at dawn"],
 }
-__guess__ = []
+__guess__ = [f"skip-{i}" for i in range(1, 9)]
 
 
 def __skip(decode=False):

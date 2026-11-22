@@ -9,6 +9,11 @@ Bacon's cipher was devised by Francis Bacon in 1605 as a steganographic method: 
 - the 26-letter alphabet ("bacon-26"), in which each letter has its own code (e.g. J is "abaab" and V is "babab").
 The two symbols can be chosen in the codec name (e.g. "bacon-01", "bacon-ba" or "bacon-26-01").
 
+When hidden in a cover text, each letter of this text carries one symbol, hence the spaces of the encoded text are the
+ ones of the cover text and do not fall on the groups of 5 symbols. When decoding, if a space-separated group is not
+ made of a multiple of 5 symbols, the spaces are considered as the ones of a cover text: they are removed and the last
+ incomplete group, made of the remaining letters of the cover text, is ignored.
+
 This codec:
 - en/decodes strings from str to str
 - en/decodes strings from bytes to bytes
@@ -30,13 +35,14 @@ __examples__ = {
     },
     'enc(bacon)': {'jv': "abaaabaabb"},
     'dec(bacon)': {'abaaabaabb': "IU"},
+    'dec(bacon-26)': {'BAAB AB AB AAABBBB AA BA A BAAABBAA BAAA BAAAAABA BAA A BAABAA BAABB AA': "SUPERSECRET"},
     'enc(bacon-26|bacon26|bacon_26|baconian-cipher-26)': {
         'this is a test': "baabbaabbbabaaabaaba abaaabaaba aaaaa baabbaabaabaababaabb",
         'jv': "abaabbabab", 'yz': "bbaaabbaab",
     },
     'enc(bacon-26-01|bacon26_01)': {'this is a test': "10011001110100010010 0100010010 00000 10011001001001010011"},
     'enc(bacon-26-ba)': {'jv': "babbaababa"},
-    'dec(bacon-26)': {'abaabbabab': "JV", 'baabbaabbbabaaabaaba': "THIS", 'bbbbb': None},
+    'dec(bacon-26-ab)': {'abaabbabab': "JV", 'baabbaabbbabaaabaaba': "THIS", 'bbbbb': None},
     'enc-dec(bacon-26|bacon-26-01|bacon-26-xy)': ["THIS IS A TEST", "JUMP OVER THE LAZY DOG"],
     'enc(bacon-aa)': None,
     'enc(bacon-26-aa)': None,
@@ -68,7 +74,17 @@ def _encmap(param):
     return encmap
 
 
+def _cover_text(text):
+    """ Remove the spaces of a cover text (when a space-separated group is not made of a multiple of 5 symbols) and its
+         last incomplete group. """
+    groups = text.split()
+    if len(groups) > 1 and any(len(g) % 5 for g in groups):
+        text = "".join(groups)
+        text = text[:len(text) - len(text) % 5]
+    return text
+
+
 # NB: the guess list is given explicitly, as add_map does not pass on the one of the module
-add_map("bacon", _encmap, ignore_case="both", guess=__guess__,
+add_map("bacon", _encmap, ignore_case="both", guess=__guess__, preprocess=_cover_text,
         pattern=r"^bacon(?:(?:ian)?[-_]cipher)?(|[-_]?2[46](?:[-_].{2})?|[-_].{2})$", expansion_factor=5.,
         printables_rate=1.)

@@ -12,7 +12,7 @@ from types import FunctionType, ModuleType
 
 from .__common__ import *
 from .__common__ import CODECS_CACHE, CODECS_CATEGORIES, _categories, __guess_lists
-from .text import TEXTNESS_THRESHOLD, TEXTNESS_WEIGHT, _textness, entropy
+from .text import TEXTNESS_THRESHOLD, TEXTNESS_WEIGHT, _letter_frequencies, _letter_frequency, _textness, entropy
 from .utils import PRINTABLES
 
 
@@ -219,6 +219,15 @@ def __guess_list(encoding):
         return l
 
 
+def __is_encoding(name):
+    """ Check whether the given name is a valid encoding name (e.g. "vigenere-rainbow"). """
+    try:
+        lookup(name, False)
+        return True
+    except LookupError:
+        return False
+
+
 def __make_encodings_dict(include, exclude):
     """ Process encodings inclusion and exclusion lists, listing categories and developping codecs' lists of possible
          encoding names. It also creates a cache with the CodecInfo objects for improving performance. """
@@ -236,8 +245,9 @@ def __make_encodings_dict(include, exclude):
                 for e in (search(enc, False) or [enc]):
                     g.extend(__guess_list(e))
                 # an encoding name selects only itself, while a codec name selects all its encodings, even when it is
-                #  one of them (e.g. "base45" => ["base45", "base45-inv"])
-                if enc in g and enc not in cn and enc not in names:
+                #  one of them (e.g. "base45" => ["base45", "base45-inv"]) ; this also holds for an encoding name that
+                #  is not among the ones tried by default (e.g. "vigenere-rainbow", with a key of the user's choice)
+                if enc not in cn and enc not in names and (enc in g or __is_encoding(enc)):
                     l.append(enc)  # e.g. "rot-1" => ["rot-1", "rot-2", ...] ; only "rot-1" is to be selected
                 else:              # e.g. "rot"   => ["rot-1", "rot-2", ...] ; all the "rot-N" shall be selected
                     l.extend(g)
@@ -394,9 +404,18 @@ def __score(prev_input, input, prev_encoding, encoding, codec, heuristic=False, 
         #  (substitutions of characters, e.g. rot or xor) also get a penalty when their output looks less like a text
         # NB: the output of a transitive codec is only rated as a text from Latin letters, as a substitution of
         #     characters of another script cannot be distinguished from a text without the knowledge of its language
-        t = _textness(new_input, not transitive)
-        s += TEXTNESS_WEIGHT * (max(0., t - max(obj.textness, TEXTNESS_THRESHOLD)) +
-                                (min(0., t - obj.textness) if transitive else 0.))
+        # NB: as the bigrams of a short text can be matched by another substitution of its letters (e.g. another shift
+        #     of a Caesar cipher), the textness of the input and of the output of a transitive codec is also weighted by
+        #     how much their letters are distributed as in a text
+        t, ti = _textness(new_input, not transitive), obj.textness
+        if transitive:
+            # the letter frequencies of the input are computed only once (see __rank)
+            try:
+                lfi = texts['letter_frequencies']
+            except KeyError:
+                lfi = texts['letter_frequencies'] = _letter_frequencies(input, False)
+            t, ti = t and t * _letter_frequency(new_input, lfi), ti * _letter_frequency(lfi)
+        s += TEXTNESS_WEIGHT * (max(0., t - max(ti, TEXTNESS_THRESHOLD)) + (min(0., t - ti) if transitive else 0.))
     else:
         s = 1.
     # exclude negative (and eventually null) scores as they are (hopefully) not relevant

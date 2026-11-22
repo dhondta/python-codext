@@ -211,7 +211,26 @@ class TestCommon(TestCase):
         self.assertEqual(list(_g("base45-inv", include="base45-inv")), [("base45-inv", )])
         self.assertEqual(len(_g("base45-inv", include="base45", exclude="base45-inv")), 0)
         self.assertEqual(len(_g("base45-inv", include="base", exclude="base45")), 0)
-    
+        # including an encoding name that is not tried by default (e.g. a key of the user's choice) selects it, instead
+        #  of the encodings tried by default for its codec (e.g. "vigenere-key", "vigenere-password", ...)
+        STR, ENC = "Some sample plaintext.", "Jour toiglm cmoeetmku."
+        self.assertEqual(codecs.decode(ENC, "vigenere-rainbow"), STR)
+        self.assertEqual(codecs.encode(STR, "vigenere-rainbow"), ENC)
+        self.assertNotIn(STR, codext.guess(ENC).values())
+        for inc in ["vigenere-rainbow", ["vigenere-rainbow", "base64", "rot"]]:
+            self.assertEqual(codext.guess(ENC, include=inc), {("vigenere-rainbow", ): STR})
+        self.assertEqual(codext.guess(codext.encode(ENC, "base64"), min_depth=1, max_depth=2,
+                                      include=["vigenere-rainbow", "base64"]), {("base64", "vigenere-rainbow"): STR})
+        self.assertNotIn(STR, codext.guess(ENC, include="vigenere").values())
+        self.assertEqual(len(codext.guess(ENC, include="vigenere-rainbow", exclude="vigenere-rainbow")), 0)
+        # same for a keyed transposition, whose codec has no encoding tried by default (here with a numeric key, giving
+        #  the order of the columns)
+        STR, ENC = "ourfriendgoodoldsampletext", "rglpxoiodltueosefdomerndat"
+        self.assertEqual(codecs.decode(ENC, "columnar-23541"), STR)
+        self.assertEqual(codecs.encode(STR, "columnar-23541"), ENC)
+        self.assertEqual(codext.guess(ENC, include="columnar-23541"), {("columnar-23541", ): STR})
+        self.assertEqual(len(codext.guess(ENC, include="columnar")), 0)
+
     def test_moved_helpers(self):
         import codext.__common__ as common
         from codext import regex, text, utils
@@ -284,6 +303,38 @@ class TestCommon(TestCase):
         # the reversed text is ranked among the first decodings (it was ranked far behind keyboard shifts) ; NB: on this
         #  Latin text, some transpositions of its letters (e.g. route, railfence) look as much like a text as itself
         self.assertIn(STR, [out for (_, out), _ in codext.rank(STR[::-1], limit=5)])
+        # a change from a lowercase to an uppercase letter in a word (e.g. from a rotation of a text, as given by the
+        #  wrong variant of a rail fence) does not form a common bigram (here "st" in "gsThe") and gives a penalty
+        STR, ENC = "The quick brown fox jumped over the lazy dogs", "Tqkofjevtl sh uc rw o updoe h aydgeibnxm rezo"
+        wrong = codecs.decode(ENC, "railfence-3-up")
+        self.assertEqual(wrong, STR[-2:] + STR[:-2])
+        self.assertGreater(_textness(STR), _textness(wrong) + .05)
+        self.assertEqual(codecs.decode(ENC, "railfence-3"), STR)
+        self.assertEqual(codecs.encode(STR, "railfence-3"), ENC)
+        self.assertEqual(codext.guess(ENC), {("railfence-3", ): STR})
+        # names with a change of case after an uppercase first letter (e.g. "JavaScript") are not concerned
+        self.assertGreater(_textness("I wrote this tool in JavaScript for the web"), .8)
+
+    def test_rank_letter_frequency(self):
+        from codext.text import _letter_frequency, _textness
+        # a short text whose wrong shift holds more common bigrams than itself (hence a greater textness), and a wrong
+        #  substitution whose output holds as many: the letter frequency, relative to the shifts of the output and of
+        #  the input, tells the text from them, and the right shift is guessed
+        STR, ENC = "Sample text for a Caesar Cipher.", "Dlxawp epie qzc l Nlpdlc Ntaspc."
+        wrong1, wrong2 = codext.decode(ENC, "rot-15"), codext.decode(ENC, "alternative-rot-11")
+        self.assertGreater(_textness(wrong1), _textness(STR))
+        self.assertEqual(_textness(wrong2), _textness(STR))
+        self.assertEqual(_letter_frequency(STR, ENC), 1.)
+        self.assertLess(_letter_frequency(wrong1, ENC), .7)
+        self.assertLess(_letter_frequency(wrong2, ENC), 1.)
+        self.assertEqual(codecs.decode(ENC, "caesar-11"), STR)
+        self.assertEqual(codecs.decode(ENC, "rot-11"), STR)
+        self.assertEqual(codext.guess(ENC), {("rot-11", ): STR})
+        # a text with uncommon letters is not penalised, as it is still the best-distributed of its shifts, while a
+        #  string without Latin letters is not distinguished
+        self.assertEqual(_letter_frequency("The quick brown fox jumps over the lazy dog"), 1.)
+        self.assertEqual(_letter_frequency("1234 !?"), 1.)
+        self.assertEqual(_letter_frequency("привет"), 1.)
 
     def test_rank_padding_and_quanta(self):
         import sys
@@ -365,6 +416,78 @@ class TestCommon(TestCase):
         self.assertRaises(ValueError, codext.strength, [])
         self.assertRaises(LookupError, codext.strength, ["does_not_exist_xyz"])
 
+    def test_analyze(self):
+        from codext.analyze import report
+        txt = "It was a bright cold day in April, and the clocks were striking thirteen. Winston Smith, his chin " \
+              "nuzzled into his breast in an effort to escape the vile wind, slipped quickly through the glass doors " \
+              "of Victory Mansions, though not quickly enough to prevent a swirl of gritty dust from entering along " \
+              "with him."
+        r = codext.analyze(txt)
+        self.assertEqual(r['alphabet'], "printable characters")
+        self.assertEqual(r['letter_shift'][0], 0)
+        self.assertIsNone(r['key_length'])
+        self.assertIn("natural language text", r['hints'][0])
+        # letters of a text: transposed, shifted, substituted or enciphered with a polyalphabetic substitution
+        self.assertIn("transposition", codext.analyze(codext.encode(txt, "columnar-23541"))['hints'][0])
+        r = codext.analyze(codext.encode(txt, "rot-3"))
+        self.assertEqual(r['letter_shift'][0], 3)
+        self.assertIn("Caesar cipher (decoded with rot-3)", r['hints'][0])
+        self.assertIn("monoalphabetic", codext.analyze(codext.encode(txt, "atbash"))['hints'][0])
+        r = codext.analyze(codext.encode(txt, "vigenere-rainbow"))
+        self.assertEqual(r['key_length'], 7)
+        self.assertIn("7 letters long", r['hints'][0])
+        # alphabets of encodings, hashes, file signatures, random data and repeated blocks
+        self.assertEqual(codext.analyze(codext.encode(txt, "base32"))['alphabet'], "Base32")
+        self.assertEqual(codext.analyze("0110 1001")['alphabet'], "binary digits")
+        r = codext.analyze("5d41402abc4b2a76b9719d911017c592")
+        self.assertEqual((r['alphabet'], r['hashes']), ("hexadecimal", "MD4, MD5, NTLM"))
+        self.assertEqual(codext.analyze(codext.encode(txt, "gzip"))['signature'], "gzip")
+        rng = random.Random(0)
+        rnd = bytes(rng.randrange(256) for _ in range(1024))
+        r = codext.analyze(rnd)
+        self.assertTrue(7.5 < r['entropy'] <= 8. and r['compression_ratio'] > 1.)
+        self.assertTrue(3. < r['monte_carlo_pi'] < 3.3)
+        self.assertIn("looks random", r['hints'][0])
+        self.assertEqual(codext.analyze(rnd[:16] * 4)['repeated_blocks'], {8: 6, 16: 3})
+        self.assertEqual(codext.analyze("")['hints'], ["The input is empty"])
+        self.assertIn("index of coincidence", report(txt))
+        self.assertIn("[*] It looks like a natural language text.", codext.codecs.analyze_report(codext.analyze(txt)))
+    
+    def test_crack(self):
+        from codext.crack import report
+        txt = "It was a bright cold day in April, and the clocks were striking thirteen. Winston Smith, his chin " \
+              "nuzzled into his breast in an effort to escape the vile wind, slipped quickly through the glass doors " \
+              "of Victory Mansions, though not quickly enough to prevent a swirl of gritty dust from entering along " \
+              "with him."
+        for cipher, enc in [("vigenere", "vigenere-rainbow"), ("vigenère", "vigenere-key"),
+                            ("beaufort", "beaufort-lemon"), ("gronsfeld", "gronsfeld-31415"), ("vernam", "vernam-S3cr3t!"),
+                            ("columnar", "columnar-6152743"), ("railfence", "railfence-3"), ("xor", "xor-42")]:
+            r = codext.crack(codext.encode(txt, enc), cipher)
+            self.assertEqual(r[0][1:], (enc, txt))
+            self.assertTrue(0. <= r[-1][0] <= r[0][0] <= 1.)
+        # short ciphertexts of transpositions and substitutions
+        self.assertEqual(codext.crack("rglpxoiodltueosefdomerndat", "columnar")[0][1:],
+                         ("columnar-23541", "ourfriendgoodoldsampletext"))
+        self.assertEqual(codext.crack("SpTtmexale", "skip")[0][1:], ("skip-3", "SampleText"))
+        self.assertEqual(codext.crack("Dlxawp epie qzc l Nlpdlc Ntaspc.", "caesar")[0][1],"rot-11")
+        self.assertEqual(codext.crack("Tqkofjevtl sh uc rw o updoe h aydgeibnxm rezo", "railfence")[0][1],
+                         "railfence-3")
+        # parameters: limit, key length and timeout
+        ct = codext.encode(txt, "vigenere-rainbow")
+        self.assertEqual(len(codext.crack(ct, "vigenere", 2)), 2)
+        self.assertTrue(len(codext.crack(ct, "vigenere", -1)) > 2)
+        self.assertNotEqual(codext.crack(ct, "vigenere", max_key_length=5)[0][1], "vigenere-rainbow")
+        self.assertIsNotNone(codext.crack(codext.encode(txt, "columnar-6152743"), "columnar", timeout=0.))
+        # report and errors
+        self.assertIn("[+] ", report(codext.crack(ct, "vigenere", 2)))
+        self.assertIn("vigenere-rainbow", codext.codecs.crack_report(codext.crack(ct, "vigenere", 1)))
+        self.assertEqual(report([]), "Could not crack :-(")
+        self.assertRaises(LookupError, codext.crack, ct, "does_not_exist")
+        codext.add("unguessable_codec", lambda x, e="strict": (x, len(x)), lambda x, e="strict": (x, len(x)),
+                   "^unguessable$", guess=None)
+        self.assertRaises(ValueError, codext.crack, ct, "unguessable")
+        codext.remove("unguessable_codec")
+    
     def test_compose_chains(self):
         from codext.compose import report
         self.assertEqual([q['name'] for q in codext.compose.questions],
@@ -510,3 +633,18 @@ class TestCommon(TestCase):
         self.assertEqual(cli(b"test", "encode", "base64"), b"dGVzdA==")
         self.assertEqual(cli("caf\u00e9".encode(), "encode", "reverse"), "\u00e9fac".encode())
         self.assertEqual(cli(b"test", "encode", "base100"), codext.encode(b"test", "base100"))
+    
+    def test_main_analyze_crack(self):
+        import os, subprocess, tempfile
+        src = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "src")
+        env = {**os.environ, 'PYTHONPATH': src + os.pathsep + os.environ.get('PYTHONPATH', "")}
+        cli = lambda inp, *args: subprocess.run([sys.executable, "-m", "codext"] + list(args), input=inp, env=env,
+                                                capture_output=True, check=True).stdout
+        self.assertIn(b"alphabet             : hexadecimal", cli(b"5d41402abc4b2a76b9719d911017c592", "analyze"))
+        out = cli(b"rglpxoiodltueosefdomerndat", "crack", "columnar", "-l", "1")
+        self.assertEqual(out.splitlines(), [b"[+] 0.86667: columnar-23541", b"    ourfriendgoodoldsampletext"])
+        with tempfile.TemporaryDirectory() as tmp:
+            fn = os.path.join(tmp, "out.txt")
+            self.assertIn(b"skip-3", cli(b"SpTtmexale", "-o", fn, "crack", "skip"))
+            with open(fn) as f:
+                self.assertEqual(f.read(), "SampleText")

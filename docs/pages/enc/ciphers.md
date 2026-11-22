@@ -161,6 +161,8 @@ This writes each letter as a group of 5 symbols among two ("`a`" and "`b`"). It 
 - the original 24-letter alphabet (default, or `bacon-24`), in which I and J, as well as U and V, share the same code (hence decoded as I and U) ;
 - the 26-letter alphabet (`bacon-26`), in which each letter has its own code (e.g. J is `abaab` and V is `babab`).
 
+When the message is hidden in a cover text, each letter of this text carries one symbol, hence the spaces are the ones of the cover text and do not fall on the groups of 5 symbols. When decoding, if a space-separated group is not made of a multiple of 5 symbols, the spaces are removed and the last incomplete group (the remaining letters of the cover text) is ignored.
+
 **Codec** | **Conversions** | **Aliases** | **Comment**
 :---: | :---: | --- | ---
 `bacon` | text <-> Bacon ciphertext | `bacon-cipher`, `baconian_cipher`, `bacon-01`, `bacon-10`, `bacon-26`, `bacon26-01` | Dynamic tokens mapping ; we can define a mapping of encoding's tokens (original tokens: `ab`), after the alphabet if any (e.g. `bacon-26-01`)
@@ -178,6 +180,8 @@ This writes each letter as a group of 5 symbols among two ("`a`" and "`b`"). It 
 ('abaabbabab', 'JV')
 >>> codext.decode("-..--..---.-...-..-. .-...-..-. ..... -..--..-..-..-.-..--", "bacon26_.-")
 'THIS IS A TEST'
+>>> codext.decode("BAAB AB AB AAABBBB AA BA A BAAABBAA BAAA BAAAAABA BAA A BAABAA BAABB AA", "bacon-26")
+'SUPERSECRET'
 ```
 
 -----

@@ -26,7 +26,7 @@ This simple codec converts characters into their octal values.
 **Codec** | **Conversions** | **Aliases** | **Comment**
 :---: | :---: | --- | ---
 `octal` | text <-> octal digits | `octals` | groups of 3-chars octal values when encoded
-`octal-spaced` | text <-> spaced octal digits | `octals-spaced` | whitespace-separated suite of variable-length groups of octal digits when encoded
+`octal-spaced` | text <-> spaced octal digits | `octals-spaced` | whitespace-separated suite of variable-length groups of octal digits when encoded ; zero-padded groups (e.g. `040`, as given by `od -b`) are also accepted when decoding
 
 ```python
 >>> codext.encode("this is a test", "octal")
@@ -39,6 +39,8 @@ This simple codec converts characters into their octal values.
 >>> codext.encode("this is a test", "octal-spaced")
 '164 150 151 163 40 151 163 40 141 40 164 145 163 164'
 >>> codext.decode("164 150 151 163 40 151 163 40 141 40 164 145 163 164", "octals-spaced")
+'this is a test'
+>>> codext.decode("164 150 151 163 040 151 163 040 141 040 164 145 163 164", "octals-spaced")
 'this is a test'
 ```
 

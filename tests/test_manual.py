@@ -3,6 +3,7 @@
 """Manual codec tests.
 
 """
+import codext
 import os
 import random
 from unittest import TestCase
@@ -146,6 +147,13 @@ class ComplementaryTestCase(TestCase):
     
     def test_codec_morse(self):
         self.assertRaises(LookupError, codecs.encode, "test", "morse-AAB")
+        # sentence with "/" as the word separator: must be decoded (in lowercase, Morse code having no case) and guessed
+        STR = "this is some plaintext"
+        MORSE = "- .... .. ... / .. ... / ... --- -- . / .--. .-.. .- .. -. - . -..- -"
+        self.assertEqual(codecs.decode(MORSE, "morse"), STR)
+        self.assertEqual(codecs.decode(b(MORSE), "morse"), b(STR))
+        self.assertEqual(codecs.encode(STR, "morse"), MORSE)
+        self.assertEqual(codext.guess(MORSE), {('morse', ): STR})
     
     def test_codec_hamming(self):
         import random
@@ -461,7 +469,16 @@ class ComplementaryTestCase(TestCase):
         # the errors handling applies to the encoded text too
         self.assertEqual(codecs.encode("Test!", "consonant-index", "ignore"), "16E1516")
         self.assertEqual(codecs.encode("Test!", "consonant-index", "replace"), "16E1516?")
-    
+
+    def test_codec_a1z26(self):
+        # sentence of "-"-separated letter numbers, words separated by spaces: must be decoded and guessed
+        STR = "nobody can crack this"
+        A1Z26 = "14-15-2-15-4-25 3-1-14 3-18-1-3-11 20-8-9-19"
+        self.assertEqual(codecs.decode(A1Z26, "a1z26"), STR)
+        self.assertEqual(codecs.decode(b(A1Z26), "a1z26"), b(STR))
+        self.assertEqual(codecs.encode(STR, "a1z26"), A1Z26)
+        self.assertEqual(codext.guess(A1Z26), {('a1z26', ): STR})
+
     def test_codec_sms(self):
         self.assertEqual(codecs.decode("A-B-222-3-4-5", "sms", "leave"), "ABcdgj")
 
@@ -635,7 +652,39 @@ class ManualTestCase(TestCase):
         for bad in [f"[][{S('map')}]([])", f"{F()}({S('x')})()+[]", "(" * 100000 + "[]" + ")" * 100000,
                     f"[][{S('constructor')}](+{S('1e9')})", "[]()", "+[]-[]", "+[]+", "[x]"]:
             self.assertRaises(ValueError, codecs.decode, bad, "jsfuck", "ignore")
-    
+
+    def test_codec_url(self):
+        # sentence with characters left unencoded ("!", ".") and a trailing newline: must be decoded and guessed
+        STR = "Hey! This is an example of URL or Percent Encoding.\n"
+        URL = "Hey!%20This%20is%20an%20example%20of%20URL%20or%20Percent%20Encoding.%0A"
+        self.assertEqual(codecs.decode(URL, "url"), STR)
+        self.assertEqual(codecs.decode(b(URL), "url"), b(STR))
+        self.assertEqual(codext.guess(URL), {('url', ): STR})
+
+    def test_codec_octal(self):
+        # sentence with zero-padded ordinals (as given by "od -b") and a trailing newline: must be decoded and guessed,
+        #  with spaces by "octal-spaced" and without by "octal"
+        STR = "This is some ASCII text, and I like it very much.\n"
+        OCT = " ".join(format(ord(c), "03o") for c in STR)
+        self.assertTrue(OCT.startswith("124 150 151 163 040 151 163 040") and OCT.endswith(" 056 012"))
+        for s, enc in [(OCT, "octal-spaced"), (OCT.replace(" ", ""), "octal")]:
+            self.assertEqual(codecs.decode(s, enc), STR)
+            self.assertEqual(codecs.decode(b(s), enc), b(STR))
+            self.assertEqual(codext.guess(s), {(enc, ): STR})
+        # any padding up to 3 digits is accepted when decoding, while encoding is unchanged (no padding)
+        self.assertEqual(codecs.decode("7 07 007 40 040", "octal-spaced"), "\x07\x07\x07  ")
+        self.assertEqual(codecs.encode(" \n", "octal-spaced"), "40 12")
+        self.assertRaises(ValueError, codecs.decode, "0040", "octal-spaced")
+
+    def test_codec_ordinal(self):
+        # sentence of space-separated decimal ordinals: must be decoded and guessed
+        STR = "This is some ASCII text, and I like it very much."
+        ORD = " ".join(str(ord(c)) for c in STR)
+        self.assertTrue(ORD.startswith("84 104 105 115 32 105 115 32") and ORD.endswith(" 99 104 46"))
+        self.assertEqual(codecs.decode(ORD, "ordinal-spaced"), STR)
+        self.assertEqual(codecs.decode(b(ORD), "ordinal-spaced"), b(STR))
+        self.assertEqual(codext.guess(ORD), {('ordinal-spaced', ): STR})
+
     def test_codec_aer256(self):
         from codext.ciphers._jsfloat import js_str as _js_str
         # numbers formatted as with JavaScript's String(...), as given by Node.js
@@ -737,6 +786,30 @@ class ManualTestCase(TestCase):
         # HINDIA-4X replaces pairs of letters by 5 characters, hence a text holding them is not decoded as it was
         self.assertEqual(codecs.decode(codecs.encode("\u0259 ee", "hindia-4x"), "hindia-4x"), "ee ee")
     
+    def test_codec_bacon(self):
+        # message hidden in a cover text: the spaces (the ones of the cover text) do not fall on the groups of 5 symbols
+        #  and the last letters of the cover text do not make a whole group ; it must be decoded and guessed
+        STR = "SUPERSECRET"
+        BACON = "BAAB AB AB AAABBBB AA BA A BAAABBAA BAAA BAAAAABA BAA A BAABAA BAABB AA"
+        for s in [BACON, BACON.lower(), BACON.replace(" ", "")[:55]]:
+            self.assertEqual(codecs.decode(s, "bacon-26"), STR)
+            self.assertEqual(codecs.decode(b(s), "bacon-26"), b(STR))
+        self.assertEqual(codext.guess(BACON), {('bacon-26', ): STR})
+        # spaces falling on the groups are still word separators, while an incomplete group without cover text spaces
+        #  is still an error
+        self.assertEqual(codecs.decode(codecs.encode("this is a test", "bacon-26"), "bacon-26"), "THIS IS A TEST")
+        self.assertRaises(ValueError, codecs.decode, BACON.replace(" ", ""), "bacon-26")
+
+    def test_codec_skip(self):
+        # a skip value coprime with the length of the text decodes it ; NB: such a short transposed text without spaces
+        #  cannot be guessed, its wrong transpositions (e.g. "StxeTelpma" with skip-7) holding more common bigrams
+        STR, ENC = "SampleText", "SpTtmexale"
+        self.assertEqual(codecs.decode(ENC, "skip-3"), STR)
+        self.assertEqual(codecs.decode(b(ENC), "skip-3"), b(STR))
+        self.assertEqual(codecs.encode(STR, "skip-3"), ENC)
+        self.assertEqual(codecs.decode(ENC, "skip-13"), STR)
+        self.assertRaises(ValueError, codecs.decode, ENC, "skip-2")
+
     def test_codec_atbash(self):
         STR = "This is a test"
         ATB1 = "Gsrh rh z gvhg"

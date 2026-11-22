@@ -361,13 +361,15 @@ def add_map(ename, encmap, repl_char="?", sep="", ignore_case=None, no_error=Fal
     :param no_error:      this encoding triggers no error (hence, always in "leave" errors handling)
     :param intype:        specify the input type for pre-transforming the input text
     :param outype:        specify the output type for post-transforming the output text
+    :param preprocess:    function transforming the input text (as a str) before decoding it (e.g. for removing the
+                           spaces of a cover text)
     :param pattern:       pattern for dynamically naming the encoding
     :param text:          specify whether the codec is a text encoding
     :param add_to_codecs: also add the search function to the native registry
                            NB: this will make the codec available in the built-in open(...) but will make it impossible
                                 to remove the codec later
     """
-    outype = outype or intype
+    outype, preprocess = outype or intype, kwargs.pop('preprocess', None)
     if ignore_case not in [None, "encode", "decode", "both"]:
         raise ValueError("Bad ignore_case parameter while creating encoding map")
     if intype not in [None, "str", "bin", "ord"]:
@@ -496,6 +498,8 @@ def add_map(ename, encmap, repl_char="?", sep="", ignore_case=None, no_error=Fal
                 if no_error:
                     errors = "leave"
                 text = ensure_str(text)
+                if decode and preprocess is not None:
+                    text = preprocess(text)
                 if not decode:
                     if intype == "bin":
                         text = "".join(f"{bin(ord(c))[2:]:0>8}" for c in text)

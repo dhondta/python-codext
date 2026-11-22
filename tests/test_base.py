@@ -65,7 +65,15 @@ class TestCodecsBase(TestCase):
         B2 = "34443433344334343444334434443433"
         self.assertEqual(codecs.encode(STR, "base2-34"), B2)
         self.assertEqual(codecs.decode(B2, "base2-34"), STR)
-    
+        # longer sentence, with and without space-separated bytes: must be decoded and guessed
+        STR3 = "This is some ASCII text, and I like it very much."
+        B2 = " ".join(format(ord(c), "08b") for c in STR3)
+        self.assertTrue(B2.startswith("01010100 01101000 01101001 01110011 00100000"))
+        for s in [B2, B2.replace(" ", "")]:
+            self.assertEqual(codecs.decode(s, "base2"), STR3)
+            self.assertEqual(codecs.decode(b(s), "base2"), b(STR3))
+            self.assertEqual(codext.guess(s), {('base2', ): STR3})
+
     def test_codec_base3(self):
         STR = "test"
         B3 = "23112113223321323322"
@@ -156,7 +164,22 @@ class TestCodecsBase(TestCase):
         self.assertEqual(codecs.decode(B16_1, "hex"), STR2)
         self.assertEqual(codecs.decode(B16_2, "hex"), STR2)
         self.assertRaises(ValueError, codecs.decode, B16_3, "hex")
-    
+        # longer sentence (uppercase digits): must be decoded and guessed
+        STR3 = "Hey! This is an example of base16 encoding."
+        B16_4 = "48657921205468697320697320616E206578616D706C65206F662062617365313620656E636F64696E672E"
+        self.assertEqual(codecs.decode(B16_4, "base16"), STR3)
+        self.assertEqual(codecs.decode(B16_4.lower(), "base16"), STR3)
+        self.assertEqual(codext.guess(B16_4), {('base16', ): STR3})
+        self.assertEqual(codext.guess(B16_4.lower()), {('base16', ): STR3})
+        # space-separated bytes (e.g. as given by a hex dump): must be decoded and guessed
+        STR4 = "This is some ASCII text, and I like it very much."
+        B16_5 = " ".join(format(ord(c), "02X") for c in STR4)
+        self.assertTrue(B16_5.startswith("54 68 69 73 20 69 73 20 73 6F 6D 65") and B16_5.endswith(" 63 68 2E"))
+        for s in [B16_5, B16_5.lower()]:
+            self.assertEqual(codecs.decode(s, "base16"), STR4)
+            self.assertEqual(codecs.decode(b(s), "base16"), b(STR4))
+            self.assertEqual(codext.guess(s), {('base16', ): STR4})
+
     def test_codec_base32(self):
         for b32, enc in zip(["ORUGS4ZANFZSAYJAORSXG5A=", "qtwg1h3ypf31yajyqt1zg7y=", "EHK6ISP0D5PI0O90EHIN6T0=",
                              "fjn6kwt0e5tk0s90fjkr6x0=", "EHM6JWS0D5SJ0R90EHJQ6X0="],
@@ -167,6 +190,12 @@ class TestCodecsBase(TestCase):
             self.assertEqual(codecs.decode(b(b32), enc), b(STR))
             self.assertRaises(ValueError, codecs.decode, b32.rstrip("="), enc)
             self.assertRaises(ValueError, codecs.decode, b32.rstrip("="), enc, "BAD")
+        # longer sentence: must be decoded and guessed
+        STR3 = "Hey! This is an example of base32 encoding."
+        B32 = "JBSXSIJAKRUGS4ZANFZSAYLOEBSXQYLNOBWGKIDPMYQGEYLTMUZTEIDFNZRW6ZDJNZTS4==="
+        self.assertEqual(codecs.decode(B32, "base32"), STR3)
+        self.assertEqual(codecs.decode(b(B32), "base32"), b(STR3))
+        self.assertEqual(codext.guess(B32), {('base32', ): STR3})
     
     def test_codec_base36(self):
         B36 = "4WMHTK6UZL044O91NKCEB8"
@@ -239,7 +268,13 @@ class TestCodecsBase(TestCase):
             self.assertEqual(codecs.encode(b(STR), enc), b(b64))
             self.assertEqual(codecs.decode(b64, enc), STR)
             self.assertEqual(codecs.decode(b(b64), enc), b(STR))
-    
+        # longer sentence: must be decoded and guessed
+        STR3 = "Hey! This is an example of base64 encoding."
+        B64 = "SGV5ISBUaGlzIGlzIGFuIGV4YW1wbGUgb2YgYmFzZTY0IGVuY29kaW5nLg=="
+        self.assertEqual(codecs.decode(B64, "base64"), STR3)
+        self.assertEqual(codecs.decode(b(B64), "base64"), b(STR3))
+        self.assertEqual(codext.guess(B64), {('base64', ): STR3})
+
     def test_codec_modhex(self):
         # YubiKey's alphabet for the hexadecimal digits, the case and delimiters being ignored when decoding
         self.assertEqual(codecs.encode(STR, "modhex"), codecs.encode(STR, "base16").lower().translate(
